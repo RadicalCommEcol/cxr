@@ -1,0 +1,16 @@
+Package: cxr
+Type: Package
+Title: Tools to calculate species coexistence
+Version: 0.1
+Date: 2017-12-30
+Author: I. Bartomeus, O Godoy, S- Saavedra, R. Rohr
+Maintainer: I. Bartomeus <nacho.bartomeus@gmail.com>
+Description: ...
+License: MIT + file LICENSE
+Depends:
+  R (>= 3.0)
+Imports:
+  
+RoxygenNote: 6.0.1
+Suggests: knitr, rmarkdown
+VignetteBuilder: knitr  
