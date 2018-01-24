@@ -9,7 +9,7 @@
 #' @param focal vector with the focal species name of each observation
 #' @param reprod Vector of the reproductive success of each observation
 #' @param comp_matrix data.frame with as many columns as competitor species. Each cell is number of competitors per observtion
-#' @param log Should reproductive success be loed. Forced to be TRUE
+#' @param log Should reproductive success be loged. Forced to be TRUE
 #' @param op number of iterations to ptimize the models.
 #'
 #' @note This script follows previous methodology developed by Godoy et al 2014,
@@ -19,7 +19,7 @@
 #' @examples
 #'  
 
-compete <- function(focal, reprod, comp_matrix, treatment, #need to implement model 4
+compete <- function(focal, reprod, comp_matrix, covar, #need to implement model 4 #UPDATE COVAR #fitnes = reprod
                     drop0 = FALSE, log = TRUE, op = 25){
   #check focal is c() and match reprod and nrow(comp_matrix)
   #check names(focal) match focal colnames(comp_matrix)
@@ -45,7 +45,7 @@ compete <- function(focal, reprod, comp_matrix, treatment, #need to implement mo
   splist<-splist[order(splist)]
   
   ## objects to hold the final parameter estimates from model 3: 
-  alpha_matrix <- matrix(0, nrow=length(splist), ncol=length(splist)) #better with NA?
+  alpha_matrix <- matrix(NA, nrow=length(splist), ncol=length(splist)) #do focal by background!! or square and elimate...
   row.names(alpha_matrix) <- splist
   colnames(alpha_matrix) <- splist
   lambda_est <- rep(NA, length(splist))
@@ -66,7 +66,7 @@ compete <- function(focal, reprod, comp_matrix, treatment, #need to implement mo
     ## start with the lambda seeds- will add on to this for each background:
     reprod <- lam_points$reprod 
     ##build density matrix (each row will be density of a species)
-    dens <- matrix(0, nrow=length(splist), ncol=(nrow(lam_points)+ nrow(comp_points)))
+    dens <- matrix(NA, nrow=length(splist), ncol=(nrow(lam_points)+ nrow(comp_points)))
     row.names(dens) <- splist 
     ##for each background species the target competes against:
     background_list <- row.names(dens)
@@ -91,10 +91,13 @@ compete <- function(focal, reprod, comp_matrix, treatment, #need to implement mo
       ## add seed numbers into the seeds vector
       reprod<-c(reprod, bg_points$reprod)
     } #close j
+    
+    ######THIS LOOP can be changes to a t(subset(d, focal = i)[comp matrix]) for dens
+    ## and reprod is just reprod subseted for sp i. 
 
     ## should now have "reprod" vector and corresponding "dens"ity matrix
     ## can test ncol(dens)==length(reprod) #BUT IT DO NOT!
-    ## we'll be working with log reprod (for giving a lognormal error structure):
+    ## we'll be working with log reprod (for giving a lognormal error structure): YES CAN BE DONE
     log_reprod <- log(reprod) 
     if(log == FALSE){message("only log = TRUE implmented.log needed for giving a lognormal error structure")}
     #model fitting using optim and earlier likelihood functions
@@ -117,7 +120,7 @@ compete <- function(focal, reprod, comp_matrix, treatment, #need to implement mo
     ##as before:
     for(k in 1:op){
       ##now using a specific method that permits constrained optimization so that alpha has to be nonzero- this is an issue in some of the fits, especially in model 3. lower parameter has same order as par2
-      testcomp2<-optim(par2,compmodel2, method="L-BFGS-B", lower=c(1,0,0.0000000001)) #outsource those params
+      testcomp2<-optim(par2,compmodel2, method="L-BFGS-B", lower=c(1,0,0.0000000001)) #outsource those params YES!
       par2<-testcomp2$par
       if(testcomp2$convergence==0){
         print(paste(splist[i],  "model 2 converged on rep", k, sep=" "))
@@ -125,11 +128,11 @@ compete <- function(focal, reprod, comp_matrix, treatment, #need to implement mo
       }
     }
     # model 3, unique alphas
-    par3<-c(testcomp2$par[1], rep(testcomp2$par[2], times=3), testcomp2$par[3])
+    par3<-c(testcomp2$par[1], rep(testcomp2$par[2], times=3), testcomp2$par[3]) #3 should be the number of background. FIX!!
     ##as before
     for(k in 1:op){
       ##now using a specific method that permits constained optimization so that alpha has to be nonzero- 
-      testcomp3<-optim(par3,compmodel3, method="L-BFGS-B", lower=c(1, rep(0, times=3),0.0000000001), control=list(maxit=1000))
+      testcomp3<-optim(par3,compmodel3, method="L-BFGS-B", lower=c(1, rep(0, times=3),0.0000000001), control=list(maxit=1000)) #OUTSOURCED y PAR SCALE (inside control) de OPTIM (vector of X elements when x = par's = lambda + compe(aphas) + sigma.) only for 3rd.
       par3<-testcomp3$par
       if(testcomp3$convergence==0){
         print(paste(splist[i], "model 3 converged on rep", k, sep=" "))
@@ -137,6 +140,8 @@ compete <- function(focal, reprod, comp_matrix, treatment, #need to implement mo
       }
     }
     # save estimates from model 3 
+    # SAVE ALSO PAR 2!!!!!
+    # SAVE also log lik testcomp3$value seguramente.  y * -1
     lambda_est[i] <- par3[1]
     sigma_est[i] <- par3[length(par3)]
     convergence_code[i] <- testcomp3$convergence
@@ -154,10 +159,11 @@ compete <- function(focal, reprod, comp_matrix, treatment, #need to implement mo
     no_data <- which(apply(dens, MARGIN=1, FUN=mean)==0)
     ## set their alphas to NA in the matrix:
     alpha_matrix[i,no_data] <- NA
+    ### I THINK THIS IS DONE.
     ## some diagnostics
     ## print an error to the console if any one of the three models failed to converge:
     if(testcomp1$convergence + testcomp2$convergence + testcomp3$convergence !=0){
-      warning(paste("at least one model did not converge for", splist[i], sep=" "))
+      warning(paste("Sorry, at least one model did not converge for", splist[i], sep=" "))
     }
   }
   #store results
@@ -170,22 +176,22 @@ compete <- function(focal, reprod, comp_matrix, treatment, #need to implement mo
   #CRAP, I need to call objects from outside the function!
 
   #model 1 - no effect of density (no competitive effects)
-  compmodel1 <- function(par, log_reprod = log_reprod){
-    # lambda and sigma parameters for the normal distribution
+  compmodel1 <- function(par, log_reprod = log_reprod){ #this needs to be taklen from global environment.
+    #lambda and sigma parameters for the normal distribution
     #(assuming lognormal error- seed data are logged) #!
     lambda <- par[1]
     sigma <- par[2]
     #this is the predictive model- here is just fitting a horizontal
     #line through the data:
-    pred <- rep(lambda, times=length(log_reprod)) #will this work in a function? 
+    pred <- rep(lambda, times=length(log_reprod)) #will this work in a function? THIS IS OBSERVATIONS (WHAT NEED TO BE AVAILABLE:)
     #these are the log likelihoods of the data given the model + parameters
-    llik <- dnorm(log_reprod,log(pred), sd=sigma, log=TRUE) #WTF??
+    llik <- dnorm(log_reprod,mean(log(pred)), sd=mean(sigma), log=TRUE) #WTF?? KEEP WARNING IN BO LOG.
     #return the sum of negative log likelihoods - what optim minimizes
     return(sum(-1*llik)) 
   }
   
   #model 2 - competition, but no difference between species
-  compmodel2<-function(par, log_reprod = log_reprod, background = background){
+  compmodel2<-function(par, log_reprod = log_reprod, background = background){ #IDEM
     lambda<-par[1] ## same as model 1
     alpha<-par[2]  ## new parameter introduced in model 2
     sigma<-par[3] ## same as model 1
@@ -193,9 +199,9 @@ compete <- function(focal, reprod, comp_matrix, treatment, #need to implement mo
     ## there is only one competitor at a time here- just adding each density to a 
     ## column of other zeros:
     ## predictive model:
-    pred <- lambda/(1+alpha*(background)) #is this the right background?? Oscar uses this one, but we should be in a  
+    pred <- lambda/(1+alpha*(background)) #is this the right background?? THIS IS THE VECTOR OF NEIBOURGHS FOR THIS SPECIES, which is rowsum of DENS:
     ## log likelihoods of data given the model + parameters:
-    llik<-dnorm(log_reprod,log(pred), sd=sigma, log=TRUE)
+    llik<-dnorm(log_reprod, mean = mean(log(pred)), sd= mean(sigma), log=TRUE)
     ## return sum of negative log likelihoods:
     return(sum(-1*llik)) 
   }
@@ -211,11 +217,26 @@ compete <- function(focal, reprod, comp_matrix, treatment, #need to implement mo
     term = 1 #create the denominator term for the model
     for(i in 1:ncol(comp_matrix)){
       term <- term + a_comp[i]*comp_matrix[,i] #idem, why the not subseted one?
+      ###COMPROVAR POR QUE ESTA TRANSPUESTA EN LA ORIGINAL. Y QUE AHORA USA OBS ADECUADAMENTE:
     }
     pred<- lambda/ term
     # likelihood as before:
-    llik<-dnorm(log_reprod,log(pred), sd=sigma, log=TRUE)
+    llik<-dnorm(log_reprod, mean = mean(log(pred)), sd= mean(sigma), log=TRUE)
     # return sum of negative log likelihoods
     return(sum(-1*llik)) #sum of negative log likelihoods
   }
+  
+  
+  #ADD:
+###Calculate error terms. hessian = TRUE en 291 de optim_analysis_pollinatiors_groups
+###model 4
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
