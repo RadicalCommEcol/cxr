@@ -16,26 +16,39 @@
 #' @param log logical. Should fitnes be loged. Forced to be TRUE for now
 #' @param op number of iterations to ptimize the models.
 #' @param method Options passed to `optim()` Default "L-BFGS-B". 
-#' @param lower Options passed to `optim()` Default c(1,0,0.0001)
-#' @param upper Options passed to `optim()` 
-#' @param control Options passed to `optim()`. It should be a list.
-#' @param hessian Options passed to `optim()`. Default = TRUE. This provides SE.
-#' @param gr Options passed to `optim()`. Usually not used by us, but for completness.
+#' @param lower2 Options passed to `optim()` 
+#' @param upper2 Options passed to `optim()` 
+#' @param control2 Options passed to `optim()`. It should be a list.
+#' @param hessian2 Options passed to `optim()`. Default = TRUE. This provides SE.
+#' @param gr2 Options passed to `optim()`. Usually not used by us, but for completness.
+#' @param lower3 Options passed to `optim()` 
+#' @param upper3 Options passed to `optim()` 
+#' @param control3 Options passed to `optim()`. It should be a list.
+#' @param hessian3 Options passed to `optim()`. Default = TRUE. This provides SE.
+#' @param gr3 Options passed to `optim()`. Usually not used by us, but for completness. 
 #' 
 #'
 #' @note This script follows previous methodology developed by Godoy et al 2014,
 #'  Kraft et al. 2015 and Lanuza et al 2018 papers
 #'  
+#' @details lowe parameters need to have the same length as par's. This means model 2 needs
+#' three parameters, and model 3 needs as much params as background species + 2. 
+#' Useful control params are maxit=1000, or par scale (again, as much elements as par's. )  
+#'  
 #' @return a list of parameters for each model...
 #' @examples
 #'  
-
 compete <- function(focal, fitness, comp_matrix, 
                     covariates = NULL, 
                     model = NULL, 
                     drop0 = FALSE, log = TRUE, op = 25, 
-                    method="L-BFGS-B", lower= -Inf, upper = Inf, 
-                    control, gr = NULL, hessian = TRUE, ...){ #Add other options to optim
+                    method="L-BFGS-B", 
+                    #m2
+                    lower2 = -Inf, upper2 = Inf, 
+                    control2 = list(), gr2 = NULL, hessian2 = FALSE,
+                    #m3
+                    lower3 = -Inf, upper3 = Inf, 
+                    control3 = list(), gr3 = NULL, hessian3 = TRUE){ 
   #check focal is c() and match reprod and nrow(comp_matrix)
   #check names(focal) match focal colnames(comp_matrix)
   if(is.null(covariates)){
@@ -50,8 +63,7 @@ compete <- function(focal, fitness, comp_matrix,
     ## drop lambda rows without seed production:
     d <- subset(d, fitness!=0)
   }
-  #test and warn if any is = 0
-  
+
   #DELETE
   #subset lamda events (response in absence of competition) and competition events
   #lam <- subset(d, d$background=="0") #!
@@ -72,14 +84,23 @@ compete <- function(focal, fitness, comp_matrix,
   
   ## objects to hold the final parameter estimates from model 3: 
   alpha_matrix <- matrix(NA, nrow=length(splist), ncol=length(bglist)) 
-  #do focal by background!! or square and elimate??
   row.names(alpha_matrix) <- splist
   colnames(alpha_matrix) <- bglist
   lambda_est <- rep(NA, length(splist))
   sigma_est <- rep(NA, length(splist))
   convergence_code <- rep(NA, length(splist))
-  #maybe also loglik and hessian??
-  
+  loglike <- rep(NA, length(splist))
+  # and hessian?? and m2, etc...
+  alpha_lower_error <- matrix(NA, nrow = length(splist), ncol = length(bglist))
+  alpha_upper_error <- matrix(NA, nrow = length(splist), ncol = length(bglist))
+  row.names(alpha_lower_error) <- splist
+  colnames(alpha_lower_error) <- bglist
+  row.names(alpha_upper_error) <- splist
+  colnames(alpha_upper_error) <- bglist
+  lambda_error <- matrix(NA, nrow = length(splist), ncol = 2)
+  row.names(lambda_error) <- splist
+  colnames(lambda_error) <- c("lower.error", "upper.error")
+
   ## for each species in turn as a target:
   for(i in 1:length(splist)){
     #DELETE
@@ -126,11 +147,16 @@ compete <- function(focal, fitness, comp_matrix,
     
     ## subset out the rows that are needed from the competition df
     comp <- subset(d, focal == splist[i])
-    comp_matrix_i <<- comp_matrix[which(d$focal == splist[i]),]
-    bg_n <- length(unique(comp$background))
-    background <<- rowSums(comp_matrix_i)
+    comp_matrix_i <- comp_matrix[which(d$focal == splist[i]),]
+    assign("comp_matrix_i", comp_matrix_i, envir = .GlobalEnv)
+    bg_n <- dim(comp_matrix_i)[2]
+    background <- rowSums(comp_matrix_i)
+    assign("background", background, envir = .GlobalEnv)
+    
     ## we'll be working with log fitness (for giving a lognormal error structure)
-    log_fitness <<- log(comp$fitness) 
+    log_fitness <- log(comp$fitness) 
+    assign("log_fitness", log_fitness, envir = .GlobalEnv)
+    
     if(log == FALSE){message("only log = TRUE implmented.log needed for giving a lognormal error structure")}
     #model fitting using optim and earlier likelihood functions
     # model 1, no competition
@@ -138,56 +164,74 @@ compete <- function(focal, fitness, comp_matrix,
     par1 <- c(mean(log_fitness), sd(log_fitness)) 
     ##repeat optimization until we get convergence (or we try 25 times)
     for(k in 1:op){
-      testcomp1<-optim(par = par1, fn = compmodel1)
+      testcomp1 <- optim(par = par1, fn = compmodel1)
       ##update start parameters to final estimate to use in next run in case of nonconvergence
-      par1<-testcomp1$par
-      if(testcomp1$convergence==0){
-        print(paste(splist[i], "model 1 converged on rep", k, sep=" "))
+      par1 <- testcomp1$par
+      if(testcomp1$convergence == 0){
+        message(paste(splist[i], "model 1 converged on rep", k, sep = " "))
         break
       }
     }
     # model 2, one common alpha
     ## pars here are lambda, alpha and sigma- use lambda and sigma from model 1 as starting esimtates
-    par2<-c(testcomp1$par[1],0.001,testcomp1$par[2])
+    par2 <- c(testcomp1$par[1], 0.001, testcomp1$par[2])
     ##as before:
     for(k in 1:op){
       ##now using a specific method that permits constrained optimization so that alpha has to be nonzero- this is an issue in some of the fits, especially in model 3. lower parameter has same order as par2
-      testcomp2<-optim(par2,compmodel2, 
-                       gr = gr, method = method, lower = lower, upper = upper,
-                       control = control)
-      par2<-testcomp2$par
-      if(testcomp2$convergence==0){
-        print(paste(splist[i],  "model 2 converged on rep", k, sep=" "))
+      testcomp2 <- optim(par2, compmodel2, method = method,
+                       gr = gr2, lower = lower2, upper = upper2,
+                       control = control2, hessian = hessian2)
+      par2 <- testcomp2$par
+      if(testcomp2$convergence == 0){
+        message(paste(splist[i],  "model 2 converged on rep", k, sep = " "))
         break
       }
     }
     # model 3, unique alphas
-    par3<-c(testcomp2$par[1], rep(testcomp2$par[2], times=bg_n), testcomp2$par[3]) 
+    par3 <- c(testcomp2$par[1], rep(testcomp2$par[2], times = bg_n), testcomp2$par[3]) 
     ##as before
     for(k in 1:op){
       ##now using a specific method that permits constained optimization so that alpha has to be nonzero- 
-      testcomp3<-optim(par3,compmodel3, 
-                       gr = gr, method = method, lower = lower, upper = upper,
-                       control = control, hessian = hessian) #check hessian can be done with all methods.
-                        #DO WE NEED DIFFERENT CONTROLS FOR EACH MODEL??
-                       #method="L-BFGS-B", lower=c(1, rep(0, times=3),0.0000000001), control=list(maxit=1000)) 
-                       #OUTSOURCED y PAR SCALE (inside control) de OPTIM (vector of X elements when x = par's = lambda + compe(aphas) + sigma.) only for 3rd.
-      par3<-testcomp3$par
-      if(testcomp3$convergence==0){
-        print(paste(splist[i], "model 3 converged on rep", k, sep=" "))
+      testcomp3 <- optim(par3, compmodel3, 
+                       gr = gr3, method = method, lower = lower3, upper = upper3,
+                       control = control3, hessian = hessian3) #check hessian can be done with all methods.
+      par3 <- testcomp3$par
+      if(testcomp3$convergence == 0){
+        message(paste(splist[i], "model 3 converged on rep", k, sep = " "))
         break
       }
+    }
+    if(hessian3 == TRUE){
+      #calculate Confidence intervals at 95% of the estimates, both lambda and alphas
+      inverse <- solve(testcomp3$hessian)
+      errors <- sqrt(diag(inverse))  
+      upper <- testcomp3$par+1.96*errors
+      lower <- testcomp3$par-1.96*errors
+      
+      # save estimates errors
+      #first save the errors from the alphas
+      lower.errors <- lower[2:4]
+      alpha_lower_error[i,] <-lower.errors #NEED TO CREATE PLACEHOLDER!
+      upper.errors <- upper[2:4]
+      alpha_upper_error[i,] <-upper.errors  #NEED TO CREATE PLACEHOLDER!
+      
+      #now save the errors fromt the lambdas
+      lower.lambda <- lower[1]
+      lambda_error[i,1] <- lower.lambda  #NEED TO CREATE PLACEHOLDER!
+      upper.lambda <- upper[1]
+      lambda_error[i,2] <- upper.lambda    #NEED TO CREATE PLACEHOLDER!
     }
     # delete objects from environment
     rm(log_fitness,
        background,
-       comp_matrix_i)
+       comp_matrix_i, inherits = TRUE)
     # save estimates from model 3 
     # SAVE ALSO PAR 2!!!!!
-    # SAVE also log lik testcomp3$value seguramente.  y * -1
     lambda_est[i] <- par3[1]
     sigma_est[i] <- par3[length(par3)]
     convergence_code[i] <- testcomp3$convergence
+    loglike[i] <- -1*testcomp3$value
+    
     ## in keeping with Lotka Volterra notation, we'll use alpha1_2 to indicate effect of
     ## sp 2 on growth of 1.  Following convention, i refers to rows and j to cols in a matrix
     ## so each step of the loop here (for a target sp) corresponds to one row of this matrix:
@@ -213,8 +257,8 @@ compete <- function(focal, fitness, comp_matrix,
     }
   }
   #store results
-  results <- data.frame(splist, lambda_est, sigma_est, convergence_code)
-  out <- list(results, alpha_matrix)
+  results <- data.frame(splist, lambda_est, lambda_error, sigma_est, convergence_code, loglike)
+  out <- list(results, alpha_matrix, alpha_lower_error, alpha_upper_error)
   out
 }
   
@@ -228,7 +272,7 @@ compete <- function(focal, fitness, comp_matrix,
     sigma <- par[2]
     #this is the predictive model- here is just fitting a horizontal
     #line through the data:
-    pred <- rep(lambda, times=length(log_fitness)) #will this work in a function? THIS IS OBSERVATIONS (WHAT NEED TO BE AVAILABLE:)
+    pred <- rep(lambda, times=length(log_fitness)) 
     #these are the log likelihoods of the data given the model + parameters
     llik <- dnorm(log_fitness, mean = mean(log(pred)), sd = mean(sigma), log=TRUE)
     #return the sum of negative log likelihoods - what optim minimizes
@@ -236,17 +280,17 @@ compete <- function(focal, fitness, comp_matrix,
   }
   
   #model 2 - competition, but no difference between species
-  compmodel2<-function(par){ 
-    lambda<-par[1] ## same as model 1
-    alpha<-par[2]  ## new parameter introduced in model 2
-    sigma<-par[3] ## same as model 1
+  compmodel2 <- function(par){ 
+    lambda <- par[1] ## same as model 1
+    alpha <- par[2]  ## new parameter introduced in model 2
+    sigma <- par[3] ## same as model 1
     ## apply is used to get a single vector of densities rather than a matrix
     ## there is only one competitor at a time here- just adding each density to a 
     ## column of other zeros:
     ## predictive model:
-    pred <- lambda/(1+alpha*(background))  #CHECK IT USES THE RIGHT BACKGROND IN JOSE
+    pred <- lambda/(1+alpha*(background))  
     ## log likelihoods of data given the model + parameters:
-    llik<-dnorm(log_fitness, mean = mean(log(pred)), sd= mean(sigma), log=TRUE)
+    llik <- dnorm(log_fitness, mean = mean(log(pred)), sd = mean(sigma), log = TRUE)
     ## return sum of negative log likelihoods:
     return(sum(-1*llik)) 
   }
@@ -264,16 +308,15 @@ compete <- function(focal, fitness, comp_matrix,
       term <- term + a_comp[i]*comp_matrix_i[,i] 
       #THIS IS AS DONE IN LINCX, CHECK WITH OSCAR
     }
-    pred<- lambda/ term
+    pred <- lambda/ term
     # likelihood as before:
-    llik<-dnorm(log_fitness, mean = mean(log(pred)), sd= mean(sigma), log=TRUE)
+    llik <- dnorm(log_fitness, mean = mean(log(pred)), sd = mean(sigma), log = TRUE)
     # return sum of negative log likelihoods
     return(sum(-1*llik)) #sum of negative log likelihoods
   }
   
-  #ADD:
-###Calculate error terms. hessian = TRUE en 291 de optim_analysis_pollinatiors_groups
-###model 4
+###model 4 i 5
+###add model custom  
   
   
   
