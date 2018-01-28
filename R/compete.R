@@ -55,10 +55,10 @@ compete <- function(focal, fitness, comp_matrix,
                     method="L-BFGS-B", 
                     #m1
                     lower1 = -Inf, upper1 = Inf, 
-                    control1 = list(), gr1 = NULL, hessian1 = FALSE,
+                    control1 = list(), gr1 = NULL, hessian1 = TRUE,
                     #m2
                     lower2 = -Inf, upper2 = Inf, 
-                    control2 = list(), gr2 = NULL, hessian2 = FALSE,
+                    control2 = list(), gr2 = NULL, hessian2 = TRUE,
                     #m3
                     lower3 = -Inf, upper3 = Inf, 
                     control3 = list(), gr3 = NULL, hessian3 = TRUE,
@@ -139,8 +139,8 @@ compete <- function(focal, fitness, comp_matrix,
   alpha_matrix4 <- alpha_matrix3
   lambda_est4 <- lambda_est3
   sigma_est4 <- lambda_est3
-  l_cov_est4 <- rep(NA, (length(splist)*n_cov))
-  a_cov_est4 <- rep(NA, (length(splist)*n_cov))
+  l_cov_est4 <- rep(NA, n_cov)
+  a_cov_est4 <- rep(NA, n_cov)
   convergence_code4 <- convergence_code3
   loglike4 <- loglike3
   alpha_lower_error4 <- alpha_lower_error3
@@ -148,7 +148,7 @@ compete <- function(focal, fitness, comp_matrix,
   lambda_error4 <- lambda_error3
   l_cov_error4 <- matrix(NA, nrow = length(splist), ncol = n_cov*2)
   row.names(l_cov_error4) <- splist
-  colnames(l_cov_error4) <- rep(c("lower.error", "upper.error"), n_cov)
+  colnames(l_cov_error4) <- c(rep("lower.error", n_cov), rep("upper.error", n_cov))
   a_cov_error4 <- l_cov_error4
   #m5
   alpha_matrix5 <- alpha_matrix3
@@ -165,9 +165,9 @@ compete <- function(focal, fitness, comp_matrix,
   lambda_error5 <- lambda_error3
   l_cov_error5 <- l_cov_error4
   a_cov_error5 <- matrix(NA, nrow = length(splist), ncol = n_cov*ncol(comp_matrix)*2)
-  row.names(a_cov_est5) <- splist
-  colnames(a_cov_est5) <- rep(c("lower.error", "upper.error"), n_cov*ncol(comp_matrix))
-  
+  row.names(a_cov_error5) <- splist
+  colnames(a_cov_error5) <- c(rep("lower.error", n_cov*ncol(comp_matrix)), rep("upper.error", n_cov*ncol(comp_matrix)))
+
   ## for each species in turn as a target:
   for(i in 1:length(splist)){
     #DELETE
@@ -248,8 +248,8 @@ compete <- function(focal, fitness, comp_matrix,
       inverse <- solve(testcomp1$hessian)
       errors <- sqrt(diag(inverse))  
       # save estimates errors
-      lambda_error1[i,1] <- testcomp1$par-1.96*errors[1]
-      lambda_error1[i,2] <- testcomp1$par+1.96*errors[1]    
+      lambda_error1[i,1] <- testcomp1$par[1]-1.96*errors[1]
+      lambda_error1[i,2] <- testcomp1$par[1]+1.96*errors[1]    
     }
     # model 2, one common alpha
     ## pars here are lambda, alpha and sigma- use lambda and sigma from model 1 as starting esimtates
@@ -273,9 +273,9 @@ compete <- function(focal, fitness, comp_matrix,
       inverse <- solve(testcomp2$hessian)
       errors <- sqrt(diag(inverse))  
       # save estimates errors
-      alpha_error2[i,] <- c(testcomp2$par-1.96*errors[2], testcomp2$par+1.96*errors[2])
-      lambda_error2[i,1] <- testcomp2$par-1.96*errors[1]
-      lambda_error2[i,2] <- testcomp2$par+1.96*errors[1]    
+      alpha_error2[i,] <- c(testcomp2$par[2]-1.96*errors[2], testcomp2$par[2]+1.96*errors[2])
+      lambda_error2[i,1] <- testcomp2$par[1]-1.96*errors[1]
+      lambda_error2[i,2] <- testcomp2$par[1]+1.96*errors[1]    
     }
     # model 3, unique alphas
     par3 <- c(testcomp2$par[1], #lambda
@@ -298,24 +298,24 @@ compete <- function(focal, fitness, comp_matrix,
       inverse <- solve(testcomp3$hessian)
       errors <- sqrt(diag(inverse))  
       # save estimates errors
-      alpha_lower_error3[i,] <- testcomp3$par-1.96*errors[2:(n_bg+1)]
-      alpha_upper_error3[i,] <- testcomp3$par+1.96*errors[2:(n_bg+1)]
-      lambda_error3[i,1] <- testcomp3$par-1.96*errors[1]
-      lambda_error3[i,2] <- testcomp3$par+1.96*errors[1]    
+      alpha_lower_error3[i,] <- testcomp3$par[2:(n_bg+1)]-1.96*errors[2:(n_bg+1)] 
+      alpha_upper_error3[i,] <- testcomp3$par[2:(n_bg+1)]+1.96*errors[2:(n_bg+1)]
+      lambda_error3[i,1] <- testcomp3$par[1]-1.96*errors[1]
+      lambda_error3[i,2] <- testcomp3$par[1]+1.96*errors[1]    
     }
     
     #When covariates are in:
     if(!is.null(covariates)){
-      n_cov <- n_cov
+      n_cov <- ncol(covariates)
       assign("n_cov", n_cov, envir = .GlobalEnv)
-      covariates_i <- covariates[which(focal == splist(i)),]
+      covariates_i <- covariates[which(focal == splist[i]),]
       assign("covariates_i", covariates_i, envir = .GlobalEnv)
       # model 4!
-      par4 <- c(testcomp3$par[1],  #lambda
-                rep(0.0001, times = n_cov), #l_cov
-                testcomp3$par3[2:(n_bg+1)], #alfas  
-                rep(0.0001, times = n_cov), #a_cov
-                testcomp3$par[length(par3)]) # sigma
+      par4 <- c(testcomp3$par[1],  #lambda 1
+                rep(0.0001, times = n_cov), #l_cov n_cov
+                testcomp3$par[2:(n_bg+1)], #alfas n_bg
+                rep(0.0001, times = n_cov), #a_cov n_cov
+                testcomp3$par[length(par3)]) # sigma 1
       ##as before
       for(k in 1:op){
         ##now using a specific method that permits constained optimization so that alpha has to be nonzero- 
@@ -333,23 +333,26 @@ compete <- function(focal, fitness, comp_matrix,
         inverse <- solve(testcomp4$hessian)
         errors <- sqrt(diag(inverse))  
         # save estimates errors
-        lambda_error4[i,1] <- testcomp4$par-1.96*errors[1]
-        lambda_error4[i,2] <- testcomp4$par+1.96*errors[1]   
-        l_cov_error4[i,] <- c(testcomp4$par-1.96*errors[2:n_cov], testcomp4$par+1.96*errors[2:n_cov]) 
-        #WARNING change names above|||
-        alpha_lower_error4[i,] <- testcomp4$par-1.96*errors[2+n_cov:(n_cov+n_bg+1)]
-        alpha_upper_error4[i,] <- testcomp4$par+1.96*errors[2+n_cov:(n_cov+n_bg+1)]
-        a_cov_error4[i,] <- c(testcomp4$par-1.96*errors[(2+n_cov+n_bg):(n_cov+n_bg+1+n_cov)], 
-                              testcomp4$par+1.96*errors[(2+n_cov+n_bg):(n_cov+n_bg+1+n_cov)])
-        #WArNING also
+        lambda_error4[i,1] <- testcomp4$par[1]-1.96*errors[1]
+        lambda_error4[i,2] <- testcomp4$par[1]+1.96*errors[1]   
+        l_cov_error4[i,] <- c(testcomp4$par[2:(1+n_cov)]-1.96*errors[2:(1+n_cov)], 
+                              testcomp4$par[2:(1+n_cov)]+1.96*errors[2:(1+n_cov)]) 
+        alpha_lower_error4[i,] <- testcomp4$par[(1+n_cov+1):(1+n_cov+n_bg)]-1.96*errors[(1+n_cov+1):(1+n_cov+n_bg)]
+        alpha_upper_error4[i,] <- testcomp4$par[(1+n_cov+1):(1+n_cov+n_bg)]+1.96*errors[(1+n_cov+1):(1+n_cov+n_bg)]
+        a_cov_error4[i,] <- c(testcomp4$par[(2+n_cov+n_bg):(n_cov+n_bg+1+n_cov)]-1.96*errors[(2+n_cov+n_bg):(n_cov+n_bg+1+n_cov)], 
+                              testcomp4$par[(2+n_cov+n_bg):(n_cov+n_bg+1+n_cov)]+1.96*errors[(2+n_cov+n_bg):(n_cov+n_bg+1+n_cov)])
       }
       #model 5
+      #subset a_cov's
+      par4_a_cov <- testcomp4$par[(1+n_cov+n_bg+1):(1+n_cov+n_bg+n_cov)]
+      par5_a_cov <- c()
+      for(w in 1:length(par4_a_cov)){
+        par5_a_cov <- c(par5_a_cov, rep(par4_a_cov[w], times = n_bg))
+      }
       par5 <- c(testcomp4$par[1],  #lambda
-                testcomp4$par[2:1+n_cov], #l_cov
-                testcomp4$par[2+n_cov:(n_cov+n_bg+1)], #alfas
-                rep(testcomp4$par[(n_cov+n_bg+2)], times = n_cov*n_bg), #a_cov #THIS WORKS ONLY WITH ONE COV!! 
-                #otherwise, second cov gets same starting value than the first.
-                #too tired to fix this
+                testcomp4$par[(1+1):(1+n_cov)], #l_cov
+                testcomp4$par[(1+n_cov+1):(1+n_cov+n_bg)], #alfas
+                par5_a_cov, #a_cov pairwise
                 testcomp4$par[3]) # sigma
       ##as before
       for(k in 1:op){
@@ -368,16 +371,14 @@ compete <- function(focal, fitness, comp_matrix,
         inverse <- solve(testcomp5$hessian)
         errors <- sqrt(diag(inverse))  
         # save estimates errors
-        lambda_error5[i,1] <- testcomp5$par-1.96*errors[1]
-        lambda_error5[i,2] <- testcomp5$par+1.96*errors[1]   
-        l_cov_error5[i,] <- c(testcomp5$par-1.96*errors[2:n_cov], testcomp5$par+1.96*errors[2:n_cov]) 
-        #WARNING change names above|||
-        alpha_lower_error5[i,] <- testcomp5$par-1.96*errors[2+n_cov:(n_cov+n_bg+1)]
-        alpha_upper_error5[i,] <- testcomp5$par+1.96*errors[2+n_cov:(n_cov+n_bg+1)]
-        #a_cov_error5[i,] <- c(testcomp5$par-1.96*errors[(2+n_cov+n_bg):(n_cov+n_bg+1+n_cov)], 
-                        #      testcomp5$par+1.96*errors[(2+n_cov+n_bg):(n_cov+n_bg+1+n_cov)])
-        #THIS last one needs to be though, now is too late.
-        #WArNING also
+        lambda_error5[i,1] <- testcomp5$par[1]-1.96*errors[1]
+        lambda_error5[i,2] <- testcomp5$par[1]+1.96*errors[1]   
+        l_cov_error5[i,] <- c(testcomp5$par[2:(1+n_cov)]-1.96*errors[2:(1+n_cov)], 
+                              testcomp5$par[2:(1+n_cov)]+1.96*errors[2:(1+n_cov)]) 
+        alpha_lower_error5[i,] <- testcomp5$par[(1+n_cov+1):(1+n_cov+n_bg)]-1.96*errors[(1+n_cov+1):(1+n_cov+n_bg)]
+        alpha_upper_error5[i,] <- testcomp5$par[(1+n_cov+1):(1+n_cov+n_bg)]+1.96*errors[(1+n_cov+1):(1+n_cov+n_bg)]
+        a_cov_error5[i,] <- c(testcomp5$par[(1+n_cov+n_bg+1):(1+n_cov+n_bg+(n_bg*n_cov))]-1.96*errors[(1+n_cov+n_bg+1):(1+n_cov+n_bg+(n_bg*n_cov))], 
+                              testcomp5$par[(1+n_cov+n_bg+1):(1+n_cov+n_bg+(n_bg*n_cov))]+1.96*errors[(1+n_cov+n_bg+1):(1+n_cov+n_bg+(n_bg*n_cov))])
       }
       #delete objects
       rm(n_cov,
@@ -407,15 +408,15 @@ compete <- function(focal, fitness, comp_matrix,
     if(!is.null(covariates)){
       #m4
       lambda_est4[i] <- par4[1]
-      #l_cov_est4 <- par4[2:...] #NEED to calculate the scripts #ncov
-      #a_cov_est4 <- par4[...:...] #NEED to calculate the scripts #ncov
+      l_cov_est4 <- par4[2:(1+n_cov)] 
+      a_cov_est4 <- par4[(2+n_cov+n_bg):(n_cov+n_bg+1+n_cov)] #NEED to calculate the scripts #ncov
       sigma_est4[i] <- par4[length(par4)]
       convergence_code4[i] <- testcomp4$convergence
       loglike4[i] <- -1*testcomp4$value
       #m5
       lambda_est5[i] <- par5[1]
-      #l_cov_est5 <- par5[2:...] #NEED to calculate the scripts #ncov
-      #a_cov_est5 <- par5[...:...] #NEED to calculate the scripts #ncov*nbg
+      l_cov_est5 <- par5[2:(1+n_cov)] 
+      a_cov_est5 <- par5[(1+n_cov+n_bg+1):(1+n_cov+n_bg+(n_bg*n_cov))] 
       sigma_est5[i] <- par5[length(par5)]
       convergence_code5[i] <- testcomp5$convergence
       loglike5[i] <- -1*testcomp5$value
@@ -426,8 +427,8 @@ compete <- function(focal, fitness, comp_matrix,
     ## so each step of the loop here (for a target sp) corresponds to one row of this matrix:
     alpha_est2[i] <- par2[2]
     alpha_matrix3[i,] <- par3[2:(length(par3)-1)]
-    #alpha_matrix4[i,] <- par4[...:...)]
-    #alpha_matrix5[i,] <- par5[...:...)]
+    alpha_matrix4[i,] <- par4[(1+n_cov+1):(1+n_cov+n_bg)]
+    alpha_matrix5[i,] <- par5[(1+n_cov+1):(1+n_cov+n_bg)]
   } #close i?
     #DELETE
     ##note that in cases where there is no data for a particular species the 
@@ -459,14 +460,18 @@ compete <- function(focal, fitness, comp_matrix,
                         lambda_est3, lambda_error3, sigma_est3, convergence_code3, loglike3,
                         lambda_est4, lambda_error4, sigma_est4, convergence_code4, loglike4,
                         lambda_est5, lambda_error5, sigma_est5, convergence_code5, loglike5)
+  colnames(results)[c(3,4,9,10)] <- c("lower.error.1", "upper.error.1", "alpha.lower.error.2", "alpha.upper.error.2")
   out <- list(results, alpha_matrix3, alpha_lower_error3, alpha_upper_error3,
               alpha_matrix4, alpha_lower_error4, alpha_upper_error4,
               l_cov_est4, l_cov_error4, a_cov_est4, a_cov_error4,
               alpha_matrix5, alpha_lower_error5, alpha_upper_error5,
               l_cov_est5, l_cov_error5, a_cov_est5, a_cov_error5 
               )
-  #HERE WE ASSUME ALL HESSIANS = TRUE... WOULD THIS WORK IF NOT? YES WITH NA?S FOR ERRORS I THINK
-  #NEED TO ADD NAMES TO THE LIST FOR CLARITY.
+  names(out) <- c("lambdas$co", "alpha_matrix3", "alpha_lower_error3", "alpha_upper_error3",
+                  "alpha_matrix4", "alpha_lower_error4", "alpha_upper_error4",
+                  "l_cov_est4", "l_cov_error4", "a_cov_est4", "a_cov_error4",
+                  "alpha_matrix5", "alpha_lower_error5", "alpha_upper_error5",
+                  "l_cov_est5", "l_cov_error5", "a_cov_est5", "a_cov_error5")
   out
   }
 
@@ -529,7 +534,7 @@ compete <- function(focal, fitness, comp_matrix,
     lambda <- par[1] 
     l_cov <- par[(1+1):(1+n_cov)] #efecto cov 1, 2...
     a_comp <- par[(1+n_cov+1):(1+n_cov+n_bg)] #alfas
-    a_cov <- par[(1+n_cov+n_bg+1),(1+n_cov+n_bg+n_cov)] #efecto cov 1, 2... on alpha
+    a_cov <- par[(1+n_cov+n_bg+1):(1+n_cov+n_bg+n_cov)] #efecto cov 1, 2... on alpha
     sigma <- par[length(par)]
     num = 1
     for(z in 1:n_cov){
@@ -555,30 +560,31 @@ compete <- function(focal, fitness, comp_matrix,
     lambda <- par[1] 
     l_cov <- par[(1+1):(1+n_cov)] #efecto cov 1, 2...gamma y theta
     a_comp <- par[(1+n_cov+1):(1+n_cov+n_bg)] #alfas
-    a_cov <- par[(1+n_cov+n_bg+1),(1+n_cov+n_bg+(n_cov*n_bg))] #efecto cov 1, 2... on alpha_i! omega's y psi's
+    a_cov <- par[(1+n_cov+n_bg+1):(1+n_cov+n_bg+(n_cov*n_bg))] #efecto cov 1, 2... on alpha_i! omega's y psi's
     sigma <- par[length(par)]
     num = 1
-    for(z in 1:n_cov){
-      num <- num + l_cov[z]*covariates_i[,z] #need to save above
+    for(v in 1:n_cov){
+      num <- num + l_cov[v]*covariates_i[,v] #need to save above
     }
-    for(v in 1:ncol(covariates_i)){
+    cov_term_x <- list()
+    for(v in 1:n_cov){
       cov_temp <- covariates_i[,v]
-      cov_term_x <- c()
-      for(z in 1:ncol(comp_matrix_i)){
-          cov_term_x[z+(n_bg*(v-1))] <- a_cov[z+(n_bg*(v-1))] * cov_temp  #create  acovi*cov_i
+      for(z in 1:n_bg){
+          cov_term_x[[z+(n_bg*(v-1))]] <- a_cov[z+(n_bg*(v-1))] * cov_temp  #create  a_cov_i*cov_i
       }
     }
+    cov_term <- list()
     #here I need to reformat cov_term_x to sumatories of the form omega_CHFU* d_chfu$pol_sum + psi_CHFU* d_chfu$salinity
     for(z in 0:(n_bg-1)){
       cov_term_x_sum <- cov_term_x[[z+1]] 
-      for(o in 2:n_cov){ #same as ncol(comp_matrix_i)
-        cov_term_x_sum <- cov_term_x_sum + cov_term_x[[o+n_bg]]
+      for(v in 2:n_cov){ 
+        cov_term_x_sum <- cov_term_x_sum + cov_term_x[[v+n_bg]]
       } 
       cov_term[[z+1]] <- cov_term_x_sum
     }
     #covariates_i[,i] + a_cov[z+n_bg] * covariates_i[,i] #a_cov = n_cov*n_bg
     term <- 1 #create the denominator term for the model
-    for(z in 1:ncol(comp_matrix_i)){
+    for(z in 1:n_bg){
       term <- term + (a_comp[z] + cov_term[[z]]) * comp_matrix_i[,z]  
     }
     pred <- lambda * (num) / term
@@ -588,8 +594,6 @@ compete <- function(focal, fitness, comp_matrix,
     return(sum(-1*llik)) #sum of negative log likelihoods
     }
 
-  
-  
 ###add model custom  
   
   
