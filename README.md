@@ -2,7 +2,7 @@
 
 This package should be able to
 
-[ ] Calculate pairwise competition parameters (alpha) and max reproductive rates (lambda) from observational data by treatment 
+[X] Calculate pairwise competition parameters (alpha) and max reproductive rates (lambda) from observational data by treatment 
 [ ] Plot alpha and lambda  mediated by treatment.
 [ ] Compare models via AIC  
 [ ] Calculate chessonian coexistence landscapes  (plot + values)  pairwise
