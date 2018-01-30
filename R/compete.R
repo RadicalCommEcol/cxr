@@ -2,53 +2,59 @@
 #'
 #' Calculates how reproduction decays with number of intra and inter-specific
 #'  compettors. The idea is to fit a series of nested models. First model fits
-#'  an intercept. Second model fits a common response to all competitors, 
-#'  Third model fits a pairwise effct of competition. And a fourth and fith models 
-#'  fit covariates. Parameters obtained in each model serves as priors for the
+#'  an intercept (lambda). Second model fits a common response to all competitors (alpha), 
+#'  Third model fits a pairwise effct of competition (alpha_ij). And a fourth and fiveth models 
+#'  fit covariates on lambda's and alpha's (l_cov and a_cov). Parameters obtained in each model serves as priors for the
 #'  next model. 
 #' 
 #' @param focal vector with the focal species name of each observation
 #' @param fitness Vector of the reproductive success or biomass or any other fitness measure of each observation
-#' @param comp_matrix data.frame with as many columns as competitor species. Each cell is number of competitors per observtion
-#' @param covariates data.frame with as many columns as covariates.
-#' @param model you can provide a function with a model to test if you don't like the default.
+#' @param comp_matrix data.frame with as many columns as competitor species. Each cell is the number of competitors per observtion
+#' @param covariates data.frame with as many columns as covariates measured.
+#' @param model you can provide a function with a model to test if you don't like the default. This is not implemented yet. 
+#' In any case models need to have the same initial par's as the ones implemented to be easy to plug.
 #' @param drop0 logical. Should observations with zero fitness be discarded?
-#' @param log logical. Should fitnes be loged. Forced to be TRUE for now
+#' @param log logical. Should fitnes be loged. Forced to be TRUE for now. 
+#' For accepting non log fitness, the dnorm has to be modified in the models.
 #' @param op number of iterations to ptimize the models.
 #' @param method Options passed to `optim()` Default "L-BFGS-B". 
-#' @param lower2 Options passed to `optim()` 
-#' @param upper2 Options passed to `optim()` 
+#' @param lower1 Options passed to `optim()` One value per par. For model one it needs 2 values.
+#' @param upper1 Options passed to `optim()` One value per par. For model one it needs 2 values.
+#' @param control1 Options passed to `optim()`. It should be a list.
+#' @param hessian1 Options passed to `optim()`. Default = TRUE. This provides SE for all params
+#' @param gr1 Options passed to `optim()`. Usually not used by us, but for completness.
+#' @param lower2 Options passed to `optim()` One value per par. For model two it needs 3 values.
+#' @param upper2 Options passed to `optim()` One value per par. For model two it needs 3 values.
 #' @param control2 Options passed to `optim()`. It should be a list.
-#' @param hessian2 Options passed to `optim()`. Default = TRUE. This provides SE.
+#' @param hessian2 Options passed to `optim()`. Default = TRUE. This provides SE for all params
 #' @param gr2 Options passed to `optim()`. Usually not used by us, but for completness.
-#' @param lower3 Options passed to `optim()` 
-#' @param upper3 Options passed to `optim()` 
+#' @param lower3 Options passed to `optim()` One value per par. For model three it needs 2+ncol(comp_matrix) values.
+#' @param upper3 Options passed to `optim()` One value per par. For model three it needs 2+ncol(comp_matrix) values.
 #' @param control3 Options passed to `optim()`. It should be a list.
 #' @param hessian3 Options passed to `optim()`. Default = TRUE. This provides SE.
 #' @param gr3 Options passed to `optim()`. Usually not used by us, but for completness. 
-#' @param lower4 Options passed to `optim()` 
-#' @param upper4 Options passed to `optim()` 
+#' @param lower4 Options passed to `optim()` One value per par. For model four it needs 2+ncol(comp_matrix)+(2*ncol(covariates)) values.
+#' @param upper4 Options passed to `optim()` One value per par. For model four it needs 2+ncol(comp_matrix)+(2*ncol(covariates)) values.
 #' @param control4 Options passed to `optim()`. It should be a list.
 #' @param hessian4 Options passed to `optim()`. Default = TRUE. This provides SE.
 #' @param gr4 Options passed to `optim()`. Usually not used by us, but for completness.
-#' @param lower5 Options passed to `optim()` 
-#' @param upper5 Options passed to `optim()` 
+#' @param lower5 Options passed to `optim()` One value per par. For model five it needs 
+#' 2+ncol(comp_matrix)+ncol(covariates)+(ncol(comp_matrix)*ncol(covariates)) values.
+#' @param upper5 Options passed to `optim()` One value per par. For model five it needs 
+#' 2+ncol(comp_matrix)+ncol(covariates)+(ncol(comp_matrix)*ncol(covariates)) values.
 #' @param control5 Options passed to `optim()`. It should be a list.
 #' @param hessian5 Options passed to `optim()`. Default = TRUE. This provides SE.
 #' @param gr5 Options passed to `optim()`. Usually not used by us, but for completness. 
 #' 
-#'
 #' @note This script follows previous methodology developed by Godoy et al 2014,
 #'  Kraft et al. 2015 and Lanuza et al 2018 papers
 #'  
-#' @details lower or upper parameters need to have the same length as par's. This means model 2 needs
-#' three parameters, and model 3 needs as much params as background species + 2. 
-#' Useful control params are maxit=1000, or par scale (again, as much elements as par's. )  
+#' @details Useful control params are maxit=1000, or par scale (with as much elements as pars has the model)  
 #'  
-#' @return a list of parameters for each model...
+#' @return a list of estimated parameters for each model.
 #' @examples
 #'  
-compete <- function(focal, fitness, comp_matrix, 
+compete <- function(focal, fitness, comp_matrix, #basic data needed
                     covariates = NULL, 
                     model = NULL, 
                     drop0 = FALSE, log = TRUE, op = 25, 
@@ -68,23 +74,21 @@ compete <- function(focal, fitness, comp_matrix,
                     #m5
                     lower5 = -Inf, upper5 = Inf, 
                     control5 = list(), gr5 = NULL, hessian5 = TRUE){ 
-  #check focal is c() and match reprod and nrow(comp_matrix)
-  #check names(focal) match focal colnames(comp_matrix)
+  #We can check focal is c() and length match fitness and nrow(comp_matrix), etc...
   if(is.null(covariates)){
     d <- data.frame(focal, fitness, comp_matrix)
     n_cov <- 0
   } else{
     d <- data.frame(focal, fitness, comp_matrix, covariates)
+    n_cov <- ncol(covariates)
   }
-  
+  #DELETE  
   #calculate total competitors
   #d$background <- rowSums(comp_matrix) #not used in d Delete?
-  
   if(drop0 == TRUE){
     ## drop lambda rows without seed production:
     d <- subset(d, fitness!=0)
   }
-
   #DELETE
   #subset lamda events (response in absence of competition) and competition events
   #lam <- subset(d, d$background=="0") #!
@@ -213,18 +217,18 @@ compete <- function(focal, fitness, comp_matrix,
     ## and reprod is just reprod subseted for sp i. 
     
     ## subset out the rows that are needed from the competition df
-    comp <- subset(d, focal == splist[i])
+    #comp <- subset(d, focal == splist[i]) #DELETE if nothing is broken.
     comp_matrix_i <- comp_matrix[which(d$focal == splist[i]),]
-    assign("comp_matrix_i", comp_matrix_i, envir = .GlobalEnv)
+    assign("comp_matrix_i", comp_matrix_i, envir = .GlobalEnv) #needed to run the models within the function.
     n_bg <- dim(comp_matrix_i)[2]
     assign("n_bg", n_bg, envir = .GlobalEnv)
     background <- rowSums(comp_matrix_i)
     assign("background", background, envir = .GlobalEnv)
     ## we'll be working with log fitness (for giving a lognormal error structure)
-    log_fitness <- log(comp$fitness) 
+    log_fitness <- log(fitness[which(d$focal == splist[i])]) 
     assign("log_fitness", log_fitness, envir = .GlobalEnv)
     
-    if(log == FALSE){message("only log = TRUE implmented.log needed for giving a lognormal error structure")}
+    if(log == FALSE){message("only log = TRUE implmented. log needed for giving a lognormal error structure")}
     #model fitting using optim and earlier likelihood functions
     # model 1, no competition
     #recall parameters are lambda and sigma- initialize these with estimates from the data:
@@ -306,7 +310,7 @@ compete <- function(focal, fitness, comp_matrix,
     
     #When covariates are in:
     if(!is.null(covariates)){
-      n_cov <- ncol(covariates)
+      n_cov <- ncol(covariates) 
       assign("n_cov", n_cov, envir = .GlobalEnv)
       covariates_i <- covariates[which(focal == splist[i]),]
       assign("covariates_i", covariates_i, envir = .GlobalEnv)
@@ -409,7 +413,7 @@ compete <- function(focal, fitness, comp_matrix,
       #m4
       lambda_est4[i] <- par4[1]
       l_cov_est4 <- par4[2:(1+n_cov)] 
-      a_cov_est4 <- par4[(2+n_cov+n_bg):(n_cov+n_bg+1+n_cov)] #NEED to calculate the scripts #ncov
+      a_cov_est4 <- par4[(2+n_cov+n_bg):(n_cov+n_bg+1+n_cov)] 
       sigma_est4[i] <- par4[length(par4)]
       convergence_code4[i] <- testcomp4$convergence
       loglike4[i] <- -1*testcomp4$value
@@ -429,7 +433,7 @@ compete <- function(focal, fitness, comp_matrix,
     alpha_matrix3[i,] <- par3[2:(length(par3)-1)]
     alpha_matrix4[i,] <- par4[(1+n_cov+1):(1+n_cov+n_bg)]
     alpha_matrix5[i,] <- par5[(1+n_cov+1):(1+n_cov+n_bg)]
-  } #close i?
+  } #close i
     #DELETE
     ##note that in cases where there is no data for a particular species the 
     #alpha estimate for that species ends up as the starting value- we need to 
@@ -511,8 +515,7 @@ compete <- function(focal, fitness, comp_matrix,
   #model 3 - all species have different competitive effects
   compmodel3 <- function(par){
     lambda <- par[1] #same as model 2
-    a_comp <- par[2:(length(par)-1)]
-    ## new parameters- use alpha estimate from model 2 as start 
+    a_comp <- par[2:(length(par)-1)] # new parameters- use alpha estimate from model 2 as start 
     #value for fitting
     sigma <- par[length(par)] ## same as model 2
     ## predictive model:
@@ -532,15 +535,15 @@ compete <- function(focal, fitness, comp_matrix,
   #model 4 - 
   compmodel4 <- function(par){
     lambda <- par[1] 
-    l_cov <- par[(1+1):(1+n_cov)] #efecto cov 1, 2...
-    a_comp <- par[(1+n_cov+1):(1+n_cov+n_bg)] #alfas
-    a_cov <- par[(1+n_cov+n_bg+1):(1+n_cov+n_bg+n_cov)] #efecto cov 1, 2... on alpha
+    l_cov <- par[(1+1):(1+n_cov)] #effect of cov 1, 2, ... on lambda
+    a_comp <- par[(1+n_cov+1):(1+n_cov+n_bg)] # alfas_ij
+    a_cov <- par[(1+n_cov+n_bg+1):(1+n_cov+n_bg+n_cov)] # common effect of cov 1, 2... on alphas
     sigma <- par[length(par)]
     num = 1
     for(z in 1:n_cov){
-      num <- num + l_cov[z]*covariates_i[,z] #need to save above
+      num <- num + l_cov[z]*covariates_i[,z] 
     }
-    cov_term <- 0 #check this do not mess up anything, It shouldn't
+    cov_term <- 0 
       for(v in 1:n_cov){
         cov_term <- cov_term + a_cov[v] * covariates_i[,v]
       }
@@ -548,7 +551,7 @@ compete <- function(focal, fitness, comp_matrix,
     for(z in 1:ncol(comp_matrix_i)){
         term <- term + (a_comp[z] + cov_term) * comp_matrix_i[,z] 
     }
-    pred <- lambda * (num) / term
+    pred <- lambda * (num) / term #is * or +?
     # likelihood as before:
     llik<-dnorm(log_fitness, mean = mean(log(pred)), sd = mean(sigma), log=TRUE)
     # return sum of negative log likelihoods
@@ -558,23 +561,23 @@ compete <- function(focal, fitness, comp_matrix,
   #model 5 - 
   compmodel5 <- function(par){
     lambda <- par[1] 
-    l_cov <- par[(1+1):(1+n_cov)] #efecto cov 1, 2...gamma y theta
-    a_comp <- par[(1+n_cov+1):(1+n_cov+n_bg)] #alfas
-    a_cov <- par[(1+n_cov+n_bg+1):(1+n_cov+n_bg+(n_cov*n_bg))] #efecto cov 1, 2... on alpha_i! omega's y psi's
+    l_cov <- par[(1+1):(1+n_cov)] #effect of cov 1, 2... on lambda
+    a_comp <- par[(1+n_cov+1):(1+n_cov+n_bg)] #alfas_ij
+    a_cov <- par[(1+n_cov+n_bg+1):(1+n_cov+n_bg+(n_cov*n_bg))] #effects of cov 1, 2... on alpha_i
     sigma <- par[length(par)]
     num = 1
     for(v in 1:n_cov){
-      num <- num + l_cov[v]*covariates_i[,v] #need to save above
+      num <- num + l_cov[v]*covariates_i[,v] 
     }
     cov_term_x <- list()
     for(v in 1:n_cov){
       cov_temp <- covariates_i[,v]
       for(z in 1:n_bg){
-          cov_term_x[[z+(n_bg*(v-1))]] <- a_cov[z+(n_bg*(v-1))] * cov_temp  #create  a_cov_i*cov_i
+          cov_term_x[[z+(n_bg*(v-1))]] <- a_cov[z+(n_bg*(v-1))] * cov_temp  #create  a_cov_i*cov_i vector
       }
     }
     cov_term <- list()
-    #here I need to reformat cov_term_x to sumatories of the form omega_CHFU* d_chfu$pol_sum + psi_CHFU* d_chfu$salinity
+    #here I need to reformat cov_term_x to sumatories of the form a_cov_i* cov_i + a_covj* cov_j + ...
     for(z in 0:(n_bg-1)){
       cov_term_x_sum <- cov_term_x[[z+1]] 
       for(v in 2:n_cov){ 
@@ -582,24 +585,17 @@ compete <- function(focal, fitness, comp_matrix,
       } 
       cov_term[[z+1]] <- cov_term_x_sum
     }
-    #covariates_i[,i] + a_cov[z+n_bg] * covariates_i[,i] #a_cov = n_cov*n_bg
     term <- 1 #create the denominator term for the model
     for(z in 1:n_bg){
       term <- term + (a_comp[z] + cov_term[[z]]) * comp_matrix_i[,z]  
     }
-    pred <- lambda * (num) / term
+    pred <- lambda * (num) / term #is * or +?
     # likelihood as before:
     llik <- dnorm(log_fitness, mean = mean(log(pred)), sd = mean(sigma), log=TRUE)
     # return sum of negative log likelihoods
     return(sum(-1*llik)) #sum of negative log likelihoods
     }
 
-###add model custom  
-  
-  
-  
-  
-  
   
   
   
