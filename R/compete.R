@@ -258,7 +258,7 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     # model 2, one common alpha
     ## pars here are lambda, alpha and sigma- use lambda and sigma from model 1 as starting esimtates
     par2 <- c(testcomp1$par[1], #lambda
-              0.001,            # alfa 
+              0.0001,            # alfa 
               testcomp1$par[2]) # sigma
     ##as before:
     for(k in 1:op){
@@ -312,7 +312,7 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     if(!is.null(covariates)){
       n_cov <- ncol(covariates) 
       assign("n_cov", n_cov, envir = .GlobalEnv)
-      covariates_i <- covariates[which(focal == splist[i]),]
+      covariates_i <- covariates[which(focal == splist[i]), ,drop = FALSE]
       assign("covariates_i", covariates_i, envir = .GlobalEnv)
       # model 4!
       par4 <- c(testcomp3$par[1],  #lambda 1
@@ -392,7 +392,7 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     # delete objects from environment
     rm(log_fitness,
        background,
-       comp_matrix_i, inherits = TRUE)
+       comp_matrix_i, inherits = TRUE) #THIS is not really cleaning it...
     # save estimates from all model 
     #m1
     lambda_est1[i] <- par1[1]
@@ -431,8 +431,10 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     ## so each step of the loop here (for a target sp) corresponds to one row of this matrix:
     alpha_est2[i] <- par2[2]
     alpha_matrix3[i,] <- par3[2:(length(par3)-1)]
-    alpha_matrix4[i,] <- par4[(1+n_cov+1):(1+n_cov+n_bg)]
-    alpha_matrix5[i,] <- par5[(1+n_cov+1):(1+n_cov+n_bg)]
+    if(!is.null(covariates)){
+      alpha_matrix4[i,] <- par4[(1+n_cov+1):(1+n_cov+n_bg)]
+      alpha_matrix5[i,] <- par5[(1+n_cov+1):(1+n_cov+n_bg)]
+    }
   } #close i
     #DELETE
     ##note that in cases where there is no data for a particular species the 
@@ -491,7 +493,7 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     #line through the data:
     pred <- rep(lambda, times=length(log_fitness)) 
     #these are the log likelihoods of the data given the model + parameters
-    llik <- dnorm(log_fitness, mean = mean(log(pred)), sd = mean(sigma), log=TRUE)
+    llik <- dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
     #return the sum of negative log likelihoods - what optim minimizes
     return(sum(-1*llik)) 
   }
@@ -507,7 +509,7 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     ## predictive model:
     pred <- lambda/(1+alpha*(background))  
     ## log likelihoods of data given the model + parameters:
-    llik <- dnorm(log_fitness, mean = mean(log(pred)), sd = mean(sigma), log = TRUE)
+    llik <- dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log = TRUE)
     ## return sum of negative log likelihoods:
     return(sum(-1*llik)) 
   }
@@ -526,7 +528,7 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     }
     pred <- lambda/ term
     # likelihood as before:
-    llik <- dnorm(log_fitness, mean = mean(log(pred)), sd = mean(sigma), log = TRUE)
+    llik <- dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log = TRUE)
     # return sum of negative log likelihoods
     return(sum(-1*llik)) #sum of negative log likelihoods
   }
@@ -551,9 +553,9 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     for(z in 1:ncol(comp_matrix_i)){
         term <- term + (a_comp[z] + cov_term) * comp_matrix_i[,z] 
     }
-    pred <- lambda * (num) / term #is * or +?
+    pred <- lambda * (num) / term 
     # likelihood as before:
-    llik<-dnorm(log_fitness, mean = mean(log(pred)), sd = mean(sigma), log=TRUE)
+    llik<-dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
     # return sum of negative log likelihoods
     return(sum(-1*llik)) #sum of negative log likelihoods
   }
@@ -580,7 +582,7 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     #here I need to reformat cov_term_x to sumatories of the form a_cov_i* cov_i + a_covj* cov_j + ...
     for(z in 0:(n_bg-1)){
       cov_term_x_sum <- cov_term_x[[z+1]] 
-      for(v in 2:n_cov){ 
+      for(v in 1:n_cov){ #IT WAS 2: bfbfbf...
         cov_term_x_sum <- cov_term_x_sum + cov_term_x[[v+n_bg]]
       } 
       cov_term[[z+1]] <- cov_term_x_sum
@@ -589,9 +591,9 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     for(z in 1:n_bg){
       term <- term + (a_comp[z] + cov_term[[z]]) * comp_matrix_i[,z]  
     }
-    pred <- lambda * (num) / term #is * or +?
+    pred <- lambda * (num) / term 
     # likelihood as before:
-    llik <- dnorm(log_fitness, mean = mean(log(pred)), sd = mean(sigma), log=TRUE)
+    llik <- dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
     # return sum of negative log likelihoods
     return(sum(-1*llik)) #sum of negative log likelihoods
     }

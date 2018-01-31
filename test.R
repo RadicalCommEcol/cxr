@@ -1,44 +1,64 @@
 #generate fake data
 
+set.seed(123)
+
+#true parameters I want to recover
+fitness_ = 10 #lambda
+l_cov1 = 1 #l_cov
+a_sp1 = 0.5 #alphas
+a_sp2 = 0.5
+a_sp3 = 0.5
+a_cov1 = 0.2 #a_cov's
+a_cov2 = 0.2
+a_cov3 = 0.2
+
+fitness_calc <- function(fitness_, sp1, sp2, sp3, cov1){
+  (fitness_ * (1+ l_cov1 * cov1)) / 
+    (1 + ((a_sp1 + (a_cov1*cov1))*sp1) + 
+       ((a_sp2 + (a_cov2*cov1))*sp2) +
+       ((a_sp3 + (a_cov3*cov1))*sp3))  
+}
+
 n <- 500*3 #multiple of 3
 focal = c(rep("sp1", n/3), 
           rep("sp2", n/3),
           rep("sp3", n/3))
-fitness = c(sort(runif(n/3, 3,10), decreasing = TRUE), sort(runif(n/3, 5,13), decreasing = TRUE), sort(runif(n/3, 0,8), decreasing = TRUE))
 d <- data.frame(focal = focal,
-                fitness = fitness,
-                sp1 = c(round(sort(rpois(n/3, 3))), round(sort(rpois(n/3, 3))), round(sort(rpois(n/3, 3)))), #high compe with all
-                sp2 = c(round(sort(rpois(n/3, 3))), round((rpois(n/3, 3))), round((rpois(n/3, 3)))), #high intra, low inter
-                sp3 = c(round((rpois(n/3, 3))), round(sort(rpois(n/3, 3))), round(sort(rpois(n/3, 3)))), #low intra, high compe
-                cov1 = c(round((runif(n/3, 0, 6))), round(sort(runif(n/3, 0, 6))), round(sort(runif(n/3, 0, 6)))), #high impact on sp 2 $ 3
-                cov2 = c(round(sort(runif(n/3, 0, 6))), round((runif(n/3, 0, 6))), round((runif(n/3, 0, 6))))) #only on 1
+                sp1 = c(round((rpois(n/3, 3))), round((rpois(n/3, 3))), round((rpois(n/3, 3)))), 
+                sp2 = c(round((rpois(n/3, 3))), round((rpois(n/3, 3))), round((rpois(n/3, 3)))), 
+                sp3 = c(round((rpois(n/3, 3))), round((rpois(n/3, 3))), round((rpois(n/3, 3)))),
+                cov1 = c(round((runif(n/3, 0, 6))), round((runif(n/3, 0, 6))), round((runif(n/3, 0, 6)))) 
+#               , cov2 = c(round(sort(runif(n/3, 0, 6))), round((runif(n/3, 0, 6))), round((runif(n/3, 0, 6)))) 
+) 
 d
-comp_matrix <- d[,3:5]
-covariates <- d[,6:7]
+comp_matrix <- d[,2:4]
+covariates <- d[,5, drop = FALSE]
+d$fitness <- fitness_calc(fitness_, d$sp1, d$sp2, d$sp3, d$cov1)
 scatter.smooth(d$fitness ~ (d$sp1+ d$sp2+ d$sp3), col = d$focal) #model 1 and 2
-scatter.smooth(d$fitness ~ d$sp1, col = d$focal) #model 3 alphas - - - 
-scatter.smooth(d$fitness ~ d$sp2, col = d$focal) #model 3 alphas - 0 0
-scatter.smooth(d$fitness ~ d$sp3, col = d$focal) #model 3 alphas 0 - - 
-scatter.smooth(d$fitness ~ d$cov1, col = d$focal) #l_cov1 - (at least moderatelly)
-scatter.smooth(d$fitness ~ d$cov2, col = d$focal) #l_cov1 0
+scatter.smooth(d$fitness ~ d$sp1, col = d$focal) #model 3 alphas 
+scatter.smooth(d$fitness ~ d$sp2, col = d$focal) #model 3 alphas 
+scatter.smooth(d$fitness ~ d$sp3, col = d$focal) #model 3 alphas  
+scatter.smooth(d$fitness ~ d$cov1, col = d$focal) #l_cov1 
+#scatter.smooth(d$fitness ~ d$cov2, col = d$focal) #l_cov1 0
 tapply(d$fitness, d$focal, max)
 tapply(d$fitness, d$focal, mean)
 
-#compete(focal, fitness, comp_matrix
-#       , lower1 = c(1,0.0001)
-#        , lower2 = c(1,0,0.0001)
-#        , lower3 = c(1, rep(0, times=length(unique(focal))),0.0000000001)
-#        , hessian3 = TRUE) #works
+#simple model, no cov's
+compete(d$focal, d$fitness, comp_matrix
+       , lower1 = c(1,0.0001)
+        , lower2 = c(1,0,0.0001)
+        , lower3 = c(1, rep(0, times=length(unique(focal))),0.0000000001)
+        , hessian3 = TRUE) #works
 
-compete(focal, fitness, comp_matrix, covariates
+compete(focal, d$fitness, comp_matrix, covariates
         , lower1 = c(1,0.0001)
         , lower2 = c(1,0,0.0001)
         , lower3 = c(1, rep(0, times=length(unique(focal))),0.0000000001)
-        , lower4 = c(1, rep(0, times=ncol(covariates)), #n_cov
-                     rep(0, times=length(unique(focal))), #alfas
-                     rep(0, times=ncol(covariates)), #n_cov
+        , lower4 = c(1, rep(0.001, times=ncol(covariates)), #n_cov
+                     rep(0.001, times=length(unique(focal))), #alfas
+                     rep(0.001, times=ncol(covariates)), #n_cov
                      0.0000000001)
-        , lower5 = c(1, rep(0, times=ncol(covariates)), #n_cov
+        , lower5 = c(1, rep(0.001, times=ncol(covariates)), #n_cov
                      rep(0.001, times=length(unique(focal))), #alfas
                      rep(0.001, times=(ncol(covariates)*length(unique(focal)))), #n_cov*n_bg
                      0.0000000001)
