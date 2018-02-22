@@ -234,6 +234,10 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     #recall parameters are lambda and sigma- initialize these with estimates from the data:
     par1 <- c(mean(log_fitness), #lambda
               sd(log_fitness))  #sigma
+    #Alternativelly...
+    par1 <- c(mean((fitness[which(d$focal == splist[i])])), #lambda
+              sd((fitness[which(d$focal == splist[i])])))
+    hist(fitness)
     ##repeat optimization until we get convergence (or we try 25 times)
     for(k in 1:op){
       testcomp1 <- optim(par = par1, fn = compmodel1,
@@ -493,7 +497,10 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     #line through the data:
     pred <- rep(lambda, times=length(log_fitness)) 
     #these are the log likelihoods of the data given the model + parameters
-    llik <- dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
+    llik <- dnorm(log_fitness, mean = log(pred), sd = (sigma), log=TRUE) #CHEK PRED IS LOG!
+    #llik <- dnorm(log_fitness, mean = mean(log(pred)), sd = (sigma), log=TRUE) #CHEK PRED IS LOG!
+    #llik <- dnorm(log_fitness, mean = mean(pred), sd = (sigma), log=TRUE) #CHEK PRED IS LOG!
+    #hist(llik)
     #return the sum of negative log likelihoods - what optim minimizes
     return(sum(-1*llik)) 
   }
@@ -510,6 +517,9 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     pred <- lambda/(1+alpha*(background))  
     ## log likelihoods of data given the model + parameters:
     llik <- dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log = TRUE)
+    hist(llik)
+    #llik <- dnorm(log_fitness, mean = mean(log(pred)), sd = (sigma), log = TRUE)
+    #hist(llik)
     ## return sum of negative log likelihoods:
     return(sum(-1*llik)) 
   }
