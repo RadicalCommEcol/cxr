@@ -53,7 +53,8 @@
 #'  
 #' @return a list of estimated parameters for each model.
 #' @examples
-#'  
+#' 
+#' @export  
 compete <- function(focal, fitness, comp_matrix, #basic data needed
                     covariates = NULL, 
                     model = NULL, 
@@ -85,6 +86,7 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
   if(drop0 == TRUE){
     ## drop lambda rows without seed production:
     d <- subset(d, fitness!=0)
+    comp_matrix <- d[,colnames(comp_matrix)]
   }
   ## get a list of target species to work through sequentially:
   splist <- unique(focal) 
@@ -162,7 +164,7 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
   for(i in 1:length(splist)){
     ## subset out the rows that are needed from the competition df
     ## we'll be working with log fitness (for giving a lognormal error structure)
-    log_fitness <- log(fitness[which(d$focal == splist[i])]) 
+    log_fitness <- log(d$fitness[which(d$focal == splist[i])]) 
     comp_matrix_i <- comp_matrix[which(d$focal == splist[i]),]
     background <- rowSums(comp_matrix_i)
     n_bg <- dim(comp_matrix_i)[2]
@@ -174,9 +176,8 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     par1 <- c(mean(log_fitness), #lambda
               sd(log_fitness))  #sigma
     #Alternativelly...
-    #par1 <- c(mean((fitness[which(d$focal == splist[i])])), #lambda
-     #         sd((fitness[which(d$focal == splist[i])])))
-    hist(fitness)
+    #par1 <- c(mean((d$fitness[which(d$focal == splist[i])])), #lambda
+     #         sd((d$fitness[which(d$focal == splist[i])])))
     ##repeat optimization until we get convergence (or we try 25 times)
     for(k in 1:op){
       testcomp1 <- optim(par = par1, fn = compmodel1,

@@ -106,5 +106,5 @@ This script follows previous methodology developed by Godoy et al 2014,
  Kraft et al. 2015 and Lanuza et al 2018 papers
 }
 \examples{
- 
+
 }
