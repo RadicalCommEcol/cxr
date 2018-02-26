@@ -82,31 +82,17 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     d <- data.frame(focal, fitness, comp_matrix, covariates)
     n_cov <- ncol(covariates)
   }
-  #DELETE  
-  #calculate total competitors
-  #d$background <- rowSums(comp_matrix) #not used in d Delete?
   if(drop0 == TRUE){
     ## drop lambda rows without seed production:
     d <- subset(d, fitness!=0)
   }
-  #DELETE
-  #subset lamda events (response in absence of competition) and competition events
-  #lam <- subset(d, d$background=="0") #!
-  #comp <- subset(d, d$background>"0") #!
-  #if(drop0 == TRUE){
-    ## drop lambda rows without seed production:
-   # lam <- subset(lam, reprod!=0)
-  #  comp <- subset(comp, reprod!=0)
-  #}
-  #test and warn if any is = 0
-  
   ## get a list of target species to work through sequentially:
   splist <- unique(focal) 
   bglist <- colnames(comp_matrix)
   ##alpha order splist:
   splist <- splist[order(splist)]
   bglist <- bglist[order(bglist)]
-  
+
   ## objects to hold the final parameter estimates from all model: 
   #m3
   alpha_matrix3 <- matrix(NA, nrow=length(splist), ncol=length(bglist)) 
@@ -174,60 +160,13 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
 
   ## for each species in turn as a target:
   for(i in 1:length(splist)){
-    #DELETE
     ## subset out the rows that are needed from the competition df
-    #comp_points <- subset(comp, comp$focal==splist[i], drop=TRUE)
-    ## and the correct lambda plants
-    #lam_points <- subset(lam, lam$focal==splist[i])
-    
-    ## now need to build up a vector of nonzero seed production
-    ## and corresponding density vectors (held in a matrix) for background species 
-    ## to use in model fitting
-    
-    ## start with the lambda seeds- will add on to this for each background:
-    #fitness <- lam_points$fitness 
-    ##build density matrix (each row will be density of a species)
-    #dens <- matrix(NA, nrow=length(splist), ncol=(nrow(lam_points) + nrow(comp_points)))
-    #row.names(dens) <- splist 
-    ##for each background species the target competes against:
-    #background_list <- row.names(dens)
-    
-    ## use this counter to keep track of which column is next to have data added to
-    ## set it to begin after the lambda points:
-    #start <- nrow(lam_points) +1
-    #for(j in 1:length(background_list)){
-      ## LOOP creates a seeds vector and a corresponding dens ("density") matrix with 
-      ## background species as rows, and columns corresponding to the seed production
-      ## vector.
-      ## beginning columns correspond to lambda plants
-      
-      #take just the rows pertaining to a specific background sp:
-      #bg_points <- subset(comp_points, select=c(background_list[j], "reprod"))
-      ## which row of the density matrix corresponds?
-      #rownum <- which(row.names(dens)==background_list[j])
-      #column to end with:
-      #end <- start + nrow(bg_points)-1
-      ## drop in density values into matrix:
-      #dens[rownum, start:end] <- bg_points[,1] #the first column is background_list[j]
-      ## add seed numbers into the seeds vector
-      #reprod<-c(reprod, bg_points$reprod)
-    #} #close j
-    
-    ######THIS LOOP can be changes to a t(subset(d, focal = i)[comp matrix]) for dens
-    ## and reprod is just reprod subseted for sp i. 
-    
-    ## subset out the rows that are needed from the competition df
-    #comp <- subset(d, focal == splist[i]) #DELETE if nothing is broken.
-    comp_matrix_i <- comp_matrix[which(d$focal == splist[i]),]
-    assign("comp_matrix_i", comp_matrix_i, envir = .GlobalEnv) #needed to run the models within the function.
-    n_bg <- dim(comp_matrix_i)[2]
-    assign("n_bg", n_bg, envir = .GlobalEnv)
-    background <- rowSums(comp_matrix_i)
-    assign("background", background, envir = .GlobalEnv)
     ## we'll be working with log fitness (for giving a lognormal error structure)
     log_fitness <- log(fitness[which(d$focal == splist[i])]) 
-    assign("log_fitness", log_fitness, envir = .GlobalEnv)
-    
+    comp_matrix_i <- comp_matrix[which(d$focal == splist[i]),]
+    background <- rowSums(comp_matrix_i)
+    n_bg <- dim(comp_matrix_i)[2]
+
     if(log == FALSE){message("only log = TRUE implmented. log needed for giving a lognormal error structure")}
     #model fitting using optim and earlier likelihood functions
     # model 1, no competition
@@ -243,7 +182,8 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
       testcomp1 <- optim(par = par1, fn = compmodel1,
                          method = method,
                          gr = gr1, lower = lower1, upper = upper1,
-                         control = control1, hessian = hessian1)
+                         control = control1, hessian = hessian1, 
+                         log_fitness = log_fitness)
       ##update start parameters to final estimate to use in next run in case of nonconvergence
       par1 <- testcomp1$par
       if(testcomp1$convergence == 0){
@@ -269,7 +209,8 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
       ##now using a specific method that permits constrained optimization so that alpha has to be nonzero- this is an issue in some of the fits, especially in model 3. lower parameter has same order as par2
       testcomp2 <- optim(par2, compmodel2, method = method,
                        gr = gr2, lower = lower2, upper = upper2,
-                       control = control2, hessian = hessian2)
+                       control = control2, hessian = hessian2,
+                       log_fitness = log_fitness, background = background)
       par2 <- testcomp2$par
       if(testcomp2$convergence == 0){
         message(paste(splist[i],  "model 2 converged on rep", k, sep = " "))
@@ -294,7 +235,8 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
       ##now using a specific method that permits constained optimization so that alpha has to be nonzero- 
       testcomp3 <- optim(par3, compmodel3, 
                        gr = gr3, method = method, lower = lower3, upper = upper3,
-                       control = control3, hessian = hessian3) #check hessian can be done with all methods.
+                       control = control3, hessian = hessian3,
+                       log_fitness = log_fitness, comp_matrix_i = comp_matrix_i) #check hessian can be done with all methods.
       par3 <- testcomp3$par
       if(testcomp3$convergence == 0){
         message(paste(splist[i], "model 3 converged on rep", k, sep = " "))
@@ -315,9 +257,7 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     #When covariates are in:
     if(!is.null(covariates)){
       n_cov <- ncol(covariates) 
-      assign("n_cov", n_cov, envir = .GlobalEnv)
       covariates_i <- covariates[which(focal == splist[i]), ,drop = FALSE]
-      assign("covariates_i", covariates_i, envir = .GlobalEnv)
       # model 4!
       par4 <- c(testcomp3$par[1],  #lambda 1
                 rep(0.0001, times = n_cov), #l_cov n_cov
@@ -329,7 +269,9 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
         ##now using a specific method that permits constained optimization so that alpha has to be nonzero- 
         testcomp4 <- optim(par4, compmodel4, 
                            gr = gr4, method = method, lower = lower4, upper = upper4,
-                           control = control4, hessian = hessian4) #check hessian can be done with all methods.
+                           control = control4, hessian = hessian4,
+                           log_fitness = log_fitness, comp_matrix_i = comp_matrix_i,
+                           n_cov = n_cov, n_bg = n_bg, covariates_i = covariates_i) #check hessian can be done with all methods.
         par4 <- testcomp4$par
         if(testcomp4$convergence == 0){
           message(paste(splist[i], "model 4 converged on rep", k, sep = " "))
@@ -367,7 +309,9 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
         ##now using a specific method that permits constained optimization so that alpha has to be nonzero- 
         testcomp5 <- optim(par5, compmodel5, 
                            gr = gr5, method = method, lower = lower5, upper = upper5,
-                           control = control5, hessian = hessian5) #check hessian can be done with all methods.
+                           control = control5, hessian = hessian5,
+                           log_fitness = log_fitness, comp_matrix_i = comp_matrix_i,
+                           n_cov = n_cov, n_bg = n_bg, covariates_i = covariates_i) #check hessian can be done with all methods.
         par5 <- testcomp5$par
         if(testcomp5$convergence == 0){
           message(paste(splist[i], "model 5 converged on rep", k, sep = " "))
@@ -388,15 +332,7 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
         a_cov_error5[i,] <- c(testcomp5$par[(1+n_cov+n_bg+1):(1+n_cov+n_bg+(n_bg*n_cov))]-1.96*errors[(1+n_cov+n_bg+1):(1+n_cov+n_bg+(n_bg*n_cov))], 
                               testcomp5$par[(1+n_cov+n_bg+1):(1+n_cov+n_bg+(n_bg*n_cov))]+1.96*errors[(1+n_cov+n_bg+1):(1+n_cov+n_bg+(n_bg*n_cov))])
       }
-      #delete objects
-      rm(n_cov,
-         covariates_i,
-         inherits = TRUE)
     }
-    # delete objects from environment
-    rm(log_fitness,
-       background,
-       comp_matrix_i, inherits = TRUE) #THIS is not really cleaning it...
     # save estimates from all model 
     #m1
     lambda_est1[i] <- par1[1]
@@ -429,7 +365,6 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
       convergence_code5[i] <- testcomp5$convergence
       loglike5[i] <- -1*testcomp5$value
       }
-    
     ## in keeping with Lotka Volterra notation, we'll use alpha1_2 to indicate effect of
     ## sp 2 on growth of 1.  Following convention, i refers to rows and j to cols in a matrix
     ## so each step of the loop here (for a target sp) corresponds to one row of this matrix:
@@ -440,19 +375,6 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
       alpha_matrix5[i,] <- par5[(1+n_cov+1):(1+n_cov+n_bg)]
     }
   } #close i
-    #DELETE
-    ##note that in cases where there is no data for a particular species the 
-    #alpha estimate for that species ends up as the starting value- we need to 
-    #be careful of these as they are basically gargbage numbers.  Keeping them 
-    #in up to now to keep the structure of the data constant, but will set them 
-    #to NA here:
-    #identify which species have no data in this fit:
-    #no_data <- which(apply(dens, MARGIN=1, FUN=mean)==0)
-    ## set their alphas to NA in the matrix:
-    #alpha_matrix[i,no_data] <- NA
-    ### I THINK THIS IS DONE.
-    
-    ## some diagnostics
     ## print an error to the console if any one of the three models failed to converge:
     if(!is.null(covariates)){
       if(testcomp1$convergence + testcomp2$convergence + testcomp3$convergence
@@ -488,7 +410,7 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
   #basic models to fit
 
   #model 1 - no effect of density (no competitive effects)
-  compmodel1 <- function(par){ 
+  compmodel1 <- function(par, log_fitness){ 
     #lambda and sigma parameters for the normal distribution
     #(assuming lognormal error- seed data are logged) 
     lambda <- par[1]
@@ -497,16 +419,15 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     #line through the data:
     pred <- rep(lambda, times=length(log_fitness)) 
     #these are the log likelihoods of the data given the model + parameters
-    llik <- dnorm(log_fitness, mean = log(pred), sd = (sigma), log=TRUE) #CHEK PRED IS LOG!
-    #llik <- dnorm(log_fitness, mean = mean(log(pred)), sd = (sigma), log=TRUE) #CHEK PRED IS LOG!
-    #llik <- dnorm(log_fitness, mean = mean(pred), sd = (sigma), log=TRUE) #CHEK PRED IS LOG!
-    #hist(llik)
+    llik <- dnorm(log_fitness, mean = log(pred), sd = (sigma), log = TRUE) #CHEK PRED IS LOG!
+    #llik <- dnorm(log_fitness, mean = mean(log(pred)), sd = (sigma), log = TRUE) 
+    #llik <- dnorm(log_fitness, mean = mean(pred), sd = (sigma), log = TRUE) 
     #return the sum of negative log likelihoods - what optim minimizes
     return(sum(-1*llik)) 
   }
   
   #model 2 - competition, but no difference between species
-  compmodel2 <- function(par){ 
+  compmodel2 <- function(par, log_fitness, background){ 
     lambda <- par[1] ## same as model 1
     alpha <- par[2]  ## new parameter introduced in model 2
     sigma <- par[3] ## same as model 1
@@ -519,13 +440,12 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     llik <- dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log = TRUE)
     hist(llik)
     #llik <- dnorm(log_fitness, mean = mean(log(pred)), sd = (sigma), log = TRUE)
-    #hist(llik)
     ## return sum of negative log likelihoods:
     return(sum(-1*llik)) 
   }
   
   #model 3 - all species have different competitive effects
-  compmodel3 <- function(par){
+  compmodel3 <- function(par, log_fitness, comp_matrix_i){
     lambda <- par[1] #same as model 2
     a_comp <- par[2:(length(par)-1)] # new parameters- use alpha estimate from model 2 as start 
     #value for fitting
@@ -545,7 +465,7 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
   
 
   #model 4 - 
-  compmodel4 <- function(par){
+  compmodel4 <- function(par, log_fitness, comp_matrix_i, n_cov, n_bg, covariates_i){
     lambda <- par[1] 
     l_cov <- par[(1+1):(1+n_cov)] #effect of cov 1, 2, ... on lambda
     a_comp <- par[(1+n_cov+1):(1+n_cov+n_bg)] # alfas_ij
@@ -571,7 +491,7 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
   }
   
   #model 5 - 
-  compmodel5 <- function(par){
+  compmodel5 <- function(par, log_fitness, comp_matrix_i, n_cov, n_bg, covariates_i){
     lambda <- par[1] 
     l_cov <- par[(1+1):(1+n_cov)] #effect of cov 1, 2... on lambda
     a_comp <- par[(1+n_cov+1):(1+n_cov+n_bg)] #alfas_ij
@@ -591,10 +511,12 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     cov_term <- list()
     #here I need to reformat cov_term_x to sumatories of the form a_cov_i* cov_i + a_covj* cov_j + ...
     for(z in 0:(n_bg-1)){
-      cov_term_x_sum <- cov_term_x[[z+1]] 
-      for(v in 1:n_cov){ #IT WAS 2: bfbfbf...
-        cov_term_x_sum <- cov_term_x_sum + cov_term_x[[v+n_bg]]
-      } 
+      cov_term_x_sum <- cov_term_x[[z+1]]
+      if(n_cov > 1){
+        for(v in 2:n_cov){
+            cov_term_x_sum <- cov_term_x_sum + cov_term_x[[v + n_bg]]
+        } 
+      }
       cov_term[[z+1]] <- cov_term_x_sum
     }
     term <- 1 #create the denominator term for the model
