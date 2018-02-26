@@ -27,9 +27,9 @@ focal = c(rep("sp1", n/3)#,
           #rep("sp3", n/3)
           )
 d <- data.frame(focal = rep(focal,3),
-                sp1 = c(round((rpois(n/3, 1))), round((rpois(n/3, 1))), round((rpois(n/3, 1)))), 
-                sp2 = c(round((rpois(n/3, 1))), round((rpois(n/3, 1))), round((rpois(n/3, 1)))), 
-                sp3 = c(round((rpois(n/3, 1))), round((rpois(n/3, 1))), round((rpois(n/3, 1)))),
+                sp1 = c(round((rpois(n/3, 0.5))), round((rpois(n/3, 0.5))), round((rpois(n/3, 0.5)))), 
+                sp2 = c(round((rpois(n/3, 0.5))), round((rpois(n/3, 0.5))), round((rpois(n/3, 0.5)))), 
+                sp3 = c(round((rpois(n/3, 0.5))), round((rpois(n/3, 0.5))), round((rpois(n/3, 0.5)))),
                 cov1 = c(round((runif(n/3, 0, 6))), round((runif(n/3, 0, 6))), round((runif(n/3, 0, 6)))) 
 #               , cov2 = c(round(sort(runif(n/3, 0, 6))), round((runif(n/3, 0, 6))), round((runif(n/3, 0, 6)))) 
 ) 
@@ -68,7 +68,7 @@ compete(focal, d$fitness, comp_matrix, covariates
                      rep(0, times=ncol(comp_matrix)), #alfas
                      rep(0.001, times=(ncol(covariates)*ncol(comp_matrix))), #n_cov*n_bg
                      0.0000000001)
-        , hessian5 = FALSE) #Lapack routine dgesv: system is exactly singular: U[10,10] = 0 
+        , hessian5 = TRUE) #Lapack routine dgesv: system is exactly singular: U[10,10] = 0 
 
 
 #lambda's are estimated too low and errors go up with model number, which is odd.
