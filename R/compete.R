@@ -174,8 +174,8 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     par1 <- c(mean(log_fitness), #lambda
               sd(log_fitness))  #sigma
     #Alternativelly...
-    par1 <- c(mean((fitness[which(d$focal == splist[i])])), #lambda
-              sd((fitness[which(d$focal == splist[i])])))
+    #par1 <- c(mean((fitness[which(d$focal == splist[i])])), #lambda
+     #         sd((fitness[which(d$focal == splist[i])])))
     hist(fitness)
     ##repeat optimization until we get convergence (or we try 25 times)
     for(k in 1:op){
