@@ -76,12 +76,9 @@ for(i.sp in 1:length(focal.sp)){
   }
 }
 
-
-# i.sp <- 1
-# i.model <- 1
-# i.method <- 1
-
+###############################
 # main loop
+
 for(i.sp in 1:length(focal.sp)){
   
   # print(paste(date(),"- starting focal sp:",focal.sp[i.sp]))
@@ -149,7 +146,7 @@ for(i.sp in 1:length(focal.sp)){
       init.lambda <- lambda.results$lambda[lambda.results$focal.sp == focal.sp[i.sp] & 
                                              lambda.results$model == 2 & 
                                              lambda.results$optim.method == "DEoptimR"]
-      init.alphas <- rep(alpha.matrix[[focal.sp[i.sp]]][[2]][[8]], times=ncol(comp.matrix))
+      init.alphas <- rep(system.matrices[[focal.sp[i.sp]]][[2]][[8]]$alpha.matrix, times=ncol(comp.matrix))
       init.sigma <- lambda.results$sigma[lambda.results$focal.sp == focal.sp[i.sp] & 
                                            lambda.results$model == 2 & 
                                            lambda.results$optim.method == "DEoptimR"]
@@ -166,7 +163,7 @@ for(i.sp in 1:length(focal.sp)){
       init.lambda <- lambda.results$lambda[lambda.results$focal.sp == focal.sp[i.sp] & 
                                              lambda.results$model == 3 & 
                                              lambda.results$optim.method == "DEoptimR"]
-      init.alphas <- alpha.matrix[[focal.sp[i.sp]]][[3]][[8]]
+      init.alphas <- system.matrices[[focal.sp[i.sp]]][[3]][[8]]$alpha.matrix
       init.sigma <- lambda.results$sigma[lambda.results$focal.sp == focal.sp[i.sp] & 
                                            lambda.results$model == 3 & 
                                            lambda.results$optim.method == "DEoptimR"]
@@ -186,13 +183,13 @@ for(i.sp in 1:length(focal.sp)){
       init.lambda <- lambda.results$lambda[lambda.results$focal.sp == focal.sp[i.sp] & 
                                              lambda.results$model == 4 & 
                                              lambda.results$optim.method == "DEoptimR"]
-      init.alphas <- alpha.matrix[[focal.sp[i.sp]]][[4]][[8]]
+      init.alphas <- system.matrices[[focal.sp[i.sp]]][[3]][[8]]$alpha.matrix
       init.sigma <- lambda.results$sigma[lambda.results$focal.sp == focal.sp[i.sp] & 
                                            lambda.results$model == 4 & 
                                            lambda.results$optim.method == "DEoptimR"]
       
-      init.l_cov <- lambda.cov.matrix[[focal.sp[i.sp]]][[4]][[8]]
-      a_cov4 <- alpha.cov.matrix[[focal.sp[i.sp]]][[4]][[8]]
+      init.l_cov <- system.matrices[[focal.sp[i.sp]]][[4]][[8]]$lambda.cov.matrix
+      a_cov4 <- system.matrices[[focal.sp[i.sp]]][[4]][[8]]$alpha.cov.matrix
       
       # rep(each)?
       init.a_cov <- c()
@@ -302,12 +299,12 @@ for(i.sp in 1:length(focal.sp)){
       }else if(optim.methods[i.method] == "hydroPSO"){
         
         # suppress annoying output
-        optim.par <- invisible(capture.output(hydroPSO::hydroPSO(par = init.par,fn = my.model,lower = lower.bounds,upper = upper.bounds, control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
+        optim.par <- hydroPSO::hydroPSO(par = init.par,fn = my.model,lower = lower.bounds,upper = upper.bounds, control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
                                                                  log_fitness = log_fitness, 
                                                                  focal.comp.matrix = focal.comp.matrix,
                                                                  num.covariates = num.covariates, 
                                                                  num.competitors = num.competitors, 
-                                                                 focal.covariates = focal.covariates)))
+                                                                 focal.covariates = focal.covariates)
         
       }else if(optim.methods[i.method] == "DEoptimR"){
         
@@ -334,6 +331,10 @@ for(i.sp in 1:length(focal.sp)){
         temp.alpha.cov.matrix <- NA
         temp.alpha.lower.error <- NA 
         temp.alpha.upper.error <- NA
+        temp.lambda.cov.lower.error <- NA
+        temp.lambda.cov.upper.error <- NA
+        temp.alpha.cov.lower.error <- NA
+        temp.alpha.cov.upper.error <- NA
         
         # obtain the different matrices
         if(models[i.model] == 2){
