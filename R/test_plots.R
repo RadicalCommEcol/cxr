@@ -1,48 +1,4 @@
-#true parameters I want to recover
-lambda = 300 #lambda
-l_cov1 = 1 #l_cov
-a_sp1 = 0.2 #alphas
-a_sp2 = 1
-a_sp3 = 2
-a_cov1 = 0 #a_cov's
-a_cov2 = 0
-a_cov3 = 0
 
-fitness_calc <- function(lambda, sp1, sp2, sp3, cov1){
-  (lambda * (1+ l_cov1 * cov1)) / 
-    (1 + ((a_sp1 + (a_cov1*cov1))*sp1) + 
-       ((a_sp2 + (a_cov2*cov1))*sp2) +
-       ((a_sp3 + (a_cov3*cov1))*sp3))  
-}
-
-# community data
-
-n <- 500*3 #multiple of 3
-
-# one or three focal species
-focal.sp = c(rep("sp1", n/3))#, 
-          # rep("sp2", n/3),
-          # rep("sp3", n/3))
-
-# data with one or two covariates
-test.data <- data.frame(
-  #focal = focal.sp,
-  focal = rep(focal.sp,3),
-  sp1 = c(round((rpois(n/3, 0.5))), round((rpois(n/3, 0.5))), round((rpois(n/3, 0.5)))), 
-  sp2 = c(round((rpois(n/3, 0.5))), round((rpois(n/3, 0.5))), round((rpois(n/3, 0.5)))), 
-  sp3 = c(round((rpois(n/3, 0.5))), round((rpois(n/3, 0.5))), round((rpois(n/3, 0.5)))),
-  cov1 = c(round((runif(n/3, 0, 6))), round((runif(n/3, 0, 6))), round((runif(n/3, 0, 6)))) 
-  #               , cov2 = c(round(sort(runif(n/3, 0, 6))), round((runif(n/3, 0, 6))), round((runif(n/3, 0, 6)))) 
-) 
-
-# number of competitors at each observation
-comp_matrix <- test.data[,2:4]
-
-# covariates matrix
-covariates <- test.data[,5, drop = FALSE]
-
-# fitness metric
-test.data$fitness <- fitness_calc(lambda, test.data$sp1, test.data$sp2, test.data$sp3, test.data$cov1)
 
 #####################
 
@@ -58,10 +14,11 @@ test1 <- compete(focal = test.data$focal,
 
 # test2 - full set of models (1-5)
 
-test2 <- compete(focal, test.data$fitness, comp_matrix, covariates
+test2 <- compete(test.data$focal, test.data$fitness, comp_matrix, covariates#,method = "Nelder-Mead"
                      , lower1 = c(1,0.0001)
                      , lower2 = c(1,0,0.0001)
                      , lower3 = c(1, rep(0, times=ncol(comp_matrix)),0.0000000001)
+                 # , hessian3 = F, hessian4 = F
                      , lower4 = c(1, rep(0.001, times=ncol(covariates)), #n_cov
                                   rep(0, times=ncol(comp_matrix)), #alfas
                                   rep(0.001, times=ncol(covariates)), #n_cov
@@ -70,22 +27,158 @@ test2 <- compete(focal, test.data$fitness, comp_matrix, covariates
                                   rep(0, times=ncol(comp_matrix)), #alfas
                                   rep(0.001, times=(ncol(covariates)*ncol(comp_matrix))), #n_cov*n_bg
                                   0.0000000001)
-                     , hessian5 = TRUE)
+                     , hessian5 = F)
+
+########## alternative hessian calculation, etc
+
+focal <- test.data$focal
+fitness <- test.data$fitness
+log_fitness <- log(fitness)
+comp_matrix_i <- comp_matrix
+n_cov <- ncol(covariates) 
+covariates_i <- covariates
+alphas <- test1$alpha_matrix3
+sigma <- test1$`lambdas$co`$sigma_est3
+method <- "L-BFGS-B"
+n_bg <- dim(comp_matrix_i)[2]
+
+# model 4!
+par <- c(487,  #lambda 1
+          rep(0.0001, times = n_cov), #l_cov n_cov
+          alphas,#testcomp3$par[2:(n_bg+1)], #alfas n_bg
+          rep(0.0001, times = n_cov), #a_cov n_cov
+          sigma)#testcomp3$par[length(par3)]) # sigma 1
+
+lower4 <- c(1, rep(0.001, times=ncol(covariates)), #n_cov
+            rep(0, times=ncol(comp_matrix)), #alfas
+            rep(0.001, times=ncol(covariates)), #n_cov
+            0.0000000001)
+upper4 <- rep(1e5,length(lower4))
+
+compmodel4 <- function(par, log_fitness, comp_matrix_i, n_cov, n_bg, covariates_i){
+  lambda <- par[1] 
+  l_cov <- par[(1+1):(1+n_cov)] #effect of cov 1, 2, ... on lambda
+  a_comp <- par[(1+n_cov+1):(1+n_cov+n_bg)] # alfas_ij
+  a_cov <- par[(1+n_cov+n_bg+1):(1+n_cov+n_bg+n_cov)] # common effect of cov 1, 2... on alphas
+  sigma <- par[length(par)]
+  num = 1
+  for(z in 1:n_cov){
+    num <- num + l_cov[z]*covariates_i[,z] 
+  }
+  cov_term <- 0 
+  for(v in 1:n_cov){
+    cov_term <- cov_term + a_cov[v] * covariates_i[,v]
+  }
+  term <- 1 #create the denominator term for the model
+  for(z in 1:ncol(comp_matrix_i)){
+    term <- term + (a_comp[z] + cov_term) * comp_matrix_i[,z] 
+  }
+  pred <- lambda * (num) / term 
+  # likelihood as before:
+  llik<-dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
+  # return sum of negative log likelihoods
+  return(sum(-1*llik)) #sum of negative log likelihoods
+}
+
+##as before
+for(k in 1:25){
+  ##now using a specific method that permits constained optimization so that alpha has to be nonzero- 
+  testcomp4 <- optim(par, 
+                     compmodel4, 
+                     gr = NULL, 
+                     method = method, 
+                     lower = lower4, 
+                     # upper = Inf,
+                     control = list(), 
+                     hessian = F,
+                     log_fitness = log_fitness, 
+                     comp_matrix_i = comp_matrix_i,
+                     n_cov = n_cov, 
+                     n_bg = n_bg, 
+                     covariates_i = covariates_i) #check hessian can be done with all methods.
+  par4 <- testcomp4$par
+  
+  if(testcomp4$convergence == 0){
+    message(paste(splist[i], "model 4 converged on rep", k, sep = " "))
+    break
+  }
+}
+
+#################################
+# methods comparison
+
+
+
+#########################
+# other optim functions
+# genSA
+library(GenSA)
+
+par4.gensa <- GenSA(par = par,fn = compmodel4,lower = lower4,upper = upper4, control = list(maxit = 25), 
+                    log_fitness = log_fitness, 
+                    comp_matrix_i = comp_matrix_i,
+                    n_cov = n_cov, 
+                    n_bg = n_bg, 
+                    covariates_i = covariates_i)
+
+# nloptr: algorithm must be restricted to derivative-free ones, the other options need a gradient function
+#"NLOPT_GN_CRS2_LM"
+# NLOPT_GN_ISRES
+# NLOPT_GN_DIRECT_L
+# NLOPT_GN_DIRECT
+library(nloptr)
+par4.nloptr <- nloptr(x0 = par,eval_f = compmodel4,opts = list("algorithm"="NLOPT_GN_ISRES"),
+                      lb = lower4,
+                      ub = upper4,
+                      log_fitness = log_fitness, 
+                      comp_matrix_i = comp_matrix_i,
+                      n_cov = n_cov, 
+                      n_bg = n_bg, 
+                      covariates_i = covariates_i)
+
+# psoptim no
+# DEoptim
+library(DEoptimR)
+par4.deoptimr <- DEoptimR::JDEoptim(lower = lower4,upper = upper4,fn = compmodel4,
+                                    log_fitness = log_fitness, 
+                                    comp_matrix_i = comp_matrix_i,
+                                    n_cov = n_cov, 
+                                    n_bg = n_bg, 
+                                    covariates_i = covariates_i)
+
+# hydroPSO
+library(hydroPSO)
+par4.hydroPSO <- hydroPSO::hydroPSO(par = par,fn = compmodel4,lower = lower4,upper = upper4,
+                                    log_fitness = log_fitness, 
+                                    comp_matrix_i = comp_matrix_i,
+                                    n_cov = n_cov, 
+                                    n_bg = n_bg, 
+                                    covariates_i = covariates_i)
+
+##########################
+# hessian
+library(numDeriv)
+hessian.par <- par4.deoptimr$par
+my.hessian <- hessian(compmodel4,x = hessian.par,log_fitness = log_fitness, 
+                      comp_matrix_i = comp_matrix_i,
+                      n_cov = n_cov, 
+                      n_bg = n_bg, 
+                      covariates_i = covariates_i)
 
 #####################
 # diagnostic plots
 library(tidyverse)
 
-predicted.values <- test1$`lambdas$co`
-
-# this value cannot be compared to a real one, as it merges all effects into one alpha
-
-alpha2.plot <- ggplot(predicted.values, aes(x = splist, y = alpha_est2)) + 
-  geom_errorbar(aes(ymin=alpha.lower.error.2, ymax = alpha.upper.error.2), width = 0.05, size = 0.3) +
-  geom_point(size = 2) + 
-  ggtitle("alpha from model 2") + 
-  NULL
-alpha2.plot
+# predicted.values <- test1$`lambdas$co`
+# 
+# # this value cannot be compared to a real one, as it merges all effects into one alpha
+# 
+# alpha2.plot <- ggplot(predicted.values, aes(x = splist, y = alpha_est2)) + 
+#   geom_errorbar(aes(ymin=alpha.lower.error.2, ymax = alpha.upper.error.2), width = 0.05, size = 0.3) +
+#   geom_point(size = 2) + 
+#   ggtitle("alpha from model 2") + 
+#   NULL
+# alpha2.plot
 
 ##########
 # models 3,4,5

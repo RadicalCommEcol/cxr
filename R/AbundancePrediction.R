@@ -1,3 +1,5 @@
+source("./R/GenerateTestData.R")
+library(tidyverse)
 
 # timesteps
 timesteps <- 50
@@ -67,7 +69,9 @@ par <- list(sp.par = sp.par, initial.values = init.abund,
                                                     lambda.cov.matrix = lambda.cov.matrix, 
                                                     alpha.cov.matrix = alpha.cov.matrix))
 
-
+# define a function that returns a vector of abundances, given the parameters
+# this is equivalent to model 5 of nested_models.R
+# TODO: it will probably be useful to merge all this in a single file
 abund.fun.5 <- function(sp.par,init.abund,cov.values,alpha.matrix,lambda.cov.matrix,alpha.cov.matrix){
   expected.abund <- rep(0,nrow(sp.par))
   for(i.sp in 1:nrow(sp.par)){
@@ -94,6 +98,10 @@ abund.fun.5 <- function(sp.par,init.abund,cov.values,alpha.matrix,lambda.cov.mat
   expected.abund
 }
 
+# this function accepts a list of parameters, a model for predicting abundances
+# such as the one above, and an integer with the number of timesteps for the projection
+# this function should be flexible enough as to accept *any* abundance model and set of params
+# for now, it is restricted to the structure of our data
 PredictAbundances <- function(par,timesteps,abundance.model){
   sites <- unique(par$initial.values$site)
   num.sp <- nrow(par$sp.par)

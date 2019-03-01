@@ -439,7 +439,7 @@ compete <- function(focal, fitness, comp_matrix, #basic data needed
     pred <- lambda/(1+alpha*(background))  
     ## log likelihoods of data given the model + parameters:
     llik <- dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log = TRUE)
-    hist(llik)
+    #hist(llik)
     #llik <- dnorm(log_fitness, mean = mean(log(pred)), sd = (sigma), log = TRUE)
     ## return sum of negative log likelihoods:
     return(sum(-1*llik)) 
