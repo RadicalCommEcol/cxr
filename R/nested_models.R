@@ -1,4 +1,6 @@
-# function to optimize over
+# functions to optimize over
+# all functions accept the same parameters, even though 
+# some of them are not used, for easing replication
 ################
 
 # model1 <- function(par, log_fitness){ 
