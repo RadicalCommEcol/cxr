@@ -1,7 +1,7 @@
 source("R/GenerateTestData.R")
 source("R/nested_models.R")
 # hessian calc
-library(pracma)
+# library(pracma)
 library(numDeriv)
 
 # optimization methods
