@@ -57,9 +57,28 @@ model3 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.comp
   }
   pred <- lambda/ term
   # likelihood as before:
-  llik <- dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log = TRUE)
+  llik <- dnorm(log_fitness, mean = as.numeric(log(pred)), sd = (sigma), log = TRUE)
   # return sum of negative log likelihoods
   return(sum(-1*llik)) #sum of negative log likelihoods
+}
+
+# similar function but projecting abundances, instead of returning -loglik
+abund.fun.3 <- function(sp.par,init.abund,cov.values,alpha.matrix,lambda.cov.matrix,alpha.cov.matrix){
+  expected.abund <- rep(0,nrow(sp.par))
+  for(i.sp in 1:nrow(sp.par)){
+    # numerator
+    num <- sp.par$lambda[i.sp]
+    # denominator
+    den <- 0
+    for(j.sp in 1:nrow(sp.par)){
+      den <- den + alpha.matrix[i.sp,j.sp]*init.abund[j.sp]
+    }# for j.sp
+    den <- 1+den
+    # overall fitness metric
+    fitness <- num/den
+    expected.abund[i.sp] <- ((1-sp.par$germ.rate[i.sp])*sp.par$survival.rate[i.sp]) + sp.par$germ.rate[i.sp]*fitness
+  }
+  expected.abund
 }
 
 ################
@@ -128,4 +147,31 @@ model5 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.comp
   llik <- dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
   # return sum of negative log likelihoods
   return(sum(-1*llik)) #sum of negative log likelihoods
+}
+
+# similar function but projecting abundances, instead of returning -loglik
+abund.fun.5 <- function(sp.par,init.abund,cov.values,alpha.matrix,lambda.cov.matrix,alpha.cov.matrix){
+  expected.abund <- rep(0,nrow(sp.par))
+  for(i.sp in 1:nrow(sp.par)){
+    # numerator
+    lambda.cov <- 0
+    for(i.cov in 1:ncol(lambda.cov.matrix)){
+      lambda.cov <- lambda.cov + cov.values[i.cov]*lambda.cov.matrix[i.sp,i.cov]
+    }
+    num <- sp.par$lambda[i.sp] * lambda.cov 
+    # denominator
+    den <- 0
+    for(j.sp in 1:nrow(sp.par)){
+      alpha.term <- alpha.matrix[i.sp,j.sp]
+      for(i.cov in 1:ncol(lambda.cov.matrix)){
+        alpha.term <- alpha.term + alpha.cov.matrix[[i.cov]][i.sp,j.sp]*cov.values[i.cov]
+      }# for i.cov
+      den <- den + alpha.term*init.abund[j.sp]
+    }# for j.sp
+    den <- 1+den
+    # overall fitness metric
+    fitness <- num/den
+    expected.abund[i.sp] <- ((1-sp.par$germ.rate[i.sp])*sp.par$survival.rate[i.sp]) + sp.par$germ.rate[i.sp]*fitness
+  }
+  expected.abund
 }

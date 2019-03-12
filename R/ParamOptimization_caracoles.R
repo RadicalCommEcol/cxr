@@ -1,5 +1,6 @@
 # source("R/GenerateTestData.R")
 source("R/nested_models.R")
+source("R/SEbootstrap_caracoles.R")
 # hessian calc
 # library(pracma)
 library(numDeriv)
@@ -52,8 +53,11 @@ init.method.num <- which(optim.methods == init.par.method)
 
 # if we want quick calculations, we can disable 
 # the bootstrapping for the standard errors
-generate.errors <- FALSE
+generate.errors <- TRUE
 bootstrap.samples <- 100
+
+###
+write.results <- FALSE
 
 ##############################
 # initialize data structures
@@ -392,8 +396,8 @@ for(i.sp in 1:length(focal.sp)){
                               upper.bounds = upper.bounds,
                               init.data = focal.sp.data,
                               init.par = init.par,
-                              num.sp = num.sp,
-                              num.cov = num.cov,
+                              num.sp = num.competitors,
+                              num.cov = num.covariates,
                               nsamples = bootstrap.samples)
       }else{
         errors <- NA
@@ -470,4 +474,9 @@ for(i.sp in 1:length(focal.sp)){
     }# for i.method
   }# for i.model
 }# for i.sp
+
+if(write.results){
+  readr::write_delim(lambda.results,"./results/lambda_estimates.csv",delim = ";")
+  save(system.matrices,file = "./results/param_estimates")
+}
 

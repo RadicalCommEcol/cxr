@@ -22,14 +22,22 @@ SEbootstrap <- function(optim.method,
     ############
     # TODO: include fitness as a param, independent, so that I will not
     # need to get it from the dataframe
-    boot.fitness <- boot.data$fitness
+    boot.fitness <- boot.data$seed
     ############
     
     boot.log.fitness <- log(boot.fitness)
     
-    boot.comp.matrix <- boot.data[,2:(num.sp+1)]
-    boot.covariates <- boot.data[,(num.sp+2):(num.sp+2+num.cov-1), drop = FALSE]
+    ############
+    # TODO: same with the competitors and covariates matrix
+    boot.comp.matrix <- as.matrix(boot.data[,10:(num.sp+9)])
     
+    if(num.cov > 0){
+      boot.covariates <- boot.data[,(num.sp+10):(num.sp+10+num.cov-1), drop = FALSE]
+    }else{
+      boot.covariates <- 0
+    }
+    
+    ############
     if(optim.method == "optim_NM"){
       
       my.boot.par <- optim(init.par, 

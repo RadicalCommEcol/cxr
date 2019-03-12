@@ -1,173 +1,27 @@
+library(tidyverse)
 
+# read lambda/alpha estimates
+lambda.results <- readr::read_delim("./results/lambda_estimates.csv",delim = ";")
+lambda.results$model <- as.factor(lambda.results$model)
+lambda.results$focal.sp <- as.factor(lambda.results$focal.sp)
+lambda.results$optim.method <- as.factor(lambda.results$optim.method)
 
-#####################
-
-# test1 - no effect of covariates on lambdas and alphas (models 1-3)
-
-test1 <- compete(focal = test.data$focal, 
-                fitness = test.data$fitness, 
-                comp_matrix = comp_matrix
-                , lower1 = c(1,0.0001)
-                , lower2 = c(1,0,0.0001)
-                , lower3 = c(1, rep(0, times=ncol(comp_matrix)),0.0000000001)
-                , hessian3 = TRUE) #works
-
-# test2 - full set of models (1-5)
-
-test2 <- compete(test.data$focal, test.data$fitness, comp_matrix, covariates#,method = "Nelder-Mead"
-                     , lower1 = c(1,0.0001)
-                     , lower2 = c(1,0,0.0001)
-                     , lower3 = c(1, rep(0, times=ncol(comp_matrix)),0.0000000001)
-                 # , hessian3 = F, hessian4 = F
-                     , lower4 = c(1, rep(0.001, times=ncol(covariates)), #n_cov
-                                  rep(0, times=ncol(comp_matrix)), #alfas
-                                  rep(0.001, times=ncol(covariates)), #n_cov
-                                  0.0000000001)
-                     , lower5 = c(1, rep(0.001, times=ncol(covariates)), #n_cov
-                                  rep(0, times=ncol(comp_matrix)), #alfas
-                                  rep(0.001, times=(ncol(covariates)*ncol(comp_matrix))), #n_cov*n_bg
-                                  0.0000000001)
-                     , hessian5 = F)
-
-########## alternative hessian calculation, etc
-
-focal <- test.data$focal
-fitness <- test.data$fitness
-log_fitness <- log(fitness)
-comp_matrix_i <- comp_matrix
-n_cov <- ncol(covariates) 
-covariates_i <- covariates
-alphas <- test1$alpha_matrix3
-sigma <- test1$`lambdas$co`$sigma_est3
-method <- "L-BFGS-B"
-n_bg <- dim(comp_matrix_i)[2]
-
-# model 4!
-par <- c(487,  #lambda 1
-          rep(0.0001, times = n_cov), #l_cov n_cov
-          alphas,#testcomp3$par[2:(n_bg+1)], #alfas n_bg
-          rep(0.0001, times = n_cov), #a_cov n_cov
-          sigma)#testcomp3$par[length(par3)]) # sigma 1
-
-lower4 <- c(1, rep(0.001, times=ncol(covariates)), #n_cov
-            rep(0, times=ncol(comp_matrix)), #alfas
-            rep(0.001, times=ncol(covariates)), #n_cov
-            0.0000000001)
-upper4 <- rep(1e5,length(lower4))
-
-compmodel4 <- function(par, log_fitness, comp_matrix_i, n_cov, n_bg, covariates_i){
-  lambda <- par[1] 
-  l_cov <- par[(1+1):(1+n_cov)] #effect of cov 1, 2, ... on lambda
-  a_comp <- par[(1+n_cov+1):(1+n_cov+n_bg)] # alfas_ij
-  a_cov <- par[(1+n_cov+n_bg+1):(1+n_cov+n_bg+n_cov)] # common effect of cov 1, 2... on alphas
-  sigma <- par[length(par)]
-  num = 1
-  for(z in 1:n_cov){
-    num <- num + l_cov[z]*covariates_i[,z] 
-  }
-  cov_term <- 0 
-  for(v in 1:n_cov){
-    cov_term <- cov_term + a_cov[v] * covariates_i[,v]
-  }
-  term <- 1 #create the denominator term for the model
-  for(z in 1:ncol(comp_matrix_i)){
-    term <- term + (a_comp[z] + cov_term) * comp_matrix_i[,z] 
-  }
-  pred <- lambda * (num) / term 
-  # likelihood as before:
-  llik<-dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
-  # return sum of negative log likelihoods
-  return(sum(-1*llik)) #sum of negative log likelihoods
-}
-
-##as before
-for(k in 1:25){
-  ##now using a specific method that permits constained optimization so that alpha has to be nonzero- 
-  testcomp4 <- optim(par, 
-                     compmodel4, 
-                     gr = NULL, 
-                     method = method, 
-                     lower = lower4, 
-                     # upper = Inf,
-                     control = list(), 
-                     hessian = F,
-                     log_fitness = log_fitness, 
-                     comp_matrix_i = comp_matrix_i,
-                     n_cov = n_cov, 
-                     n_bg = n_bg, 
-                     covariates_i = covariates_i) #check hessian can be done with all methods.
-  par4 <- testcomp4$par
-  
-  if(testcomp4$convergence == 0){
-    message(paste(splist[i], "model 4 converged on rep", k, sep = " "))
-    break
-  }
-}
-
-#################################
-# methods comparison
-
-
-
-#########################
-# other optim functions
-# genSA
-library(GenSA)
-
-par4.gensa <- GenSA(par = par,fn = compmodel4,lower = lower4,upper = upper4, control = list(maxit = 25), 
-                    log_fitness = log_fitness, 
-                    comp_matrix_i = comp_matrix_i,
-                    n_cov = n_cov, 
-                    n_bg = n_bg, 
-                    covariates_i = covariates_i)
-
-# nloptr: algorithm must be restricted to derivative-free ones, the other options need a gradient function
-#"NLOPT_GN_CRS2_LM"
-# NLOPT_GN_ISRES
-# NLOPT_GN_DIRECT_L
-# NLOPT_GN_DIRECT
-library(nloptr)
-par4.nloptr <- nloptr(x0 = par,eval_f = compmodel4,opts = list("algorithm"="NLOPT_GN_ISRES"),
-                      lb = lower4,
-                      ub = upper4,
-                      log_fitness = log_fitness, 
-                      comp_matrix_i = comp_matrix_i,
-                      n_cov = n_cov, 
-                      n_bg = n_bg, 
-                      covariates_i = covariates_i)
-
-# psoptim no
-# DEoptim
-library(DEoptimR)
-par4.deoptimr <- DEoptimR::JDEoptim(lower = lower4,upper = upper4,fn = compmodel4,
-                                    log_fitness = log_fitness, 
-                                    comp_matrix_i = comp_matrix_i,
-                                    n_cov = n_cov, 
-                                    n_bg = n_bg, 
-                                    covariates_i = covariates_i)
-
-# hydroPSO
-library(hydroPSO)
-par4.hydroPSO <- hydroPSO::hydroPSO(par = par,fn = compmodel4,lower = lower4,upper = upper4,
-                                    log_fitness = log_fitness, 
-                                    comp_matrix_i = comp_matrix_i,
-                                    n_cov = n_cov, 
-                                    n_bg = n_bg, 
-                                    covariates_i = covariates_i)
-
-##########################
-# hessian
-library(numDeriv)
-hessian.par <- par4.deoptimr$par
-my.hessian <- hessian(compmodel4,x = hessian.par,log_fitness = log_fitness, 
-                      comp_matrix_i = comp_matrix_i,
-                      n_cov = n_cov, 
-                      n_bg = n_bg, 
-                      covariates_i = covariates_i)
+load("./results/param_estimates")
 
 #####################
 # diagnostic plots
-library(tidyverse)
+
+# 1 - lambda for different models and methods
+lambda.models <- ggplot(lambda.results, aes(x = model, y = lambda, group = optim.method)) + 
+  geom_point(aes(fill = optim.method,shape = optim.method),size = 2) +
+  # geom_errorbar(aes(ymin = lambda.lower.error, ymax = lambda.upper.error, color = optim.method), width = 0.2)+
+  facet_wrap(focal.sp~., scales = "free_y",ncol = 8)+
+  scale_shape_manual(values = c(21,22)) +
+  scale_fill_manual(values = c("darkgreen","darkorange"))+
+  scale_color_manual(values = c("darkgreen","darkorange"))+
+  # ylim()
+  NULL
+lambda.models
 
 # predicted.values <- test1$`lambdas$co`
 # 
