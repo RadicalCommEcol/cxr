@@ -1,10 +1,8 @@
 # source("R/GenerateTestData.R")
 source("R/nested_models.R")
 source("R/SEbootstrap_caracoles.R")
-# hessian calc
-# library(pracma)
-library(numDeriv)
-library(tidyverse)
+source("R/cxr_optimize.R")
+source("R/InitParams.R")
 # optimization methods
 library(nloptr)
 library(GenSA)
@@ -35,6 +33,8 @@ focal.sp <- unique(competition.data$focal)
 # be aware of including 4 and 5 ONLY if there are covariates
 # otherwise it makes no sense (see equations in Lanuza et al. 2018)
 models <- 1:3
+# keep the model definitions in a list, for ease
+fitness.models <- list(model1,model2,model3,model4,model5)
 
 # optimization methods to use
 optim.methods <- c("optim_NM",
@@ -53,7 +53,7 @@ init.method.num <- which(optim.methods == init.par.method)
 
 # if we want quick calculations, we can disable 
 # the bootstrapping for the standard errors
-generate.errors <- TRUE
+generate.errors <- FALSE
 bootstrap.samples <- 100
 
 ###
@@ -67,13 +67,13 @@ write.results <- FALSE
 lambda.results <- NULL
 
 # initialize the rest
-system.matrices <- list()
+param.matrices <- list()
 for(i.sp in 1:length(focal.sp)){
-  system.matrices[[i.sp]] <- list()
+  param.matrices[[i.sp]] <- list()
   for(i.model in 1:length(models)){
-    system.matrices[[i.sp]][[i.model]] <- list()
+    param.matrices[[i.sp]][[i.model]] <- list()
     for(i.method in 1:length(optim.methods)){
-      system.matrices[[i.sp]][[i.model]][[i.method]] <- list(alpha.matrix = 0,
+      param.matrices[[i.sp]][[i.model]][[i.method]] <- list(alpha.matrix = 0,
                                                              alpha.lower.error.matrix = 0,
                                                              alpha.upper.error.matrix = 0,
                                                              lambda.cov.matrix = 0,
@@ -85,7 +85,7 @@ for(i.sp in 1:length(focal.sp)){
     }
   }
 }
-names(system.matrices) <- focal.sp
+names(param.matrices) <- focal.sp
 
 ###############################
 # main loop
@@ -101,11 +101,9 @@ for(i.sp in 1:length(focal.sp)){
   # subset >0 records, for calculating logarithms
   focal.sp.data <- subset(focal.sp.data, seed > 0)
   fitness <- focal.sp.data$seed#fitness
-  log_fitness <- log(fitness)
+  log.fitness <- log(fitness)
   # competition matrix: number of competitors
   focal.comp.matrix <- comp.matrix[which(competition.data$focal == focal.sp[i.sp]),]
-  # competitors at each observation
-  background <- rowSums(focal.comp.matrix)
   # number of competitors
   num.competitors <- dim(focal.comp.matrix)[2]
   # number of covariates
@@ -120,356 +118,63 @@ for(i.sp in 1:length(focal.sp)){
     print(paste(date()," - starting focal sp ",focal.sp[i.sp],", model ",i.model,sep=""))
     print("*********************************")
     
-    # initial data should be taken from the previous model
-    # except for model1
-    
-    if(models[i.model] == 1){
-      my.model <- model1
-      
-      init.lambda <- mean(log_fitness)
-      init.sigma <- sd(log_fitness)
-      
-      init.par <- c(init.lambda, init.sigma)
-      lower.bounds <- c(1, # lambda 
-                        0.0000000001) # sigma
-      upper.bounds <- rep(1e5,length(lower.bounds))
-      
-    }else if(models[i.model] == 2){
-      my.model <- model2
-      
-      init.lambda <- lambda.results$lambda[lambda.results$focal.sp == focal.sp[i.sp] & 
-                                             lambda.results$model == 1 & 
-                                             lambda.results$optim.method == init.par.method]
-      init.alphas <- 0.0001
-      init.sigma <- lambda.results$sigma[lambda.results$focal.sp == focal.sp[i.sp] & 
-                                           lambda.results$model == 1 & 
-                                           lambda.results$optim.method == init.par.method]
-      
-      init.par <- c(init.lambda,init.alphas,init.sigma)
-      lower.bounds <- c(1, # lambda 
-                        0,
-                        0.0000000001) # sigma
-      upper.bounds <- rep(1e5,length(lower.bounds))
-      
-    }else if(models[i.model] == 3){
-      my.model <- model3
-      
-      init.lambda <- lambda.results$lambda[lambda.results$focal.sp == focal.sp[i.sp] & 
-                                             lambda.results$model == 2 & 
-                                             lambda.results$optim.method == init.par.method]
-      init.alphas <- rep(system.matrices[[focal.sp[i.sp]]][[2]][[init.method.num]]$alpha.matrix, times=ncol(comp.matrix))
-      init.sigma <- lambda.results$sigma[lambda.results$focal.sp == focal.sp[i.sp] & 
-                                           lambda.results$model == 2 & 
-                                           lambda.results$optim.method == init.par.method]
-      
-      init.par <- c(init.lambda,init.alphas,init.sigma)
-      lower.bounds <- c(1, # lambda 
-                        rep(0, times=ncol(comp.matrix)),
-                        0.0000000001) # sigma
-      upper.bounds <- rep(1e5,length(lower.bounds))
-      
-    }else if(models[i.model] == 4){
-      my.model <- model4
-      
-      init.lambda <- lambda.results$lambda[lambda.results$focal.sp == focal.sp[i.sp] & 
-                                             lambda.results$model == 3 & 
-                                             lambda.results$optim.method == init.par.method]
-      init.alphas <- system.matrices[[focal.sp[i.sp]]][[3]][[init.method.num]]$alpha.matrix
-      init.sigma <- lambda.results$sigma[lambda.results$focal.sp == focal.sp[i.sp] & 
-                                           lambda.results$model == 3 & 
-                                           lambda.results$optim.method == init.par.method]
-      init.l_cov <- rep(0.001, times = num.covariates)
-      init.a_cov <- rep(0.001, times = num.covariates)
-      
-      init.par <- c(init.lambda,init.l_cov,init.alphas,init.a_cov,init.sigma)
-      lower.bounds <- c(1, rep(0.001, times=ncol(covariates)), #n_cov
-                        rep(0, times=ncol(comp.matrix)), #alfas
-                        rep(0.0001, times=ncol(covariates)), #n_cov
-                        0.0000000001)
-      upper.bounds <- rep(1e5,length(lower.bounds))
-      
-    }else if(models[i.model] == 5){
-      my.model <- model5
-      
-      init.lambda <- lambda.results$lambda[lambda.results$focal.sp == focal.sp[i.sp] & 
-                                             lambda.results$model == 4 & 
-                                             lambda.results$optim.method == init.par.method]
-      init.alphas <- system.matrices[[focal.sp[i.sp]]][[3]][[init.method.num]]$alpha.matrix
-      init.sigma <- lambda.results$sigma[lambda.results$focal.sp == focal.sp[i.sp] & 
-                                           lambda.results$model == 4 & 
-                                           lambda.results$optim.method == init.par.method]
-      
-      init.l_cov <- system.matrices[[focal.sp[i.sp]]][[4]][[init.method.num]]$lambda.cov.matrix
-      a_cov4 <- system.matrices[[focal.sp[i.sp]]][[4]][[init.method.num]]$alpha.cov.matrix
-      
-      # rep(each)?
-      init.a_cov <- c()
-      for(w in 1:length(a_cov4)){
-        init.a_cov <- c(init.a_cov, rep(a_cov4[w], times = num.competitors))
-      }
-      
-      init.par <- c(init.lambda,init.l_cov,init.alphas,init.a_cov,init.sigma)
-      lower.bounds <- c(1, rep(0.001, times=ncol(covariates)), #n_cov
-                        rep(0, times=ncol(comp.matrix)), #alfas
-                        rep(0.0001, times=(ncol(covariates)*ncol(comp.matrix))), #n_cov*n_bg
-                        0.0000000001)
-      upper.bounds <- rep(1e5,length(lower.bounds))
-      
-    }
-    
+    # initial parameters are gathered in a separate function
+    # this function has default values for the upper and lower bounds,
+    # modify if necessary
+    init.param.list <- InitParams(model.index = models[i.model],
+                                  log.fitness = log.fitness,
+                                  lambda.results = lambda.results,
+                                  num.competitors = num.competitors,
+                                  num.covariates = num.covariates,
+                                  init.par.method = init.par.method,
+                                  focal.sp = focal.sp[i.sp],
+                                  param.matrices = param.matrices)
+
     ######################
     # compute each method
     
     for(i.method in 1:length(optim.methods)){
       
-      # optimization
-      optim.par <- list(par = rep(NA,length(init.par)), value = NA)
-      temp.results <- data.frame(focal.sp = focal.sp[i.sp],
-                                 model = models[i.model],
-                                 optim.method = optim.methods[i.method],
-                                 lambda = NA,
-                                 lambda.lower.error = NA,
-                                 lambda.upper.error = NA,
-                                 sigma = NA,
-                                 log.likelihood = NA)
-      
-      if(optim.methods[i.method] == "optim_NM"){
-        
-        optim.par <- optim(init.par, 
-                           my.model, 
-                           gr = NULL, 
-                           method = "Nelder-Mead", 
-                           # lower = lower.bounds,
-                           # upper = upper.bounds,
-                           control = list(), 
-                           hessian = F,
-                           log_fitness = log_fitness, 
-                           focal.comp.matrix = focal.comp.matrix,
-                           num.covariates = num.covariates, 
-                           num.competitors = num.competitors, 
-                           focal.covariates = focal.covariates)
-        
-      }else if(optim.methods[i.method] == "optim_L-BGFS-B"){
-        
-        optim.par <- optim(init.par, 
-                           my.model, 
-                           gr = NULL, 
-                           method = "L-BFGS-B", 
-                           lower = lower.bounds, 
-                           upper = upper.bounds,
-                           control = list(), 
-                           hessian = F,
-                           log_fitness = log_fitness, 
-                           focal.comp.matrix = focal.comp.matrix,
-                           num.covariates = num.covariates, 
-                           num.competitors = num.competitors, 
-                           focal.covariates = focal.covariates)
-        
-      }else if(optim.methods[i.method] == "nloptr_CRS2_LM"){
-        
-        optim.par <- nloptr(x0 = init.par,eval_f = my.model,opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
-                            lb = lower.bounds,
-                            ub = upper.bounds,
-                            log_fitness = log_fitness, 
-                            focal.comp.matrix = focal.comp.matrix,
-                            num.covariates = num.covariates, 
-                            num.competitors = num.competitors, 
-                            focal.covariates = focal.covariates)
-        
-      }else if(optim.methods[i.method] == "nloptr_ISRES"){
-        
-        optim.par <- nloptr(x0 = init.par,eval_f = my.model,opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e3),
-                            lb = lower.bounds,
-                            ub = upper.bounds,
-                            log_fitness = log_fitness, 
-                            focal.comp.matrix = focal.comp.matrix,
-                            num.covariates = num.covariates, 
-                            num.competitors = num.competitors, 
-                            focal.covariates = focal.covariates)
-        
-      }else if(optim.methods[i.method] == "nloptr_DIRECT_L_RAND"){
-        
-        optim.par <- nloptr(x0 = init.par,eval_f = my.model,opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e3),
-                            lb = lower.bounds,
-                            ub = upper.bounds,
-                            log_fitness = log_fitness, 
-                            focal.comp.matrix = focal.comp.matrix,
-                            num.covariates = num.covariates, 
-                            num.competitors = num.competitors, 
-                            focal.covariates = focal.covariates)
-        
-      }else if(optim.methods[i.method] == "GenSA"){
-        
-        optim.par <- GenSA(par = init.par,fn = my.model,lower = lower.bounds,upper = upper.bounds, control = list(maxit = 1e3), 
-                           log_fitness = log_fitness, 
-                           focal.comp.matrix = focal.comp.matrix,
-                           num.covariates = num.covariates, 
-                           num.competitors = num.competitors, 
-                           focal.covariates = focal.covariates)
-        
-      }else if(optim.methods[i.method] == "hydroPSO"){
-        
-        # suppress annoying output??
-        # sink("/dev/null")
-        optim.par <- hydroPSO::hydroPSO(par = init.par,fn = my.model,lower = lower.bounds,upper = upper.bounds, control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
-                                        log_fitness = log_fitness, 
-                                        focal.comp.matrix = focal.comp.matrix,
-                                        num.covariates = num.covariates, 
-                                        num.competitors = num.competitors, 
-                                        focal.covariates = focal.covariates)
-       
-        
-      }else if(optim.methods[i.method] == "DEoptimR"){
-        
-        optim.par <- DEoptimR::JDEoptim(lower = lower.bounds,upper = upper.bounds,fn = my.model,
-                                        log_fitness = log_fitness, 
-                                        focal.comp.matrix = focal.comp.matrix,
-                                        num.covariates = num.covariates, 
-                                        num.competitors = num.competitors, 
-                                        focal.covariates = focal.covariates)
-      }
-      
-      ##################################
-      # tidy the output from the method
-      # if-else the method outputs optim-like values
-      if(optim.methods[i.method] %in% c("optim_NM","optim_L-BGFS-B","DEoptimR","hydroPSO","GenSA")){
-        
-        print(paste("...",optim.methods[i.method]," finished with convergence status ",optim.par$convergence,sep=""))
-        
-        temp.results$lambda <- optim.par$par[1]
-        temp.results$sigma <- optim.par$par[length(optim.par$par)]
-        temp.results$log.likelihood <- optim.par$value
-        temp.alpha.matrix <- NA
-        temp.lambda.cov.matrix <- NA
-        temp.alpha.cov.matrix <- NA
-        temp.alpha.lower.error <- NA 
-        temp.alpha.upper.error <- NA
-        temp.lambda.cov.lower.error <- NA
-        temp.lambda.cov.upper.error <- NA
-        temp.alpha.cov.lower.error <- NA
-        temp.alpha.cov.upper.error <- NA
-        
-        # obtain the different matrices
-        if(models[i.model] == 2){
-          temp.alpha.matrix <- optim.par$par[2]
-        }else if(models[i.model] == 3){
-          temp.alpha.matrix <- optim.par$par[2:(1+num.competitors)]
-        }else if(models[i.model] == 4){
-          temp.alpha.matrix <- optim.par$par[(1+num.covariates+1):(1+num.covariates+num.competitors)]
-          temp.lambda.cov.matrix <- optim.par$par[(1+1):(1+num.covariates)]
-          temp.alpha.cov.matrix <- optim.par$par[(1+num.covariates+num.competitors+1):(1+num.covariates+num.competitors+num.covariates)]
-        }else if(models[i.model] == 5){
-          temp.alpha.matrix <- optim.par$par[(1+num.covariates+1):(1+num.covariates+num.competitors)]
-          temp.lambda.cov.matrix <- optim.par$par[(1+1):(1+num.covariates)]
-          temp.alpha.cov.matrix <- optim.par$par[(1+num.covariates+num.competitors+1):(1+num.covariates+num.competitors+(num.covariates*num.competitors))] #effects of cov 1, 2... on alpha_i
-        }
-        my.par <- optim.par$par
-        
-      }else{ # methods with different nomenclature
-        
-        print(paste("...",optim.methods[i.method]," finished with convergence status ",optim.par$status,sep=""))
-        
-        temp.results$lambda <- optim.par$solution[1]
-        temp.results$sigma <- optim.par$solution[length(optim.par$solution)]
-        temp.results$log.likelihood <- optim.par$objective
-        
-        # obtain the different matrices
-        if(models[i.model] > 2){
-          temp.alpha.matrix <- optim.par$solution[(1+num.covariates+1):(1+num.covariates+num.competitors)]
-          if(models[i.model] == 4){
-            temp.lambda.cov.matrix <- optim.par$solution[(1+1):(1+num.covariates)]
-            temp.alpha.cov.matrix <- optim.par$solution[(1+num.covariates+num.competitors+1):(1+num.covariates+num.competitors+num.covariates)]
-          }else if(models[i.model] == 5){
-            temp.lambda.cov.matrix <- optim.par$solution[(1+1):(1+num.covariates)]
-            temp.alpha.cov.matrix <- optim.par$solution[(1+num.covariates+num.competitors+1):(1+num.covariates+num.competitors+(num.covariates*num.competitors))] #effects of cov 1, 2... on alpha_i
-          }
-        }
-        my.par <- optim.par$solution
-      }  
-      
-      #####################
-      # standard errors via bootstrapping
-      if(generate.errors){
-        errors <- SEbootstrap(optim.method = optim.methods[i.method],
-                              fitness.model = my.model,
-                              lower.bounds = lower.bounds,
-                              upper.bounds = upper.bounds,
-                              init.data = focal.sp.data,
-                              init.par = init.par,
-                              num.sp = num.competitors,
-                              num.cov = num.covariates,
-                              nsamples = bootstrap.samples)
-      }else{
-        errors <- NA
-      }
-      
-      if(sum(is.na(errors)) == 0){
-        
-        temp.results$lambda.lower.error <- my.par[1]-1.96*errors[1]
-        temp.results$lambda.upper.error <- my.par[1]+1.96*errors[1]
-        
-        # different models have different parameters
-        # written sequentially for readability
-        # as optim models need a vector for multidim optimization,
-        # parameters need to be recovered from this vector and from the error matrix
-        # hence these long sequences
-        if(models[i.model] == 2){
-          
-          temp.alpha.lower.error <- my.par[2]-1.96*errors[2]
-          temp.alpha.upper.error <- my.par[2]+1.96*errors[2]
-          
-        }else if(models[i.model] == 3){
-          
-          temp.alpha.lower.error <- my.par[2:(num.competitors+1)]-1.96*errors[2:(num.competitors+1)]
-          temp.alpha.upper.error <- my.par[2:(num.competitors+1)]+1.96*errors[2:(num.competitors+1)]
-          
-        }else if(models[i.model] == 4){
-          
-          temp.lambda.cov.lower.error <- my.par[2:(1+num.covariates)]-1.96*errors[2:(1+num.covariates)]
-          temp.lambda.cov.upper.error <- my.par[2:(1+num.covariates)]+1.96*errors[2:(1+num.covariates)]
-          
-          temp.alpha.lower.error <- my.par[(1+1+num.covariates):(num.covariates+num.competitors+1)]-1.96*
-            errors[(1+1+num.covariates):(num.covariates+num.competitors+1)]
-          temp.alpha.upper.error <- my.par[(1+1+num.covariates):(num.covariates+num.competitors+1)]+1.96*
-            errors[(1+1+num.covariates):(num.covariates+num.competitors+1)]
-          
-          temp.alpha.cov.lower.error <- my.par[(2+num.covariates+num.competitors):(num.covariates+num.competitors+1+num.covariates)]-1.96*
-            errors[(2+num.covariates+num.competitors):(num.covariates+num.competitors+1+num.covariates)]
-          temp.alpha.cov.upper.error <- my.par[(2+num.covariates+num.competitors):(num.covariates+num.competitors+1+num.covariates)]+1.96*
-            errors[(2+num.covariates+num.competitors):(num.covariates+num.competitors+1+num.covariates)]
-          
-        }else if(models[i.model] == 5){
-          
-          temp.lambda.cov.lower.error <- my.par[2:(1+num.covariates)]-1.96*errors[2:(1+num.covariates)]
-          temp.lambda.cov.upper.error <- my.par[2:(1+num.covariates)]+1.96*errors[2:(1+num.covariates)]
-          
-          temp.alpha.lower.error <- my.par[(1+1+num.covariates):(num.covariates+num.competitors+1)]-1.96*
-            errors[(1+1+num.covariates):(num.covariates+num.competitors+1)]
-          temp.alpha.upper.error <- my.par[(1+1+num.covariates):(num.covariates+num.competitors+1)]+1.96*
-            errors[(1+1+num.covariates):(num.covariates+num.competitors+1)]
-          
-          temp.alpha.cov.lower.error <- my.par[(2+num.covariates+num.competitors):(num.covariates+num.competitors+1+(num.covariates*num.competitors))]-1.96*
-            errors[(2+num.covariates+num.competitors):(num.covariates+num.competitors+1+num.covariates)]
-          temp.alpha.cov.upper.error <- my.par[(2+num.covariates+num.competitors):(num.covariates+num.competitors+1+(num.covariates*num.competitors))]+1.96*
-            errors[(2+num.covariates+num.competitors):(num.covariates+num.competitors+1+num.covariates)]
-          
-        }
-      }
+      temp.results <- cxr_optimize(init.par = init.param.list$init.par,
+                                   lower.bounds = init.param.list$lower.bounds,
+                                   upper.bounds = init.param.list$upper.bounds,
+                                   fitness.model = fitness.models[[i.model]],
+                                   optim.method = optim.methods[i.method],
+                                   log.fitness = log.fitness,
+                                   focal.comp.matrix = focal.comp.matrix,
+                                   focal.covariates = focal.covariates,
+                                   generate.errors = generate.errors,
+                                   bootstrap.samples = bootstrap.samples)
       
       ###############
-      # merge results
-      lambda.results <- rbind(lambda.results,temp.results)
-      system.matrices[[i.sp]][[i.model]][[i.method]]$alpha.matrix <- temp.alpha.matrix
-      system.matrices[[i.sp]][[i.model]][[i.method]]$alpha.upper.error.matrix <- temp.alpha.upper.error
-      system.matrices[[i.sp]][[i.model]][[i.method]]$alpha.lower.error.matrix <- temp.alpha.lower.error
+      # clean up results
       
-      system.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov.matrix <- temp.lambda.cov.matrix
-      system.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov.lower.error.matrix <- temp.lambda.cov.lower.error
-      system.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov.upper.error.matrix <- temp.lambda.cov.upper.error
+      temp.lambda <- temp.results$lambda.results
+      temp.lambda$focal.sp <- focal.sp[i.sp]
+      temp.lambda$model <- models[i.model]
+      temp.lambda$optim.method <- optim.methods[i.method]
       
-      system.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov.matrix <- temp.alpha.cov.matrix
-      system.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov.lower.error.matrix <- temp.alpha.cov.lower.error
-      system.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov.upper.error.matrix <- temp.alpha.cov.upper.error
+      temp.lambda <- temp.lambda[,c("focal.sp",
+                                    "model",
+                                    "optim.method",
+                                    "lambda",
+                                    "lambda.lower.error",
+                                    "lambda.upper.error",
+                                    "sigma",
+                                    "log.likelihood")]
+
+      lambda.results <- rbind(lambda.results,temp.lambda)
+      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.matrix <- temp.results$alpha.matrix
+      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.upper.error.matrix <- temp.results$alpha.upper.error
+      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.lower.error.matrix <- temp.results$alpha.lower.error
+      
+      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov.matrix <- temp.results$lambda.cov.matrix
+      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov.upper.error.matrix <- temp.results$lambda.cov.upper.error
+      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov.lower.error.matrix <- temp.results$lambda.cov.lower.error
+      
+      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov.matrix <- temp.results$alpha.cov.matrix
+      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov.upper.error.matrix <- temp.results$alpha.cov.upper.error
+      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov.lower.error.matrix <- temp.results$alpha.cov.lower.error
       
     }# for i.method
   }# for i.model
@@ -477,6 +182,6 @@ for(i.sp in 1:length(focal.sp)){
 
 if(write.results){
   readr::write_delim(lambda.results,"./results/lambda_estimates.csv",delim = ";")
-  save(system.matrices,file = "./results/param_estimates")
+  save(param.matrices,file = "./results/param_estimates")
 }
 

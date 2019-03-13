@@ -3,27 +3,27 @@
 # some of them are not used, for easing replication
 ################
 
-# model1 <- function(par, log_fitness){ 
-model1 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
+# model1 <- function(par, log.fitness){ 
+model1 <- function(par, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
   #lambda and sigma parameters for the normal distribution
   #(assuming lognormal error- seed data are logged) 
   lambda <- par[1]
   sigma <- par[2]
   #this is the predictive model- here is just fitting a horizontal
   #line through the data:
-  pred <- rep(lambda, times=length(log_fitness)) 
+  pred <- rep(lambda, times=length(log.fitness)) 
   #these are the log likelihoods of the data given the model + parameters
-  llik <- dnorm(log_fitness, mean = log(pred), sd = (sigma), log = TRUE) #CHEK PRED IS LOG!
-  #llik <- dnorm(log_fitness, mean = mean(log(pred)), sd = (sigma), log = TRUE) 
-  #llik <- dnorm(log_fitness, mean = mean(pred), sd = (sigma), log = TRUE) 
+  llik <- dnorm(log.fitness, mean = log(pred), sd = (sigma), log = TRUE) #CHEK PRED IS LOG!
+  #llik <- dnorm(log.fitness, mean = mean(log(pred)), sd = (sigma), log = TRUE) 
+  #llik <- dnorm(log.fitness, mean = mean(pred), sd = (sigma), log = TRUE) 
   #return the sum of negative log likelihoods - what optim minimizes
   return(sum(-1*llik)) 
 }
 
 ################
 
-# model2 <- function(par, log_fitness, background){ 
-model2 <-  function(par, log_fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
+# model2 <- function(par, log.fitness, background){ 
+model2 <-  function(par, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
   lambda <- par[1] ## same as model 1
   alpha <- par[2]  ## new parameter introduced in model 2
   sigma <- par[3] ## same as model 1
@@ -34,17 +34,17 @@ model2 <-  function(par, log_fitness, focal.comp.matrix, num.covariates, num.com
   ## predictive model:
   pred <- lambda/(1+alpha*(background))  
   ## log likelihoods of data given the model + parameters:
-  llik <- dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log = TRUE)
+  llik <- dnorm(log.fitness, mean = (log(pred)), sd = (sigma), log = TRUE)
   #hist(llik)
-  #llik <- dnorm(log_fitness, mean = mean(log(pred)), sd = (sigma), log = TRUE)
+  #llik <- dnorm(log.fitness, mean = mean(log(pred)), sd = (sigma), log = TRUE)
   ## return sum of negative log likelihoods:
   return(sum(-1*llik)) 
 }
 
 ################
 
-# model3 <- function(par, log_fitness, focal.comp.matrix){
-model3 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
+# model3 <- function(par, log.fitness, focal.comp.matrix){
+model3 <- function(par, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
   lambda <- par[1] #same as model 2
   alpha.vector <- par[2:(length(par)-1)] # new parameters- use alpha estimate from model 2 as start 
   #value for fitting
@@ -57,7 +57,7 @@ model3 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.comp
   }
   pred <- lambda/ term
   # likelihood as before:
-  llik <- dnorm(log_fitness, mean = as.numeric(log(pred)), sd = (sigma), log = TRUE)
+  llik <- dnorm(log.fitness, mean = as.numeric(log(pred)), sd = (sigma), log = TRUE)
   # return sum of negative log likelihoods
   return(sum(-1*llik)) #sum of negative log likelihoods
 }
@@ -83,7 +83,7 @@ abund.fun.3 <- function(sp.par,init.abund,cov.values,alpha.matrix,lambda.cov.mat
 
 ################
 
-model4 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
+model4 <- function(par, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
   lambda <- par[1] 
   lambda.cov <- par[(1+1):(1+num.covariates)] #effect of cov 1, 2, ... on lambda
   alpha.vector <- par[(1+num.covariates+1):(1+num.covariates+num.competitors)] # alfas_ij
@@ -103,14 +103,14 @@ model4 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.comp
   }
   pred <- lambda * (num) / term 
   # likelihood as before:
-  llik<-dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
+  llik<-dnorm(log.fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
   # return sum of negative log likelihoods
   return(sum(-1*llik)) #sum of negative log likelihoods
 }
 
 ################
 
-model5 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
+model5 <- function(par, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
   lambda <- par[1] 
   lambda.cov <- par[(1+1):(1+num.covariates)] #effect of cov 1, 2... on lambda
   alpha.vector <- par[(1+num.covariates+1):(1+num.covariates+num.competitors)] #alfas_ij
@@ -144,7 +144,7 @@ model5 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.comp
   }
   pred <- lambda * (num) / term 
   # likelihood as before:
-  llik <- dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
+  llik <- dnorm(log.fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
   # return sum of negative log likelihoods
   return(sum(-1*llik)) #sum of negative log likelihoods
 }
