@@ -53,11 +53,11 @@ init.method.num <- which(optim.methods == init.par.method)
 
 # if we want quick calculations, we can disable 
 # the bootstrapping for the standard errors
-generate.errors <- FALSE
-bootstrap.samples <- 100
+generate.errors <- TRUE
+bootstrap.samples <- 1000
 
 ###
-write.results <- FALSE
+write.results <- TRUE
 
 ##############################
 # initialize data structures

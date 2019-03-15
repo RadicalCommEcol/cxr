@@ -34,10 +34,12 @@ PredictAbundances <- function(par,timesteps,abundance.model,...){
         cov.values <- 0
       }
       predicted.abundances$abundance[predicted.abundances$timestep == i.timestep & 
-                                       predicted.abundances$site == i.site] <- abundance.model(par$sp.par,
-                                                                                               init.abund,
-                                                                                               cov.values,
-                                                                                               ...)
+                                       predicted.abundances$site == i.site] <- abundance.model(sp.par = par$sp.par, 
+                                                                                               init.abund = init.abund, 
+                                                                                               cov.values = cov.values, 
+                                                                                               alpha.matrix = par$other.par$alpha.matrix,
+                                                                                               lambda.cov.matrix = par$other.par$lambda.cov.matrix,
+                                                                                               alpha.cov.matrix = par$other.par$alpha.cov.matrix)
     }# i.site
   }# i.timestep
   return(predicted.abundances)

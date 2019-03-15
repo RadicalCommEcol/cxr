@@ -51,7 +51,7 @@ SEbootstrap <- function(optim.method,
     if(optim.method == "optim_NM"){
       
       my.boot.par <- optim(init.par, 
-                           my.model, 
+                           fitness.model, 
                            gr = NULL, 
                            method = "Nelder-Mead", 
                            # lower = lower.bounds,
@@ -68,7 +68,7 @@ SEbootstrap <- function(optim.method,
     }else if(optim.methods[i.method] == "optim_L-BGFS-B"){
       
       my.boot.par <- optim(init.par, 
-                           my.model, 
+                           fitness.model, 
                            gr = NULL, 
                            method = "L-BFGS-B", 
                            lower = lower.bounds, 
@@ -84,7 +84,7 @@ SEbootstrap <- function(optim.method,
       
     }else if(optim.methods[i.method] == "nloptr_CRS2_LM"){
       
-      my.boot.par <- nloptr(x0 = init.par,eval_f = my.model,opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
+      my.boot.par <- nloptr(x0 = init.par,eval_f = fitness.model,opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
                             lb = lower.bounds,
                             ub = upper.bounds,
                             log.fitness = boot.fitness, 
@@ -96,7 +96,7 @@ SEbootstrap <- function(optim.method,
       
     }else if(optim.methods[i.method] == "nloptr_ISRES"){
       
-      my.boot.par <- nloptr(x0 = init.par,eval_f = my.model,opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e3),
+      my.boot.par <- nloptr(x0 = init.par,eval_f = fitness.model,opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e3),
                             lb = lower.bounds,
                             ub = upper.bounds,
                             log.fitness = boot.fitness, 
@@ -108,7 +108,7 @@ SEbootstrap <- function(optim.method,
       
     }else if(optim.methods[i.method] == "nloptr_DIRECT_L_RAND"){
       
-      my.boot.par <- nloptr(x0 = init.par,eval_f = my.model,opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e3),
+      my.boot.par <- nloptr(x0 = init.par,eval_f = fitness.model,opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e3),
                             lb = lower.bounds,
                             ub = upper.bounds,
                             log.fitness = boot.fitness, 
@@ -120,7 +120,7 @@ SEbootstrap <- function(optim.method,
       
     }else if(optim.methods[i.method] == "GenSA"){
       
-      my.boot.par <- GenSA(par = init.par,fn = my.model,
+      my.boot.par <- GenSA(par = init.par,fn = fitness.model,
                            lower = lower.bounds,
                            upper = upper.bounds, 
                            control = list(maxit = 1e2), 
@@ -135,7 +135,7 @@ SEbootstrap <- function(optim.method,
       
       # suppress annoying output
       sink("/dev/null")
-      my.boot.par <- hydroPSO::hydroPSO(par = init.par,fn = my.model,
+      my.boot.par <- hydroPSO::hydroPSO(par = init.par,fn = fitness.model,
                                         lower = lower.bounds,
                                         upper = upper.bounds, 
                                         control=list(write2disk=FALSE, maxit = 1e2, MinMax = "min", verbose = F),
@@ -152,7 +152,7 @@ SEbootstrap <- function(optim.method,
       my.boot.par <- DEoptimR::JDEoptim(lower = lower.bounds,
                                         upper = upper.bounds,
                                         maxiter = 100,
-                                        fn = my.model,
+                                        fn = fitness.model,
                                         log.fitness = boot.fitness, 
                                         focal.comp.matrix = boot.comp.matrix,
                                         num.covariates = num.covariates, 
