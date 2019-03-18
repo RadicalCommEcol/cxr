@@ -78,6 +78,8 @@ abund.fun.3 <- function(sp.par,init.abund,cov.values,alpha.matrix,lambda.cov.mat
     fitness <- num/den
     expected.abund[i.sp] <- ((1-sp.par$germ.rate[i.sp])*sp.par$survival.rate[i.sp]) + sp.par$germ.rate[i.sp]*fitness
   }
+  # just in case
+  expected.abund[expected.abund < 0] <- 0
   expected.abund
 }
 

@@ -143,15 +143,15 @@ predicted.abundances <- PredictAbundances(par = par,timesteps = timesteps,abunda
 predicted.abundances$timestep <- as.factor(predicted.abundances$timestep)
 predicted.abundances$site <- as.factor(predicted.abundances$site)
 predicted.abundances$sp <- as.factor(predicted.abundances$sp)
-# TODO:why NAs?
-predicted.abundances$abundance[is.na(predicted.abundances$abundance)] <- 0
+# # TODO:why NAs?
+# predicted.abundances$abundance[is.na(predicted.abundances$abundance)] <- 0
 
 # some quick summarising for plotting
 plot.data <- predicted.abundances %>% group_by(timestep,sp) %>% summarise(mean.abund = mean(abundance), sd.abund = sd(abundance))
 
 abund.plot <- ggplot(plot.data,aes(x = timestep,y = mean.abund, group = sp)) + 
   geom_point(aes(color = sp)) + 
-  geom_errorbar(aes(ymin = mean.abund - sd.abund, ymax = mean.abund + sd.abund))+
+  # geom_errorbar(aes(ymin = mean.abund - sd.abund, ymax = mean.abund + sd.abund))+
   # facet_wrap(site~.,ncol = 4)+
   # ylim(-10,10)+
   NULL

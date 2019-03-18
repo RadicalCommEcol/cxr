@@ -24,7 +24,7 @@ PredictAbundances <- function(par,timesteps,abundance.model,...){
   predicted.abundances$abundance[predicted.abundances$timestep == 1] <- as.numeric(par$initial.values$abundance)
   
   for(i.timestep in 2:timesteps){
-    for(i.site in sites){
+    for(i.site in 1:length(sites)){
       init.abund <- predicted.abundances$abundance[predicted.abundances$timestep == (i.timestep-1) & 
                                                      predicted.abundances$site == sites[i.site]]
       if(is.data.frame(par$covariates)){
@@ -34,7 +34,7 @@ PredictAbundances <- function(par,timesteps,abundance.model,...){
         cov.values <- 0
       }
       predicted.abundances$abundance[predicted.abundances$timestep == i.timestep & 
-                                       predicted.abundances$site == i.site] <- abundance.model(sp.par = par$sp.par, 
+                                       predicted.abundances$site == sites[i.site]] <- abundance.model(sp.par = par$sp.par, 
                                                                                                init.abund = init.abund, 
                                                                                                cov.values = cov.values, 
                                                                                                alpha.matrix = par$other.par$alpha.matrix,
