@@ -8,6 +8,8 @@ library(nloptr)
 library(GenSA)
 library(hydroPSO)
 library(DEoptimR)
+#other packages
+library(tidyr)
 
 ###########################
 # Caracoles competition data
@@ -100,7 +102,7 @@ for(i.sp in 1:length(focal.sp)){
   # fitness metric...
   # subset >0 records, for calculating logarithms
   focal.sp.data <- subset(focal.sp.data, seed > 0)
-  fitness <- focal.sp.data$seed#fitness
+  fitness <- focal.sp.data$seed #fitness
   log.fitness <- log(fitness)
   # competition matrix: number of competitors
   focal.comp.matrix <- comp.matrix[which(competition.data$focal == focal.sp[i.sp]),]
@@ -117,6 +119,7 @@ for(i.sp in 1:length(focal.sp)){
     print("*********************************")
     print(paste(date()," - starting focal sp ",focal.sp[i.sp],", model ",i.model,sep=""))
     print("*********************************")
+    #message()
     
     # initial parameters are gathered in a separate function
     # this function has default values for the upper and lower bounds,
@@ -182,6 +185,6 @@ for(i.sp in 1:length(focal.sp)){
 
 if(write.results){
   readr::write_delim(lambda.results,"./results/lambda_estimates.csv",delim = ";")
-  save(param.matrices,file = "./results/param_estimates")
+  save(param.matrices,file = "./results/param_estimates.Rdata")
 }
 

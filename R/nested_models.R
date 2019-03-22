@@ -175,5 +175,5 @@ abund.fun.5 <- function(sp.par,init.abund,cov.values,alpha.matrix,lambda.cov.mat
     fitness <- num/den
     expected.abund[i.sp] <- ((1-sp.par$germ.rate[i.sp])*sp.par$survival.rate[i.sp]) + sp.par$germ.rate[i.sp]*fitness
   }
-  expected.abund
+  expected.abund 
 }
