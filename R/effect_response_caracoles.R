@@ -1,9 +1,30 @@
 
 # find best fits for effect and response parameters, 
-# from caracoles data
+# using caracoles data
+# and lambda estimates previously calculated
 
-source("R/effect_response_model.R")
+source("R/ER_optimize.R")
 require(tidyverse)
+
+###########################
+# optimization methods to use
+optim.methods <- c("optim_NM",
+                   # "optim_L-BGFS-B",
+                   # "nloptr_CRS2_LM", 
+                   # "nloptr_ISRES", 
+                   # "nloptr_DIRECT_L_RAND", 
+                   # "GenSA", 
+                   # "hydroPSO", 
+                   "DEoptimR"
+)
+
+# if we want quick calculations, we can disable 
+# the bootstrapping for the standard errors
+generate.errors <- FALSE
+bootstrap.samples <- 1000
+
+###
+write.results <- TRUE
 
 ###########################
 # Caracoles data
@@ -17,7 +38,8 @@ names(sp.data)[which(names(sp.data) == "seed")] <- "fitness"
 sp.data$site <- paste(sp.data$year,sp.data$plot,sp.data$subplot,sep="_")
 sp.data <- sp.data[,c("site","focal","fitness","competitor","number")]
 
-# lambda initial estimates
+###########################
+# Initial parameter estimates
 lambda.values <- readr::read_delim(file = "./results/lambda_estimates.csv",delim = ";")
 
 # we will take estimates from the most complex model parameterized
@@ -36,81 +58,36 @@ lambda.values <- lambda.values %>% group_by(focal.sp) %>% summarise(lambda = mea
 r.values <- rep(1,nrow(lambda.values))
 e.values <- rep(1,nrow(lambda.values))
 
+init.par <- c(lambda.values$lambda,r.values,e.values, sigma)
+lower.bounds <- c(rep(1, times=nrow(lambda.values)), rep(0, times=nrow(lambda.values)),rep(0, times=nrow(lambda.values)),0.0000000001)
+upper.bounds <- c(rep(1e4, times=nrow(lambda.values)), rep(1e2, times=nrow(lambda.values)),rep(1e2, times=nrow(lambda.values)),1)
+
 ############
 # only species with proper estimates
 # TODO: group species without lambda/e in a general category?
 sp.data <- subset(sp.data, focal %in% lambda.values$focal.sp & competitor %in% lambda.values$focal.sp)
 
-# set zeros to missing data
-# so that for each focal sp, all competitors are included
-sites <- unique(sp.data$site)
-focal.sp <- sort(unique(sp.data$focal))
-missing.data <- sp.data
-missing.data$site <- "0"
-missing.data$focal <- "0"
-missing.data$fitness <- 0
-missing.data$competitor <- "0"
-missing.data$number <- 0
-count <- 1
+######################
+# compute each method
 
-for(i.site in 1:length(sites)){
-  for(i.focal in 1:length(focal.sp)){
-    my.competitors <- unique(sp.data$competitor[sp.data$site == sites[i.site] & sp.data$focal == focal.sp[i.focal]])
-    if(length(my.competitors) > 0 & length(my.competitors) < length(focal.sp)){
-      my.fitness <- sp.data$fitness[sp.data$site == sites[i.site] & sp.data$focal == focal.sp[i.focal]][1]
-      
-      missing.competitors <- focal.sp[which(!focal.sp %in% my.competitors)]
-      for(i.com in 1:length(missing.competitors)){
-      
-      missing.data$site[count] <- sites[i.site]
-      missing.data$focal[count] <- focal.sp[i.focal]
-      missing.data$fitness[count] <- my.fitness
-      missing.data$competitor[count] <- missing.competitors[i.com]
-      missing.data$number[count] <- 0
-      
-      count <- count + 1
-      }# for each missing
-    }# if any missing
-    # if(length(my.competitors) > 0 & length(my.competitors) < 19){print(paste(i.site,",",i.focal))}
-  }# for i.focal
-}# for i.site
+full.results <- NULL
 
-missing.data <- droplevels(subset(missing.data,competitor != "0"))
+for(i.method in 1:length(optim.methods)){
+  
+  param.results <- ER_optimize(init.par = init.par,
+                               lower.bounds = lower.bounds,
+                               upper.bounds = upper.bounds,
+                               effect.response.model = EffectResponse,
+                               optim.method = optim.methods[i.method],
+                               sp.data = sp.data,
+                               generate.errors = generate.errors,
+                               bootstrap.samples = bootstrap.samples)
+  
+  param.results$optim.method <- optim.methods[i.method]
+  
+  full.results <- rbind(full.results, param.results)
+}
 
-sp.data <- rbind(sp.data,missing.data)
-sp.data <- arrange(sp.data, focal, site, competitor)
-
-# discard focal sp with fitness 0
-sp.data <- droplevels(subset(sp.data, fitness > 0))
-
-############
-par <- c(lambda.values$lambda,r.values,e.values, sigma)
-
-############
-# optim
-
-optim.par <- optim(par, 
-                   effect_response_model, 
-                   gr = NULL, 
-                   method = "Nelder-Mead", 
-                   # lower = lower.bounds,
-                   # upper = upper.bounds,
-                   control = list(), 
-                   hessian = F,
-                   sp.data = sp.data)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+if(write.results){
+  readr::write_delim(full.results,"./results/effect_response_estimates.csv",delim = ";")
+}

@@ -54,7 +54,7 @@ if(optim.method == "optim_NM"){
                      num.competitors = num.competitors, 
                      focal.covariates = focal.covariates)
   
-}else if(optim.method == "optim_L-BGFS-B"){
+}else if(optim.method == "optim_L-BFGS-B"){
   
   optim.par <- optim(init.par, 
                      fitness.model, 
