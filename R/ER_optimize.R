@@ -222,8 +222,8 @@ ER_optimize <- function(init.par,
     temp.results$response.lower.error <- my.par[(length(focal.sp)+1):(length(focal.sp)+length(focal.sp))]-1.96*errors[(length(focal.sp)+1):(length(focal.sp)+length(focal.sp))]
     temp.results$response.upper.error <- my.par[(length(focal.sp)+1):(length(focal.sp)+length(focal.sp))]+1.96*errors[(length(focal.sp)+1):(length(focal.sp)+length(focal.sp))]
     
-    temp.results$effect.lower.error <- my.par[(length(focal.sp)+1+length(focal.sp)):(length(par)-1)]-1.96*errors[(length(focal.sp)+1+length(focal.sp)):(length(par)-1)]
-    temp.results$effect.upper.error <- my.par[(length(focal.sp)+1+length(focal.sp)):(length(par)-1)]+1.96*errors[(length(focal.sp)+1+length(focal.sp)):(length(par)-1)]
+    temp.results$effect.lower.error <- my.par[(length(focal.sp)+1+length(focal.sp)):(length(init.par)-1)]-1.96*errors[(length(focal.sp)+1+length(focal.sp)):(length(init.par)-1)]
+    temp.results$effect.upper.error <- my.par[(length(focal.sp)+1+length(focal.sp)):(length(init.par)-1)]+1.96*errors[(length(focal.sp)+1+length(focal.sp)):(length(init.par)-1)]
     
   }
   

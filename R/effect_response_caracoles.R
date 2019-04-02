@@ -4,32 +4,37 @@
 # and lambda estimates previously calculated
 
 source("R/ER_optimize.R")
+source("R/EffectResponse.R")
+source("R/ER_SEbootstrap.R")
 require(tidyverse)
 
 ###########################
 # optimization methods to use
-optim.methods <- c("optim_NM",
+optim.methods <- c("optim_NM"
                    # "optim_L-BGFS-B",
                    # "nloptr_CRS2_LM", 
                    # "nloptr_ISRES", 
                    # "nloptr_DIRECT_L_RAND", 
                    # "GenSA", 
                    # "hydroPSO", 
-                   "DEoptimR"
+                   # "DEoptimR"
 )
 
 # if we want quick calculations, we can disable 
 # the bootstrapping for the standard errors
-generate.errors <- FALSE
-bootstrap.samples <- 1000
+generate.errors <- TRUE
+bootstrap.samples <- 10
 
 ###
-write.results <- TRUE
+write.results <- FALSE
 
 ###########################
 # Caracoles data
 
 competition.data <- readr::read_delim(file = "./data/competition.csv",delim = ";")
+
+# subset for quick tests only!
+competition.data <- subset(competition.data, year == 2018)
 
 # assume that seed production does not change in a single year, so group observations
 # in year x site records
@@ -48,6 +53,10 @@ max.model <- max(lambda.values$model)
 # delete extremely unlikely lambda values, e.g. > 1000
 # and stick with those values fitted with max.model
 lambda.values <- subset(lambda.values, lambda < 1e3 & model == max.model)
+
+############## TEST
+lambda.values <- subset(lambda.values, focal.sp %in% sp.data$focal)
+##############
 
 sigma <- as.numeric(lambda.values %>% summarise(mean(sigma)))
 
