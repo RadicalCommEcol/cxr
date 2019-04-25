@@ -1,5 +1,4 @@
-# source("R/GenerateTestData.R")
-source("R/nested_models.R")
+source("R/BevertonHolt_models.R")
 source("R/SEbootstrap_caracoles.R")
 source("R/cxr_optimize.R")
 source("R/InitParams.R")
@@ -36,7 +35,7 @@ focal.sp <- unique(competition.data$focal)
 # otherwise it makes no sense (see equations in Lanuza et al. 2018)
 models <- 1:3
 # keep the model definitions in a list, for ease
-fitness.models <- list(model1,model2,model3,model4,model5)
+fitness.models <- list(BH_1,BH_2,BH_3,BH_4,BH_5)
 
 # optimization methods to use
 optim.methods <- c("optim_NM",

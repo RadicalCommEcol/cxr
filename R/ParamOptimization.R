@@ -1,5 +1,5 @@
 source("R/GenerateTestData.R")
-source("R/nested_models.R")
+source("R/BevertonHolt_models.R")
 # hessian calc
 # library(pracma)
 library(numDeriv)
@@ -134,7 +134,7 @@ for(i.sp in 1:length(focal.sp)){
     # except for model1
     
     if(models[i.model] == 1){
-      my.model <- model1
+      my.model <- BH_1
       
       init.lambda <- mean(log_fitness)
       init.sigma <- sd(log_fitness)
@@ -145,7 +145,7 @@ for(i.sp in 1:length(focal.sp)){
       upper.bounds <- rep(1e5,length(lower.bounds))
       
     }else if(models[i.model] == 2){
-      my.model <- model2
+      my.model <- BH_2
       
       init.lambda <- lambda.results$lambda[lambda.results$focal.sp == focal.sp[i.sp] & 
                                              lambda.results$model == 1 & 
@@ -162,7 +162,7 @@ for(i.sp in 1:length(focal.sp)){
       upper.bounds <- rep(1e5,length(lower.bounds))
       
     }else if(models[i.model] == 3){
-      my.model <- model3
+      my.model <- BH_3
       
       init.lambda <- lambda.results$lambda[lambda.results$focal.sp == focal.sp[i.sp] & 
                                              lambda.results$model == 2 & 
@@ -179,7 +179,7 @@ for(i.sp in 1:length(focal.sp)){
       upper.bounds <- rep(1e5,length(lower.bounds))
       
     }else if(models[i.model] == 4){
-      my.model <- model4
+      my.model <- BH_4
       
       init.lambda <- lambda.results$lambda[lambda.results$focal.sp == focal.sp[i.sp] & 
                                              lambda.results$model == 3 & 
@@ -199,7 +199,7 @@ for(i.sp in 1:length(focal.sp)){
       upper.bounds <- rep(1e5,length(lower.bounds))
       
     }else if(models[i.model] == 5){
-      my.model <- model5
+      my.model <- BH_5
       
       init.lambda <- lambda.results$lambda[lambda.results$focal.sp == focal.sp[i.sp] & 
                                              lambda.results$model == 4 & 
