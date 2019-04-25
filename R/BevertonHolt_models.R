@@ -1,11 +1,12 @@
-# functions to optimize over
-# all functions accept the same parameters, even though 
-# some of them are not used, for easing replication
 
 ################
-# Set of Beverton-Holt models for fecundity
+# Set of Beverton-Holt fecundity models  
+# all functions accept the same parameters, even though 
+# some of them are not used, for easing replication
+# These functions return the negative log-likelihood of the data
+# given the model and parameters
 
-#' Title
+#' Title Beverton-Holt fecundity, first model
 #'
 #' @param par vector of length 2 with lambda and sigma values
 #' @param log_fitness log of the fitness value 
@@ -34,7 +35,7 @@ BH_1 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.compet
 
 ################
 
-#' Title
+#' Title Beverton-Holt fecundity, second model
 #'
 #' @param par vector of length 3, with values for lambda, alpha, and sigma
 #' @param log_fitness log of the fitness value
@@ -63,7 +64,7 @@ BH_2 <-  function(par, log_fitness, focal.comp.matrix, num.covariates, num.compe
 
 ################
 
-#' Title
+#' Title Beverton-Holt fecundity, third model
 #'
 #' @param par vector of variable length, with the following order: first, lambda of focal sp; 
 #' second, interaction coefficients with every species; last, sigma value
@@ -97,7 +98,7 @@ BH_3 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.compet
 
 ################
 
-#' Title
+#' Title Beverton-Holt fecundity, fourth model
 #'
 #' @param par vector of variable length, with the following order: first, lambda of focal sp; 
 #' second, effects of every covariate on lambda; 
@@ -143,7 +144,7 @@ BH_4 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.compet
 
 ################
 
-#' Title
+#' Title Beverton-Holt fecundity, fifth model
 #'
 #' @param par vector of variable length, with the following order: first, lambda of focal sp; 
 #' second, effects of every covariate on lambda; 

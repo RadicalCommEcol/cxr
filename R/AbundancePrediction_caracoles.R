@@ -6,7 +6,7 @@ library(tidyverse)
 timesteps <- 50
 
 ######
-source("./R/nested_models.R")
+source("./R/BevertonHolt_abundance_models.R")
 source("./R/PredictAbundances.R")
 
 ####################
@@ -139,7 +139,7 @@ par <- list(sp.par = sp.par, initial.values = year.abund,
                                                     alpha.cov.matrix = alpha.cov.matrix))
 
 
-abundance.model <- abund.fun.3
+abundance.model <- BH_abundance_3
 predicted.abundances <- PredictAbundances(par = par,timesteps = timesteps,abundance.model = abundance.model)
 predicted.abundances$timestep <- as.factor(predicted.abundances$timestep)
 predicted.abundances$site <- as.factor(predicted.abundances$site)
