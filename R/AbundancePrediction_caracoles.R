@@ -59,6 +59,7 @@ focal.species <- Reduce(intersect, list(focal.sp.abund,focal.sp.lambda,competiti
 # order projected focal species alphabetically
 focal.species <- sort(focal.species)
 
+# TODO: check
 # first take on lambda values: average of the different optim methods
 sp.par <- lambda.values %>% filter(focal.sp %in% focal.species) %>% group_by(focal.sp,model) %>% summarise(lambda = mean(lambda))
 

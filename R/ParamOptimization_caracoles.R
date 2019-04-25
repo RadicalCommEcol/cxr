@@ -39,7 +39,7 @@ fitness.models <- list(BH_1,BH_2,BH_3,BH_4,BH_5)
 
 # optimization methods to use
 optim.methods <- c("optim_NM",
-                   # "optim_L-BGFS-B",
+                   # "optim_L-BFGS-B",
                    # "nloptr_CRS2_LM", 
                    # "nloptr_ISRES", 
                    # "nloptr_DIRECT_L_RAND", 
