@@ -21,8 +21,16 @@ competition.data <- spread(competition.data,competitor,number,fill = 0)
 # competition matrix
 comp.matrix <- as.matrix(competition.data[,10:ncol(competition.data)])
 
-# covariates
-covariates <- 0
+# covariate: salinity
+covariates <- readr::read_delim(file = "../Caracoles/data/salinity.csv",delim = ";")
+
+# one observation per row of competition.data
+covariates <- covariates[,c("plot","subplot","year","sum_salinity")]
+full.data <- left_join(competition.data,covariates)
+covariates <- full.data[,"sum_salinity"]
+
+# if no covariates, comment above and uncomment here
+# covariates <- 0
 
 #############################
 # simulation parameters
@@ -33,19 +41,19 @@ focal.sp <- unique(competition.data$focal)
 # models to parameterize
 # be aware of including 4 and 5 ONLY if there are covariates
 # otherwise it makes no sense (see equations in Lanuza et al. 2018)
-models <- 1:3
+models <- 1:5
 # keep the model definitions in a list, for ease
 fitness.models <- list(BH_1,BH_2,BH_3,BH_4,BH_5)
 
 # optimization methods to use
-optim.methods <- c("optim_NM",
+optim.methods <- c("optim_NM"#,
                    # "optim_L-BFGS-B",
                    # "nloptr_CRS2_LM", 
                    # "nloptr_ISRES", 
                    # "nloptr_DIRECT_L_RAND", 
                    # "GenSA", 
                    # "hydroPSO", 
-                   "DEoptimR"
+                   # "DEoptimR"
                    )
 # from which method are we taking initial estimates for the next model?
 # early observations suggest optim_NM or DEoptimR
@@ -55,10 +63,10 @@ init.method.num <- which(optim.methods == init.par.method)
 # if we want quick calculations, we can disable 
 # the bootstrapping for the standard errors
 generate.errors <- TRUE
-bootstrap.samples <- 1000
+bootstrap.samples <- 2
 
 ###
-write.results <- TRUE
+write.results <- FALSE
 
 ##############################
 # initialize data structures
@@ -111,6 +119,8 @@ for(i.sp in 1:length(focal.sp)){
   num.covariates <- ifelse(is.null(ncol(covariates)),0,ncol(covariates))
   # covariates for the focal species
   focal.covariates <- ifelse(num.covariates > 0,covariates[which(competition.data$focal == focal.sp[i.sp]),,drop = FALSE],0)
+  # check
+  focal.covariates <- as.data.frame(focal.covariates)
   
   # model to optimize  
   for(i.model in models){

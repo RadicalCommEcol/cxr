@@ -9,7 +9,7 @@
 #' Title Beverton-Holt fecundity, first model
 #'
 #' @param par vector of length 2 with lambda and sigma values
-#' @param log_fitness log of the fitness value 
+#' @param log.fitness log of the fitness value 
 #' @param focal.comp.matrix not used in BH_1
 #' @param num.covariates not used in BH_1
 #' @param num.competitors not used in BH_1
@@ -19,16 +19,16 @@
 #' @export
 #'
 #' @examples
-BH_1 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
+BH_1 <- function(par, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
   #lambda and sigma parameters for the normal distribution
   #(assuming lognormal error- seed data are logged) 
   lambda <- par[1]
   sigma <- par[2]
   #this is the predictive model- here is just fitting a horizontal
   #line through the data:
-  pred <- rep(lambda, times=length(log_fitness)) 
+  pred <- rep(lambda, times=length(log.fitness)) 
   #these are the log likelihoods of the data given the model + parameters
-  llik <- dnorm(log_fitness, mean = log(pred), sd = (sigma), log = TRUE) 
+  llik <- dnorm(log.fitness, mean = log(pred), sd = (sigma), log = TRUE) 
   #return the sum of negative log likelihoods - what optim minimizes
   return(sum(-1*llik)) 
 }
@@ -38,7 +38,7 @@ BH_1 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.compet
 #' Title Beverton-Holt fecundity, second model
 #'
 #' @param par vector of length 3, with values for lambda, alpha, and sigma
-#' @param log_fitness log of the fitness value
+#' @param log.fitness log of the fitness value
 #' @param focal.comp.matrix dataframe with as many rows as observations, and one column for each competitor sp. 
 #' Values of the dataframe are number of competitors of each sp per observation.
 #' @param num.covariates not used in BH_2
@@ -49,7 +49,7 @@ BH_1 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.compet
 #' @export
 #'
 #' @examples
-BH_2 <-  function(par, log_fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
+BH_2 <-  function(par, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
   lambda <- par[1] ## same as model 1
   alpha <- par[2]  ## new parameter introduced in model 2
   sigma <- par[3] ## same as model 1
@@ -57,7 +57,7 @@ BH_2 <-  function(par, log_fitness, focal.comp.matrix, num.covariates, num.compe
   # predictive model:
   pred <- lambda/(1+alpha*(background))  
   # log likelihoods of data given the model + parameters:
-  llik <- dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log = TRUE)
+  llik <- dnorm(log.fitness, mean = (log(pred)), sd = (sigma), log = TRUE)
   # return sum of negative log likelihoods:
   return(sum(-1*llik)) 
 }
@@ -68,7 +68,7 @@ BH_2 <-  function(par, log_fitness, focal.comp.matrix, num.covariates, num.compe
 #'
 #' @param par vector of variable length, with the following order: first, lambda of focal sp; 
 #' second, interaction coefficients with every species; last, sigma value
-#' @param log_fitness log of the fitness value
+#' @param log.fitness log of the fitness value
 #' @param focal.comp.matrix dataframe with as many rows as observations, and one column for each competitor sp. 
 #' Values of the dataframe are number of competitors of each sp per observation.
 #' @param num.covariates not used in BH_3
@@ -79,7 +79,7 @@ BH_2 <-  function(par, log_fitness, focal.comp.matrix, num.covariates, num.compe
 #' @export
 #'
 #' @examples
-BH_3 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
+BH_3 <- function(par, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
   lambda <- par[1] #same as model 2
   alpha.vector <- par[2:(length(par)-1)] # new parameters- use alpha estimate from model 2 as start 
   # value for fitting
@@ -91,7 +91,7 @@ BH_3 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.compet
   }
   pred <- lambda/ term
   # likelihood as before:
-  llik <- dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log = TRUE)
+  llik <- dnorm(log.fitness, mean = (log(pred)), sd = (sigma), log = TRUE)
   # return sum of negative log likelihoods
   return(sum(-1*llik)) 
 }
@@ -105,7 +105,7 @@ BH_3 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.compet
 #' third, interaction coefficients with every species; 
 #' fourth, effects of every covariate on alpha values (same effect on all interaction coefficients); 
 #' last, sigma value
-#' @param log_fitness log of fitness value
+#' @param log.fitness log of fitness value
 #' @param focal.comp.matrix dataframe with as many rows as observations, and one column for each competitor sp. 
 #' Values of the dataframe are number of competitors of each sp per observation.
 #' @param num.covariates number of covariates
@@ -117,7 +117,7 @@ BH_3 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.compet
 #' @export
 #'
 #' @examples
-BH_4 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
+BH_4 <- function(par, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
   lambda <- par[1] 
   lambda.cov <- par[(1+1):(1+num.covariates)] #effect of cov 1, 2, ... on lambda
   alpha.vector <- par[(1+num.covariates+1):(1+num.covariates+num.competitors)] # alpha_ij
@@ -137,7 +137,7 @@ BH_4 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.compet
   }
   pred <- lambda * (num) / term 
   # likelihood as before:
-  llik<-dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
+  llik<-dnorm(log.fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
   # return sum of negative log likelihoods
   return(sum(-1*llik))
 }
@@ -151,7 +151,7 @@ BH_4 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.compet
 #' third, interaction coefficients with every species; 
 #' fourth, effects of every covariate on alpha values (varying effect of every covariate over every interaction coefficient); 
 #' last, sigma value
-#' @param log_fitness log of fitness value
+#' @param log.fitness log of fitness value
 #' @param focal.comp.matrix dataframe with as many rows as observations, and one column for each competitor sp. 
 #' Values of the dataframe are number of competitors of each sp per observation.
 #' @param num.covariates number of covariates
@@ -163,7 +163,7 @@ BH_4 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.compet
 #' @export
 #'
 #' @examples
-BH_5 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
+BH_5 <- function(par, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates){
   lambda <- par[1] 
   lambda.cov <- par[(1+1):(1+num.covariates)] #effect of cov 1, 2... on lambda
   alpha.vector <- par[(1+num.covariates+1):(1+num.covariates+num.competitors)] #alpha_ij
@@ -196,7 +196,7 @@ BH_5 <- function(par, log_fitness, focal.comp.matrix, num.covariates, num.compet
   }
   pred <- lambda * (num) / term 
   # likelihood as before:
-  llik <- dnorm(log_fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
+  llik <- dnorm(log.fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
   # return sum of negative log likelihoods
   return(sum(-1*llik))
 }

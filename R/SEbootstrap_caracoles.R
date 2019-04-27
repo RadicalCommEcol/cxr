@@ -13,6 +13,11 @@ SEbootstrap <- function(optim.method,
                         num.covariates,
                         nsamples){
   
+  if(nsamples<2){
+    print("SEbootstrap: number of bootstrap samples cannot be < 2. Setting bootstrap samples to 2.")
+    nsamples <- 2
+  }
+  
   boot.results <- matrix(nrow = nsamples, ncol = length(init.par))
   
   for(i.sample in 1:nsamples){
@@ -22,7 +27,13 @@ SEbootstrap <- function(optim.method,
     # sample fitness, competition matrix, and covariates matrix
     boot.fitness <- log.fitness[my.sample]
     boot.comp.matrix <- focal.comp.matrix[my.sample,]
-    boot.covariates <- ifelse(is.data.frame(focal.covariates),focal.covariates[my.sample,],0)
+    # boot.covariates <- ifelse(is.data.frame(focal.covariates),focal.covariates[my.sample,],0)
+    if(is.data.frame(focal.covariates)){
+      boot.covariates <- as.data.frame(focal.covariates[my.sample,])
+    }else{
+      boot.covariates <- 0
+    }
+    
     
     num.competitors <- dim(focal.comp.matrix)[2]
     num.covariates <- ifelse(is.null(ncol(focal.covariates)),0,ncol(focal.covariates))
