@@ -3,8 +3,8 @@
 # using caracoles data
 # and lambda estimates previously calculated
 
-source("R/ER_optimize.R")
-source("R/EffectResponse.R")
+source("R/ER_optimize_nolambda.R")
+source("R/effect_response_model_nolambda.R")
 source("R/ER_SEbootstrap.R")
 require(tidyverse)
 
@@ -62,18 +62,25 @@ sigma <- mean(lambda.values$sigma)
 lambda.values <- subset(lambda.values, focal.sp %in% sp.data$focal)
 ##############
 
+lambda.values <- arrange(lambda.values, focal.sp)
+
 r.values <- rep(1,nrow(lambda.values))
 e.values <- rep(1,nrow(lambda.values))
 
-init.par <- c(lambda.values$lambda,r.values,e.values, sigma)
-lower.bounds <- c(rep(1, times=nrow(lambda.values)), rep(0, times=nrow(lambda.values)),rep(0, times=nrow(lambda.values)),0.0000000001)
-upper.bounds <- c(rep(1e4, times=nrow(lambda.values)), rep(1e2, times=nrow(lambda.values)),rep(1e2, times=nrow(lambda.values)),1)
+init.par <- c(r.values,e.values, sigma)
+lower.bounds <- c(rep(0, times=nrow(lambda.values)),rep(0, times=nrow(lambda.values)),0.0000000001)
+upper.bounds <- c(rep(1e2, times=nrow(lambda.values)),rep(1e2, times=nrow(lambda.values)),1)
+
+# init.par <- c(lambda.values$lambda,r.values,e.values, sigma)
+# lower.bounds <- c(rep(1, times=nrow(lambda.values)), rep(0, times=nrow(lambda.values)),rep(0, times=nrow(lambda.values)),0.0000000001)
+# upper.bounds <- c(rep(1e4, times=nrow(lambda.values)), rep(1e2, times=nrow(lambda.values)),rep(1e2, times=nrow(lambda.values)),1)
 
 ############
 # only species with proper estimates
 # TODO: group species without lambda/e in a general category?
 sp.data <- subset(sp.data, focal %in% lambda.values$focal.sp & competitor %in% lambda.values$focal.sp)
 
+sp.data <- arrange(sp.data,focal)
 ######################
 # compute each method
 
@@ -84,9 +91,12 @@ for(i.method in 1:length(optim.methods)){
   param.results <- ER_optimize(init.par = init.par,
                                lower.bounds = lower.bounds,
                                upper.bounds = upper.bounds,
-                               effect.response.model = EffectResponse,
+                               effect.response.model = effect_response_model,
+            
+                               # effect.response.model = EffectResponse,
                                optim.method = optim.methods[i.method],
                                sp.data = sp.data,
+                               lambda = lambda.values$lambda,
                                generate.errors = generate.errors,
                                bootstrap.samples = bootstrap.samples)
   
