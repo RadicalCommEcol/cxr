@@ -22,19 +22,23 @@ optim.methods <- c("optim_NM"
 
 # if we want quick calculations, we can disable 
 # the bootstrapping for the standard errors
-generate.errors <- FALSE
-bootstrap.samples <- 10
+generate.errors <- TRUE
+bootstrap.samples <- 3
 
-###
+optimize.lambda <- FALSE
+# model is different...
+if(optimize.lambda){
+  effect.response.model <- EffectResponse_lambda
+}else{
+  effect.response.model <- EffectResponse
+}
+
 write.results <- FALSE
 
 ###########################
 # Caracoles data
 
 competition.data <- readr::read_delim(file = "./data/competition.csv",delim = ";")
-
-# subset for quick tests only!
-# competition.data <- subset(competition.data, year == 2018)
 
 # assume that seed production does not change in a single year, so group observations
 # in year x site records
@@ -43,7 +47,6 @@ names(sp.data)[which(names(sp.data) == "seed")] <- "fitness"
 sp.data$site <- paste(sp.data$year,sp.data$plot,sp.data$subplot,sep="_")
 sp.data <- sp.data[,c("site","focal","fitness","competitor","number")]
 
-###########################
 # Initial parameter estimates
 lambda.values <- readr::read_delim(file = "./results/lambda_estimates.csv",delim = ";")
 
@@ -58,20 +61,21 @@ loglik <- lambda.values %>% group_by(optim.method) %>% summarise(sum.loglik = su
 lambda.values <- subset(lambda.values, optim.method == loglik$optim.method[loglik$sum.loglik == min(loglik$sum.loglik)])
 sigma <- mean(lambda.values$sigma)
 
-############## TEST
-lambda.values <- subset(lambda.values, focal.sp %in% sp.data$focal)
-##############
+# sanity check
+lambda.values <- arrange(subset(lambda.values, focal.sp %in% sp.data$focal),focal.sp)
 
+# initial estimates for r, e
 r.values <- rep(1,nrow(lambda.values))
 e.values <- rep(1,nrow(lambda.values))
 
-init.par <- c(lambda.values$lambda,r.values,e.values, sigma)
-lower.bounds <- c(rep(1, times=nrow(lambda.values)), rep(0, times=nrow(lambda.values)),rep(0, times=nrow(lambda.values)),0.0000000001)
-upper.bounds <- c(rep(1e4, times=nrow(lambda.values)), rep(1e2, times=nrow(lambda.values)),rep(1e2, times=nrow(lambda.values)),1)
+r.lower.bound <- rep(0, times=nrow(lambda.values))
+r.upper.bound <- rep(1e2, times=nrow(lambda.values))
+e.lower.bound <- r.lower.bound
+e.upper.bound <- r.upper.bound
+sigma.lower.bound <- 0.0000000001
+sigma.upper.bound <- 1
 
-############
 # only species with proper estimates
-# TODO: group species without lambda/e in a general category?
 sp.data <- subset(sp.data, focal %in% lambda.values$focal.sp & competitor %in% lambda.values$focal.sp)
 
 ######################
@@ -81,12 +85,20 @@ full.results <- NULL
 
 for(i.method in 1:length(optim.methods)){
   
-  param.results <- ER_optimize(init.par = init.par,
-                               lower.bounds = lower.bounds,
-                               upper.bounds = upper.bounds,
-                               effect.response.model = EffectResponse,
+  param.results <- ER_optimize(lambda.vector = lambda.values$lambda,
+                               e.vector = e.values,
+                               r.vector = r.values,
+                               sigma = sigma,
+                               e.lower.bound = e.lower.bound,
+                               e.upper.bound = e.upper.bound,
+                               r.lower.bound = r.lower.bound,
+                               r.upper.bound = r.upper.bound,
+                               sigma.lower.bound = sigma.lower.bound,
+                               sigma.upper.bound = sigma.upper.bound,
+                               effect.response.model = effect.response.model,
                                optim.method = optim.methods[i.method],
                                sp.data = sp.data,
+                               optimize.lambda = optimize.lambda,
                                generate.errors = generate.errors,
                                bootstrap.samples = bootstrap.samples)
   

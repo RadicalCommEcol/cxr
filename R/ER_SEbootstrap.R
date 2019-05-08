@@ -1,15 +1,40 @@
 ####
 # standard error estimates from bootstrap samples
 
-ER_SEbootstrap <- function(optim.method,
-                        effect.response.model,
-                        lower.bounds,
-                        upper.bounds,
-                        init.par,
-                        sp.data,
-                        nsamples){
+ER_SEbootstrap <- function(lambda.vector,
+                           e.vector,
+                           r.vector,
+                           sigma,
+                           e.lower.bound,
+                           e.upper.bound,
+                           r.lower.bound,
+                           r.upper.bound,
+                           sigma.lower.bound,
+                           sigma.upper.bound,
+                           lambda.lower.bound = 0,
+                           lambda.upper.bound = 1e3,
+                           sp.data,
+                           effect.response.model,
+                           optim.method,
+                           optimize.lambda,
+                           nsamples){
   
-  boot.results <- matrix(nrow = nsamples, ncol =  length(init.par))
+  if(nsamples<2){
+    print("SEbootstrap: number of bootstrap samples cannot be < 2. Setting bootstrap samples to 2.")
+    nsamples <- 2
+  }
+  
+  if(optimize.lambda){
+    init.par <- c(lambda.vector,r.vector,e.vector,sigma)
+    lower.bounds <- c(lambda.lower.bound,r.lower.bound,e.lower.bound,sigma.lower.bound)
+    upper.bounds <- c(lambda.upper.bound,r.upper.bound,e.upper.bound,sigma.upper.bound)
+  }else{
+    init.par <- c(r.vector,e.vector,sigma)
+    lower.bounds <- c(r.lower.bound,e.lower.bound,sigma.lower.bound)
+    upper.bounds <- c(r.upper.bound,e.upper.bound,sigma.upper.bound)
+  }
+  
+  boot.results <- matrix(nrow = nsamples, ncol = length(init.par))
   
   for(i.sample in 1:nsamples){
     
@@ -50,9 +75,34 @@ ER_SEbootstrap <- function(optim.method,
     boot.fitness <- boot.data$fitness
     boot.log.fitness <- log(boot.fitness)
     
+    # target and density matrices
+    # num.sp x num.observations. 1 if species is focal in a given observation, 0 otherwise
+    target_all <- NULL
+    # num.sp x num.observations. density of each species in each observation
+    density_all <- NULL
+    
+    sp.list <- unique(boot.data$focal)
+    
+    for(i.sp in 1:length(sp.list)){
+      
+      target.my.sp <- integer(nrow(boot.data))
+      target.my.sp <- ifelse(boot.data$focal == sp.list[i.sp],1,0)
+      
+      density.my.sp <- integer(nrow(boot.data))
+      for(i.obs in 1:nrow(boot.data)){
+        if(boot.data$competitor[i.obs] == sp.list[i.sp]){
+          density.my.sp[i.obs] <- boot.data$number[i.obs]
+        }
+      }
+      
+      target_all <- rbind(target_all,target.my.sp)
+      density_all <- rbind(density_all,density.my.sp)
+    }
+    
     if(optim.method == "optim_NM"){
       
-      my.boot.par <- optim(init.par, 
+      if(optimize.lambda){
+        my.boot.par <- optim(init.par, 
                            effect.response.model, 
                            gr = NULL, 
                            method = "Nelder-Mead", 
@@ -60,81 +110,204 @@ ER_SEbootstrap <- function(optim.method,
                            # upper = upper.bounds,
                            control = list(), 
                            hessian = F,
-                           sp.data = boot.data)
+                           target_all = target_all,
+                           density_all = density_all,
+                           log.fitness = boot.log.fitness)
+      }else{
+        my.boot.par <- optim(init.par, 
+                           effect.response.model, 
+                           gr = NULL, 
+                           method = "Nelder-Mead", 
+                           # lower = lower.bounds,
+                           # upper = upper.bounds,
+                           control = list(), 
+                           hessian = F,
+                           target_all = target_all,
+                           density_all = density_all,
+                           log.fitness = boot.log.fitness,
+                           lambda = lambda.vector)
+      }
       my.boot.par <- my.boot.par$par
       
     }else if(optim.methods[i.method] == "optim_L-BGFS-B"){
       
-      my.boot.par <- optim(init.par, 
-                           effect.response.model, 
-                           gr = NULL, 
-                           method = "L-BFGS-B", 
-                           lower = lower.bounds,
-                           upper = upper.bounds,
-                           control = list(), 
-                           hessian = F,
-                           sp.data = boot.data)
+      if(optimize.lambda){
+        my.boot.par <- optim(init.par, 
+                             effect.response.model, 
+                             gr = NULL, 
+                             method = "L-BFGS-B", 
+                             lower = lower.bounds,
+                             upper = upper.bounds,
+                             control = list(), 
+                             hessian = F,
+                             target_all = target_all,
+                             density_all = density_all,
+                             log.fitness = boot.log.fitness)
+      }else{
+        my.boot.par <- optim(init.par, 
+                             effect.response.model, 
+                             gr = NULL, 
+                             method = "L-BFGS-B", 
+                             lower = lower.bounds,
+                             upper = upper.bounds,
+                             control = list(), 
+                             hessian = F,
+                             target_all = target_all,
+                             density_all = density_all,
+                             log.fitness = boot.log.fitness,
+                             lambda = lambda.vector)
+      }
+      
       my.boot.par <- my.boot.par$par
       
     }else if(optim.methods[i.method] == "nloptr_CRS2_LM"){
       
-      my.boot.par <- nloptr(x0 = init.par,
-                            eval_f = effect.response.model,
-                            opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
-                            lb = lower.bounds,
-                            ub = upper.bounds,
-                            sp.data = boot.data)
+      if(optimize.lambda){
+        my.boot.par <- nloptr(x0 = init.par,
+                              eval_f = effect.response.model,
+                              opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
+                              lb = lower.bounds,
+                              ub = upper.bounds,
+                              target_all = target_all,
+                              density_all = density_all,
+                              log.fitness = boot.log.fitness)
+      }else{
+        my.boot.par <- nloptr(x0 = init.par,
+                              eval_f = effect.response.model,
+                              opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
+                              lb = lower.bounds,
+                              ub = upper.bounds,
+                              target_all = target_all,
+                              density_all = density_all,
+                              log.fitness = boot.log.fitness,
+                              lambda = lambda.vector)
+      }
+
       my.boot.par <- my.boot.par$solution
       
     }else if(optim.methods[i.method] == "nloptr_ISRES"){
       
-      my.boot.par <- nloptr(x0 = init.par,
-                            eval_f = effect.response.model,
-                            opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e3),
-                            lb = lower.bounds,
-                            ub = upper.bounds,
-                            sp.data = boot.data)
+      if(optimize.lambda){
+        my.boot.par <- nloptr(x0 = init.par,
+                              eval_f = effect.response.model,
+                              opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e3),
+                              lb = lower.bounds,
+                              ub = upper.bounds,
+                              target_all = target_all,
+                              density_all = density_all,
+                              log.fitness = boot.log.fitness)
+      }else{
+        my.boot.par <- nloptr(x0 = init.par,
+                              eval_f = effect.response.model,
+                              opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e3),
+                              lb = lower.bounds,
+                              ub = upper.bounds,
+                              target_all = target_all,
+                              density_all = density_all,
+                              log.fitness = boot.log.fitness,
+                              lambda = lambda.vector)
+      }
+    
       my.boot.par <- my.boot.par$solution
       
     }else if(optim.methods[i.method] == "nloptr_DIRECT_L_RAND"){
       
-      my.boot.par <- nloptr(x0 = init.par,
-                            eval_f = effect.response.model,
-                            opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e3),
-                            lb = lower.bounds,
-                            ub = upper.bounds,
-                            sp.data = boot.data)
+      if(optimize.lambda){
+        my.boot.par <- nloptr(x0 = init.par,
+                              eval_f = effect.response.model,
+                              opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e3),
+                              lb = lower.bounds,
+                              ub = upper.bounds,
+                              target_all = target_all,
+                              density_all = density_all,
+                              log.fitness = boot.log.fitness)
+      }else{
+        my.boot.par <- nloptr(x0 = init.par,
+                              eval_f = effect.response.model,
+                              opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e3),
+                              lb = lower.bounds,
+                              ub = upper.bounds,
+                              target_all = target_all,
+                              density_all = density_all,
+                              log.fitness = boot.log.fitness,
+                              lambda = lambda.vector)
+      }
+      
       my.boot.par <- my.boot.par$solution
       
     }else if(optim.methods[i.method] == "GenSA"){
       
-      my.boot.par <- GenSA(par = init.par,
-                           fn = effect.response.model,
-                           lower = lower.bounds,
-                           upper = upper.bounds, 
-                           control = list(maxit = 1e3), 
-                           sp.data = boot.data)
+      if(optimize.lambda){
+        my.boot.par <- GenSA(par = init.par,
+                             fn = effect.response.model,
+                             lower = lower.bounds,
+                             upper = upper.bounds, 
+                             control = list(maxit = 1e3), 
+                             target_all = target_all,
+                             density_all = density_all,
+                             log.fitness = boot.log.fitness)
+      }else{
+        my.boot.par <- GenSA(par = init.par,
+                             fn = effect.response.model,
+                             lower = lower.bounds,
+                             upper = upper.bounds, 
+                             control = list(maxit = 1e3), 
+                             target_all = target_all,
+                             density_all = density_all,
+                             log.fitness = boot.log.fitness,
+                             lambda = lambda.vector)
+      }
+      
       my.boot.par <- my.boot.par$par
       
     }else if(optim.methods[i.method] == "hydroPSO"){
       
-      # suppress annoying output
-      # sink("/dev/null")
-      my.boot.par <- hydroPSO::hydroPSO(par = init.par,
-                                        fn = effect.response.model,
-                                        lower = lower.bounds,
-                                        upper = upper.bounds, 
-                                        control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
-                                        sp.data = boot.data)
-      sink()
+      if(optimize.lambda){
+        # suppress annoying output
+        # sink("/dev/null")
+        my.boot.par <- hydroPSO::hydroPSO(par = init.par,
+                                          fn = effect.response.model,
+                                          lower = lower.bounds,
+                                          upper = upper.bounds, 
+                                          control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
+                                          target_all = target_all,
+                                          density_all = density_all,
+                                          log.fitness = boot.log.fitness)
+      }else{
+        # suppress annoying output
+        # sink("/dev/null")
+        my.boot.par <- hydroPSO::hydroPSO(par = init.par,
+                                          fn = effect.response.model,
+                                          lower = lower.bounds,
+                                          upper = upper.bounds, 
+                                          control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
+                                          target_all = target_all,
+                                          density_all = density_all,
+                                          log.fitness = boot.log.fitness,
+                                          lambda = lambda.vector)
+      }
+      
       my.boot.par <- my.boot.par$par
       
     }else if(optim.methods[i.method] == "DEoptimR"){
       
-      my.boot.par <- DEoptimR::JDEoptim(lower = lower.bounds,
-                                        upper = upper.bounds,
-                                        fn = effect.response.model,
-                                        sp.data = boot.data)
+      if(optimize.lambda){
+        my.boot.par <- DEoptimR::JDEoptim(lower = lower.bounds,
+                                          upper = upper.bounds,
+                                          fn = effect.response.model,
+                                          target_all = target_all,
+                                          density_all = density_all,
+                                          log.fitness = boot.log.fitness)
+      }else{
+        my.boot.par <- DEoptimR::JDEoptim(lower = lower.bounds,
+                                          upper = upper.bounds,
+                                          fn = effect.response.model,
+                                          target_all = target_all,
+                                          density_all = density_all,
+                                          log.fitness = boot.log.fitness,
+                                          lambda = lambda.vector)
+      }
+      
       my.boot.par <- my.boot.par$par
       
     }
