@@ -30,7 +30,9 @@
 #' @param init.alpha.cov initial estimates if no previous model
 #' @param lower.alpha.cov lower bounds
 #' @param upper.alpha.cov upper bounds
-#'
+#' @param include.lambda boolean, whether to include lambda in the list of parameters to optimize. If false, 
+#' it will not consider the "lambda.results" vector, or its lower/upper bounds.
+#' Note that this option only makes sense for model 2 onwards, because model 1 has a single lambda parameter.
 #' @return a list with three components: init.par with initial values, lower.bounds, and upper.bounds
 #' @export
 #'
@@ -55,7 +57,8 @@ InitParams <- function(model.index,
                        upper.lambda.cov = 1e5,
                        init.alpha.cov = 1e-3,
                        lower.alpha.cov = 1e-4,
-                       upper.alpha.cov = 1e5){
+                       upper.alpha.cov = 1e5,
+                       include.lambda = TRUE){
   
   
   if(model.index == 1){
@@ -78,10 +81,15 @@ InitParams <- function(model.index,
     init.sigma <- lambda.results$sigma[lambda.results$focal.sp == focal.sp & 
                                          lambda.results$model == 1 & 
                                          lambda.results$optim.method == init.par.method]
-    
-    init.par <- c(init.lambda,init.alpha,init.sigma)
-    lower.bounds <- c(lower.lambda, lower.alpha, lower.sigma)
-    upper.bounds <- c(upper.lambda, upper.alpha, upper.sigma)
+    if(include.lambda){
+      init.par <- c(init.lambda,init.alpha,init.sigma)
+      lower.bounds <- c(lower.lambda, lower.alpha, lower.sigma)
+      upper.bounds <- c(upper.lambda, upper.alpha, upper.sigma)
+    }else{
+      init.par <- c(init.alpha,init.sigma)
+      lower.bounds <- c(lower.alpha, lower.sigma)
+      upper.bounds <- c(upper.alpha, upper.sigma)
+    }
     
   }else if(model.index == 3){
     # fitness.model <- model3
@@ -94,11 +102,15 @@ InitParams <- function(model.index,
                                          lambda.results$model == 2 & 
                                          lambda.results$optim.method == init.par.method]
     
-    init.par <- c(init.lambda,init.alphas,init.sigma)
-    
-    lower.bounds <- c(lower.lambda, rep(lower.alpha, times=num.competitors),lower.sigma)
-    upper.bounds <- c(upper.lambda, rep(upper.alpha, times=num.competitors),upper.sigma)
-    
+    if(include.lambda){
+      init.par <- c(init.lambda,init.alphas,init.sigma)
+      lower.bounds <- c(lower.lambda, rep(lower.alpha, times=num.competitors),lower.sigma)
+      upper.bounds <- c(upper.lambda, rep(upper.alpha, times=num.competitors),upper.sigma)
+    }else{
+      init.par <- c(init.alphas,init.sigma)
+      lower.bounds <- c(rep(lower.alpha, times=num.competitors),lower.sigma)
+      upper.bounds <- c(rep(upper.alpha, times=num.competitors),upper.sigma)
+    }    
   }else if(model.index == 4){
     # fitness.model <- model4
     
@@ -113,19 +125,33 @@ InitParams <- function(model.index,
     init.l_cov <- rep(init.lambda.cov, times = num.covariates)
     init.a_cov <- rep(init.alpha.cov, times = num.covariates)
     
-    init.par <- c(init.lambda,init.l_cov,init.alphas,init.a_cov,init.sigma)
-    
-    lower.bounds <- c(lower.lambda, 
-                      rep(lower.lambda.cov, times=ncol(covariates)), 
-                      rep(lower.alpha, times=num.competitors), 
-                      rep(lower.alpha.cov, times=ncol(covariates)), 
-                      lower.sigma)
-    upper.bounds <- c(upper.lambda, 
-                      rep(upper.lambda.cov, times=ncol(covariates)), 
-                      rep(upper.alpha, times=num.competitors), 
-                      rep(upper.alpha.cov, times=ncol(covariates)), 
-                      upper.sigma)
-    
+    if(include.lambda){
+      init.par <- c(init.lambda,init.l_cov,init.alphas,init.a_cov,init.sigma)
+      
+      lower.bounds <- c(lower.lambda, 
+                        rep(lower.lambda.cov, times=ncol(covariates)), 
+                        rep(lower.alpha, times=num.competitors), 
+                        rep(lower.alpha.cov, times=ncol(covariates)), 
+                        lower.sigma)
+      upper.bounds <- c(upper.lambda, 
+                        rep(upper.lambda.cov, times=ncol(covariates)), 
+                        rep(upper.alpha, times=num.competitors), 
+                        rep(upper.alpha.cov, times=ncol(covariates)), 
+                        upper.sigma)
+    }else{
+      init.par <- c(init.l_cov,init.alphas,init.a_cov,init.sigma)
+      
+      lower.bounds <- c(#lower.lambda, 
+        rep(lower.lambda.cov, times=ncol(covariates)), 
+        rep(lower.alpha, times=num.competitors), 
+        rep(lower.alpha.cov, times=ncol(covariates)), 
+        lower.sigma)
+      upper.bounds <- c(#upper.lambda, 
+        rep(upper.lambda.cov, times=ncol(covariates)), 
+        rep(upper.alpha, times=num.competitors), 
+        rep(upper.alpha.cov, times=ncol(covariates)), 
+        upper.sigma)
+    }
   }else if(model.index == 5){
     # fitness.model <- model5
     
@@ -146,17 +172,31 @@ InitParams <- function(model.index,
       init.a_cov <- c(init.a_cov, rep(a_cov4[w], times = num.competitors))
     }
     
-    init.par <- c(init.lambda,init.l_cov,init.alphas,init.a_cov,init.sigma)
-    lower.bounds <- c(lower.lambda, 
-                      rep(lower.lambda.cov, times=ncol(covariates)), 
-                      rep(lower.alpha, times=num.competitors), 
-                      rep(lower.alpha.cov, times=(ncol(covariates)*num.competitors)), 
-                      lower.sigma)
-    upper.bounds <- c(upper.lambda, 
-                      rep(upper.lambda.cov, times=ncol(covariates)), 
-                      rep(upper.alpha, times=num.competitors), 
-                      rep(upper.alpha.cov, times=(ncol(covariates)*num.competitors)), 
-                      upper.sigma)
+    if(include.lambda){
+      init.par <- c(init.lambda,init.l_cov,init.alphas,init.a_cov,init.sigma)
+      lower.bounds <- c(lower.lambda, 
+                        rep(lower.lambda.cov, times=ncol(covariates)), 
+                        rep(lower.alpha, times=num.competitors), 
+                        rep(lower.alpha.cov, times=(ncol(covariates)*num.competitors)), 
+                        lower.sigma)
+      upper.bounds <- c(upper.lambda, 
+                        rep(upper.lambda.cov, times=ncol(covariates)), 
+                        rep(upper.alpha, times=num.competitors), 
+                        rep(upper.alpha.cov, times=(ncol(covariates)*num.competitors)), 
+                        upper.sigma)
+    }else{
+      init.par <- c(init.l_cov,init.alphas,init.a_cov,init.sigma)
+      lower.bounds <- c(#lower.lambda, 
+        rep(lower.lambda.cov, times=ncol(covariates)), 
+        rep(lower.alpha, times=num.competitors), 
+        rep(lower.alpha.cov, times=(ncol(covariates)*num.competitors)), 
+        lower.sigma)
+      upper.bounds <- c(#upper.lambda, 
+        rep(upper.lambda.cov, times=ncol(covariates)), 
+        rep(upper.alpha, times=num.competitors), 
+        rep(upper.alpha.cov, times=(ncol(covariates)*num.competitors)), 
+        upper.sigma)
+    }
     
   }# if-else model
   return(list(init.par = init.par, lower.bounds = lower.bounds, upper.bounds = upper.bounds))

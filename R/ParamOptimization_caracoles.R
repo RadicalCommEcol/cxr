@@ -8,7 +8,7 @@ library(GenSA)
 library(hydroPSO)
 library(DEoptimR)
 #other packages
-library(tidyr)
+library(tidyverse)
 
 ###########################
 # Caracoles competition data

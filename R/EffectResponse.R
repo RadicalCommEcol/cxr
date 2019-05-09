@@ -37,7 +37,6 @@ EffectResponse <- function(init.par, lambda, target_all, density_all, log.fitnes
   return(sum(-1*llik)) #sum of negative log likelihoods
 }
 
-
 #' Title ML estimation of effect-response function for annual plants
 #' 
 #' Calculates the log-likelihood of a Beverton-Holt model parameterized with given values
