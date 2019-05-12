@@ -23,7 +23,7 @@ optim.methods <- c("optim_NM"
 # if we want quick calculations, we can disable 
 # the bootstrapping for the standard errors
 generate.errors <- TRUE
-bootstrap.samples <- 3
+bootstrap.samples <- 1000
 
 optimize.lambda <- FALSE
 # model is different...
@@ -33,7 +33,7 @@ if(optimize.lambda){
   effect.response.model <- EffectResponse
 }
 
-write.results <- FALSE
+write.results <- TRUE
 
 ###########################
 # Caracoles data
