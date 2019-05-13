@@ -1,22 +1,25 @@
 ####
 # standard error estimates from bootstrap samples
 
-SEbootstrap <- function(optim.method,
-                        fitness.model,
+SEbootstrap <- function(fitness.model,
+                        optim.method,
+                        param.list,
+                        fixed.terms,
+                        log.fitness,
+                        init.par,
                         lower.bounds,
                         upper.bounds,
-                        init.par,
-                        log.fitness,
                         focal.comp.matrix,
                         focal.covariates,
-                        num.competitors,
-                        num.covariates,
                         nsamples){
   
   if(nsamples<2){
     print("SEbootstrap: number of bootstrap samples cannot be < 2. Setting bootstrap samples to 2.")
     nsamples <- 2
   }
+  
+  num.competitors <- dim(focal.comp.matrix)[2]
+  num.covariates <- ifelse(is.null(ncol(focal.covariates)),0,ncol(focal.covariates))
   
   boot.results <- matrix(nrow = nsamples, ncol = length(init.par))
   
@@ -34,30 +37,6 @@ SEbootstrap <- function(optim.method,
       boot.covariates <- 0
     }
     
-    
-    num.competitors <- dim(focal.comp.matrix)[2]
-    num.covariates <- ifelse(is.null(ncol(focal.covariates)),0,ncol(focal.covariates))
-    
-    # boot.data <- init.data[my.sample,]
-    
-    ############
-    # TODO: include fitness as a param, independent, so that I will not
-    # need to get it from the dataframe
-    # boot.fitness <- boot.data$seed
-    # ############
-    # 
-    # boot.fitness <- log(boot.fitness)
-    
-    ############
-    # TODO: same with the competitors and covariates matrix
-    # boot.comp.matrix <- as.matrix(boot.data[,10:(num.competitors+9)])
-    # 
-    # if(num.covariates > 0){
-    #   boot.covariates <- boot.data[,(num.competitors+10):(num.competitors+10+num.covariates-1), drop = FALSE]
-    # }else{
-    #   boot.covariates <- 0
-    # }
-    
     ############
     if(optim.method == "optim_NM"){
       
@@ -69,11 +48,13 @@ SEbootstrap <- function(optim.method,
                            # upper = upper.bounds,
                            control = list(), 
                            hessian = F,
+                           param.list = param.list,
                            log.fitness = boot.fitness, 
                            focal.comp.matrix = boot.comp.matrix,
                            num.covariates = num.covariates, 
                            num.competitors = num.competitors, 
-                           focal.covariates = boot.covariates)
+                           focal.covariates = boot.covariates,
+                           fixed.terms = fixed.terms)
       my.boot.par <- my.boot.par$par
       
     }else if(optim.methods[i.method] == "optim_L-BGFS-B"){

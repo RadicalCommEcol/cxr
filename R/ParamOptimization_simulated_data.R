@@ -1,8 +1,9 @@
-source("R/BevertonHolt_models_2.R")
+source("R/BevertonHolt_models.R")
 source("R/SEbootstrap_caracoles.R")
-source("R/cxr_optimize_with_initparams.R")
-source("R/InitParams_2.R")
+source("R/cxr_optimize.R")
+source("R/InitParams.R")
 source("R/RetrieveParams.R")
+source("R/GenerateTestData.R")
 # optimization methods
 library(nloptr)
 library(GenSA)
@@ -12,30 +13,33 @@ library(DEoptimR)
 library(tidyverse)
 
 ###########################
-# Caracoles competition data
-competition.data <- readr::read_delim(file = "./data/competition.csv",delim = ";")
+# test data
+focal.sp <- c(1,2)
+num.sp <- 5
+num.cov <- 2
+num.obs <- 25 # per focal species
 
-# spread the data from long to wide format
-competition.data <- spread(competition.data,competitor,number,fill = 0)
-# how many focal species
-focal.sp <- unique(competition.data$focal)
+focal.lambda <- c(10,20)
+alpha.matrix.orig <- matrix(data = runif(num.sp*num.sp,-0.001,0),nrow = num.sp, ncol = num.sp)
+alpha.cov.orig <- list()
+lambda.cov.orig <- list()
 
-# competition matrix
-comp.matrix <- as.matrix(competition.data[,10:ncol(competition.data)])
+for(i.sp in 1:num.sp){
+  alpha.cov.orig[[i.sp]] <- matrix(data = rnorm(num.sp*num.cov,0,0.005),nrow = num.sp, ncol = num.cov) # rows: competitors, columns: covariates
+  lambda.cov.orig[[i.sp]] <- rnorm(num.cov,0,0.005)#rep(0,num.cov)
+}
 
-# covariate: salinity
-covariates <- readr::read_delim(file = "../Caracoles/data/salinity.csv",delim = ";")
-
-# one observation per row of competition.data
-covariates <- covariates[,c("plot","subplot","year","sum_salinity")]
-full.data <- left_join(competition.data,covariates)
-
-# in case we have independent estimates of lambda and/or do not want to optimize it 
-# init.lambda <- readr::read_delim(file = "./results/lambda_estimates.csv",delim = ";")
-# init.lambda <- arrange(subset(init.lambda, model == max(init.lambda$model) & optim.method == "optim_NM"),focal.sp)
-# init.lambda <- init.lambda[,c("lambda")]
-
-# same with other parameters, read them here, modify param.list accordingly, and comment out the appropriate lines below.
+competition.data <- GenerateTestData(focal.sp = focal.sp,
+                              num.sp = num.sp,
+                              num.cov = num.cov,
+                              num.obs = num.obs,
+                              fitness.model = 5,
+                              focal.lambda = focal.lambda,
+                              alpha.matrix = alpha.matrix.orig,
+                              alpha.cov = alpha.cov.orig,
+                              lambda.cov = lambda.cov.orig)
+comp.matrix <- competition.data[,2:(num.sp+1)]
+covariates <- competition.data[,(num.sp+2):(num.sp+2+num.cov-1)]
 
 #############################
 # simulation parameters
@@ -43,20 +47,17 @@ full.data <- left_join(competition.data,covariates)
 # models to parameterize
 # be aware of including 4 and 5 ONLY if there are covariates
 # otherwise it makes no sense (see equations in Lanuza et al. 2018)
-models <- 3:5
+models <- 1:5
 
 # which values do we optimize for each model?
-param.list <- list(c("lambda","alpha"),
+param.list <- list(c("lambda"),
+                   c("lambda","alpha"),
+                   c("lambda","alpha"),
                    c("lambda","alpha","lambda.cov","alpha.cov"),
                    c("lambda","alpha","lambda.cov","alpha.cov"))
 
 # keep the model definitions in a list, for ease
 fitness.models <- list(BH_1 = BH_1,BH_2 = BH_2,BH_3 = BH_3,BH_4 = BH_4,BH_5 = BH_5)
-
-# environmental covariates
-covariates <- full.data[,"sum_salinity"]
-# if no covariates, comment above and uncomment here
-# covariates <- 0
 
 # optimization methods to use
 optim.methods <- c("optim_NM"#,
@@ -67,10 +68,10 @@ optim.methods <- c("optim_NM"#,
                    # "GenSA", 
                    # "hydroPSO", 
                    # "DEoptimR"
-                   )
+)
 
 # from which method are we taking initial estimates for the next model?
-# early observations suggest optim_NM or DEoptimR
+# preliminary observations suggest optim_NM or DEoptimR
 init.par.method <- optim.methods[1]
 init.method.num <- which(optim.methods == init.par.method)
 
@@ -97,8 +98,8 @@ upper.alpha.cov <- 1e4
 
 # if we want quick calculations, we can disable 
 # the bootstrapping for the standard errors
-generate.errors <- FALSE
-bootstrap.samples <- 1000
+generate.errors <- TRUE
+bootstrap.samples <- 5
 
 # store results?
 write.results <- FALSE
@@ -146,8 +147,8 @@ for(i.sp in 1:length(focal.sp)){
   focal <- unique(focal.sp.data$focal)
   # fitness metric...
   # subset >0 records, for calculating logarithms
-  focal.sp.data <- subset(focal.sp.data, seed > 0)
-  fitness <- focal.sp.data$seed #fitness
+  focal.sp.data <- subset(focal.sp.data, fitness > 0)
+  fitness <- focal.sp.data$fitness #fitness
   log.fitness <- log(fitness)
   # competition matrix: number of competitors
   focal.comp.matrix <- comp.matrix[which(competition.data$focal == focal.sp[i.sp]),]
@@ -156,9 +157,11 @@ for(i.sp in 1:length(focal.sp)){
   # number of covariates
   num.covariates <- ifelse(is.null(ncol(covariates)),0,ncol(covariates))
   # covariates for the focal species
-  focal.covariates <- ifelse(num.covariates > 0,covariates[which(competition.data$focal == focal.sp[i.sp]),,drop = FALSE],0)
-  # check
-  focal.covariates <- as.data.frame(focal.covariates)
+  if(num.covariates > 0){
+    focal.covariates <- covariates[which(competition.data$focal == focal.sp[i.sp]),,drop = FALSE]
+  }else{
+    focal.covariates <- 0
+  }
   
   # model to optimize  
   for(i.model in 1:length(models)){
@@ -184,18 +187,27 @@ for(i.sp in 1:length(focal.sp)){
     
     # sigma
     if(i.model != 1){
-      my.init.sigma <- param.matrices[[i.sp]][[models[i.model]-1]][[init.par.method]]$sigma
+      my.init.sigma <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$sigma
     }else{
       my.init.sigma <- sd(log.fitness)
     }
     
     # alpha
     if("alpha" %in% param.list[[i.model]]){
-      if(i.model != 1){
-        my.init.alpha <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha
+      
+      # if first model with alpha
+      if(models[i.model] <= 2){
+        my.init.alpha <- init.alpha
       }else{
-        if(models[[i.model]] == 2){
-          my.init.alpha <- init.alpha 
+        # if previous estimate
+        if(i.model > 1){
+          # if length of previous estimate is 1, expand it
+          if(length(param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha) == 1){
+            my.init.alpha <- rep(length(param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha) == 1,num.competitors)
+          }else{
+            my.init.alpha <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha
+          }
+          # if no previous estimate, expand the initial value
         }else{
           my.init.alpha <- rep(init.alpha,num.competitors)
         }
@@ -206,10 +218,15 @@ for(i.sp in 1:length(focal.sp)){
     
     # lambda.cov
     if("lambda.cov" %in% param.list[[i.model]]){
-      if(i.model != 1){
-        my.init.lambda.cov <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$lambda.cov
-      }else{
+      
+      if(models[i.model] == 4){
         my.init.lambda.cov <- rep(init.lambda.cov,num.covariates)
+      }else if(models[i.model] == 5){
+        if(i.model == 1){
+          my.init.lambda.cov <- rep(init.lambda.cov,num.covariates)
+        }else{
+          my.init.lambda.cov <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$lambda.cov
+        }
       }
     }else{
       my.init.lambda.cov <- init.lambda.cov[i.sp]
@@ -217,11 +234,11 @@ for(i.sp in 1:length(focal.sp)){
     
     # alpha.cov
     if("alpha.cov" %in% param.list[[i.model]]){
-      if(i.model != 1){
-        my.init.alpha.cov <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha.cov
-      }else{
-        if(models[[i.model]] == 4){
-          my.init.alpha.cov <- rep(init.alpha.cov,num.covariates)
+      if(models[i.model] == 4){
+        my.init.alpha.cov <- rep(init.alpha.cov,num.covariates)
+      }else if(models[i.model] == 5){
+        if(i.model > 1){
+          my.init.alpha.cov <- rep(param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha.cov,each=num.competitors)
         }else{
           my.init.alpha.cov <- rep(init.alpha.cov,num.competitors*num.covariates)
         }
@@ -229,94 +246,37 @@ for(i.sp in 1:length(focal.sp)){
     }else{
       my.init.alpha.cov <- init.alpha.cov[i.sp]
     }
-
+    
     ######################
     # compute each method
     
     for(i.method in 1:length(optim.methods)){
       
-      temp.results <- cxr_optimize2(fitness.model = fitness.models[[models[i.model]]],
-                                    optim.method = optim.methods[i.method],
-                                    param.list = param.list[[i.model]],
-                                    log.fitness = log.fitness,
-                                    init.lambda = my.init.lambda,
-                                    lower.lambda = lower.lambda,
-                                    upper.lambda = upper.lambda,
-                                    init.sigma = my.init.sigma,
-                                    lower.sigma = lower.sigma,
-                                    upper.sigma = upper.sigma,
-                                    init.alpha = my.init.alpha,
-                                    lower.alpha = lower.alpha,
-                                    upper.alpha = upper.alpha,
-                                    init.lambda.cov = my.init.lambda.cov,
-                                    lower.lambda.cov = lower.lambda.cov,
-                                    upper.lambda.cov = upper.lambda.cov,
-                                    init.alpha.cov = my.init.alpha.cov,
-                                    lower.alpha.cov = lower.alpha.cov,
-                                    upper.alpha.cov = upper.alpha.cov,
-                                    focal.comp.matrix = focal.comp.matrix,
-                                    focal.covariates = focal.covariates,
-                                    generate.errors = generate.errors,
-                                    bootstrap.samples = bootstrap.samples)
-      # fitness.model = fitness.models[[models[i.model]]]
-      # optim.method = optim.methods[i.method]
-      # param.list = param.list[[i.model]]
-      # log.fitness = log.fitness
-      # init.lambda = my.init.lambda
-      # lower.lambda = lower.lambda
-      # upper.lambda = upper.lambda
-      # init.sigma = my.init.sigma
-      # lower.sigma = lower.sigma
-      # upper.sigma = upper.sigma
-      # init.alpha = my.init.alpha
-      # lower.alpha = lower.alpha
-      # upper.alpha = upper.alpha
-      # init.lambda.cov = my.init.lambda.cov
-      # lower.lambda.cov = lower.lambda.cov
-      # upper.lambda.cov = upper.lambda.cov
-      # init.alpha.cov = my.init.alpha.cov
-      # lower.alpha.cov = lower.alpha.cov
-      # upper.alpha.cov = upper.alpha.cov
-      # focal.comp.matrix = focal.comp.matrix
-      # focal.covariates = focal.covariates
-      # generate.errors = generate.errors
-      # bootstrap.samples = bootstrap.samples
-      # temp.results <- cxr_optimize(init.par = init.param.list$init.par,
-      #                              lower.bounds = init.param.list$lower.bounds,
-      #                              upper.bounds = init.param.list$upper.bounds,
-      #                              fitness.model = fitness.models[[i.model]],
-      #                              optim.method = optim.methods[i.method],
-      #                              log.fitness = log.fitness,
-      #                              focal.comp.matrix = focal.comp.matrix,
-      #                              focal.covariates = focal.covariates,
-      #                              generate.errors = generate.errors,
-      #                              bootstrap.samples = bootstrap.samples,
-      #                              lambda.values = lambda.values)
-      
+      temp.results <- cxr_optimize(fitness.model = fitness.models[[models[i.model]]],
+                                   optim.method = optim.methods[i.method],
+                                   param.list = param.list[[i.model]],
+                                   log.fitness = log.fitness,
+                                   init.lambda = my.init.lambda,
+                                   lower.lambda = lower.lambda,
+                                   upper.lambda = upper.lambda,
+                                   init.sigma = my.init.sigma,
+                                   lower.sigma = lower.sigma,
+                                   upper.sigma = upper.sigma,
+                                   init.alpha = my.init.alpha,
+                                   lower.alpha = lower.alpha,
+                                   upper.alpha = upper.alpha,
+                                   init.lambda.cov = my.init.lambda.cov,
+                                   lower.lambda.cov = lower.lambda.cov,
+                                   upper.lambda.cov = upper.lambda.cov,
+                                   init.alpha.cov = my.init.alpha.cov,
+                                   lower.alpha.cov = lower.alpha.cov,
+                                   upper.alpha.cov = upper.alpha.cov,
+                                   focal.comp.matrix = focal.comp.matrix,
+                                   focal.covariates = focal.covariates,
+                                   generate.errors = generate.errors,
+                                   bootstrap.samples = bootstrap.samples)
       ###############
       # clean up results
-      
-      # if lambda is optimized, gather it
-      # otherwise, give the original value in the resulting dataframe
-      # if(include.lambda){
-      #   temp.lambda <- temp.results$lambda.results
-      # }else{
-      #   temp.lambda <- lambda.values$lambda
-      # }
-      # temp.lambda$focal.sp <- focal.sp[i.sp]
-      # temp.lambda$model <- models[i.model]
-      # temp.lambda$optim.method <- optim.methods[i.method]
-      # 
-      # temp.lambda <- temp.lambda[,c("focal.sp",
-      #                               "model",
-      #                               "optim.method",
-      #                               "lambda",
-      #                               "lambda.lower.error",
-      #                               "lambda.upper.error",
-      #                               "sigma",
-      #                               "log.likelihood")]
-      # 
-      # lambda.results <- rbind(lambda.results,temp.lambda)
       
       param.matrices[[i.sp]][[i.model]][[i.method]]$lambda <- temp.results$lambda
       param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.lower.error <- temp.results$lambda.lower.error
@@ -343,7 +303,6 @@ for(i.sp in 1:length(focal.sp)){
 }# for i.sp
 
 if(write.results){
-  # readr::write_delim(lambda.results,"./results/lambda_sigma_estimates.csv",delim = ";")
   save(param.matrices,file = "./results/param_estimates.Rdata")
 }
 

@@ -21,7 +21,7 @@ GenerateTestData <- function(focal.sp = 1,num.sp = 2,num.cov = 2,num.obs = 10, f
   
   full.data <- NULL
   
-  focal.sp <- paste("sp",as.character(focal.sp),sep="")
+  # focal.sp <- paste("sp",as.character(focal.sp),sep="")
   
   for(i.focal in 1:length(focal.sp)){
     
