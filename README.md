@@ -13,6 +13,12 @@ This package should be able to
 [X] predict site specific values (related to above)  
 [ ] Check strcutural stability of ecological communities.    
 [?] Translate coex to NMDS And unidimensional plots.  
+[ ] Sensitivity analysis
+
+Vignetes:
+[ ] Estimate parameters
+[ ] Plot competitive effects (Fitnes, coex plot, coex biplot)
+[ ] Predict
 
 To Do:
 [ ] Documentation  
