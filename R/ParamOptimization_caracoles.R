@@ -101,7 +101,7 @@ generate.errors <- TRUE
 bootstrap.samples <- 5
 
 # store results?
-write.results <- FALSE
+write.results <- TRUE
 
 ##############################
 # initialize data structures
