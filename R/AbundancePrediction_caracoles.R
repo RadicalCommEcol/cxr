@@ -31,7 +31,7 @@ abundances <- complete(abundances, year,plot,subplot,species, fill = list(indivi
 load("./results/param_estimates.Rdata")
 species.rates <- readr::read_delim("../Caracoles/raw_data/seed_germination_survival.txt",delim = "\t")
 
-# only species with germ/survival rates
+# only species with germination/survival rates
 sp.names <- sort(unique(species.rates$code))
 
 estimates.model <- "BH_5" #Beverton-holt model number 5

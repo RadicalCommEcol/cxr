@@ -24,7 +24,9 @@ cxr_optimize <- function(fitness.model,
                          bootstrap.samples = 0){
   
   num.competitors <- dim(focal.comp.matrix)[2]
+  name.competitors <- colnames(focal.comp.matrix)
   num.covariates <- ifelse(is.null(ncol(focal.covariates)),0,ncol(focal.covariates))
+  name.covariates <- colnames(focal.covariates)
   
   # generate vector of initial parameters
   # depending on which ones we want to optimize
@@ -277,20 +279,66 @@ cxr_optimize <- function(fitness.model,
                                  num.competitors = num.competitors,
                                  num.covariates = num.covariates)
   
-  
-  return(list(lambda = optim.params[["lambda"]],
-              lambda.lower.error = optim.params[["lambda"]]-1.96*error.params[["lambda"]],
-              lambda.upper.error = optim.params[["lambda"]]+1.96*error.params[["lambda"]],
-              sigma = ifelse(optim.params[["sigma"]] > 0, optim.params[["sigma"]], 1e-10),
-              alpha = optim.params[["alpha"]],
-              alpha.lower.error = optim.params[["alpha"]]-1.96*error.params[["alpha"]],
-              alpha.upper.error = optim.params[["alpha"]]+1.96*error.params[["alpha"]],
-              lambda.cov = optim.params[["lambda.cov"]],
-              lambda.cov.lower.error = optim.params[["lambda.cov"]]-1.96*error.params[["lambda.cov"]],
-              lambda.cov.upper.error = optim.params[["lambda.cov"]]+1.96*error.params[["lambda.cov"]],
-              alpha.cov = optim.params[["alpha.cov"]],
-              alpha.cov.lower.error = optim.params[["alpha.cov"]]-1.96*error.params[["alpha.cov"]],
-              alpha.cov.upper.error = optim.params[["alpha.cov"]]+1.96*error.params[["alpha.cov"]],
+  # append names to the results
+  lambda <- optim.params[["lambda"]]
+  lambda.lower.error <- optim.params[["lambda"]]-1.96*error.params[["lambda"]]
+  lambda.upper.error <- optim.params[["lambda"]]+1.96*error.params[["lambda"]]
+  sigma <- ifelse(optim.params[["sigma"]] > 0, optim.params[["sigma"]], 1e-10)
+  alpha <- optim.params[["alpha"]]
+  alpha.lower.error <- optim.params[["alpha"]]-1.96*error.params[["alpha"]]
+  alpha.upper.error <- optim.params[["alpha"]]+1.96*error.params[["alpha"]]
+  if(!is.null(name.competitors)){
+    names(alpha) <- name.competitors
+    if(!is.null(alpha.lower.error)){
+      names(alpha.lower.error) <- name.competitors
+    }
+    if(!is.null(alpha.upper.error)){
+      names(alpha.upper.error) <- name.competitors
+    }
+  }
+  lambda.cov <- optim.params[["lambda.cov"]]
+  lambda.cov.lower.error <- optim.params[["lambda.cov"]]-1.96*error.params[["lambda.cov"]]
+  lambda.cov.upper.error <- optim.params[["lambda.cov"]]+1.96*error.params[["lambda.cov"]]
+  if(!is.null(name.covariates)){
+    if(length(lambda.cov) == length(name.covariates)){
+      names(lambda.cov) <- name.covariates
+    }
+    if(length(lambda.cov.lower.error) == length(name.covariates)){
+      names(lambda.cov.lower.error) <- name.covariates
+    }
+    if(length(lambda.cov.upper.error) == length(name.covariates)){
+      names(lambda.cov.upper.error) <- name.covariates
+    }
+  }
+  alpha.cov <- optim.params[["alpha.cov"]]
+  alpha.cov.lower.error <- optim.params[["alpha.cov"]]-1.96*error.params[["alpha.cov"]]
+  alpha.cov.upper.error <- optim.params[["alpha.cov"]]+1.96*error.params[["alpha.cov"]]
+  if(!is.null(name.competitors) & !is.null(name.covariates)){
+    name.alpha.cov <- paste(rep(name.covariates,each = num.competitors),rep(name.competitors,num.covariates),sep="_")
+    if(length(alpha.cov) == length(name.alpha.cov)){
+      names(alpha.cov) <- name.alpha.cov
+    }
+    if(length(alpha.cov.lower.error) == length(name.alpha.cov)){
+      names(alpha.cov.lower.error) <- name.alpha.cov
+    }
+    if(length(alpha.cov.upper.error) == length(name.alpha.cov)){
+      names(alpha.cov.upper.error) <- name.alpha.cov
+    }
+  }
+
+  return(list(lambda = lambda,
+              lambda.lower.error = lambda.lower.error,
+              lambda.upper.error = lambda.upper.error,
+              sigma = sigma,
+              alpha = alpha,
+              alpha.lower.error = alpha.lower.error,
+              alpha.upper.error = alpha.upper.error,
+              lambda.cov = lambda.cov,
+              lambda.cov.lower.error = lambda.cov.lower.error,
+              lambda.cov.upper.error = lambda.cov.upper.error,
+              alpha.cov = alpha.cov,
+              alpha.cov.lower.error = alpha.cov.lower.error,
+              alpha.cov.upper.error = alpha.cov.upper.error,
               log.likelihood = log.likelihood
   ))
   
