@@ -1,6 +1,69 @@
-#cxr
+<img src="man/figures/rcites_logo.png" width="130" height="150" align="right"/>
 
-This package should be able to
+### Current Status
+
+[![Build status](https://travis-ci.org/ropensci/rcites.svg?branch=master)](https://travis-ci.org/ropensci/rcites)
+[![CRAN status](https://www.r-pkg.org/badges/version/rcites)](https://www.r-pkg.org/badges/version/rcites)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/rcites)](https://cran.r-project.org/package=rcites)
+[![Zenodo DOI](https://zenodo.org/badge/113842199.svg)](https://zenodo.org/badge/latestdoi/113842199)
+
+
+# cxr
+
+An R package to ... 
+
+
+### Installation
+
+The package can't be installed from CRAN yet:
+
+```R
+install.packages("cxr")
+library("rcites")
+```
+
+The development version can be installed via the `devtools` package:
+
+```R
+devtools::install_github("ibartomeus/cxr")
+library("cxr")
+```
+
+### Setup requirements and use
+
+
+Additional information about specific use examples are provided for ...
+
+
+### Key features
+
+The package has X key features:
+
+- `function()`: [description]() 
+
+### Prefix information
+
+The package functions have three different prefixes:
+
+### Citation information
+
+When citing, please refer to both the [package citation]() and the [release paper]().
+
+## Contributors
+
+- [Main contributors]()
+
+## Resources
+
+Another package dealing with ... 
+
+
+## Code of Conduct
+
+Please note that this project is released with a [Contributor Code of Conduct](CONDUCT.md).
+By participating in this project you agree to abide by its terms.
+
+## To Do (internal)
 
 [X] Use real and simulated data with any number of environmental covariates  
 [X] Calculate pairwise competition parameters (alpha) and max reproductive rates (lambda) from observational data by treatment  
@@ -16,7 +79,7 @@ This package should be able to
 
 To Do:
 [ ] Documentation  
-[X] Separate function from processes (vignettes)  
+[ ] Separate function from processes (vignettes)  
 [ ] Unit testing  
-[ ] Package extras (Code of conduct, news, licence, etc...)  
+[X] Package extras (Code of conduct, news, licence, etc...)  
 [ ] Liberate Jose's data.

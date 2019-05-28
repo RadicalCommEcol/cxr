@@ -3,12 +3,15 @@ Type: Package
 Title: Tools to calculate species coexistence
 Version: 0.1
 Date: 2017-12-30
-Author: I. Bartomeus, O Godoy, S- Saavedra, R. Rohr
-Maintainer: I. Bartomeus <nacho.bartomeus@gmail.com>
+Author: c(person("David", "Garcia-Callejas", role = c("aut", "cre"), email = "", comment = c(ORCID = "")),
+  person("Ignasi", "Bartomeus", role = c("aut"), comment = c(ORCID = "0000-0001-7893-4389")),
+  person("Oscar", "Godoy", role = c("aut"), email = "", comment = c(ORCID = "")),
+  person("", "", role = c("ctb")),
+  person("", "", role = c("rev")))
 Description: ...
 License: MIT + file LICENSE
 Depends:
   R (>= 3.0)
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
