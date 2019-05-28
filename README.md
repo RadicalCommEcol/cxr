@@ -1,11 +1,10 @@
-<img src="man/figures/rcites_logo.png" width="130" height="150" align="right"/>
 
 ### Current Status
 
-[![Build status](https://travis-ci.org/ropensci/rcites.svg?branch=master)](https://travis-ci.org/ropensci/rcites)
-[![CRAN status](https://www.r-pkg.org/badges/version/rcites)](https://www.r-pkg.org/badges/version/rcites)
-[![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/rcites)](https://cran.r-project.org/package=rcites)
-[![Zenodo DOI](https://zenodo.org/badge/113842199.svg)](https://zenodo.org/badge/latestdoi/113842199)
+[![Build status](https://travis-ci.org/ibartomeus/cxr.svg?branch=master)](https://travis-ci.org/ibartomeus/cxr)
+[![CRAN status](https://www.r-pkg.org/badges/version/cxr)](https://www.r-pkg.org/badges/version/cxr)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/cxr)](https://cran.r-project.org/package=cxr)
+[![Zenodo DOI](https://zenodo.org/badge/000000.svg)](https://zenodo.org/badge/latestdoi/000000)
 
 
 # cxr
