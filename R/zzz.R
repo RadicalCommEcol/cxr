@@ -3,6 +3,6 @@
 #' An R package to calculate species coexistance
 #' 
 #' @docType package
-#' @author I Bartomeus, G Godoy, S Saavedra, R Rohr
+#' @author D. Garcia-Callejas, I Bartomeus, G Godoy
 #' @name cxr
 NULL
