@@ -58,7 +58,7 @@ BH_abundance_3 <- function(sp.par,init.abund,cov.values,alpha.matrix,lambda.cov.
 #' @export
 #'
 #' @examples
-BH_abundance_3 <- function(sp.par,init.abund,cov.values,alpha.matrix,lambda.cov.matrix,alpha.cov.matrix){
+BH_abundance_5 <- function(sp.par,init.abund,cov.values,alpha.matrix,lambda.cov.matrix,alpha.cov.matrix){
   expected.abund <- rep(0,nrow(sp.par))
   for(i.sp in 1:nrow(sp.par)){
     # numerator

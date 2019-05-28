@@ -28,7 +28,7 @@ PredictAbundances <- function(par,timesteps,abundance.model,...){
       init.abund <- predicted.abundances$abundance[predicted.abundances$timestep == (i.timestep-1) & 
                                                      predicted.abundances$site == sites[i.site]]
       if(is.data.frame(par$covariates)){
-        cov.values <- par$covariates$value[par$covariates$site == i.site & 
+        cov.values <- par$covariates$value[par$covariates$site == sites[i.site] & 
                                              par$covariates$timestep == i.timestep]
       }else{
         cov.values <- 0
