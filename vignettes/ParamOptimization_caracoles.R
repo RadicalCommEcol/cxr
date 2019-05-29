@@ -228,108 +228,10 @@ for(i.sp in 1:length(focal.sp)){
     # obtain initial estimates from either previous model, or from given values
     # also, beware if the initial estimates are single values or vectors.
     
-    # # lambda
-    # if("lambda" %in% param.list[[i.model]]){
-    #   if(i.model != 1){
-    #     my.init.lambda <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$lambda
-    #   }else{
-    #     my.init.lambda <- mean(log.fitness)
-    #   }
-    # }else{
-    #   my.init.lambda <- init.lambda[i.sp]
-    # }
-    # 
-    # # sigma
-    # if(i.model != 1){
-    #   my.init.sigma <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$sigma
-    # }else{
-    #   my.init.sigma <- sd(log.fitness)
-    # }
-    # 
-    # # alpha
-    # if("alpha" %in% param.list[[i.model]]){
-    #   
-    #   # if first model with alpha
-    #   if(models[i.model] <= 2){
-    #     my.init.alpha <- init.alpha
-    #   }else{
-    #     # if previous estimate
-    #     if(i.model > 1){
-    #       # if length of previous estimate is 1, expand it
-    #       if(length(param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha) == 1){
-    #         my.init.alpha <- rep(length(param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha) == 1,num.competitors)
-    #       }else{
-    #         my.init.alpha <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha
-    #       }
-    #       # if no previous estimate, expand the initial value
-    #     }else{
-    #       my.init.alpha <- rep(init.alpha,num.competitors)
-    #     }
-    #   }
-    # }else{
-    #   my.init.alpha <- init.alpha[i.sp]
-    # }
-    # 
-    # # lambda.cov
-    # if("lambda.cov" %in% param.list[[i.model]]){
-    #   
-    #   if(models[i.model] == 4){
-    #     if(length(init.lambda.cov) == 1){
-    #       my.init.lambda.cov <- rep(init.lambda.cov,num.covariates)
-    #     }else if(length(init.lambda.cov) == num.covariates){
-    #       my.init.lambda.cov <- init.lambda.cov
-    #     }
-    #   }else if(models[i.model] > 4){
-    #     if(i.model == 1){
-    #       if(length(init.lambda.cov) == 1){
-    #         my.init.lambda.cov <- rep(init.lambda.cov,num.covariates)
-    #       }else if(length(init.lambda.cov) == num.covariates){
-    #         my.init.lambda.cov <- init.lambda.cov
-    #       }
-    #     }else{
-    #       my.init.lambda.cov <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$lambda.cov
-    #     }
-    #   }
-    # }else{
-    #   my.init.lambda.cov <- init.lambda.cov[i.sp]
-    # }
-    # 
-    # # alpha.cov
-    # if("alpha.cov" %in% param.list[[i.model]]){
-    #   if(models[i.model] == 4){
-    #     if(length(init.alpha.cov) == num.covariates){
-    #       my.init.alpha.cov <- init.alpha.cov
-    #     }else if(length(init.alpha.cov) == 1){
-    #       my.init.alpha.cov <- rep(init.alpha.cov,num.covariates)
-    #     }
-    #   }else if(models[i.model] > 4){
-    #     if(i.model > 1){
-    #       my.init.alpha.cov <- rep(param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha.cov,each=num.competitors)
-    #     }else{
-    #       if(length(init.alpha.cov) == num.covariates){
-    #         my.init.alpha.cov <- rep(init.alpha.cov,num.competitors)
-    #       }else if(length(init.alpha.cov) == 1){
-    #         my.init.alpha.cov <- rep(init.alpha.cov,num.competitors*num.covariates)
-    #       }
-    #     }
-    #   }
-    # }else{
-    #   my.init.alpha.cov <- init.alpha.cov[i.sp]
-    # }
-    
     ######################
     # compute each method
     
     for(i.method in 1:length(optim.methods)){
-      
-      # fitness.model = fitness.models[[models[i.model]]]
-      # optim.method = optim.methods[i.method]
-      # param.list = param.list[[i.model]]
-      # init.lambda = current.init.lambda
-      # init.sigma = current.init.sigma
-      # init.alpha = current.init.alpha
-      # init.lambda.cov = current.init.lambda.cov
-      # init.alpha.cov = current.init.alpha.cov
       
       temp.results <- cxr_optimize(fitness.model = fitness.models[[models[i.model]]],
                                    optim.method = optim.methods[i.method],
