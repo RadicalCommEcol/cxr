@@ -36,10 +36,10 @@ SEbootstrap <- function(fitness.model,
     }else{
       boot.covariates <- 0
     }
-    
+    my.boot.par <- NULL
     ############
     if(optim.method == "optim_NM"){
-      
+      tryCatch({
       my.boot.par <- optim(init.par, 
                            fitness.model, 
                            gr = NULL, 
@@ -56,9 +56,9 @@ SEbootstrap <- function(fitness.model,
                            focal.covariates = boot.covariates,
                            fixed.terms = fixed.terms)
       my.boot.par <- my.boot.par$par
-      
-    }else if(optim.methods[i.method] == "optim_L-BGFS-B"){
-      
+      }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
+    }else if(optim.method == "optim_L-BFGS-B"){
+      tryCatch({
       my.boot.par <- optim(init.par, 
                            fitness.model, 
                            gr = NULL, 
@@ -67,94 +67,109 @@ SEbootstrap <- function(fitness.model,
                            upper = upper.bounds,
                            control = list(), 
                            hessian = F,
+                           param.list = param.list,
                            log.fitness = boot.fitness, 
                            focal.comp.matrix = boot.comp.matrix,
                            num.covariates = num.covariates, 
                            num.competitors = num.competitors, 
-                           focal.covariates = focal.covariates)
+                           focal.covariates = boot.covariates,
+                           fixed.terms = fixed.terms)
       my.boot.par <- my.boot.par$par
-      
-    }else if(optim.methods[i.method] == "nloptr_CRS2_LM"){
-      
+      }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
+    }else if(optim.method == "nloptr_CRS2_LM"){
+      tryCatch({
       my.boot.par <- nloptr(x0 = init.par,eval_f = fitness.model,opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
                             lb = lower.bounds,
                             ub = upper.bounds,
+                            param.list = param.list,
                             log.fitness = boot.fitness, 
                             focal.comp.matrix = boot.comp.matrix,
                             num.covariates = num.covariates, 
                             num.competitors = num.competitors, 
-                            focal.covariates = focal.covariates)
+                            focal.covariates = boot.covariates,
+                            fixed.terms = fixed.terms)
       my.boot.par <- my.boot.par$solution
-      
-    }else if(optim.methods[i.method] == "nloptr_ISRES"){
-      
+      }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
+    }else if(optim.method == "nloptr_ISRES"){
+      tryCatch({
       my.boot.par <- nloptr(x0 = init.par,eval_f = fitness.model,opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e3),
                             lb = lower.bounds,
                             ub = upper.bounds,
+                            param.list = param.list,
                             log.fitness = boot.fitness, 
                             focal.comp.matrix = boot.comp.matrix,
                             num.covariates = num.covariates, 
                             num.competitors = num.competitors, 
-                            focal.covariates = focal.covariates)
+                            focal.covariates = boot.covariates,
+                            fixed.terms = fixed.terms)
       my.boot.par <- my.boot.par$solution
-      
-    }else if(optim.methods[i.method] == "nloptr_DIRECT_L_RAND"){
-      
+      }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
+    }else if(optim.method == "nloptr_DIRECT_L_RAND"){
+      tryCatch({
       my.boot.par <- nloptr(x0 = init.par,eval_f = fitness.model,opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e3),
                             lb = lower.bounds,
                             ub = upper.bounds,
+                            param.list = param.list,
                             log.fitness = boot.fitness, 
                             focal.comp.matrix = boot.comp.matrix,
                             num.covariates = num.covariates, 
                             num.competitors = num.competitors, 
-                            focal.covariates = focal.covariates)
+                            focal.covariates = boot.covariates,
+                            fixed.terms = fixed.terms)
       my.boot.par <- my.boot.par$solution
-      
-    }else if(optim.methods[i.method] == "GenSA"){
-      
+      }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
+    }else if(optim.method == "GenSA"){
+      tryCatch({
       my.boot.par <- GenSA(par = init.par,fn = fitness.model,
                            lower = lower.bounds,
                            upper = upper.bounds, 
                            control = list(maxit = 1e2), 
+                           param.list = param.list,
                            log.fitness = boot.fitness, 
                            focal.comp.matrix = boot.comp.matrix,
                            num.covariates = num.covariates, 
                            num.competitors = num.competitors, 
-                           focal.covariates = focal.covariates)
+                           focal.covariates = boot.covariates,
+                           fixed.terms = fixed.terms)
       my.boot.par <- my.boot.par$par
-      
-    }else if(optim.methods[i.method] == "hydroPSO"){
-      
+      }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
+    }else if(optim.method == "hydroPSO"){
+      tryCatch({
       # suppress annoying output
-      sink("/dev/null")
       my.boot.par <- hydroPSO::hydroPSO(par = init.par,fn = fitness.model,
                                         lower = lower.bounds,
                                         upper = upper.bounds, 
                                         control=list(write2disk=FALSE, maxit = 1e2, MinMax = "min", verbose = F),
+                                        param.list = param.list,
                                         log.fitness = boot.fitness, 
                                         focal.comp.matrix = boot.comp.matrix,
                                         num.covariates = num.covariates, 
                                         num.competitors = num.competitors, 
-                                        focal.covariates = focal.covariates)
-      sink()
+                                        focal.covariates = boot.covariates,
+                                        fixed.terms = fixed.terms)
+
       my.boot.par <- my.boot.par$par
-      
-    }else if(optim.methods[i.method] == "DEoptimR"){
-      
+      }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
+    }else if(optim.method == "DEoptimR"){
+      tryCatch({
       my.boot.par <- DEoptimR::JDEoptim(lower = lower.bounds,
                                         upper = upper.bounds,
                                         maxiter = 100,
                                         fn = fitness.model,
+                                        param.list = param.list,
                                         log.fitness = boot.fitness, 
                                         focal.comp.matrix = boot.comp.matrix,
                                         num.covariates = num.covariates, 
                                         num.competitors = num.competitors, 
-                                        focal.covariates = focal.covariates)
+                                        focal.covariates = boot.covariates,
+                                        fixed.terms = fixed.terms)
       my.boot.par <- my.boot.par$par
-      
+      }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
     }
     
-    boot.results[i.sample,] <- my.boot.par
+    if(!is.null(my.boot.par)){
+      boot.results[i.sample,] <- my.boot.par
+    }
     
   }  
   

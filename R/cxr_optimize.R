@@ -52,8 +52,20 @@ cxr_optimize <- function(fitness.model,
   # sigma. This one is always present
   if(is.null(init.sigma)){
     my.init.sigma <- sd(log.fitness)
+    # double check
+    if(my.init.sigma > upper.sigma){
+      my.init.sigma <- upper.sigma
+    }else if(my.init.sigma < lower.sigma){
+      my.init.sigma <- lower.sigma
+    }
   }else{
     my.init.sigma <- init.sigma
+    # double check
+    if(my.init.sigma > upper.sigma){
+      my.init.sigma <- upper.sigma
+    }else if(my.init.sigma < lower.sigma){
+      my.init.sigma <- lower.sigma
+    }
   }
   
   # alpha, single value or matrix
@@ -96,9 +108,11 @@ cxr_optimize <- function(fitness.model,
                          num.competitors = num.competitors,
                          num.covariates = num.covariates)
   
+  # in case of error
+  optim.result <- NULL
   # optim functions
   if(optim.method == "optim_NM"){
-    
+    tryCatch({
     optim.result <- optim(init.par$init.par, 
                           fitness.model, 
                           gr = NULL, 
@@ -114,9 +128,9 @@ cxr_optimize <- function(fitness.model,
                           num.competitors = num.competitors, 
                           focal.covariates = focal.covariates,
                           fixed.terms = fixed.terms)
-    
+  }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "optim_L-BFGS-B"){
-    
+    tryCatch({
     optim.result <- optim(init.par$init.par, 
                           fitness.model, 
                           gr = NULL, 
@@ -132,12 +146,12 @@ cxr_optimize <- function(fitness.model,
                           num.competitors = num.competitors, 
                           focal.covariates = focal.covariates,
                           fixed.terms = fixed.terms)
-    
+    }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "nloptr_CRS2_LM"){
-    
+    tryCatch({
     optim.result <- nloptr(x0 = init.par$init.par,
                            eval_f = fitness.model,
-                           opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
+                           opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e4),
                            lb = init.par$lower.bounds,
                            ub = init.par$upper.bounds,
                            param.list = param.list,
@@ -147,12 +161,12 @@ cxr_optimize <- function(fitness.model,
                            num.competitors = num.competitors, 
                            focal.covariates = focal.covariates,
                            fixed.terms = fixed.terms)
-    
+    }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "nloptr_ISRES"){
-    
+    tryCatch({
     optim.result <- nloptr(x0 = init.par$init.par,
                            eval_f = fitness.model,
-                           opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e3),
+                           opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e4),
                            lb = init.par$lower.bounds,
                            ub = init.par$upper.bounds,
                            param.list = param.list,
@@ -162,12 +176,12 @@ cxr_optimize <- function(fitness.model,
                            num.competitors = num.competitors, 
                            focal.covariates = focal.covariates,
                            fixed.terms = fixed.terms)
-    
+    }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "nloptr_DIRECT_L_RAND"){
-    
+    tryCatch({
     optim.result <- nloptr(x0 = init.par$init.par,
                            eval_f = fitness.model,
-                           opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e3),
+                           opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e4),
                            lb = init.par$lower.bounds,
                            ub = init.par$upper.bounds,
                            param.list = param.list,
@@ -177,9 +191,9 @@ cxr_optimize <- function(fitness.model,
                            num.competitors = num.competitors, 
                            focal.covariates = focal.covariates,
                            fixed.terms = fixed.terms)
-    
+    }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "GenSA"){
-    
+    tryCatch({
     optim.result <- GenSA(par = init.par$init.par,
                           fn = fitness.model,
                           lower = init.par$lower.bounds,
@@ -192,9 +206,9 @@ cxr_optimize <- function(fitness.model,
                           num.competitors = num.competitors, 
                           focal.covariates = focal.covariates,
                           fixed.terms = fixed.terms)
-    
+    }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "hydroPSO"){
-    
+    tryCatch({
     # suppress annoying output??
     # sink("/dev/null")
     optim.result <- hydroPSO::hydroPSO(par = init.par$init.par,
@@ -209,10 +223,10 @@ cxr_optimize <- function(fitness.model,
                                        num.competitors = num.competitors, 
                                        focal.covariates = focal.covariates,
                                        fixed.terms = fixed.terms)
-    
+    }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
     
   }else if(optim.method == "DEoptimR"){
-    
+    tryCatch({
     optim.result <- DEoptimR::JDEoptim(lower = init.par$lower.bounds,upper = init.par$upper.bounds,fn = fitness.model,
                                        param.list = param.list,
                                        log.fitness = log.fitness, 
@@ -221,14 +235,17 @@ cxr_optimize <- function(fitness.model,
                                        num.competitors = num.competitors, 
                                        focal.covariates = focal.covariates,
                                        fixed.terms = fixed.terms)
+    }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }
   
   ##################################
   # gather the output from the method
   # if-else the method outputs optim-like values
-  if(optim.method %in% c("optim_NM","optim_L-BGFS-B","DEoptimR","hydroPSO","GenSA")){
+  if(optim.method %in% c("optim_NM","optim_L-BFGS-B","DEoptimR","hydroPSO","GenSA")){
     
     print(paste("...",optim.method," finished with convergence status ",optim.result$convergence,sep=""))
+    
+    if(!is.null(optim.result)){
     
     optim.params <- RetrieveParams(optim.params = optim.result$par,
                                    param.list = param.list,
@@ -236,12 +253,24 @@ cxr_optimize <- function(fitness.model,
                                    alpha.cov.length = length(init.alpha.cov),
                                    num.competitors = num.competitors,
                                    num.covariates = num.covariates)
-    
+
     log.likelihood <- optim.result$value
+    
+    }else{
+      optim.params <- RetrieveParams(optim.params = rep(NA,length(init.par$init.par)),
+                                     param.list = param.list,
+                                     alpha.length = length(init.alpha),
+                                     alpha.cov.length = length(init.alpha.cov),
+                                     num.competitors = num.competitors,
+                                     num.covariates = num.covariates)
+      log.likelihood <- NA
+    }
     
   }else{ # methods with different nomenclature
     
     print(paste("...",optim.method," finished with convergence status ",optim.result$status,sep=""))
+    
+    if(!is.null(optim.result)){
     
     optim.params <- RetrieveParams(optim.params = optim.result$solution,
                                    param.list = param.list,
@@ -251,6 +280,16 @@ cxr_optimize <- function(fitness.model,
                                    num.covariates = num.covariates)
     
     log.likelihood <- optim.result$objective
+    
+    }else{
+      optim.params <- RetrieveParams(optim.params = rep(NA,length(init.par$init.par)),
+                                     param.list = param.list,
+                                     alpha.length = length(init.alpha),
+                                     alpha.cov.length = length(init.alpha.cov),
+                                     num.competitors = num.competitors,
+                                     num.covariates = num.covariates)
+      log.likelihood <- NA
+    }
   }  
   
   #####################
@@ -278,27 +317,35 @@ cxr_optimize <- function(fitness.model,
                                  alpha.cov.length = length(init.alpha.cov),
                                  num.competitors = num.competitors,
                                  num.covariates = num.covariates)
-  
-  # append names to the results
+  # return list of results
   lambda <- optim.params[["lambda"]]
   lambda.lower.error <- optim.params[["lambda"]]-1.96*error.params[["lambda"]]
   lambda.upper.error <- optim.params[["lambda"]]+1.96*error.params[["lambda"]]
+  
   sigma <- ifelse(optim.params[["sigma"]] > 0, optim.params[["sigma"]], 1e-10)
+  
   alpha <- optim.params[["alpha"]]
   alpha.lower.error <- optim.params[["alpha"]]-1.96*error.params[["alpha"]]
   alpha.upper.error <- optim.params[["alpha"]]+1.96*error.params[["alpha"]]
-  if(!is.null(name.competitors)){
-    names(alpha) <- name.competitors
-    if(!is.null(alpha.lower.error)){
-      names(alpha.lower.error) <- name.competitors
-    }
-    if(!is.null(alpha.upper.error)){
-      names(alpha.upper.error) <- name.competitors
+  
+  # named vectors
+  if(!is.null(name.competitors) & !is.null(alpha)){
+    if(length(alpha) == length(name.competitors)){
+      names(alpha) <- name.competitors
+      if(!is.null(alpha.lower.error)){
+        names(alpha.lower.error) <- name.competitors
+      }
+      if(!is.null(alpha.upper.error)){
+        names(alpha.upper.error) <- name.competitors
+      }
     }
   }
+  
   lambda.cov <- optim.params[["lambda.cov"]]
   lambda.cov.lower.error <- optim.params[["lambda.cov"]]-1.96*error.params[["lambda.cov"]]
   lambda.cov.upper.error <- optim.params[["lambda.cov"]]+1.96*error.params[["lambda.cov"]]
+  
+  # named vectors
   if(!is.null(name.covariates)){
     if(length(lambda.cov) == length(name.covariates)){
       names(lambda.cov) <- name.covariates
@@ -310,9 +357,12 @@ cxr_optimize <- function(fitness.model,
       names(lambda.cov.upper.error) <- name.covariates
     }
   }
+  
   alpha.cov <- optim.params[["alpha.cov"]]
   alpha.cov.lower.error <- optim.params[["alpha.cov"]]-1.96*error.params[["alpha.cov"]]
   alpha.cov.upper.error <- optim.params[["alpha.cov"]]+1.96*error.params[["alpha.cov"]]
+  
+  # named vectors
   if(!is.null(name.competitors) & !is.null(name.covariates)){
     name.alpha.cov <- paste(rep(name.covariates,each = num.competitors),rep(name.competitors,num.covariates),sep="_")
     if(length(alpha.cov) == length(name.alpha.cov)){
@@ -326,21 +376,24 @@ cxr_optimize <- function(fitness.model,
     }
   }
 
-  return(list(lambda = lambda,
-              lambda.lower.error = lambda.lower.error,
-              lambda.upper.error = lambda.upper.error,
-              sigma = sigma,
-              alpha = alpha,
-              alpha.lower.error = alpha.lower.error,
-              alpha.upper.error = alpha.upper.error,
-              lambda.cov = lambda.cov,
-              lambda.cov.lower.error = lambda.cov.lower.error,
-              lambda.cov.upper.error = lambda.cov.upper.error,
-              alpha.cov = alpha.cov,
-              alpha.cov.lower.error = alpha.cov.lower.error,
-              alpha.cov.upper.error = alpha.cov.upper.error,
-              log.likelihood = log.likelihood
-  ))
+  return.list <- list(lambda = lambda,
+                      lambda.lower.error = lambda.lower.error,
+                      lambda.upper.error = lambda.upper.error,
+                      sigma = sigma,
+                      alpha = alpha,
+                      alpha.lower.error = alpha.lower.error,
+                      alpha.upper.error = alpha.upper.error,
+                      lambda.cov = lambda.cov,
+                      lambda.cov.lower.error = lambda.cov.lower.error,
+                      lambda.cov.upper.error = lambda.cov.upper.error,
+                      alpha.cov = alpha.cov,
+                      alpha.cov.lower.error = alpha.cov.lower.error,
+                      alpha.cov.upper.error = alpha.cov.upper.error,
+                      log.likelihood = log.likelihood)
   
+  return.list[lengths(return.list) == 0] <- NA_character_
+  
+  return.list
+
 }
 

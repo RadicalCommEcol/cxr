@@ -24,11 +24,11 @@ focal.sp <- unique(competition.data$focal)
 comp.matrix <- as.matrix(competition.data[,10:ncol(competition.data)])
 
 # covariate: salinity
-covariates <- readr::read_delim(file = "../Caracoles/data/salinity.csv",delim = ";")
+salinity <- readr::read_delim(file = "../Caracoles/data/salinity.csv",delim = ";")
 
 # one observation per row of competition.data
-covariates <- covariates[,c("plot","subplot","year","sum_salinity")]
-full.data <- left_join(competition.data,covariates)
+salinity <- salinity[,c("plot","subplot","year","sum_salinity")]
+full.data <- left_join(competition.data,salinity)
 
 # in case we have independent estimates of lambda and/or do not want to optimize it 
 # init.lambda <- readr::read_delim(file = "./results/lambda_estimates.csv",delim = ";")
@@ -36,6 +36,7 @@ full.data <- left_join(competition.data,covariates)
 # init.lambda <- init.lambda[,c("lambda")]
 
 # same with other parameters, read them here, modify param.list accordingly, and comment out the appropriate lines below.
+# init.alpha <- matrix(rnorm(ncol(comp.matrix)*ncol(comp.matrix),1,0.01),nrow = ncol(comp.matrix),ncol = ncol(comp.matrix))
 
 #############################
 # simulation parameters
@@ -59,13 +60,13 @@ covariates <- full.data[,"sum_salinity"]
 # covariates <- 0
 
 # optimization methods to use
-optim.methods <- c("optim_NM"#,
-                   # "optim_L-BFGS-B",
-                   # "nloptr_CRS2_LM", 
-                   # "nloptr_ISRES", 
-                   # "nloptr_DIRECT_L_RAND", 
-                   # "GenSA", 
-                   # "hydroPSO", 
+optim.methods <- c(#"optim_NM",
+                   "optim_L-BFGS-B",
+                  "nloptr_CRS2_LM"
+                   # "nloptr_ISRES"
+                   # "nloptr_DIRECT_L_RAND"
+                    # "GenSA"
+                   # "hydroPSO"
                    # "DEoptimR"
 )
 
@@ -80,7 +81,7 @@ init.method.num <- which(optim.methods == init.par.method)
 lower.lambda <- 1
 upper.lambda <- 1e4
 # sigma
-lower.sigma <- 0
+lower.sigma <- 0.000001
 upper.sigma <- 1
 # alpha
 init.alpha <- 1e-4
@@ -88,20 +89,20 @@ lower.alpha <- 0
 upper.alpha <- 1e5
 # lambda.cov
 init.lambda.cov <- 1
-lower.lambda.cov <- 1e-4
+lower.lambda.cov <- 0
 upper.lambda.cov <- 1e4
 # alpha.cov
 init.alpha.cov <- 1
-lower.alpha.cov <- 1e-4
+lower.alpha.cov <- 0
 upper.alpha.cov <- 1e4
 
-# if we want quick calculations, we can disable 
+# if we want quicker calculations, we can disable 
 # the bootstrapping for the standard errors
 generate.errors <- TRUE
-bootstrap.samples <- 5
+bootstrap.samples <- 3
 
 # store results?
-write.results <- TRUE
+write.results <- FALSE
 
 ##############################
 # initialize data structures
@@ -162,112 +163,191 @@ for(i.sp in 1:length(focal.sp)){
     focal.covariates <- 0
   }
   
+  # generate initial values for the different parameters
+  # or gather them from data if they are not to be optimized
+  
+  # lambda
+  if("lambda" %in% param.list[[i.model]]){
+    current.init.lambda <- mean(log.fitness)
+  }else{
+    current.init.lambda <- init.lambda[i.sp]
+  }
+  # sigma
+  current.init.sigma <- sd(log.fitness)
+  if(current.init.sigma > upper.sigma){
+    current.init.sigma <- upper.sigma
+  }
+  # alpha
+  if("alpha" %in% param.list[[i.model]]){
+    if(models[i.model]<=2){
+      alpha.length <- 1
+    }else{
+      alpha.length <- num.competitors
+    }
+    if(length(init.alpha) != alpha.length){
+     current.init.alpha <- rep(init.alpha[1],alpha.length) 
+    }else{
+      current.init.alpha <- init.alpha
+    }
+  }else{
+    current.init.alpha <- init.alpha[i.sp,]
+  }
+  # lambda.cov
+  if("lambda.cov" %in% param.list[[i.model]]){
+    if(length(init.lambda.cov) != num.covariates){
+      current.init.lambda.cov <- rep(init.lambda.cov[1],num.covariates)
+    }else{
+      current.init.lambda.cov <- init.lambda.cov  
+    }
+  }else{
+    current.init.lambda.cov <- init.lambda.cov[i.sp]  
+  }
+  # alpha.cov
+  if("alpha.cov" %in% param.list[[i.model]]){
+    if(models[i.model]<=4){
+      length.alpha.cov <- num.covariates
+    }else if(models[i.model]>4){
+      length.alpha.cov <- num.covariates*num.competitors
+    }
+    if(length(init.alpha.cov) != length.alpha.cov){
+      current.init.alpha.cov <- rep(init.alpha.cov[1],length.alpha.cov)
+    }else{
+      current.init.alpha.cov <- init.alpha.cov  
+    }  
+  }else{
+    current.init.alpha.cov <- init.alpha.cov[i.sp]  
+  }
+  
   # model to optimize  
   for(i.model in 1:length(models)){
     
     print("*********************************")
     print(paste(date()," - starting focal sp ",focal.sp[i.sp],", model ",models[i.model],sep=""))
     print("*********************************")
-    #message()
-    
+
     # obtain initial estimates from either previous model, or from given values
     # also, beware if the initial estimates are single values or vectors.
     
-    # lambda
-    if("lambda" %in% param.list[[i.model]]){
-      if(i.model != 1){
-        my.init.lambda <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$lambda
-      }else{
-        my.init.lambda <- mean(log.fitness)
-      }
-    }else{
-      my.init.lambda <- init.lambda[i.sp]
-    }
-    
-    # sigma
-    if(i.model != 1){
-      my.init.sigma <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$sigma
-    }else{
-      my.init.sigma <- sd(log.fitness)
-    }
-    
-    # alpha
-    if("alpha" %in% param.list[[i.model]]){
-      
-      # if first model with alpha
-      if(models[i.model] <= 2){
-        my.init.alpha <- init.alpha
-      }else{
-        # if previous estimate
-        if(i.model > 1){
-          # if length of previous estimate is 1, expand it
-          if(length(param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha) == 1){
-            my.init.alpha <- rep(length(param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha) == 1,num.competitors)
-          }else{
-            my.init.alpha <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha
-          }
-          # if no previous estimate, expand the initial value
-        }else{
-          my.init.alpha <- rep(init.alpha,num.competitors)
-        }
-      }
-    }else{
-      my.init.alpha <- init.alpha[i.sp]
-    }
-    
-    # lambda.cov
-    if("lambda.cov" %in% param.list[[i.model]]){
-      
-      if(models[i.model] == 4){
-        my.init.lambda.cov <- rep(init.lambda.cov,num.covariates)
-      }else if(models[i.model] == 5){
-        if(i.model == 1){
-          my.init.lambda.cov <- rep(init.lambda.cov,num.covariates)
-        }else{
-          my.init.lambda.cov <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$lambda.cov
-        }
-      }
-    }else{
-      my.init.lambda.cov <- init.lambda.cov[i.sp]
-    }
-    
-    # alpha.cov
-    if("alpha.cov" %in% param.list[[i.model]]){
-      if(models[i.model] == 4){
-        my.init.alpha.cov <- rep(init.alpha.cov,num.covariates)
-      }else if(models[i.model] == 5){
-        if(i.model > 1){
-          my.init.alpha.cov <- rep(param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha.cov,each=num.competitors)
-        }else{
-          my.init.alpha.cov <- rep(init.alpha.cov,num.competitors*num.covariates)
-        }
-      }
-    }else{
-      my.init.alpha.cov <- init.alpha.cov[i.sp]
-    }
+    # # lambda
+    # if("lambda" %in% param.list[[i.model]]){
+    #   if(i.model != 1){
+    #     my.init.lambda <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$lambda
+    #   }else{
+    #     my.init.lambda <- mean(log.fitness)
+    #   }
+    # }else{
+    #   my.init.lambda <- init.lambda[i.sp]
+    # }
+    # 
+    # # sigma
+    # if(i.model != 1){
+    #   my.init.sigma <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$sigma
+    # }else{
+    #   my.init.sigma <- sd(log.fitness)
+    # }
+    # 
+    # # alpha
+    # if("alpha" %in% param.list[[i.model]]){
+    #   
+    #   # if first model with alpha
+    #   if(models[i.model] <= 2){
+    #     my.init.alpha <- init.alpha
+    #   }else{
+    #     # if previous estimate
+    #     if(i.model > 1){
+    #       # if length of previous estimate is 1, expand it
+    #       if(length(param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha) == 1){
+    #         my.init.alpha <- rep(length(param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha) == 1,num.competitors)
+    #       }else{
+    #         my.init.alpha <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha
+    #       }
+    #       # if no previous estimate, expand the initial value
+    #     }else{
+    #       my.init.alpha <- rep(init.alpha,num.competitors)
+    #     }
+    #   }
+    # }else{
+    #   my.init.alpha <- init.alpha[i.sp]
+    # }
+    # 
+    # # lambda.cov
+    # if("lambda.cov" %in% param.list[[i.model]]){
+    #   
+    #   if(models[i.model] == 4){
+    #     if(length(init.lambda.cov) == 1){
+    #       my.init.lambda.cov <- rep(init.lambda.cov,num.covariates)
+    #     }else if(length(init.lambda.cov) == num.covariates){
+    #       my.init.lambda.cov <- init.lambda.cov
+    #     }
+    #   }else if(models[i.model] > 4){
+    #     if(i.model == 1){
+    #       if(length(init.lambda.cov) == 1){
+    #         my.init.lambda.cov <- rep(init.lambda.cov,num.covariates)
+    #       }else if(length(init.lambda.cov) == num.covariates){
+    #         my.init.lambda.cov <- init.lambda.cov
+    #       }
+    #     }else{
+    #       my.init.lambda.cov <- param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$lambda.cov
+    #     }
+    #   }
+    # }else{
+    #   my.init.lambda.cov <- init.lambda.cov[i.sp]
+    # }
+    # 
+    # # alpha.cov
+    # if("alpha.cov" %in% param.list[[i.model]]){
+    #   if(models[i.model] == 4){
+    #     if(length(init.alpha.cov) == num.covariates){
+    #       my.init.alpha.cov <- init.alpha.cov
+    #     }else if(length(init.alpha.cov) == 1){
+    #       my.init.alpha.cov <- rep(init.alpha.cov,num.covariates)
+    #     }
+    #   }else if(models[i.model] > 4){
+    #     if(i.model > 1){
+    #       my.init.alpha.cov <- rep(param.matrices[[i.sp]][[i.model-1]][[init.par.method]]$alpha.cov,each=num.competitors)
+    #     }else{
+    #       if(length(init.alpha.cov) == num.covariates){
+    #         my.init.alpha.cov <- rep(init.alpha.cov,num.competitors)
+    #       }else if(length(init.alpha.cov) == 1){
+    #         my.init.alpha.cov <- rep(init.alpha.cov,num.competitors*num.covariates)
+    #       }
+    #     }
+    #   }
+    # }else{
+    #   my.init.alpha.cov <- init.alpha.cov[i.sp]
+    # }
     
     ######################
     # compute each method
     
     for(i.method in 1:length(optim.methods)){
       
+      # fitness.model = fitness.models[[models[i.model]]]
+      # optim.method = optim.methods[i.method]
+      # param.list = param.list[[i.model]]
+      # init.lambda = current.init.lambda
+      # init.sigma = current.init.sigma
+      # init.alpha = current.init.alpha
+      # init.lambda.cov = current.init.lambda.cov
+      # init.alpha.cov = current.init.alpha.cov
+      
       temp.results <- cxr_optimize(fitness.model = fitness.models[[models[i.model]]],
                                    optim.method = optim.methods[i.method],
                                    param.list = param.list[[i.model]],
                                    log.fitness = log.fitness,
-                                   init.lambda = my.init.lambda,
+                                   init.lambda = current.init.lambda,
                                    lower.lambda = lower.lambda,
                                    upper.lambda = upper.lambda,
-                                   init.sigma = my.init.sigma,
+                                   init.sigma = current.init.sigma,
                                    lower.sigma = lower.sigma,
                                    upper.sigma = upper.sigma,
-                                   init.alpha = my.init.alpha,
+                                   init.alpha = current.init.alpha,
                                    lower.alpha = lower.alpha,
                                    upper.alpha = upper.alpha,
-                                   init.lambda.cov = my.init.lambda.cov,
+                                   init.lambda.cov = current.init.lambda.cov,
                                    lower.lambda.cov = lower.lambda.cov,
                                    upper.lambda.cov = upper.lambda.cov,
-                                   init.alpha.cov = my.init.alpha.cov,
+                                   init.alpha.cov = current.init.alpha.cov,
                                    lower.alpha.cov = lower.alpha.cov,
                                    upper.alpha.cov = upper.alpha.cov,
                                    focal.comp.matrix = focal.comp.matrix,
@@ -298,6 +378,54 @@ for(i.sp in 1:length(focal.sp)){
       param.matrices[[i.sp]][[i.model]][[i.method]]$log.likelihood <- temp.results$log.likelihood
       
     }# for i.method
+    
+    #######################
+    # update initial values for the different parameters
+    
+    # lambda
+    if("lambda" %in% param.list[[i.model]]){
+      if(!is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda)){
+        current.init.lambda <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda
+      }
+    }
+    # sigma
+    if(!is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$sigma)){
+      current.init.sigma <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$sigma
+      if(current.init.sigma > upper.sigma){
+        current.init.sigma <- upper.sigma
+      }
+    }
+    # alpha
+    if("alpha" %in% param.list[[i.model]]){
+      if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha)) == 0){
+        current.init.alpha <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha
+        # is the current estimate of the appropriate length?
+        if(i.model > 2){
+          if(length(current.init.alpha) == 1){
+            current.init.alpha <- rep(current.init.alpha,num.competitors)
+          }
+        }# if model > 2
+      }
+    }
+    # lambda.cov
+    if("lambda.cov" %in% param.list[[i.model]]){
+      if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov)) == 0){
+        current.init.lambda.cov <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov
+      }
+    }
+    # alpha.cov
+    if("alpha.cov" %in% param.list[[i.model]]){
+      if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)) == 0){
+        current.init.alpha.cov <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov
+        # is the current estimate of the appropriate length?
+        if(i.model > 4){
+          if(length(current.init.alpha.cov) == num.covariates){
+            current.init.alpha.cov <- rep(current.init.alpha.cov,num.competitors)
+          }
+        }# if model > 4
+      }
+    }
+    
   }# for i.model
 }# for i.sp
 
