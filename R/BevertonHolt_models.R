@@ -307,3 +307,63 @@ BH_5 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
   # return sum of negative log likelihoods
   return(sum(-1*llik))
 }
+
+
+################
+
+#' Title Beverton-Holt fecundity, sixth model
+#'
+#' @param par vector of variable length, with the following order: first, lambda of focal sp; 
+#' second lambda.cov, effects of every covariate on lambda; 
+#' third alpha, interaction coefficients with every species; 
+#' fourth alpha.cov, effects of every covariate on alpha values (varying effect of every covariate over every interaction coefficient); 
+#' last, sigma value. If any element is not to be optimized, it must not be present in this vector, but rather in the "fixed.terms" list
+#' @param param.list string listing parameters to optimize. Possible elements are "lambda", "lambda.cov", "alpha", "alpha.cov".
+#' @param log.fitness log of fitness value
+#' @param focal.comp.matrix dataframe with as many rows as observations, and one column for each competitor sp. 
+#' Values of the dataframe are number of competitors of each sp per observation.
+#' @param num.covariates number of covariates
+#' @param num.competitors number of competitor species
+#' @param focal.covariates dataframe with as many rows as observationes, and one column for each covariate.
+#' Values of the dataframe are covariate values for every observation.
+#' @param fixed.terms list with elements "lambda", "lambda.cov", "alpha", "alpha.cov". It contains parameters not to be optimized.
+#' Each element of the list must be of its appropriate length. Note that adding an element in "param.list" will force the function
+#' to look for it in "par", and will not consider it here.
+#' @param criterion number betwenn 0 and 1. Every coefficient that is less than the maximum coefficient multiplied by the criterion will be set to 0. 
+#'
+#' @return log-likelihood value
+#' @export
+#'
+#' @examples
+BH_6 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms, criterion){
+  #Take the value from BH_5
+  
+  ## We compare the lambda covariates
+  # First, we set a numeric vector, lambda.cov.comparable, containig the coeffictients multiplied by the mean of the covariate
+  lambda.cov.comparable <-vector("numeric",num.covariates)
+  for(v in 1:num.covariates){
+  lambda.cov.comparable [v] <- lambda.cov[v]*mean(focal.cov.matrix[,v])
+    }
+  # We get a booleen vector containig TRUE if the coefficient is kept and FALSE if it is set to 0
+  lambda.cov.comparison  <- lambda.cov.comparable > criterion*max(lambda.cov.comparable)
+  
+  ## We compare the alpha covariates :
+  # We obtain a vector containing the coefficients of the alpha covariates (cov_coeff)
+  
+  # We weigh it with the effect mean 
+  alpha_coeff.comparable <- vector("numeric",length(alpha_coeff))
+  
+  # For the alphas, we multiply by the mean of the number of competitors :
+  for (v in 1:length(num.competitors)){
+  alpha_coeff.comparable[v] <- alpha_coeff[v]*mean(focal.comp.matrix[,v])
+    }
+ # For the other covariates we multiply by the mean of the covariate times the number of competitors
+  focal.cov.matrix <- as.matrix(focal.covariates)
+   for (u in 1:num.covariates){
+    for (v in (num.competitors*u+1) : (num.competitors*(u+1))){
+	
+      alpha_coeff.comparable[v] <- alpha_coeff[v]*mean(focal.comp.matrix[,v-num.competitors*(u)]*focal.cov.matrix[,u])
+      }
+    }
+ # We get a booleen vector containig TRUE if the coefficient is kept and FALSE if it is set to 0
+  alpha.coeff.comparison  <- alpha_coeff.comparable > (criterion*max(alpha_coeff.comparable))
