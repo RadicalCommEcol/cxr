@@ -340,7 +340,7 @@ BH_6 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
   
   ## We compare the lambda covariates
   # First, we set a numeric vector, lambda.cov.comparable, containig the coeffictients multiplied by the mean of the covariate
-  lambda.cov.comparable <-vector("numeric",num.covariates)
+  lambda.cov.comparable <- vector("numeric",num.covariates)
   for(v in 1:num.covariates){
   lambda.cov.comparable [v] <- lambda.cov[v]*mean(focal.cov.matrix[,v])
     }
@@ -367,3 +367,92 @@ BH_6 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
     }
  # We get a booleen vector containig TRUE if the coefficient is kept and FALSE if it is set to 0
   alpha.coeff.comparison  <- alpha_coeff.comparable > (criterion*max(alpha_coeff.comparable))
+	
+## Use the same type of function BH_5
+# the list is not changed
+ pos <- 1
+  if("lambda" %in% param.list){
+    lambda <- par[pos] ## same as model 1
+    pos <- pos + 1
+  }else{
+    lambda <- fixed.terms[["lambda"]]
+  }
+  
+  if("lambda.cov" %in% param.list){
+    lambda.cov <- par[pos:(pos+num.covariates-1)]
+    pos <- pos + num.covariates
+  }else{
+    lambda.cov <- fixed.terms[["lambda.cov"]]
+  }
+if("alpha" %in% param.list){
+    alpha <- par[pos:(pos+num.competitors-1)]
+    pos <- pos + num.competitors
+  }else{
+    alpha <- fixed.terms[["alpha"]]
+  }
+  
+  if("alpha.cov" %in% param.list){
+    alpha.cov <- par[pos:(pos+(num.covariates*num.competitors)-1)]
+    pos <- pos + (num.covariates*num.competitors)
+  }else{
+    alpha.cov <- fixed.terms[["alpha.cov"]]
+  }
+  
+  sigma <- par[length(par)]
+  
+  num = 1
+  focal.cov.matrix <- as.matrix(focal.covariates)
+	
+# We set the numerator to 0 here (if needed)
+	
+  for(v in 1:num.covariates){
+	  if (lambda.cov.comparison[i]){
+    num <- num + lambda.cov[v]*focal.cov.matrix[,v] 
+		  }
+  }
+  cov_term_x <- list()
+  for(v in 1:num.covariates){
+    cov_temp <- focal.cov.matrix[,v]
+    for(z in 1:num.competitors){
+	    
+      cov_term_x[[z+(num.competitors*(v-1))]] <- alpha.cov[z+(num.competitors*(v-1))] * cov_temp  #create  alpha.cov_i*cov_i vector
+    }
+  }
+  cov_term <- list()
+  for(z in 0:(num.competitors-1)){
+	  if(alpha.coeff.comparison[z+1]) {cov_term_x_sum <- cov_term_x[[z+1]] # Covariates are set to 0 if needed
+					 }
+	  else {cov_term_x_sum <- 0
+		                         }
+	  
+    if(num.covariates > 1){
+      for(v in 2:num.covariates){
+	    if(alpha.coeff.comparison[((v-1)*num.competitors+z+1)]){  # Covariates are set to 0 if needed
+        cov_term_x_sum <- cov_term_x_sum + cov_term_x[[v + num.competitors]]
+		                                              }
+      } 
+    }
+    cov_term[[z+1]] <- cov_term_x_sum
+  }
+  term <- 1 #create the denominator term for the model
+  for(z in 1:num.competitors){
+	  
+# Alphas are set to 0 if needed and cov_term are not added if they are equals to 0
+	  if (alpha.coeff.comparison[z]){
+		  if(cov_term[[z]]!=0) {term <- term + (alpha[z] + cov_term[[z]]) * focal.comp.matrix[,z]  
+			  }
+		  else {term <- term + alpha[z] * focal.comp.matrix[,z]
+		          }
+          else {
+		   if(cov_term[[z]]!=0) {term <- term + cov_term[[z]] * focal.comp.matrix[,z]  
+			  }
+		 }
+  }
+  pred <- lambda * (num) / term 
+  # likelihood as before:
+  llik <- dnorm(log.fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
+  # return sum of negative log likelihoods
+  return(sum(-1*llik))
+}	
+	
+
