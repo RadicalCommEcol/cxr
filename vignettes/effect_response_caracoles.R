@@ -23,7 +23,7 @@ optim.methods <- c("optim_NM"
 # if we want quick calculations, we can disable 
 # the bootstrapping for the standard errors
 generate.errors <- TRUE
-bootstrap.samples <- 1000
+bootstrap.samples <- 10
 
 optimize.lambda <- FALSE
 # model is different...
@@ -33,12 +33,21 @@ if(optimize.lambda){
   effect.response.model <- EffectResponse
 }
 
-write.results <- TRUE
+write.results <- FALSE
 
 ###########################
 # Caracoles data
 
 competition.data <- readr::read_delim(file = "./data/competition.csv",delim = ";")
+
+# covariate: salinity
+covariates <- readr::read_delim(file = "../Caracoles/data/salinity.csv",delim = ";")
+
+# one observation per row of competition.data
+covariates <- covariates[,c("plot","subplot","year","sum_salinity")]
+# in the same order as the competition observations
+covariates$site <- paste(covariates$year,covariates$plot,covariates$subplot,sep="_")
+covariates <- covariates[,c("site","sum_salinity")]
 
 # assume that seed production does not change in a single year, so group observations
 # in year x site records
@@ -46,6 +55,53 @@ sp.data <- competition.data %>% group_by(year,plot,subplot,focal,competitor) %>%
 names(sp.data)[which(names(sp.data) == "seed")] <- "fitness"
 sp.data$site <- paste(sp.data$year,sp.data$plot,sp.data$subplot,sep="_")
 sp.data <- sp.data[,c("site","focal","fitness","competitor","number")]
+
+# in case the sp.data dataframe does not include explicit missing competitors, 
+# here is a somewhat convoluted way for setting zeros to it
+# so that for each focal sp, all competitor sp are included
+sites <- unique(sp.data$site)
+focal.sp <- sort(unique(sp.data$focal))
+missing.data <- sp.data
+missing.data$site <- "0"
+missing.data$focal <- "0"
+missing.data$fitness <- 0
+missing.data$competitor <- "0"
+missing.data$number <- 0
+count <- 1
+
+for(i.site in 1:length(sites)){
+  for(i.focal in 1:length(focal.sp)){
+    my.competitors <- unique(sp.data$competitor[sp.data$site == sites[i.site] & sp.data$focal == focal.sp[i.focal]])
+    if(length(my.competitors) > 0 & length(my.competitors) < length(focal.sp)){
+      my.fitness <- sp.data$fitness[sp.data$site == sites[i.site] & sp.data$focal == focal.sp[i.focal]][1]
+      
+      missing.competitors <- focal.sp[which(!focal.sp %in% my.competitors)]
+      for(i.com in 1:length(missing.competitors)){
+        
+        missing.data$site[count] <- sites[i.site]
+        missing.data$focal[count] <- focal.sp[i.focal]
+        missing.data$fitness[count] <- my.fitness
+        missing.data$competitor[count] <- missing.competitors[i.com]
+        missing.data$number[count] <- 0
+        
+        count <- count + 1
+      }# for each missing
+    }# if any missing
+    # if(length(my.competitors) > 0 & length(my.competitors) < 19){print(paste(i.site,",",i.focal))}
+  }# for i.focal
+}# for i.site
+
+missing.data <- droplevels(subset(missing.data,competitor != "0"))
+
+sp.data <- rbind(sp.data,missing.data)
+sp.data <- arrange(sp.data, focal, site, competitor)
+
+# discard focal sp with fitness 0
+sp.data <- droplevels(subset(sp.data, fitness > 0))
+
+# sort covariates
+positions <- match(sp.data$site,covariates$site)
+covariates <- covariates[positions,2:ncol(covariates)]
 
 # Initial parameter estimates
 lambda.values <- readr::read_delim(file = "./results/lambda_estimates.csv",delim = ";")
@@ -74,6 +130,18 @@ e.lower.bound <- r.lower.bound
 e.upper.bound <- r.upper.bound
 sigma.lower.bound <- 0.0000000001
 sigma.upper.bound <- 1
+
+# initial values for lambda.cov, alpha.cov
+lambda.cov.values <- matrix(1,nrow = nrow(lambda.values),ncol = ncol(covariates))
+e.cov.values <- matrix(1,nrow = nrow(lambda.values),ncol = ncol(covariates))
+r.cov.values <- matrix(1,nrow = nrow(lambda.values),ncol = ncol(covariates))
+
+lambda.cov.lower.bound <- matrix(0,nrow = nrow(lambda.values),ncol = ncol(covariates))
+lambda.cov.upper.bound <- matrix(1e4,nrow = nrow(lambda.values),ncol = ncol(covariates))
+e.cov.lower.bound <- matrix(0,nrow = nrow(lambda.values),ncol = ncol(covariates))
+e.cov.upper.bound <- matrix(1e4,nrow = nrow(lambda.values),ncol = ncol(covariates))
+r.cov.lower.bound <- matrix(0,nrow = nrow(lambda.values),ncol = ncol(covariates))
+r.cov.upper.bound <- matrix(1e4,nrow = nrow(lambda.values),ncol = ncol(covariates))
 
 # only species with proper estimates
 sp.data <- subset(sp.data, focal %in% lambda.values$focal.sp & competitor %in% lambda.values$focal.sp)

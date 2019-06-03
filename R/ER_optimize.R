@@ -25,6 +25,7 @@
 #' as the set of focal species.
 #' - number: number of competitor individuals from the associated species. Observations without competitors of a given species
 #' can be explicit, i.e. setting number to zero, or implicit, not included in the dataframe.
+#' @param covariates
 #' @param optimize.lambda boolean, whether we want to optimize lambda values or not
 #' @param generate.errors whether we want to compute bootstrap standard errors for the parameters
 #' @param bootstrap.samples number of bootstrap samples
@@ -35,11 +36,20 @@
 ER_optimize <- function(lambda.vector,
                         e.vector,
                         r.vector,
+                        lambda.cov = NULL,
+                        e.cov = NULL,
+                        r.cov = NULL,
                         sigma,
                         e.lower.bound,
                         e.upper.bound,
                         r.lower.bound,
                         r.upper.bound,
+                        lambda.cov.lower.bound,
+                        lambda.cov.upper.bound,
+                        e.cov.lower.bound,
+                        e.cov.upper.bound,
+                        r.cov.lower.bound,
+                        r.cov.upper.bound,
                         sigma.lower.bound,
                         sigma.upper.bound,
                         lambda.lower.bound = 0,
@@ -47,58 +57,17 @@ ER_optimize <- function(lambda.vector,
                         effect.response.model,
                         optim.method,
                         sp.data,
+                        covariates = NULL,
                         optimize.lambda = FALSE,
                         generate.errors = FALSE,
                         bootstrap.samples = 0){
-  
-  # in case the sp.data dataframe does not include explicit missing competitors, 
-  # here is a somewhat convoluted way for setting zeros to it
-  # so that for each focal sp, all competitor sp are included
-  sites <- unique(sp.data$site)
-  focal.sp <- sort(unique(sp.data$focal))
-  missing.data <- sp.data
-  missing.data$site <- "0"
-  missing.data$focal <- "0"
-  missing.data$fitness <- 0
-  missing.data$competitor <- "0"
-  missing.data$number <- 0
-  count <- 1
-  
-  for(i.site in 1:length(sites)){
-    for(i.focal in 1:length(focal.sp)){
-      my.competitors <- unique(sp.data$competitor[sp.data$site == sites[i.site] & sp.data$focal == focal.sp[i.focal]])
-      if(length(my.competitors) > 0 & length(my.competitors) < length(focal.sp)){
-        my.fitness <- sp.data$fitness[sp.data$site == sites[i.site] & sp.data$focal == focal.sp[i.focal]][1]
-        
-        missing.competitors <- focal.sp[which(!focal.sp %in% my.competitors)]
-        for(i.com in 1:length(missing.competitors)){
-          
-          missing.data$site[count] <- sites[i.site]
-          missing.data$focal[count] <- focal.sp[i.focal]
-          missing.data$fitness[count] <- my.fitness
-          missing.data$competitor[count] <- missing.competitors[i.com]
-          missing.data$number[count] <- 0
-          
-          count <- count + 1
-        }# for each missing
-      }# if any missing
-      # if(length(my.competitors) > 0 & length(my.competitors) < 19){print(paste(i.site,",",i.focal))}
-    }# for i.focal
-  }# for i.site
-  
-  missing.data <- droplevels(subset(missing.data,competitor != "0"))
-  
-  sp.data <- rbind(sp.data,missing.data)
-  sp.data <- arrange(sp.data, focal, site, competitor)
-  
-  # discard focal sp with fitness 0
-  sp.data <- droplevels(subset(sp.data, fitness > 0))
   
   # fill up matrices
   # num.sp x num.observations. 1 if species is focal in a given observation, 0 otherwise
   target_all <- NULL
   # num.sp x num.observations. density of each species in each observation
   density_all <- NULL
+
   # fitness metric of the focal sp at each observation
   log.fitness <- log(sp.data$fitness)
   
@@ -120,6 +89,7 @@ ER_optimize <- function(lambda.vector,
     density_all <- rbind(density_all,density.my.sp)
   }
   
+  # which model to use depending on whether we optimize lambda or not
   if(optimize.lambda){
     init.par <- c(lambda.vector,r.vector,e.vector,sigma)
     lower.bounds <- c(lambda.lower.bound,r.lower.bound,e.lower.bound,sigma.lower.bound)
