@@ -1,5 +1,5 @@
 
-#' Title estimate competition effect and response for a set of species
+#' Estimate competition effect and response for a set of species
 #' 
 #' This function is similar in spirit to cxr_optimize, in that it optimizes a set of parameters
 #' via maximum likelihood.

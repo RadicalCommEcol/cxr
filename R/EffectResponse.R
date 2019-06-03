@@ -11,6 +11,8 @@
 #' @param target_all matrix giving which species is calculated with which values. See ER_optimize
 #' @param density_all matrix giving the densities of each species at each observation. See ER_optimize
 #' @param log.fitness log of the fitness metric
+#' @param covariates dataframe/matrix with as many rows as observationes, and one column for each covariate.
+#' Values are covariate values for every observation.
 #'
 #' @return single numeric value giving the sum of negative log-likelihoods
 #' @export
