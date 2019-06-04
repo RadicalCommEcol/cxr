@@ -22,7 +22,7 @@ optim.methods <- c("optim_NM"
 
 # if we want quick calculations, we can disable 
 # the bootstrapping for the standard errors
-generate.errors <- TRUE
+generate.errors <- FALSE
 bootstrap.samples <- 10
 
 optimize.lambda <- FALSE
@@ -103,7 +103,7 @@ sp.data <- droplevels(subset(sp.data, fitness > 0))
 positions <- match(sp.data$site,covariates$site)
 covariates <- covariates[positions,2:ncol(covariates)]
 
-# Initial parameter estimates
+# Initial parameter estimates: TODO
 lambda.values <- readr::read_delim(file = "./results/lambda_estimates.csv",delim = ";")
 
 # take estimates from the most complex model parameterized
@@ -131,7 +131,7 @@ e.upper.bound <- r.upper.bound
 sigma.lower.bound <- 0.0000000001
 sigma.upper.bound <- 1
 
-# initial values for lambda.cov, alpha.cov
+# initial values for lambda.cov, r.cov, e.cov
 lambda.cov.values <- matrix(1,nrow = nrow(lambda.values),ncol = ncol(covariates))
 e.cov.values <- matrix(1,nrow = nrow(lambda.values),ncol = ncol(covariates))
 r.cov.values <- matrix(1,nrow = nrow(lambda.values),ncol = ncol(covariates))
@@ -148,7 +148,7 @@ sp.data <- subset(sp.data, focal %in% lambda.values$focal.sp & competitor %in% l
 
 ######################
 # compute each method
-
+# TODO: create list
 full.results <- NULL
 
 for(i.method in 1:length(optim.methods)){
@@ -170,9 +170,6 @@ for(i.method in 1:length(optim.methods)){
                                generate.errors = generate.errors,
                                bootstrap.samples = bootstrap.samples)
   
-  param.results$optim.method <- optim.methods[i.method]
-  
-  full.results <- rbind(full.results, param.results)
 }
 
 if(write.results){
