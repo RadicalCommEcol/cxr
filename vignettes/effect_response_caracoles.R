@@ -39,6 +39,8 @@ write.results <- FALSE
 # Caracoles data
 
 competition.data <- readr::read_delim(file = "./data/competition.csv",delim = ";")
+### TEST
+competition.data <- subset(competition.data,year == 2016)
 
 # covariate: salinity
 covariates <- readr::read_delim(file = "../Caracoles/data/salinity.csv",delim = ";")
@@ -147,28 +149,90 @@ r.cov.upper.bound <- matrix(1e4,nrow = nrow(lambda.values),ncol = ncol(covariate
 sp.data <- subset(sp.data, focal %in% lambda.values$focal.sp & competitor %in% lambda.values$focal.sp)
 
 ######################
-# compute each method
-# TODO: create list
-full.results <- NULL
+# build results list and compute each method
+
+param.list <- list()
+for(i.method in 1:length(optim.methods)){
+  param.list[[i.method]] <- list(lambda = NA,
+                                 lambda.lower.error = NA,
+                                 lambda.upper.error = NA,
+                                 response = NA,
+                                 response.lower.error = NA,
+                                 response.upper.error = NA,
+                                 effect = NA,
+                                 effect.lower.error = NA,
+                                 effect.upper.error = NA,
+                                 sigma = NA,
+                                 lambda.cov = NA,
+                                 lambda.cov.lower.error = NA,
+                                 lambda.cov.upper.error = NA,
+                                 response.cov = NA,
+                                 response.cov.lower.error = NA,
+                                 response.cov.upper.error = NA,
+                                 effect.cov = NA,
+                                 effect.cov.lower.error = NA,
+                                 effect.cov.upper.error = NA,
+                                 log.likelihood = NA)
+
+}
+names(param.list) <- optim.methods
+
+########## TEST
+i.method <- 1
+##########
 
 for(i.method in 1:length(optim.methods)){
   
   param.results <- ER_optimize(lambda.vector = lambda.values$lambda,
                                e.vector = e.values,
                                r.vector = r.values,
+                               lambda.cov = lambda.cov.values,
+                               e.cov = e.cov.values,
+                               r.cov = r.cov.values,
                                sigma = sigma,
+                               lambda.lower.bound = lambda.lower.bound,
+                               lambda.upper.bound = lambda.upper.bound,
                                e.lower.bound = e.lower.bound,
                                e.upper.bound = e.upper.bound,
                                r.lower.bound = r.lower.bound,
                                r.upper.bound = r.upper.bound,
+                               lambda.cov.lower.bound = lambda.cov.lower.bound,
+                               lambda.cov.upper.bound = lambda.cov.upper.bound,
+                               e.cov.lower.bound = e.cov.lower.bound,
+                               e.cov.upper.bound = e.cov.upper.bound,
+                               r.cov.lower.bound = r.cov.lower.bound,
+                               r.cov.upper.bound = r.cov.upper.bound,
                                sigma.lower.bound = sigma.lower.bound,
                                sigma.upper.bound = sigma.upper.bound,
                                effect.response.model = effect.response.model,
                                optim.method = optim.methods[i.method],
                                sp.data = sp.data,
+                               covariates = covariates,
                                optimize.lambda = optimize.lambda,
                                generate.errors = generate.errors,
                                bootstrap.samples = bootstrap.samples)
+  
+  # store results
+  param.list[[optim.methods[i.method]]]$lambda <- param.results$lambda
+  param.list[[optim.methods[i.method]]]$lambda.lower.error <- param.results$lambda.lower.error
+  param.list[[optim.methods[i.method]]]$lambda.upper.error <- param.results$lambda.upper.error
+  param.list[[optim.methods[i.method]]]$response <- param.results$response
+  param.list[[optim.methods[i.method]]]$response.lower.error <- param.results$response.lower.error
+  param.list[[optim.methods[i.method]]]$response.upper.error <- param.results$response.upper.error
+  param.list[[optim.methods[i.method]]]$effect <- param.results$effect
+  param.list[[optim.methods[i.method]]]$effect.lower.error <- param.results$effect.lower.error
+  param.list[[optim.methods[i.method]]]$effect.upper.error <- param.results$effect.upper.error
+  param.list[[optim.methods[i.method]]]$sigma <- param.results$sigma
+  param.list[[optim.methods[i.method]]]$lambda.cov <- param.results$lambda.cov
+  param.list[[optim.methods[i.method]]]$lambda.cov.lower.error <- param.results$lambda.cov.lower.error
+  param.list[[optim.methods[i.method]]]$lambda.cov.upper.error <- param.results$lambda.cov.upper.error
+  param.list[[optim.methods[i.method]]]$response.cov <- param.results$response.cov
+  param.list[[optim.methods[i.method]]]$response.cov.lower.error <- param.results$response.cov.lower.error
+  param.list[[optim.methods[i.method]]]$response.cov.upper.error <- param.results$response.cov.upper.error
+  param.list[[optim.methods[i.method]]]$effect.cov <- param.results$effect.cov
+  param.list[[optim.methods[i.method]]]$effect.cov.lower.error <- param.results$effect.cov.lower.error
+  param.list[[optim.methods[i.method]]]$effect.cov.upper.error <- param.results$effect.cov.upper.error
+  param.list[[optim.methods[i.method]]]$log.likelihood <- param.results$log.likelihood
   
 }
 

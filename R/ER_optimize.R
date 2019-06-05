@@ -13,6 +13,7 @@
 #' Discarded if covariates are not passed.
 #' @param r.cov numeric matrix of num.sp x num.covariates, effect of every covariate on species' competitive response. 
 #' Discarded if covariates are not passed.
+#' @param sigma initial value for variation estimate.
 #' @param lambda.lower.bound lower bounds for lambda, in case it is optimized. Same dimensions as lambda.vector
 #' @param lambda.upper.bound upper bounds for lambda, in case it is optimized. Same dimensions as lambda.vector
 #' @param e.lower.bound lower bounds for competitive effects. Same dimensions as e.vector
@@ -29,8 +30,10 @@
 #' Discarded if covariates are not passed. 
 #' @param r.cov.lower.bound lower bounds for covariate effects on r. Same dimensions as r.cov. 
 #' Discarded if covariates are not passed.
-#' @param r.cov.upper.bound lower bounds for covariate effects on r. Same dimensions as r.cov. 
+#' @param r.cov.upper.bound upper bounds for covariate effects on r. Same dimensions as r.cov. 
 #' Discarded if covariates are not passed.
+#' @param sigma.lower.bound lower bound for sigma.
+#' @param sigma.upper.bound upper bound for sigma.
 #' @param effect.response.model function returning a value to optimize over, e.g. maximum likelihood
 #' @param optim.method one of the following: "optim_NM","optim_L-BFGS-B","nloptr_CRS2_LM", 
 #' "nloptr_ISRES","nloptr_DIRECT_L_RAND","GenSA","hydroPSO","DEoptimR".
@@ -210,7 +213,8 @@ ER_optimize <- function(lambda.vector,
                          hessian = F,
                          target_all = target_all,
                          density_all = density_all,
-                         log.fitness = log.fitness)
+                         log.fitness = log.fitness,
+                         covariates = covariates)
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }else{
       tryCatch({
@@ -225,7 +229,8 @@ ER_optimize <- function(lambda.vector,
                          target_all = target_all,
                          density_all = density_all,
                          log.fitness = log.fitness,
-                         lambda = lambda.vector)
+                         lambda = lambda.vector,
+                         covariates = covariates)
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }
     

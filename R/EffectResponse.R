@@ -33,7 +33,7 @@ EffectResponse <- function(init.par, lambda, target_all, density_all, log.fitnes
                                                                                       (num.sp*ncol(covariates)) + 
                                                                                       (num.sp*ncol(covariates)))],
                         nrow = num.sp,ncol = ncol(covariates))
-    effects.cov <- matrix(init.par[(num.sp + num.sp + (num.sp*ncol(covariates)) + (num.sp*ncol(covariates)) + 1):(num.sp + 
+    effect.cov <- matrix(init.par[(num.sp + num.sp + (num.sp*ncol(covariates)) + (num.sp*ncol(covariates)) + 1):(num.sp + 
                                                                                          num.sp + 
                                                                                          (num.sp*ncol(covariates)) +
                                                                                          (num.sp*ncol(covariates)) +
@@ -111,7 +111,7 @@ EffectResponse_lambda <- function(init.par, target_all, density_all, log.fitness
                                                                                          (num.sp*ncol(covariates)) + 
                                                                                          (num.sp*ncol(covariates)))],
                            nrow = num.sp,ncol = ncol(covariates))
-    effects.cov <- matrix(init.par[(num.sp + num.sp + num.sp + (num.sp*ncol(covariates)) + (num.sp*ncol(covariates)) + 1):(num.sp + 
+    effect.cov <- matrix(init.par[(num.sp + num.sp + num.sp + (num.sp*ncol(covariates)) + (num.sp*ncol(covariates)) + 1):(num.sp + 
                                                                                                                     num.sp + 
                                                                                                                     num.sp +
                                                                                                                     (num.sp*ncol(covariates)) +
