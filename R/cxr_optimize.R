@@ -108,6 +108,23 @@ cxr_optimize <- function(fitness.model,
                          num.competitors = num.competitors,
                          num.covariates = num.covariates)
   
+  coefficients_set_to_0 <- NULL #only useful for model 6
+      if (fitness.model==BH_6){
+        # vector containing TRUE if the coefficient is kept and FALSE if it set to 0
+       coefficients_set_to_0 <-new_par(init.par[[1]], 
+                                       focal.comp.matrix=focal.comp.matrix, 
+                                       num.covariates=num.covariates,
+                                       num.competitors=num.competitors,
+                                       focal.covariates=focal.covariates,
+                                       #criterion
+                                      )[[2]] 
+        
+        init.par[[1]] <- init.par[[1]][coefficients_set_to_0]
+        init.par[[2]] <- init.par[[2]][coefficients_set_to_0]
+        init.par[[3]] <- init.par[[3]][coefficients_set_to_0]
+       
+        }
+  
   # in case of error
   optim.result <- NULL
   # optim functions
@@ -127,7 +144,8 @@ cxr_optimize <- function(fitness.model,
                           num.covariates = num.covariates, 
                           num.competitors = num.competitors, 
                           focal.covariates = focal.covariates,
-                          fixed.terms = fixed.terms)
+                          fixed.terms = fixed.terms,
+                          coefficients_set_to_0 =coefficients_set_to_0)                         )
   }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "optim_L-BFGS-B"){
     tryCatch({
@@ -145,7 +163,8 @@ cxr_optimize <- function(fitness.model,
                           num.covariates = num.covariates, 
                           num.competitors = num.competitors, 
                           focal.covariates = focal.covariates,
-                          fixed.terms = fixed.terms)
+                          fixed.terms = fixed.terms,
+                         coefficients_set_to_0 =coefficients_set_to_0)
     }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "nloptr_CRS2_LM"){
     tryCatch({
@@ -160,7 +179,8 @@ cxr_optimize <- function(fitness.model,
                            num.covariates = num.covariates, 
                            num.competitors = num.competitors, 
                            focal.covariates = focal.covariates,
-                           fixed.terms = fixed.terms)
+                           fixed.terms = fixed.terms,
+                          coefficients_set_to_0 =coefficients_set_to_0)
     }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "nloptr_ISRES"){
     tryCatch({
@@ -175,7 +195,8 @@ cxr_optimize <- function(fitness.model,
                            num.covariates = num.covariates, 
                            num.competitors = num.competitors, 
                            focal.covariates = focal.covariates,
-                           fixed.terms = fixed.terms)
+                           fixed.terms = fixed.terms,
+                          coefficients_set_to_0 =coefficients_set_to_0)
     }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "nloptr_DIRECT_L_RAND"){
     tryCatch({
@@ -190,7 +211,8 @@ cxr_optimize <- function(fitness.model,
                            num.covariates = num.covariates, 
                            num.competitors = num.competitors, 
                            focal.covariates = focal.covariates,
-                           fixed.terms = fixed.terms)
+                           fixed.terms = fixed.terms,
+                          coefficients_set_to_0 =coefficients_set_to_0)
     }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "GenSA"){
     tryCatch({
@@ -205,7 +227,8 @@ cxr_optimize <- function(fitness.model,
                           num.covariates = num.covariates, 
                           num.competitors = num.competitors, 
                           focal.covariates = focal.covariates,
-                          fixed.terms = fixed.terms)
+                          fixed.terms = fixed.terms,
+                         coefficients_set_to_0 =coefficients_set_to_0)
     }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "hydroPSO"){
     tryCatch({
@@ -222,7 +245,8 @@ cxr_optimize <- function(fitness.model,
                                        num.covariates = num.covariates, 
                                        num.competitors = num.competitors, 
                                        focal.covariates = focal.covariates,
-                                       fixed.terms = fixed.terms)
+                                       fixed.terms = fixed.terms,
+                                      coefficients_set_to_0 =coefficients_set_to_0)
     }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
     
   }else if(optim.method == "DEoptimR"){
@@ -234,19 +258,27 @@ cxr_optimize <- function(fitness.model,
                                        num.covariates = num.covariates, 
                                        num.competitors = num.competitors, 
                                        focal.covariates = focal.covariates,
-                                       fixed.terms = fixed.terms)
+                                       fixed.terms = fixed.terms,
+                                      coefficients_set_to_0 =coefficients_set_to_0)
     }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }
   
   ##################################
   # gather the output from the method
+  
+    
   # if-else the method outputs optim-like values
   if(optim.method %in% c("optim_NM","optim_L-BFGS-B","DEoptimR","hydroPSO","GenSA")){
     
     print(paste("...",optim.method," finished with convergence status ",optim.result$convergence,sep=""))
     
     if(!is.null(optim.result)){
-    
+      
+  # get the complete result for the sixth model 
+          if (fitness.model==BH_6){
+               optim.result$par <- return_par(par = optim.result$par, coefficients_set_to_0 =coefficients_set_to_0)
+            }
+      
     optim.params <- RetrieveParams(optim.params = optim.result$par,
                                    param.list = param.list,
                                    alpha.length = length(init.alpha),
@@ -271,6 +303,10 @@ cxr_optimize <- function(fitness.model,
     print(paste("...",optim.method," finished with convergence status ",optim.result$status,sep=""))
     
     if(!is.null(optim.result)){
+        # get the complete result for the sixth model 
+       if (fitness.model==BH_6){
+               optim.result$solution <- return_par(par = optim.result$solution, coefficients_set_to_0 =coefficients_set_to_0)
+            }
     
     optim.params <- RetrieveParams(optim.params = optim.result$solution,
                                    param.list = param.list,
@@ -307,10 +343,17 @@ cxr_optimize <- function(fitness.model,
                           focal.comp.matrix = focal.comp.matrix,
                           focal.covariates = focal.covariates,
                           nsamples = bootstrap.samples)
+     # set error to 0 for the deleted coefficients from the sixth model 
+    if (fitness.model==BH_6){
+               errors <- return_par(par = errors, coefficients_set_to_0 =coefficients_set_to_0)
+            }
+  
+    
   }else{
     errors <- rep(NA,length(init.par))
   }
-  
+   
+   
   error.params <- RetrieveParams(optim.params = errors,
                                  param.list = param.list,
                                  alpha.length = length(init.alpha),
