@@ -1,37 +1,20 @@
 ####
 # standard error estimates from bootstrap samples
 
-ER_SEbootstrap <- function(lambda.vector,
-                           e.vector,
-                           r.vector,
-                           sigma,
-                           e.lower.bound,
-                           e.upper.bound,
-                           r.lower.bound,
-                           r.upper.bound,
-                           sigma.lower.bound,
-                           sigma.upper.bound,
-                           lambda.lower.bound = 0,
-                           lambda.upper.bound = 1e3,
-                           sp.data,
-                           effect.response.model,
+ER_SEbootstrap <- function(effect.response.model,
                            optim.method,
+                           sp.data,
+                           init.par,
+                           lower.bounds,
+                           upper.bounds,
+                           covariates,
                            optimize.lambda,
+                           lambda.vector,
                            nsamples){
   
   if(nsamples<2){
     print("SEbootstrap: number of bootstrap samples cannot be < 2. Setting bootstrap samples to 2.")
     nsamples <- 2
-  }
-  
-  if(optimize.lambda){
-    init.par <- c(lambda.vector,r.vector,e.vector,sigma)
-    lower.bounds <- c(lambda.lower.bound,r.lower.bound,e.lower.bound,sigma.lower.bound)
-    upper.bounds <- c(lambda.upper.bound,r.upper.bound,e.upper.bound,sigma.upper.bound)
-  }else{
-    init.par <- c(r.vector,e.vector,sigma)
-    lower.bounds <- c(r.lower.bound,e.lower.bound,sigma.lower.bound)
-    upper.bounds <- c(r.upper.bound,e.upper.bound,sigma.upper.bound)
   }
   
   boot.results <- matrix(nrow = nsamples, ncol = length(init.par))
@@ -61,7 +44,10 @@ ER_SEbootstrap <- function(lambda.vector,
       # my.sp <- sample(focal.sp,1)
       # my.sites <- unique(sp.data$site[sp.data$focal == my.sp])
       # boot.data <- rbind(boot.data,sp.data[sp.data$site == sample(my.sites,1) & sp.data$focal == my.sp,])
-      sample.data <- sp.data[sp.data$site == sample(unique(sp.data$site),1),]
+      my.sample.site <- sample(unique(sp.data$site),1)
+      # positions <- c(positions,my.sample.site)
+      sample.data <- sp.data[sp.data$site == my.sample.site,]
+      sample.data$orig.site <- sample.data$site
       sample.data$site <- count
       boot.data <- rbind(boot.data,sample.data)
       if(length(unique(boot.data$focal)) == length(focal.sp)){
@@ -69,6 +55,14 @@ ER_SEbootstrap <- function(lambda.vector,
       }# if
       count <- count + 1
     }# while
+    
+    # are there covariates?
+    if(is.null(covariates)){
+      boot.covariates <- NULL
+    }else{
+      positions <- match(boot.data$orig.site,sp.data$site)
+      boot.covariates <- covariates[positions,]
+    }    
     boot.data$site <- as.character(boot.data$site)
     
     ############
@@ -102,18 +96,7 @@ ER_SEbootstrap <- function(lambda.vector,
     if(optim.method == "optim_NM"){
       
       if(optimize.lambda){
-        my.boot.par <- optim(init.par, 
-                           effect.response.model, 
-                           gr = NULL, 
-                           method = "Nelder-Mead", 
-                           # lower = lower.bounds,
-                           # upper = upper.bounds,
-                           control = list(), 
-                           hessian = F,
-                           target_all = target_all,
-                           density_all = density_all,
-                           log.fitness = boot.log.fitness)
-      }else{
+        tryCatch({
         my.boot.par <- optim(init.par, 
                            effect.response.model, 
                            gr = NULL, 
@@ -125,25 +108,31 @@ ER_SEbootstrap <- function(lambda.vector,
                            target_all = target_all,
                            density_all = density_all,
                            log.fitness = boot.log.fitness,
-                           lambda = lambda.vector)
+                           covariates = boot.covariates)
+        }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
+      }else{
+        tryCatch({
+        my.boot.par <- optim(init.par, 
+                           effect.response.model, 
+                           gr = NULL, 
+                           method = "Nelder-Mead", 
+                           # lower = lower.bounds,
+                           # upper = upper.bounds,
+                           control = list(), 
+                           hessian = F,
+                           target_all = target_all,
+                           density_all = density_all,
+                           log.fitness = boot.log.fitness,
+                           lambda = lambda.vector,
+                           covariates = boot.covariates)
+        }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
       }
       my.boot.par <- my.boot.par$par
       
     }else if(optim.methods[i.method] == "optim_L-BGFS-B"){
       
       if(optimize.lambda){
-        my.boot.par <- optim(init.par, 
-                             effect.response.model, 
-                             gr = NULL, 
-                             method = "L-BFGS-B", 
-                             lower = lower.bounds,
-                             upper = upper.bounds,
-                             control = list(), 
-                             hessian = F,
-                             target_all = target_all,
-                             density_all = density_all,
-                             log.fitness = boot.log.fitness)
-      }else{
+        tryCatch({
         my.boot.par <- optim(init.par, 
                              effect.response.model, 
                              gr = NULL, 
@@ -155,7 +144,24 @@ ER_SEbootstrap <- function(lambda.vector,
                              target_all = target_all,
                              density_all = density_all,
                              log.fitness = boot.log.fitness,
-                             lambda = lambda.vector)
+                             covariates = boot.covariates)
+        }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
+      }else{
+        tryCatch({
+        my.boot.par <- optim(init.par, 
+                             effect.response.model, 
+                             gr = NULL, 
+                             method = "L-BFGS-B", 
+                             lower = lower.bounds,
+                             upper = upper.bounds,
+                             control = list(), 
+                             hessian = F,
+                             target_all = target_all,
+                             density_all = density_all,
+                             log.fitness = boot.log.fitness,
+                             lambda = lambda.vector,
+                             covariates = boot.covariates)
+        }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
       }
       
       my.boot.par <- my.boot.par$par
@@ -163,15 +169,7 @@ ER_SEbootstrap <- function(lambda.vector,
     }else if(optim.methods[i.method] == "nloptr_CRS2_LM"){
       
       if(optimize.lambda){
-        my.boot.par <- nloptr(x0 = init.par,
-                              eval_f = effect.response.model,
-                              opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
-                              lb = lower.bounds,
-                              ub = upper.bounds,
-                              target_all = target_all,
-                              density_all = density_all,
-                              log.fitness = boot.log.fitness)
-      }else{
+        tryCatch({
         my.boot.par <- nloptr(x0 = init.par,
                               eval_f = effect.response.model,
                               opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
@@ -180,7 +178,21 @@ ER_SEbootstrap <- function(lambda.vector,
                               target_all = target_all,
                               density_all = density_all,
                               log.fitness = boot.log.fitness,
-                              lambda = lambda.vector)
+                              covariates = boot.covariates)
+        }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
+      }else{
+        tryCatch({
+        my.boot.par <- nloptr(x0 = init.par,
+                              eval_f = effect.response.model,
+                              opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
+                              lb = lower.bounds,
+                              ub = upper.bounds,
+                              target_all = target_all,
+                              density_all = density_all,
+                              log.fitness = boot.log.fitness,
+                              lambda = lambda.vector,
+                              covariates = boot.covariates)
+        }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
       }
 
       my.boot.par <- my.boot.par$solution
@@ -188,15 +200,7 @@ ER_SEbootstrap <- function(lambda.vector,
     }else if(optim.methods[i.method] == "nloptr_ISRES"){
       
       if(optimize.lambda){
-        my.boot.par <- nloptr(x0 = init.par,
-                              eval_f = effect.response.model,
-                              opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e3),
-                              lb = lower.bounds,
-                              ub = upper.bounds,
-                              target_all = target_all,
-                              density_all = density_all,
-                              log.fitness = boot.log.fitness)
-      }else{
+        tryCatch({
         my.boot.par <- nloptr(x0 = init.par,
                               eval_f = effect.response.model,
                               opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e3),
@@ -205,7 +209,21 @@ ER_SEbootstrap <- function(lambda.vector,
                               target_all = target_all,
                               density_all = density_all,
                               log.fitness = boot.log.fitness,
-                              lambda = lambda.vector)
+                              covariates = boot.covariates)
+        }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
+      }else{
+        tryCatch({
+        my.boot.par <- nloptr(x0 = init.par,
+                              eval_f = effect.response.model,
+                              opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e3),
+                              lb = lower.bounds,
+                              ub = upper.bounds,
+                              target_all = target_all,
+                              density_all = density_all,
+                              log.fitness = boot.log.fitness,
+                              lambda = lambda.vector,
+                              covariates = boot.covariates)
+        }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
       }
     
       my.boot.par <- my.boot.par$solution
@@ -213,15 +231,7 @@ ER_SEbootstrap <- function(lambda.vector,
     }else if(optim.methods[i.method] == "nloptr_DIRECT_L_RAND"){
       
       if(optimize.lambda){
-        my.boot.par <- nloptr(x0 = init.par,
-                              eval_f = effect.response.model,
-                              opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e3),
-                              lb = lower.bounds,
-                              ub = upper.bounds,
-                              target_all = target_all,
-                              density_all = density_all,
-                              log.fitness = boot.log.fitness)
-      }else{
+        tryCatch({
         my.boot.par <- nloptr(x0 = init.par,
                               eval_f = effect.response.model,
                               opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e3),
@@ -230,7 +240,21 @@ ER_SEbootstrap <- function(lambda.vector,
                               target_all = target_all,
                               density_all = density_all,
                               log.fitness = boot.log.fitness,
-                              lambda = lambda.vector)
+                              covariates = boot.covariates)
+        }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
+      }else{
+        tryCatch({
+        my.boot.par <- nloptr(x0 = init.par,
+                              eval_f = effect.response.model,
+                              opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e3),
+                              lb = lower.bounds,
+                              ub = upper.bounds,
+                              target_all = target_all,
+                              density_all = density_all,
+                              log.fitness = boot.log.fitness,
+                              lambda = lambda.vector,
+                              covariates = boot.covariates)
+        }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
       }
       
       my.boot.par <- my.boot.par$solution
@@ -238,15 +262,7 @@ ER_SEbootstrap <- function(lambda.vector,
     }else if(optim.methods[i.method] == "GenSA"){
       
       if(optimize.lambda){
-        my.boot.par <- GenSA(par = init.par,
-                             fn = effect.response.model,
-                             lower = lower.bounds,
-                             upper = upper.bounds, 
-                             control = list(maxit = 1e3), 
-                             target_all = target_all,
-                             density_all = density_all,
-                             log.fitness = boot.log.fitness)
-      }else{
+        tryCatch({
         my.boot.par <- GenSA(par = init.par,
                              fn = effect.response.model,
                              lower = lower.bounds,
@@ -255,7 +271,21 @@ ER_SEbootstrap <- function(lambda.vector,
                              target_all = target_all,
                              density_all = density_all,
                              log.fitness = boot.log.fitness,
-                             lambda = lambda.vector)
+                             covariates = boot.covariates)
+        }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
+      }else{
+        tryCatch({
+        my.boot.par <- GenSA(par = init.par,
+                             fn = effect.response.model,
+                             lower = lower.bounds,
+                             upper = upper.bounds, 
+                             control = list(maxit = 1e3), 
+                             target_all = target_all,
+                             density_all = density_all,
+                             log.fitness = boot.log.fitness,
+                             lambda = lambda.vector,
+                             covariates = boot.covariates)
+        }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
       }
       
       my.boot.par <- my.boot.par$par
@@ -265,17 +295,7 @@ ER_SEbootstrap <- function(lambda.vector,
       if(optimize.lambda){
         # suppress annoying output
         # sink("/dev/null")
-        my.boot.par <- hydroPSO::hydroPSO(par = init.par,
-                                          fn = effect.response.model,
-                                          lower = lower.bounds,
-                                          upper = upper.bounds, 
-                                          control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
-                                          target_all = target_all,
-                                          density_all = density_all,
-                                          log.fitness = boot.log.fitness)
-      }else{
-        # suppress annoying output
-        # sink("/dev/null")
+        tryCatch({
         my.boot.par <- hydroPSO::hydroPSO(par = init.par,
                                           fn = effect.response.model,
                                           lower = lower.bounds,
@@ -284,7 +304,23 @@ ER_SEbootstrap <- function(lambda.vector,
                                           target_all = target_all,
                                           density_all = density_all,
                                           log.fitness = boot.log.fitness,
-                                          lambda = lambda.vector)
+                                          covariates = boot.covariates)
+        }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
+      }else{
+        # suppress annoying output
+        # sink("/dev/null")
+        tryCatch({
+        my.boot.par <- hydroPSO::hydroPSO(par = init.par,
+                                          fn = effect.response.model,
+                                          lower = lower.bounds,
+                                          upper = upper.bounds, 
+                                          control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
+                                          target_all = target_all,
+                                          density_all = density_all,
+                                          log.fitness = boot.log.fitness,
+                                          lambda = lambda.vector,
+                                          covariates = boot.covariates)
+        }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
       }
       
       my.boot.par <- my.boot.par$par
@@ -292,20 +328,26 @@ ER_SEbootstrap <- function(lambda.vector,
     }else if(optim.methods[i.method] == "DEoptimR"){
       
       if(optimize.lambda){
-        my.boot.par <- DEoptimR::JDEoptim(lower = lower.bounds,
-                                          upper = upper.bounds,
-                                          fn = effect.response.model,
-                                          target_all = target_all,
-                                          density_all = density_all,
-                                          log.fitness = boot.log.fitness)
-      }else{
+        tryCatch({
         my.boot.par <- DEoptimR::JDEoptim(lower = lower.bounds,
                                           upper = upper.bounds,
                                           fn = effect.response.model,
                                           target_all = target_all,
                                           density_all = density_all,
                                           log.fitness = boot.log.fitness,
-                                          lambda = lambda.vector)
+                                          covariates = boot.covariates)
+        }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
+      }else{
+        tryCatch({
+        my.boot.par <- DEoptimR::JDEoptim(lower = lower.bounds,
+                                          upper = upper.bounds,
+                                          fn = effect.response.model,
+                                          target_all = target_all,
+                                          density_all = density_all,
+                                          log.fitness = boot.log.fitness,
+                                          lambda = lambda.vector,
+                                          covariates = boot.covariates)
+        }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
       }
       
       my.boot.par <- my.boot.par$par

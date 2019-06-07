@@ -147,34 +147,18 @@ ER_optimize <- function(lambda.vector,
   #############
   # initialize result vectors with proper names
   fit.lambda <- rep(NA, num.sp)
-  names(fit.lambda) <- sp.list
-  
   fit.response <- rep(NA, num.sp)
-  names(fit.response) <- sp.list
-  
   fit.effect <- rep(NA, num.sp)
-  names(fit.effect) <- sp.list
   
   fit.sigma <- NA
   fit.log.likelihood <- NA
   
   fit.lambda.lower.error <- rep(NA, num.sp)
-  names(fit.lambda.lower.error) <- sp.list
-  
   fit.lambda.upper.error <- rep(NA, num.sp)
-  names(fit.lambda.upper.error) <- sp.list
-  
   fit.response.lower.error <- rep(NA, num.sp)
-  names(fit.response.lower.error) <- sp.list
-  
   fit.response.upper.error <- rep(NA, num.sp)
-  names(fit.response.upper.error) <- sp.list
-  
   fit.effect.lower.error <- rep(NA, num.sp)
-  names(fit.effect.lower.error) <- sp.list
-  
   fit.effect.upper.error <- rep(NA, num.sp)
-  names(fit.effect.upper.error) <- sp.list
   
   if(!is.null(covariates)){
     fit.lambda.cov <- matrix(NA,nrow = num.sp,ncol = ncol(covariates))
@@ -248,7 +232,8 @@ ER_optimize <- function(lambda.vector,
                          hessian = F,
                          target_all = target_all,
                          density_all = density_all,
-                         log.fitness = log.fitness) 
+                         log.fitness = log.fitness,
+                         covariates = covariates) 
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }else{
       tryCatch({
@@ -263,7 +248,8 @@ ER_optimize <- function(lambda.vector,
                          target_all = target_all,
                          density_all = density_all,
                          log.fitness = log.fitness,
-                         lambda = lambda.vector)
+                         lambda = lambda.vector,
+                         covariates = covariates)
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }
     
@@ -278,7 +264,8 @@ ER_optimize <- function(lambda.vector,
                           ub = upper.bounds,
                           target_all = target_all,
                           density_all = density_all,
-                          log.fitness = log.fitness)
+                          log.fitness = log.fitness,
+                          covariates = covariates)
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }else{
       tryCatch({
@@ -290,7 +277,8 @@ ER_optimize <- function(lambda.vector,
                           target_all = target_all,
                           density_all = density_all,
                           log.fitness = log.fitness,
-                          lambda = lambda.vector)
+                          lambda = lambda.vector,
+                          covariates = covariates)
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }
     
@@ -305,7 +293,8 @@ ER_optimize <- function(lambda.vector,
                         ub = upper.bounds,
                         target_all = target_all,
                         density_all = density_all,
-                        log.fitness = log.fitness)
+                        log.fitness = log.fitness,
+                        covariates = covariates)
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }else{
       tryCatch({
@@ -317,7 +306,8 @@ ER_optimize <- function(lambda.vector,
                           target_all = target_all,
                           density_all = density_all,
                           log.fitness = log.fitness,
-                          lambda = lambda.vector)
+                          lambda = lambda.vector,
+                          covariates = covariates)
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }
     
@@ -332,7 +322,8 @@ ER_optimize <- function(lambda.vector,
                           ub = upper.bounds,
                           target_all = target_all,
                           density_all = density_all,
-                          log.fitness = log.fitness)
+                          log.fitness = log.fitness,
+                          covariates = covariates)
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }else{
       tryCatch({
@@ -344,7 +335,8 @@ ER_optimize <- function(lambda.vector,
                           target_all = target_all,
                           density_all = density_all,
                           log.fitness = log.fitness,
-                          lambda = lambda.vector)
+                          lambda = lambda.vector,
+                          covariates = covariates)
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }
     
@@ -359,7 +351,8 @@ ER_optimize <- function(lambda.vector,
                          control = list(maxit = 1e3), 
                          target_all = target_all,
                          density_all = density_all,
-                         log.fitness = log.fitness)
+                         log.fitness = log.fitness,
+                         covariates = covariates)
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }else{
       tryCatch({
@@ -371,7 +364,8 @@ ER_optimize <- function(lambda.vector,
                          target_all = target_all,
                          density_all = density_all,
                          log.fitness = log.fitness,
-                         lambda = lambda.vector)
+                         lambda = lambda.vector,
+                         covariates = covariates)
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }
     
@@ -388,7 +382,8 @@ ER_optimize <- function(lambda.vector,
                                       control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
                                       target_all = target_all,
                                       density_all = density_all,
-                                      log.fitness = log.fitness)
+                                      log.fitness = log.fitness,
+                                      covariates = covariates)
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }else{
       # suppress annoying output??
@@ -402,7 +397,8 @@ ER_optimize <- function(lambda.vector,
                                       target_all = target_all,
                                       density_all = density_all,
                                       log.fitness = log.fitness,
-                                      lambda = lambda.vector)
+                                      lambda = lambda.vector,
+                                      covariates = covariates)
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }
     
@@ -415,7 +411,8 @@ ER_optimize <- function(lambda.vector,
                                       fn = effect.response.model,
                                       target_all = target_all,
                                       density_all = density_all,
-                                      log.fitness = log.fitness)
+                                      log.fitness = log.fitness,
+                                      covariates = covariates)
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }else{
       tryCatch({
@@ -425,7 +422,8 @@ ER_optimize <- function(lambda.vector,
                                       target_all = target_all,
                                       density_all = density_all,
                                       log.fitness = log.fitness,
-                                      lambda = lambda.vector)
+                                      lambda = lambda.vector,
+                                      covariates = covariates)
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }
   }# if method
@@ -503,21 +501,17 @@ ER_optimize <- function(lambda.vector,
   #####################
   # standard errors via bootstrapping
   if(generate.errors){
-    errors <- ER_SEbootstrap(lambda.vector = lambda.vector,
-                             e.vector = e.vector,
-                             r.vector = r.vector,
-                             sigma = sigma,
-                             e.lower.bound = e.lower.bound,
-                             e.upper.bound = e.upper.bound,
-                             r.lower.bound = r.lower.bound,
-                             r.upper.bound = r.upper.bound,
-                             sigma.lower.bound = sigma.lower.bound,
-                             sigma.upper.bound = sigma.upper.bound,
-                             sp.data = sp.data,
-                             effect.response.model = effect.response.model,
+    errors <- ER_SEbootstrap(effect.response.model = effect.response.model,
                              optim.method = optim.method,
+                             sp.data = sp.data,
+                             init.par = init.par,
+                             lower.bounds = lower.bounds,
+                             upper.bounds = upper.bounds,
+                             covariates = covariates,
                              optimize.lambda = optimize.lambda,
+                             lambda.vector = lambda.vector,
                              nsamples = bootstrap.samples)
+
   }else{
     errors <- NA
   }
@@ -563,6 +557,48 @@ ER_optimize <- function(lambda.vector,
 
     }# if-else
   }# if errors
+  
+  # vectors with appropriate names
+  names(fit.lambda) <- sp.list
+  names(fit.response) <- sp.list
+  names(fit.effect) <- sp.list
+  
+  names(fit.lambda.lower.error) <- sp.list
+  names(fit.lambda.upper.error) <- sp.list
+  names(fit.response.lower.error) <- sp.list
+  names(fit.response.upper.error) <- sp.list
+  names(fit.effect.lower.error) <- sp.list
+  names(fit.effect.upper.error) <- sp.list
+  
+  if(!is.null(covariates)){
+    if(nrow(lambda.cov) == length(sp.list)){
+      rownames(lambda.cov) <- sp.list
+    }
+    if(nrow(lambda.cov.lower.error) == length(sp.list)){
+      rownames(lambda.cov.lower.error) <- sp.list
+    }
+    if(nrow(lambda.cov.upper.error) == length(sp.list)){
+      rownames(lambda.cov.upper.error) <- sp.list
+    }
+    if(nrow(response.cov) == length(sp.list)){
+      rownames(response.cov) <- sp.list
+    }
+    if(nrow(response.cov.lower.error) == length(sp.list)){
+      rownames(response.cov.lower.error) <- sp.list
+    }
+    if(nrow(response.cov.upper.error) == length(sp.list)){
+      rownames(response.cov.upper.error) <- sp.list
+    }
+    if(nrow(effect.cov) == length(sp.list)){
+      rownames(effect.cov) <- sp.list
+    }
+    if(nrow(effect.cov.lower.error) == length(sp.list)){
+      rownames(effect.cov.lower.error) <- sp.list
+    }
+    if(nrow(effect.cov.upper.error) == length(sp.list)){
+      rownames(effect.cov.upper.error) <- sp.list
+    }
+  }
   
   return.list <- list(lambda = fit.lambda,
                       lambda.lower.error = fit.lambda.lower.error,

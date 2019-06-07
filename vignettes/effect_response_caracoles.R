@@ -22,8 +22,8 @@ optim.methods <- c("optim_NM"
 
 # if we want quick calculations, we can disable 
 # the bootstrapping for the standard errors
-generate.errors <- FALSE
-bootstrap.samples <- 10
+generate.errors <- TRUE
+bootstrap.samples <- 3
 
 optimize.lambda <- FALSE
 # model is different...
@@ -58,11 +58,14 @@ names(sp.data)[which(names(sp.data) == "seed")] <- "fitness"
 sp.data$site <- paste(sp.data$year,sp.data$plot,sp.data$subplot,sep="_")
 sp.data <- sp.data[,c("site","focal","fitness","competitor","number")]
 
+# this is the set of species we are fitting
+sp.names <- sort(unique(sp.data$focal))
+
 # in case the sp.data dataframe does not include explicit missing competitors, 
 # here is a somewhat convoluted way for setting zeros to it
 # so that for each focal sp, all competitor sp are included
 sites <- unique(sp.data$site)
-focal.sp <- sort(unique(sp.data$focal))
+
 missing.data <- sp.data
 missing.data$site <- "0"
 missing.data$focal <- "0"
@@ -72,16 +75,16 @@ missing.data$number <- 0
 count <- 1
 
 for(i.site in 1:length(sites)){
-  for(i.focal in 1:length(focal.sp)){
-    my.competitors <- unique(sp.data$competitor[sp.data$site == sites[i.site] & sp.data$focal == focal.sp[i.focal]])
-    if(length(my.competitors) > 0 & length(my.competitors) < length(focal.sp)){
-      my.fitness <- sp.data$fitness[sp.data$site == sites[i.site] & sp.data$focal == focal.sp[i.focal]][1]
+  for(i.sp in 1:length(sp.names)){
+    my.competitors <- unique(sp.data$competitor[sp.data$site == sites[i.site] & sp.data$focal == sp.names[i.sp]])
+    if(length(my.competitors) > 0 & length(my.competitors) < length(sp.names)){
+      my.fitness <- sp.data$fitness[sp.data$site == sites[i.site] & sp.data$focal == sp.names[i.sp]][1]
       
-      missing.competitors <- focal.sp[which(!focal.sp %in% my.competitors)]
+      missing.competitors <- sp.names[which(!sp.names %in% my.competitors)]
       for(i.com in 1:length(missing.competitors)){
         
         missing.data$site[count] <- sites[i.site]
-        missing.data$focal[count] <- focal.sp[i.focal]
+        missing.data$focal[count] <- sp.names[i.sp]
         missing.data$fitness[count] <- my.fitness
         missing.data$competitor[count] <- missing.competitors[i.com]
         missing.data$number[count] <- 0
@@ -89,8 +92,8 @@ for(i.site in 1:length(sites)){
         count <- count + 1
       }# for each missing
     }# if any missing
-    # if(length(my.competitors) > 0 & length(my.competitors) < 19){print(paste(i.site,",",i.focal))}
-  }# for i.focal
+    # if(length(my.competitors) > 0 & length(my.competitors) < 19){print(paste(i.site,",",i.sp))}
+  }# for i.sp
 }# for i.site
 
 missing.data <- droplevels(subset(missing.data,competitor != "0"))
@@ -101,26 +104,34 @@ sp.data <- arrange(sp.data, focal, site, competitor)
 # discard focal sp with fitness 0
 sp.data <- droplevels(subset(sp.data, fitness > 0))
 
+# initial parameter estimates
+# read lambda values
+load("./results/param_estimates.Rdata")
+lambda.values <- data.frame(sp = sp.names,lambda = 0, sigma = 0)
+
+# from which model and optimization method are we taking estimates?
+estimates.model <- "BH_5" #Beverton-holt model number 5
+estimates.method <- "optim_NM"
+
+# gather lambda from fitted data
+for(i.sp in 1:length(sp.names)){
+  if(!is.null(param.matrices[[sp.names[i.sp]]])){
+    lambda.values$lambda[lambda.values$sp == sp.names[i.sp]] <- param.matrices[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$lambda
+    lambda.values$sigma[lambda.values$sp == sp.names[i.sp]] <- param.matrices[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$sigma
+  }
+}
+
+# sanity check
+lambda.values <- arrange(subset(lambda.values, sp %in% sp.data$focal),sp.names)
+# sigma is also a parameter
+sigma <- mean(lambda.values$sigma)
+
+# only species with proper estimates
+sp.data <- subset(sp.data, focal %in% lambda.values$sp & competitor %in% lambda.values$sp)
+
 # sort covariates
 positions <- match(sp.data$site,covariates$site)
 covariates <- covariates[positions,2:ncol(covariates)]
-
-# Initial parameter estimates: TODO
-lambda.values <- readr::read_delim(file = "./results/lambda_estimates.csv",delim = ";")
-
-# take estimates from the most complex model parameterized
-max.model <- max(lambda.values$model)
-
-# stick with those values fitted with max.model
-lambda.values <- subset(lambda.values, model == max.model)
-
-# select method that minimises the overall loglikelihood across all lambdas
-loglik <- lambda.values %>% group_by(optim.method) %>% summarise(sum.loglik = sum(log.likelihood))
-lambda.values <- subset(lambda.values, optim.method == loglik$optim.method[loglik$sum.loglik == min(loglik$sum.loglik)])
-sigma <- mean(lambda.values$sigma)
-
-# sanity check
-lambda.values <- arrange(subset(lambda.values, focal.sp %in% sp.data$focal),focal.sp)
 
 # initial estimates for r, e
 r.values <- rep(1,nrow(lambda.values))
@@ -144,9 +155,6 @@ e.cov.lower.bound <- matrix(0,nrow = nrow(lambda.values),ncol = ncol(covariates)
 e.cov.upper.bound <- matrix(1e4,nrow = nrow(lambda.values),ncol = ncol(covariates))
 r.cov.lower.bound <- matrix(0,nrow = nrow(lambda.values),ncol = ncol(covariates))
 r.cov.upper.bound <- matrix(1e4,nrow = nrow(lambda.values),ncol = ncol(covariates))
-
-# only species with proper estimates
-sp.data <- subset(sp.data, focal %in% lambda.values$focal.sp & competitor %in% lambda.values$focal.sp)
 
 ######################
 # build results list and compute each method
@@ -178,7 +186,7 @@ for(i.method in 1:length(optim.methods)){
 names(param.list) <- optim.methods
 
 ########## TEST
-i.method <- 1
+# i.method <- 1
 ##########
 
 for(i.method in 1:length(optim.methods)){
@@ -237,5 +245,5 @@ for(i.method in 1:length(optim.methods)){
 }
 
 if(write.results){
-  readr::write_delim(full.results,"./results/effect_response_estimates.csv",delim = ";")
+  save(param.matrices,file = "./results/effect_response_estimates.Rdata")
 }
