@@ -117,6 +117,8 @@ ER_optimize <- function(lambda.vector,
     target_all <- rbind(target_all,target.my.sp)
     density_all <- rbind(density_all,density.my.sp)
   }
+  rownames(target_all) <- sp.list
+  rownames(density_all) <- sp.list
   
   # which model to use depending on whether we optimize lambda or not
   # also depending on whether there are covariates

@@ -25,12 +25,16 @@ optim.methods <- c("optim_NM"
 generate.errors <- TRUE
 bootstrap.samples <- 3
 
-optimize.lambda <- FALSE
+optimize.lambda <- TRUE
 # model is different...
 if(optimize.lambda){
   effect.response.model <- EffectResponse_lambda
+  lambda.lower.bound <- 0
+  lambda.upper.bound <- 1e3
 }else{
   effect.response.model <- EffectResponse
+  lambda.lower.bound <- NA
+  lambda.upper.bound <- NA
 }
 
 write.results <- FALSE
@@ -39,8 +43,13 @@ write.results <- FALSE
 # Caracoles data
 
 competition.data <- readr::read_delim(file = "./data/competition.csv",delim = ";")
-### TEST
+
+#################################################
+# TEST
 competition.data <- subset(competition.data,year == 2016)
+# competition.data <- subset(competition.data, focal %in% c("SOAS","BEMA","LEMA","HOMA") & competitor %in% c("SOAS","BEMA","LEMA","HOMA"))
+# competition.data <- competition.data[sample(1:nrow(competition.data),250,replace = F),]
+#################################################
 
 # covariate: salinity
 covariates <- readr::read_delim(file = "../Caracoles/data/salinity.csv",delim = ";")
@@ -72,6 +81,8 @@ missing.data$focal <- "0"
 missing.data$fitness <- 0
 missing.data$competitor <- "0"
 missing.data$number <- 0
+# just in case it overflows
+missing.data <- rbind(missing.data,missing.data,missing.data)
 count <- 1
 
 for(i.site in 1:length(sites)){
