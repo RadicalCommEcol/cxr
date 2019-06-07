@@ -19,7 +19,8 @@
 #' @export
 EffectResponse <- function(init.par, lambda, target_all, density_all, log.fitness, covariates = NULL){
   
-  num.sp <- length(lambda)
+  num.sp <- nrow(target_all) # same as length(lambda)
+  
   r.vector <- init.par[1:num.sp]
   
   if(is.null(covariates)){
@@ -95,7 +96,7 @@ EffectResponse <- function(init.par, lambda, target_all, density_all, log.fitnes
 #' @export
 EffectResponse_lambda <- function(init.par, target_all, density_all, log.fitness, covariates = NULL){
   
-  num.sp <- length(lambda)
+  num.sp <- nrow(target_all)
   
   lambda.vector <- init.par[1:num.sp]
   r.vector <- init.par[(num.sp+1):(num.sp+num.sp)]
