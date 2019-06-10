@@ -4,7 +4,7 @@
 [![Build status](https://travis-ci.org/ibartomeus/cxr.svg?branch=master)](https://travis-ci.org/ibartomeus/cxr)
 [![CRAN status](https://www.r-pkg.org/badges/version/cxr)](https://www.r-pkg.org/badges/version/cxr)
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/cxr)](https://cran.r-project.org/package=cxr)
-[![Zenodo DOI](https://zenodo.org/badge/000000.svg)](https://zenodo.org/badge/latestdoi/000000)
+[![DOI](https://zenodo.org/badge/115796966.svg)](https://zenodo.org/badge/latestdoi/115796966)
 
 
 # cxr
