@@ -1,6 +1,6 @@
 cxr_optimize <- function(fitness.model,
                          optim.method,
-                         param.list, #lambda,sigma,alpha,lambda.cov,alpha.cov,alpha_NL,lambda.cov_NL,alpha.cov_NL,
+                         param.list, #lambda,sigma,alpha,lambda.cov,alpha.cov,lambda.cov_NL,alpha.cov_NL,
                          log.fitness,
                          init.lambda = NULL,
                          lower.lambda = 1,
@@ -17,9 +17,6 @@ cxr_optimize <- function(fitness.model,
                          init.alpha.cov = 1e-3,
                          lower.alpha.cov = 1e-4,
                          upper.alpha.cov = 1e5,
-                         init.alpha_NL = 1e-4,
-                         lower.alpha_NL = 0,
-                         upper.alpha_NL = 1e5,
                          init.lambda.cov_NL = 1e-3,
                          lower.lambda.cov_NL = 1e-4,
                          upper.lambda.cov_NL = 1e5,
@@ -45,12 +42,11 @@ cxr_optimize <- function(fitness.model,
   my.init.alpha <- NULL
   my.init.lambda.cov <- NULL
   my.init.alpha.cov <- NULL
-  my.init.alpha_NL <- NULL
   my.init.lambda.cov_NL <- NULL
   my.init.alpha.cov_NL <- NULL
   
   # initialize fixed terms list
-  fixed.terms <- list(lambda = NULL, lambda.cov = NULL, alpha = NULL, alpha.cov = NULL, lambda.cov_NL = NULL, alpha_NL = NULL, alpha.cov_NL = NULL)
+  fixed.terms <- list(lambda = NULL, lambda.cov = NULL, alpha = NULL, alpha.cov = NULL, lambda.cov_NL = NULL, alpha.cov_NL = NULL)
   
   # only parameters on "param.list" will be optimized
   # otherwise, get their values and put them in the "fixed.term" list
@@ -101,12 +97,6 @@ cxr_optimize <- function(fitness.model,
     fixed.terms[["alpha.cov"]] <- init.alpha.cov
   }
   
-  # alpha non linear, single value or matrix
-  if("alpha_NL" %in% param.list){
-    my.init.alpha_NL <- init.alpha_NL
-  }else{
-    fixed.terms[["alpha_NL"]] <- init.alpha_NL
-  }
   
   # lambda covariates non linear
   if("lambda.cov_NL" %in% param.list){
@@ -140,11 +130,8 @@ cxr_optimize <- function(fitness.model,
                          upper.lambda.cov = upper.lambda.cov,
                          lower.alpha.cov = lower.alpha.cov,
                          upper.alpha.cov = upper.alpha.cov,
-                         init.alpha_NL = my.init.alpha_NL,
                          init.lambda.cov_NL = my.init.lambda.cov_NL,
                          init.alpha.cov_NL = my.init.alpha.cov_NL,
-                         lower.alpha_NL = lower.alpha_NL,
-                         upper.alpha_NL = upper.alpha_NL,
                          lower.lambda.cov_NL = lower.lambda.cov_NL,
                          upper.lambda.cov_NL = upper.lambda.cov_NL,
                          lower.alpha.cov_NL = lower.alpha.cov_NL,
@@ -478,9 +465,6 @@ cxr_optimize <- function(fitness.model,
                       alpha.cov = alpha.cov,
                       alpha.cov.lower.error = alpha.cov.lower.error,
                       alpha.cov.upper.error = alpha.cov.upper.error,
-                      alpha_NL = alpha_NL,
-                      alpha_NL.lower.error = alpha_NL.lower.error,
-                      alpha_NL.upper.error = alpha_NL.upper.error,
                       lambda_NL.cov = lambda_NL.cov,
                       lambda.cov.lower.error = lambda.cov.lower.error,
                       lambda.cov_NL.upper.error = lambda.cov_NL.upper.error,
