@@ -3,7 +3,7 @@ Type: Package
 Title: Tools to calculate species coexistence
 Version: 0.1
 Date: 2017-12-30
-Author: c(person("David", "Garcia-Callejas", role = c("aut", "cre"), email = "", comment = c(ORCID = "")),
+Authors@R: c(person("David", "Garcia-Callejas", role = c("aut", "cre"), email = "david.garcia.callejas@gmail.com", comment = c(ORCID = "")),
   person("Ignasi", "Bartomeus", role = c("aut"), comment = c(ORCID = "0000-0001-7893-4389")),
   person("Oscar", "Godoy", role = c("aut"), email = "", comment = c(ORCID = "")),
   person("", "", role = c("ctb")),
@@ -11,7 +11,10 @@ Author: c(person("David", "Garcia-Callejas", role = c("aut", "cre"), email = "",
 Description: ...
 License: MIT + file LICENSE
 Depends:
-  R (>= 3.0)
+  R (>= 3.5)
+Imports:
+  nlme,
+  tidyverse
 RoxygenNote: 6.1.1
-Suggests: knitr, rmarkdown
+Suggests: knitr, rmarkdown, testthat (>= 0.8.0)
 VignetteBuilder: knitr
