@@ -51,6 +51,15 @@ param.list <- list(c("lambda","alpha"),
                    c("lambda","alpha","lambda.cov","alpha.cov"),
                    c("lambda","alpha","lambda.cov","alpha.cov"))
 
+#Choose the non-linearity function
+#function_NL <- function1
+function1 <-function(a,b,x){
+  return(a*x^2/(b+x^2))
+}
+function2 <-function(a,b,x){
+  return(a*(1-exp(b*x)))
+}
+
 # keep the model definitions in a list, for ease
 fitness.models <- list(BH_1 = BH_1,BH_2 = BH_2,BH_3 = BH_3,BH_4 = BH_4,BH_5 = BH_5)
 
@@ -127,9 +136,6 @@ for(i.sp in 1:length(focal.sp)){
                                                             alpha.cov = 0,
                                                             alpha.cov.lower.error = 0,
                                                             alpha.cov.upper.error = 0,
-                                                            alpha_NL = 0,
-                                                            alpha_NL.lower.error = 0,
-                                                            alpha_NL.upper.error = 0,
                                                             lambda.cov_NL = 0,
                                                             lambda.cov_NL.lower.error = 0,
                                                             lambda.cov_NL.upper.error = 0,
@@ -277,10 +283,7 @@ for(i.sp in 1:length(focal.sp)){
       param.matrices[[i.sp]][[i.model]][[i.method]]$alpha <- temp.results$alpha
       param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.upper.error <- temp.results$alpha.upper.error
       param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.lower.error <- temp.results$alpha.lower.error
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha_NL <- temp.results$alpha_NL
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha_NL.upper.error <- temp.results$alpha_NL.upper.error
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha_NL.lower.error <- temp.results$alpha_NL.lower.error
-      
+
       param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov <- temp.results$lambda.cov
       param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov.upper.error <- temp.results$lambda.cov.upper.error
       param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov.lower.error <- temp.results$lambda.cov.lower.error
@@ -326,19 +329,7 @@ for(i.sp in 1:length(focal.sp)){
           }
         }# if model > 2
       }
-    }
     
-    if("alpha_NL" %in% param.list[[i.model]]){
-      if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha_NL)) == 0){
-        current.init.alpha_NL <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha_NL
-        # is the current estimate of the appropriate length?
-        if(i.model > 2){
-          if(length(current.init.alpha_NL) == 1){
-            current.init.alpha_NL <- rep(current.init.alpha_NL,num.competitors)
-          }
-        }# if model > 2
-      }
-    }
     # lambda.cov
     if("lambda.cov" %in% param.list[[i.model]]){
       if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov)) == 0){

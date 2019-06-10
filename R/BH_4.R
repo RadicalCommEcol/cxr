@@ -49,10 +49,7 @@ BH_4 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
   }else{
     alpha <- fixed.terms[["alpha"]]
   }
-  if("alpha_NL" %in% param.list){
-    alpha_NL <- par[pos:(pos+num.competitors-1)]
-    pos <- pos + num.competitors
-  }
+  
   
   if("alpha.cov" %in% param.list){
     alpha.cov <- par[pos:(pos+num.covariates-1)]
@@ -71,7 +68,7 @@ BH_4 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
   focal.cov.matrix <- as.matrix(focal.covariates)
   if("lambda.cov_NL" %in% param.list){
     for(z in 1:num.covariates){
-      num <- num + function_NL(lambda.cov[z],lambda.cov_NL[z])*focal.cov.matrix[,z]
+      num <- num + function_NL(lambda.cov[z],lambda.cov_NL[z],focal.cov.matrix[,z])
     }
   }else{
   for(z in 1:num.covariates){
@@ -82,7 +79,7 @@ BH_4 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
   cov_term <- 0 
   if("alpha.cov_NL" %in% param.list){
     for(v in 1:num.covariates){
-      cov_term <- cov_term + function_NL(alpha.cov[v],alpha.cov_NL[v]) * focal.cov.matrix[,v]
+      cov_term <- cov_term + function_NL(alpha.cov[v],alpha.cov_NL[v], focal.cov.matrix[,v])
     }
   
   }else{
@@ -91,14 +88,9 @@ BH_4 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
   }
   }
   term <- 1 #create the denominator term for the model
-  if("alpha_NL" %in% param.list){
-    for(z in 1:ncol(focal.comp.matrix)){
-      term <- term + (function_NL(alpha[z],alpha_NL[z]) + cov_term) * focal.comp.matrix[,z] 
-    }
-  }else{
+  
   for(z in 1:ncol(focal.comp.matrix)){
     term <- term + (alpha[z] + cov_term) * focal.comp.matrix[,z]
-  }
   }
   pred <- lambda * (num) / term 
   # likelihood as before:
