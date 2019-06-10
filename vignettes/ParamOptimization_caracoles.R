@@ -127,6 +127,15 @@ for(i.sp in 1:length(focal.sp)){
                                                             alpha.cov = 0,
                                                             alpha.cov.lower.error = 0,
                                                             alpha.cov.upper.error = 0,
+                                                            alpha_NL = 0,
+                                                            alpha_NL.lower.error = 0,
+                                                            alpha_NL.upper.error = 0,
+                                                            lambda.cov_NL = 0,
+                                                            lambda.cov_NL.lower.error = 0,
+                                                            lambda.cov_NL.upper.error = 0,
+                                                            alpha.cov_NL = 0,
+                                                            alpha.cov_NL.lower.error = 0,
+                                                            alpha.cov_NL.upper.error = 0,
                                                             log.likelihood = 0)
     }
     names(param.matrices[[i.sp]][[i.model]]) <- optim.methods
@@ -268,14 +277,23 @@ for(i.sp in 1:length(focal.sp)){
       param.matrices[[i.sp]][[i.model]][[i.method]]$alpha <- temp.results$alpha
       param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.upper.error <- temp.results$alpha.upper.error
       param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.lower.error <- temp.results$alpha.lower.error
+      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha_NL <- temp.results$alpha_NL
+      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha_NL.upper.error <- temp.results$alpha_NL.upper.error
+      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha_NL.lower.error <- temp.results$alpha_NL.lower.error
       
       param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov <- temp.results$lambda.cov
       param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov.upper.error <- temp.results$lambda.cov.upper.error
       param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov.lower.error <- temp.results$lambda.cov.lower.error
+      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov_NL <- temp.results$lambda.cov_NL
+      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov_NL.upper.error <- temp.results$lambda.cov_NL.upper.error
+      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov_NL.lower.error <- temp.results$lambda.cov_NL.lower.error
       
       param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov <- temp.results$alpha.cov
       param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov.upper.error <- temp.results$alpha.cov.upper.error
       param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov.lower.error <- temp.results$alpha.cov.lower.error
+      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov_NL <- temp.results$alpha.cov_NL
+      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov_NL.upper.error <- temp.results$alpha.cov_NL.upper.error
+      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov_NL.lower.error <- temp.results$alpha.cov_NL.lower.error
       
       param.matrices[[i.sp]][[i.model]][[i.method]]$log.likelihood <- temp.results$log.likelihood
       
@@ -309,12 +327,32 @@ for(i.sp in 1:length(focal.sp)){
         }# if model > 2
       }
     }
+    
+    if("alpha_NL" %in% param.list[[i.model]]){
+      if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha_NL)) == 0){
+        current.init.alpha_NL <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha_NL
+        # is the current estimate of the appropriate length?
+        if(i.model > 2){
+          if(length(current.init.alpha_NL) == 1){
+            current.init.alpha_NL <- rep(current.init.alpha_NL,num.competitors)
+          }
+        }# if model > 2
+      }
+    }
     # lambda.cov
     if("lambda.cov" %in% param.list[[i.model]]){
       if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov)) == 0){
         current.init.lambda.cov <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov
       }
     }
+    
+    # lambda.cov_NL
+    if("lambda.cov_NL" %in% param.list[[i.model]]){
+      if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov_NL)) == 0){
+        current.init.lambda.cov_NL <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov_NL
+      }
+    }
+    
     # alpha.cov
     if("alpha.cov" %in% param.list[[i.model]]){
       if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)) == 0){
@@ -323,6 +361,19 @@ for(i.sp in 1:length(focal.sp)){
         if(i.model > 4){
           if(length(current.init.alpha.cov) == num.covariates){
             current.init.alpha.cov <- rep(current.init.alpha.cov,num.competitors)
+          }
+        }# if model > 4
+      }
+    }
+    
+    # alpha.cov_NL
+    if("alpha.cov_NL" %in% param.list[[i.model]]){
+      if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov_NL)) == 0){
+        current.init.alpha.cov_NL <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov_NL
+        # is the current estimate of the appropriate length?
+        if(i.model > 4){
+          if(length(current.init.alpha.cov_NL) == num.covariates){
+            current.init.alpha.cov_NL <- rep(current.init.alpha.cov_NL,num.competitors)
           }
         }# if model > 4
       }
