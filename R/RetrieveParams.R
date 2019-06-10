@@ -1,17 +1,15 @@
 
 #' Retrieve parameters from the vector returned by the optimization procedures
 #'
-#' @param optim.params 1d vector, the result of the optimization method
+#' @param optim.params 1d vector, the result of an optimization method
 #' @param param.list character vector, which parameters are present. Possible elements are "lambda", "lambda.cov", "alpha", "alpha.cov".
 #' @param alpha.length if alpha is to be retrieved, its length
 #' @param alpha.cov.length if alpha.cov is to be retrieved, its length
 #' @param num.competitors how many competitor species
 #' @param num.covariates how many covariates
 #'
-#' @return list with elements "lambda", "alpha", "lambda.cov", "alpha.cov", "sigma". If one of these elements is not present, NULL is the value returned.
+#' @return list with elements "lambda", "alpha", "lambda.cov", "alpha.cov", "sigma". If one of these elements is not present, returns NULL.
 #' @export
-#'
-#' @examples
 RetrieveParams <- function(optim.params, param.list, alpha.length, alpha.cov.length, num.competitors, num.covariates){
   
   lambda <- NULL

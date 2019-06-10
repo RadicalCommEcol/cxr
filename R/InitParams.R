@@ -1,4 +1,31 @@
 
+#' Join parameters in a 1d vector
+#' 
+#' Generate a 1d vector from a series of parameters in a certain order. It also returns the same vector
+#' for lower and upper bounds. This function is intended to work with
+#' parameters for a single species (i.e. a single lambda value, etc). Note that lambda.cov and alpha.cov must be consistent
+#' with num.covariates.
+#'
+#' @param init.lambda numeric, lambda
+#' @param init.sigma numeric, sigma
+#' @param init.alpha 1d vector, interaction coefficients over the species
+#' @param init.lambda.cov 1d vector, initial values for lambda.cov
+#' @param init.alpha.cov 1d vector, initial values for alpha.cov
+#' @param lower.lambda lower bound for lambda
+#' @param upper.lambda upper bound for lambda
+#' @param lower.sigma lower bound for sigma
+#' @param upper.sigma upper bound for sigma
+#' @param lower.alpha lower bound for alpha
+#' @param upper.alpha upper bound for alpha
+#' @param lower.lambda.cov lower bound for lambda.cov
+#' @param upper.lambda.cov upper bound for lambda.cov
+#' @param lower.alpha.cov lower bound for alpha.cov
+#' @param upper.alpha.cov upper bound for alpha.cov
+#' @param num.competitors number of competitors
+#' @param num.covariates number of covariates
+#'
+#' @return list with three 1d vectors, ready for passing to the optim methods, consistent with the functions BH_1-5 
+#' @export
 InitParams <- function(init.lambda = NULL,
                        init.sigma = 0,
                        init.alpha = NULL,

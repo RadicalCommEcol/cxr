@@ -1,6 +1,30 @@
-####
-# standard error estimates from bootstrap samples
-
+#' standard error estimates for effect and response parameters
+#' 
+#' Computes bootstrap standard errors for a given effect/response function
+#'
+#' @param effect.response.model effect/response function
+#' @param optim.method optimization method to use. One of the following: "optim_NM","optim_L-BFGS-B","nloptr_CRS2_LM", 
+#' "nloptr_ISRES","nloptr_DIRECT_L_RAND","GenSA","hydroPSO","DEoptimR". 
+#' @param sp.data dataframe with all the necessary information in long format. It should have the following columns:
+#' - site: character ID
+#' - focal: character ID of the focal species. Any number of focal species is allowed, but the number of focal species
+#' must match the number of initial parameters (one lambda, e, and r per species).
+#' - fitness: numeric, a fitness metric
+#' - competitor: character, ID of a competitor for that observation. The set of competitors must be, for now, the same
+#' as the set of focal species.
+#' - number: number of neighbouring/competitor individuals from the associated species. Observations without competitors of a given species
+#' must be explicit, i.e. setting number to zero.
+#' @param init.par 1d vector of initial parameters
+#' @param lower.bounds 1d vector of lower bounds
+#' @param upper.bounds 1d vector of upper bounds
+#' @param covariates dataframe/matrix with observations in rows and covariates in columns. Each cell is the value of a covariate
+#' from an observation.
+#' @param optimize.lambda boolean, whether to optimize the values of lambda or not.
+#' @param lambda.vector in case lambda is not to be optimized, fixed values for it.
+#' @param nsamples how many bootstrap samples to compute.
+#'
+#' @return 1d vector, the standard error of each parameter in init.par
+#' @export
 ER_SEbootstrap <- function(effect.response.model,
                            optim.method,
                            sp.data,

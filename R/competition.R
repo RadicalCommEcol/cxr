@@ -1,6 +1,6 @@
 #' Competition measurments
 #' 
-#' A dataset containing fitness and neighbourgts for each plant species.
+#' A dataset containing fitness and neighbours for each plant species.
 #' 
 #' \itemize{          
 #'   \item year: year

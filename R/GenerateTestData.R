@@ -1,23 +1,29 @@
 library(tidyverse)
 
-#' Title
+#' Generate simulated competition data
 #'
 #' @param focal.sp number of focal species
 #' @param num.sp total number of species, including focal ones
 #' @param num.cov number of covariates
 #' @param num.obs number of observations/sites
-#' @param fitness.model model to generate data from, from 1 to 5 in increasing levels of complexity. TODO: document explaining the different models
-#' @param focal.lambda vector with lambdas of the focal sp
+#' @param fitness.model model to generate data from, from 1 to 5 in increasing levels of complexity.
+#' The generating models are equivalent to BH_1-BH_5
+#' @param focal.lambda 1d vector with lambdas of the focal sp
 #' @param alpha.matrix num.sp x num.sp interaction matrix
 #' @param alpha.cov list containing num.sp matrices of size num.sp * num.cov, giving the effect of a given covariate -column- on the interaction alpha i -list index- ,j -matrix row-
-#' TODO: make it more understandable, maybe alpha.cov[[num.cov]][i.sp,j.sp]
 #' @param lambda.cov list containing num.sp vectors giving the effect of each covariate on the lambda of species i
 #'
 #' @return dataset with a fitness metric calculated for each focal species and observation, according to the fitness model selected
 #' @export
-#'
-#' @examples
-GenerateTestData <- function(focal.sp = 1,num.sp = 2,num.cov = 2,num.obs = 10, fitness.model = 1,focal.lambda,alpha.matrix,alpha.cov,lambda.cov){
+GenerateTestData <- function(focal.sp = 1,
+                             num.sp = 2,
+                             num.cov = 2,
+                             num.obs = 10, 
+                             fitness.model = 1,
+                             focal.lambda,
+                             alpha.matrix,
+                             alpha.cov,
+                             lambda.cov){
   
   full.data <- NULL
   

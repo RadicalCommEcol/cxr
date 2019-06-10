@@ -1,4 +1,4 @@
-#' Salinity measurments
+#' Salinity measurements
 #' 
 #' A dataset containing the integrated salinity over the season for each plant species.
 #' 

@@ -1,3 +1,42 @@
+#' General optimization for dynamic models
+#' 
+#' Wrapper for optimization procedures. It accepts a model, defined as a function, and a series of parameters, and returns
+#' the optimal value for the parameters given a fitness metric and an optimization method. Optionally, bootstrap confidence intervals
+#' can also be computed.
+#'
+#' @param fitness.model function giving the population dynamics model. Any functional form is allowed, but the model must be constrained
+#' to free parameters \code{lambda} (fecundity of each sp in absence of competition), \code{alpha} (interaction coefficients),
+#' \code{lambda.cov} (effect of covariates on lambda), \code{alpha.cov} (effect of covariates on alpha)  
+#' @param optim.method optimization method to use. One of the following: "optim_NM","optim_L-BFGS-B","nloptr_CRS2_LM", 
+#' "nloptr_ISRES","nloptr_DIRECT_L_RAND","GenSA","hydroPSO","DEoptimR". 
+#' @param param.list string vector giving the parameters that are to be optimized for the fitness model.
+#' @param log.fitness 1d vector, log of the fitness metric for every observation
+#' @param init.lambda 1d vector, initial value of lambda
+#' @param lower.lambda lower bound for lambda
+#' @param upper.lambda upper bound for lambda
+#' @param init.sigma initial value for sigma (standard deviation)
+#' @param lower.sigma lower bound for sigma
+#' @param upper.sigma upper bound for sigma
+#' @param init.alpha initial value for the alpha vector/matrix
+#' @param lower.alpha lower bound for alpha
+#' @param upper.alpha upper bound for alpha
+#' @param init.lambda.cov initial value for the lambda.cov matrix. Discarded if no covariates are given.
+#' @param lower.lambda.cov lower bound for lambda.cov
+#' @param upper.lambda.cov upper bound for lambda.cov
+#' @param init.alpha.cov initial value for the alpha.cov matrix. Discarded if no covariates are given.
+#' @param lower.alpha.cov lower bound for alpha.cov
+#' @param upper.alpha.cov upper bound for alpha.cov
+#' @param focal.comp.matrix matrix with observations in rows and neighbours in columns. Each cell is the number of neighbours
+#' of a given species in a given observation.
+#' @param focal.covariates optional matrix with observations in rows and covariates in columns. Each cell is the value of a covariate
+#' in a given observation.
+#' @param generate.errors boolean, whether to compute bootstrap errors for the fitted parameters. Note that, depending on 
+#' the data, model, and optimization method, this may be computationally expensive.
+#' @param bootstrap.samples how many bootstrap samples to compute.
+#'
+#' @return list with the fitted parameters, and the loglikelihood of the fit. If a parameter is taken as a constant, the list will return 
+#' the original value given.
+#' @export
 cxr_optimize <- function(fitness.model,
                          optim.method,
                          param.list, #lambda,sigma,alpha,lambda.cov,alpha.cov

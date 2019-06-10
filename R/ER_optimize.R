@@ -1,5 +1,5 @@
 
-#' Estimate competition effect and response for a set of species
+#' Estimate competition effects and responses for a set of species
 #' 
 #' This function is similar in spirit to cxr_optimize, in that it optimizes a set of parameters
 #' via maximum likelihood.
@@ -35,7 +35,7 @@
 #' @param sigma.lower.bound lower bound for sigma.
 #' @param sigma.upper.bound upper bound for sigma.
 #' @param effect.response.model function returning a value to optimize over, e.g. maximum likelihood
-#' @param optim.method one of the following: "optim_NM","optim_L-BFGS-B","nloptr_CRS2_LM", 
+#' @param optim.method optimization method to use. One of the following: "optim_NM","optim_L-BFGS-B","nloptr_CRS2_LM", 
 #' "nloptr_ISRES","nloptr_DIRECT_L_RAND","GenSA","hydroPSO","DEoptimR".
 #' @param sp.data dataframe with all the necessary information in long format. It should have the following columns:
 #' - site: character ID
@@ -44,12 +44,13 @@
 #' - fitness: numeric, a fitness metric
 #' - competitor: character, ID of a competitor for that observation. The set of competitors must be, for now, the same
 #' as the set of focal species.
-#' - number: number of competitor individuals from the associated species. Observations without competitors of a given species
-#' can be explicit, i.e. setting number to zero, or implicit, not included in the dataframe.
+#' - number: number of neighbouring/competitor individuals from the associated species. Observations without competitors of a given species
+#' must be explicit, i.e. setting number to zero.
 #' @param covariates optional matrix/dataframe with as many rows as observations and covariates in columns.
 #' @param optimize.lambda boolean, whether we want to optimize lambda values or not
-#' @param generate.errors whether we want to compute bootstrap standard errors for the parameters
-#' @param bootstrap.samples number of bootstrap samples
+#' @param generate.errors boolean, whether to compute bootstrap errors for the fitted parameters. Note that, depending on 
+#' the data and optimization method, this may be computationally expensive.
+#' @param bootstrap.samples how many bootstrap samples to compute.
 #' @return list with estimated species values for e, r, lambda (optional), and if covariates are given, the effects of covariates on lambda, r, and e.
 #' @export
 #'

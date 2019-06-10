@@ -7,12 +7,10 @@
 #' and coexistence is not possible unless species are otherwise identical. 
 #' At the other extreme, if species have no interspecific effects, then niche overlap is 0.
 #'
-#' @param pair.matrix competition coefficients between the two species, and intraspecific terms
+#' @param pair.matrix 2x2 matrix with competition coefficients between the two species, and intraspecific terms
 #'
 #' @return niche overlap value, in the range 0-1.
 #' @export
-#'
-#' @examples
 NicheOverlap <- function(pair.matrix){
   sqrt((pair.matrix[1,2]/pair.matrix[2,2])*(pair.matrix[2,1]/pair.matrix[1,1]))
 }

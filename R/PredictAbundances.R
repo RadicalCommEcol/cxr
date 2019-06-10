@@ -1,9 +1,10 @@
-#' Title project abundances according to specified models and parameters
+#' Project abundances according to specified models and parameters
 #'
 #' @param par list with the following components: 
 #' 1 - dataframe sp.par, with the parameters to be passed to the predictive model
 #' 2 - dataframe initial.values, with fields "site","species","abundance"
 #' 3 - covariates, either 0 if there are no covariates, or a dataframe with fields "site","timestep","covariate","value"
+#' 4 - list other.par, other parameters to \code{abundance model}, such as lambda.cov.matrix, alpha.cov.matrix.
 #' species should be a unique identifier, character or numeric. idem for site and covariate.
 #' @param timesteps number of timesteps to project
 #' @param abundance.model a function that accepts parameters from sp.par, a set of initial abundances, and optionally other parameters.
@@ -11,9 +12,7 @@
 #'
 #' @return dataframe with fields "timestep","site","sp","abundance", giving the expected abundance for each species, timestep, and site.
 #' @export
-#'
-#' @examples
-PredictAbundances <- function(par,timesteps,abundance.model,...){
+PredictAbundances <- function(par,timesteps,abundance.model){
   sites <- unique(par$initial.values$site)
   sp <- unique(par$initial.values$species)
   num.sp <- nrow(par$sp.par)
