@@ -23,6 +23,8 @@ AvgFitnessRatio <- function(lambda, germ.rate = NULL, survival.rate = NULL, pair
   }
   demographic.ratio <- (nu[1]-1)/(nu[2]-1)
   comp.response.ratio <- sqrt((pair.matrix[1,2]/pair.matrix[2,2])*(pair.matrix[1,1]/pair.matrix[2,1]))
+  names(demographic.ratio) <- NULL
+  names(comp.response.ratio) <- NULL
   
   # return the two components and the resulting ratio
   list(demographic.ratio = demographic.ratio, 

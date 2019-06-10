@@ -12,7 +12,10 @@ source("./R/PredictAbundances.R")
 ####################
 # covariates
 num.cov <- 1
+##############
+# TODO: change when salinity is part of the package
 covariates <- readr::read_delim("../Caracoles/data/salinity.csv",delim = ";")
+##############
 covariates$site <- paste(covariates$plot,"_",covariates$subplot,sep="")
 covariates <- covariates[,c("year","site","sum_salinity")]
 covariates <- gather(covariates,key = "covariate",value = "value",-year,-site)
@@ -22,13 +25,19 @@ names(covariates)[1] <- "timestep"
 covariates$timestep <- covariates$timestep - 2014
 
 # initial abundances
+##############
+# TODO: change when abundances is part of the package
+##############
 abundances <- readr::read_delim("./data/abundances.csv",delim = ";")
 # complete missing sp-year combinations
-abundances <- complete(abundances, year,plot,subplot,species, fill = list(individuals = 0, month = 0, day = 0, order = 0))
+abundances <- tidyr::complete(abundances, year,plot,subplot,species, fill = list(individuals = 0, month = 0, day = 0, order = 0))
 
 ###########
 # read lambda,s,g, and alpha values
 load("./results/param_estimates.Rdata")
+##############
+# TODO: change when species.rates is part of the package
+##############
 species.rates <- readr::read_delim("../Caracoles/raw_data/seed_germination_survival.txt",delim = "\t")
 
 # only species with germination/survival rates
@@ -124,6 +133,7 @@ predicted.abundances$sp <- as.factor(predicted.abundances$sp)
 # some quick summarising for plotting
 plot.data <- predicted.abundances %>% group_by(timestep,sp) %>% summarise(mean.abund = mean(abundance), sd.abund = sd(abundance))
 
+# mean predicted abundance 
 abund.mean.plot <- ggplot(plot.data,aes(x = timestep,y = mean.abund, group = sp)) + 
   geom_point(aes(color = sp)) + 
   geom_line(aes(color = sp)) +
@@ -147,12 +157,13 @@ obs.pred <- subset(obs.pred,year > 2015)
 obs.pred <- obs.pred[which(!is.na(obs.pred$predicted)),]
 obs.pred$year <- as.factor(obs.pred$year)
 
+# observed and predicted abundances
 obs.pred.plot <- ggplot(obs.pred,aes(x = individuals,y = predicted,group = species)) + 
   geom_point(aes(color = species, shape = year)) + 
   geom_abline(slope = 1) +
   facet_wrap(plot~., scales = "free_y") +
   xlim(0,100) + ylim(0,100) +
   NULL
-# obs.pred.plot
+obs.pred.plot
 
 

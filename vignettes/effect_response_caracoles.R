@@ -5,6 +5,7 @@
 
 source("R/ER_optimize.R")
 source("R/EffectResponse.R")
+source("R/EffectResponse_lambda.R")
 source("R/ER_SEbootstrap.R")
 require(tidyverse)
 
@@ -41,7 +42,9 @@ write.results <- FALSE
 
 ###########################
 # Caracoles data
-
+##############
+# TODO: change when competition is part of the package
+##############
 competition.data <- readr::read_delim(file = "./data/competition.csv",delim = ";")
 
 #################################################
@@ -52,6 +55,9 @@ competition.data <- subset(competition.data,year == 2016)
 #################################################
 
 # covariate: salinity
+##############
+# TODO: change when salinity is part of the package
+##############
 covariates <- readr::read_delim(file = "../Caracoles/data/salinity.csv",delim = ";")
 
 # one observation per row of competition.data
@@ -133,7 +139,7 @@ for(i.sp in 1:length(sp.names)){
 }
 
 # sanity check
-lambda.values <- arrange(subset(lambda.values, sp %in% sp.data$focal),sp.names)
+lambda.values <- dplyr::arrange(subset(lambda.values, sp %in% sp.data$focal),sp.names)
 # sigma is also a parameter
 sigma <- mean(lambda.values$sigma)
 
@@ -195,10 +201,6 @@ for(i.method in 1:length(optim.methods)){
 
 }
 names(param.list) <- optim.methods
-
-########## TEST
-# i.method <- 1
-##########
 
 for(i.method in 1:length(optim.methods)){
   

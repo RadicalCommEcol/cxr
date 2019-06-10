@@ -9,6 +9,9 @@ library(scales)
 # load data
 
 # germination and seed survival rates
+##############
+# TODO: change when species.rates is part of the package
+##############
 species.rates <- readr::read_delim(file = "../Caracoles/raw_data/seed_germination_survival.txt",delim = "\t")
 # lambda and alpha coefficients
 load("./results/param_estimates.Rdata")
@@ -55,7 +58,7 @@ for(i.pair in 1:nrow(pairwise.ratios)){
   pairwise.ratios$fitness.ratio[i.pair] <- AvgFitnessRatio(lambda = lambda.values[my.sp],
                                                            germ.rate = species.rates$germination[species.rates$code %in% my.sp],
                                                            survival.rate = species.rates$`seed survival`[species.rates$code %in% my.sp],
-                                                           pair.matrix = my.matrix)
+                                                           pair.matrix = my.matrix)[[3]]
   pairwise.ratios$niche.overlap[i.pair] <- NicheOverlap(pair.matrix = my.matrix)
 }
 

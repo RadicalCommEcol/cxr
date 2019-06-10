@@ -1,5 +1,6 @@
 source("./R/GenerateTestData.R")
-library(tidyverse)
+source("./R/BevertonHolt_abundance_models.R")
+source("./R/PredictAbundances.R")
 
 # timesteps
 timesteps <- 50
@@ -32,7 +33,7 @@ test.data <- GenerateTestData(focal.sp = focal.sp,
 
 # initial abundances
 init.abund <- expand.grid(1:num.obs,1:num.sp)
-names(init.abund) <- c("site","sp")
+names(init.abund) <- c("site","species")
 init.abund$abundance <- rnorm(nrow(init.abund),100,50)
 
 # lambda, s, g
@@ -40,7 +41,7 @@ init.abund$abundance <- rnorm(nrow(init.abund),100,50)
 # ideally we will have a complete parameterization of all species present
 # otherwise, the dynamics will only predict those parameterized,
 # and the effect of other competitors will dissappear from time 2 onwards
-sp.par <- data.frame(sp = 1:num.sp,lambda = 0,germ.rate = 0, survival.rate = 0)
+sp.par <- data.frame(species = 1:num.sp,lambda = 0,germ.rate = 0, survival.rate = 0)
 sp.par$lambda[focal.sp] <- focal.lambda
 sp.par$germ.rate[focal.sp] <- runif(length(focal.sp),0,0.5)
 sp.par$survival.rate[focal.sp] <- runif(length(focal.sp),0,0.5)
@@ -69,75 +70,15 @@ par <- list(sp.par = sp.par, initial.values = init.abund,
                                                     lambda.cov.matrix = lambda.cov.matrix, 
                                                     alpha.cov.matrix = alpha.cov.matrix))
 
-# define a function that returns a vector of abundances, given the parameters
-# this is equivalent to model 5 of nested_models.R
-# TODO: it will probably be useful to merge all this in a single file
-abund.fun.5 <- function(sp.par,init.abund,cov.values,alpha.matrix,lambda.cov.matrix,alpha.cov.matrix){
-  expected.abund <- rep(0,nrow(sp.par))
-  for(i.sp in 1:nrow(sp.par)){
-    # numerator
-    lambda.cov <- 0
-    for(i.cov in 1:ncol(lambda.cov.matrix)){
-      lambda.cov <- lambda.cov + cov.values[i.cov]*lambda.cov.matrix[i.sp,i.cov]
-    }
-    num <- sp.par$lambda[i.sp] * lambda.cov 
-    # denominator
-    den <- 0
-    for(j.sp in 1:nrow(sp.par)){
-      alpha.term <- alpha.matrix[i.sp,j.sp]
-      for(i.cov in 1:ncol(lambda.cov.matrix)){
-        alpha.term <- alpha.term + alpha.cov.matrix[[i.cov]][i.sp,j.sp]*cov.values[i.cov]
-      }# for i.cov
-      den <- den + alpha.term*init.abund[j.sp]
-    }# for j.sp
-    den <- 1+den
-    # overall fitness metric
-    fitness <- num/den
-    expected.abund[i.sp] <- ((1-sp.par$germ.rate[i.sp])*sp.par$survival.rate[i.sp]) + sp.par$germ.rate[i.sp]*fitness
-  }
-  expected.abund
-}
-
-# this function accepts a list of parameters, a model for predicting abundances
-# such as the one above, and an integer with the number of timesteps for the projection
-# this function should be flexible enough as to accept *any* abundance model and set of params
-# for now, it is restricted to the structure of our data
-PredictAbundances <- function(par,timesteps,abundance.model){
-  sites <- unique(par$initial.values$site)
-  num.sp <- nrow(par$sp.par)
-  
-  predicted.abundances <- expand.grid(1:timesteps,sites,1:num.sp)
-  names(predicted.abundances) <- c("timestep","site","sp")
-  predicted.abundances$abundance <- 0
-  predicted.abundances$abundance[predicted.abundances$timestep == 1] <- as.numeric(par$initial.values$abundance)
-  
-  for(i.timestep in 2:timesteps){
-    for(i.site in sites){
-      init.abund <- predicted.abundances$abundance[predicted.abundances$timestep == (i.timestep-1) & 
-                                                     predicted.abundances$site == i.site]
-      cov.values <- par$covariates$value[par$covariates$site == i.site & 
-                                           par$covariates$timestep == i.timestep]
-      predicted.abundances$abundance[predicted.abundances$timestep == i.timestep & 
-                                       predicted.abundances$site == i.site] <- abundance.model(par$sp.par,
-                                                                                               init.abund,
-                                                                                               cov.values,
-                                                                                               par$other.par$alpha.matrix,
-                                                                                               par$other.par$lambda.cov.matrix,
-                                                                                               par$other.par$alpha.cov.matrix)
-    }# i.site
-  }# i.timestep
-  return(predicted.abundances)
-}
-
-abundance.model <- abund.fun.5
+abundance.model <- BH_abundance_5
 predicted.abundances <- PredictAbundances(par = par,timesteps = timesteps,abundance.model = abundance.model)
 predicted.abundances$timestep <- as.factor(predicted.abundances$timestep)
 predicted.abundances$site <- as.factor(predicted.abundances$site)
 predicted.abundances$sp <- as.factor(predicted.abundances$sp)
 
-abund.plot <- ggplot(predicted.abundances,aes(x = timestep,y = abundance, group = sp)) + 
-  geom_line(aes(color = sp)) + 
-  facet_grid(site~.)+
+abund.plot <- ggplot2::ggplot(predicted.abundances,aes(x = timestep,y = abundance, group = sp)) + 
+  ggplot2::geom_line(aes(color = sp)) + 
+  ggplot2::facet_grid(site~.)+
   # ylim(-10,10)+
   NULL
 abund.plot
