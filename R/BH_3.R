@@ -19,8 +19,6 @@
 #'
 #' @return log-likelihood value
 #' @export
-#'
-#' @examples
 BH_3 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms){
   
   pos <- 1
