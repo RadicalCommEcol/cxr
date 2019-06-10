@@ -15,6 +15,7 @@
 #' @export
 #'
 #' @examples
+#' #no example
 BH_abundance_3 <- function(sp.par,init.abund,cov.values,alpha.matrix,lambda.cov.matrix,alpha.cov.matrix){
   expected.abund <- rep(0,nrow(sp.par))
   for(i.sp in 1:nrow(sp.par)){
