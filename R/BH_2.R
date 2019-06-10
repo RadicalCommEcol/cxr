@@ -19,7 +19,7 @@
 #'
 #' @return log-likelihood value
 #' @export
-BH_2 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms){
+BH_2 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms,function_NL){
   pos <- 1
   if("lambda" %in% param.list){
     lambda <- par[pos] ## same as model 1
@@ -34,11 +34,18 @@ BH_2 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
   }else{
     alpha <- fixed.terms[["alpha"]]
   }
-  
+  if("alpha_NL" %in% param.list){
+    alpha_NL <- par[pos]
+    pos <- pos + 1
+  }
   sigma <- par[length(par)] ## same as model 1
   background <- rowSums(focal.comp.matrix)
   # predictive model:
+  if("alpha_NL" %in% param.list){
+  pred <- lambda/(1+function_NL(alpha,alpha_NL)*(background))
+  }else{
   pred <- lambda/(1+alpha*(background))  
+  }
   # log likelihoods of data given the model + parameters:
   llik <- dnorm(log.fitness, mean = (log(pred)), sd = (sigma), log = TRUE)
   # return sum of negative log likelihoods:

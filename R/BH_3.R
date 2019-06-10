@@ -21,7 +21,7 @@
 #' @export
 #'
 #' @examples
-BH_3 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms){
+BH_3 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms,function_NL){
   
   pos <- 1
   if("lambda" %in% param.list){
@@ -37,6 +37,10 @@ BH_3 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
   }else{
     alpha <- fixed.terms[["alpha"]]
   }
+  if("alpha_NL" %in% param.list){
+    alpha_NL <- par[pos:(pos+num.competitors-1)]
+    pos <- pos + num.competitors
+  }
   
   # lambda <- par[1] #same as model 2
   # alpha.vector <- par[2:(length(par)-1)] # new parameters- use alpha estimate from model 2 as start 
@@ -44,8 +48,14 @@ BH_3 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
   sigma <- par[length(par)] ## same as model 2
   # predictive model:
   term = 1 #create the denominator term for the model
+  if("alpha_NL" %in% param.list){
+    for(z in 1:ncol(focal.comp.matrix)){
+      term <- term + function_NL(alpha[z],alpha_NL[z])*focal.comp.matrix[,z] 
+    }
+  }else{
   for(z in 1:ncol(focal.comp.matrix)){
     term <- term + alpha[z]*focal.comp.matrix[,z] 
+  }
   }
   pred <- lambda/ term
   # likelihood as before:

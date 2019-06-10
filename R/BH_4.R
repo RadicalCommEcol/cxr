@@ -22,7 +22,7 @@
 #'
 #' @return log-likelihood value
 #' @export
-BH_4 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms){
+BH_4 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms,function_NL){
   
   pos <- 1
   if("lambda" %in% param.list){
@@ -38,12 +38,20 @@ BH_4 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
   }else{
     lambda.cov <- fixed.terms[["lambda.cov"]]
   }
+  if("lambda.cov_NL" %in% param.list){
+    lambda.cov <- par[pos:(pos+num.covariates-1)]
+    pos <- pos + num.covariates
+  }
   
   if("alpha" %in% param.list){
     alpha <- par[pos:(pos+num.competitors-1)]
     pos <- pos + num.competitors
   }else{
     alpha <- fixed.terms[["alpha"]]
+  }
+  if("alpha_NL" %in% param.list){
+    alpha_NL <- par[pos:(pos+num.competitors-1)]
+    pos <- pos + num.competitors
   }
   
   if("alpha.cov" %in% param.list){
@@ -53,20 +61,44 @@ BH_4 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
     alpha.cov <- fixed.terms[["alpha.cov"]]
   }
   
+  if("alpha.cov_NL" %in% param.list){
+    alpha.cov_NL <- par[pos:(pos+num.covariates-1)]
+    pos <- pos + num.covariates
+  }
   sigma <- par[length(par)]
   
   num = 1
   focal.cov.matrix <- as.matrix(focal.covariates)
+  if("lambda.cov_NL" %in% param.list){
+    for(z in 1:num.covariates){
+      num <- num + function_NL(lambda.cov[z],lambda.cov_NL[z])*focal.cov.matrix[,z]
+    }
+  }else{
   for(z in 1:num.covariates){
     num <- num + lambda.cov[z]*focal.cov.matrix[,z]
   }
+  }
+    
   cov_term <- 0 
+  if("alpha.cov_NL" %in% param.list){
+    for(v in 1:num.covariates){
+      cov_term <- cov_term + function_NL(alpha.cov[v],alpha.cov_NL[v]) * focal.cov.matrix[,v]
+    }
+  
+  }else{
   for(v in 1:num.covariates){
     cov_term <- cov_term + alpha.cov[v] * focal.cov.matrix[,v]
   }
+  }
   term <- 1 #create the denominator term for the model
+  if("alpha_NL" %in% param.list){
+    for(z in 1:ncol(focal.comp.matrix)){
+      term <- term + (function_NL(alpha[z],alpha_NL[z]) + cov_term) * focal.comp.matrix[,z] 
+    }
+  }else{
   for(z in 1:ncol(focal.comp.matrix)){
-    term <- term + (alpha[z] + cov_term) * focal.comp.matrix[,z] 
+    term <- term + (alpha[z] + cov_term) * focal.comp.matrix[,z]
+  }
   }
   pred <- lambda * (num) / term 
   # likelihood as before:
