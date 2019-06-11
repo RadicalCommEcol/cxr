@@ -37,8 +37,8 @@ PredictAbundances <- function(par,timesteps,abundance.model){
                                                                                                init.abund = init.abund, 
                                                                                                cov.values = cov.values, 
                                                                                                alpha.matrix = par$other.par$alpha.matrix,
-                                                                                               lambda.cov.matrix = par$other.par$lambda.cov.matrix,
-                                                                                               alpha.cov.matrix = par$other.par$alpha.cov.matrix)
+                                                                                               lambda.cov.matrix = par$other.par$lambda.cov,
+                                                                                               alpha.cov.matrix = par$other.par$alpha.cov)
     }# i.site
   }# i.timestep
   return(predicted.abundances)
