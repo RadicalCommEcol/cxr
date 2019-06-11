@@ -104,10 +104,18 @@ par <- list(sp.par = sp.par,
                              alpha.cov.matrix = alpha.cov.matrix))
 
 abundance.model <- BH_abundance_5
-predicted.abundances <- PredictAbundances(par = par,timesteps = timesteps,abundance.model = abundance.model)
 ```
 
-As an example, a very simple plot showing the temporal trend in abundances
+In this simple set up, we choose to predict the number of seeds, instead of number of individuals. See the help from e.g. \code{BH_abundance_5} for details.
+
+```{r}
+predicted.abundances <- PredictAbundances(par = par,
+                                          timesteps = timesteps,
+                                          abundance.model = abundance.model,
+                                          return.seeds = TRUE)
+```
+
+As an example, a very simple plot showing the temporal trend in see abundances
 
 ```{r}
 predicted.abundances$timestep <- as.factor(predicted.abundances$timestep)
