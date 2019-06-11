@@ -1,4 +1,4 @@
-#' Abundance measurments
+#' Abundance measurements
 #' 
 #' A dataset containing abundances for each plant species.
 #' 
