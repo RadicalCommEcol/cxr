@@ -8,12 +8,12 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
-In this document, we draw the coexistence region of our plant community and locate every pair of species in this region. For that, we use the parameters previously calculated for each species (see vignette \code{Multi-species parameter optimization}), which are also stored with the package. 
+In this document, we draw the coexistence region of our plant community and locate every pair of species in this region. For that, we use the parameters previously calculated for each species (see vignette \code{Multi-species parameter optimization}), and the germination and survival rates, which are both stored with the package. 
 
 ```{r}
 library(cxr)
-load(param.estimates)
-load(species.rates)
+data(param_estimates)
+data(species_rates)
 ```
 
 First, compile the parameters from the original results, which are in a nested list. We will use the estimates from the most complex model (BH_5), and the optimization method ...
@@ -33,7 +33,7 @@ for(i.sp in 1:length(sp.names)){
 }
 ```
 
-Now, we build a pairwise dataframe
+Now, we build a dataframe with all unique pairwise combinations of species
 
 ```{r}
 # function from https://stackoverflow.com/questions/17171148/non-redundant-version-of-expand-grid

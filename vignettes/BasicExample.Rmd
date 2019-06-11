@@ -20,7 +20,7 @@ First, we load the package and the associated data
 
 ```{r}
 library(cxr)
-load(competition)
+data(competition)
 ```
 
 The \code{competition} dataset includes observation from **20** different plant species. We will subset the information to consider only two of them, ...

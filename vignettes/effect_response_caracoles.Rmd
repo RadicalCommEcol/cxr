@@ -16,9 +16,8 @@ In this example we calculate per-species competitive responses and effects, as o
 
 ```{r}
 library(cxr)
-load(competition)
+data(competition)
 ```
-
 
 As in other vignettes, we need to specify which optimization method are we using, and whether we want to generate standard errors from bootstrapping.
 
@@ -39,7 +38,7 @@ generate.errors <- FALSE
 bootstrap.samples <- 99 # discarded if false
 ```
 
-Since we have independent estimates for $\lambda$, we are treating it as a fixed parameter that we do not want to fit. This can be passed on to the \code{ER_optimize} function by choosing the appropriate effect/response model. Note that, if we are not interested in fitting $\lambda$, we can dispense with specifying lower/upper bounds for it.
+Since we have independent estimates for $\lambda$, we are taking it as a fixed parameter that we do not want to fit. This can be passed on to the \code{ER_optimize} function by choosing the appropriate effect/response model. Note that, if we are not interested in fitting $\lambda$, we can dispense with specifying lower/upper bounds for it.
 
 ```{r}
 optimize.lambda <- FALSE
@@ -61,7 +60,7 @@ Finally, a flag for writing results or not
 write.results <- FALSE
 ```
 
-It is possible to estimate, alongside competitive effects and responses, the effect of covariates over these terms. For simplicity, we will assume no effect of covariates in this example, but their addition is similar to the one exemplified in the vignette \code{Multi-species parameter optimization}. We can assume that seed production does not change in a single year, so group observations in year x site records, where a site is a subplot within a specific plot (e.g. subplot A1 of plot 1)
+It is possible to estimate, alongside competitive effects and responses, the effect of covariates over these terms. For simplicity, we will assume no effect of covariates in this example, but their addition is similar to the workflow exemplified in the vignette \code{Multi-species parameter optimization}. The dataset included with the package includes observations from 2016, but here we provide general code for any number of years (or sampling campaigns). We group observations in year x site records, where a site is a subplot within a specific plot (e.g. subplot A1 of plot 1).
 
 ```{r}
 sp.data <- competition.data %>% group_by(year,plot,subplot,focal,competitor) %>% summarise(seed = sum(seed),number = sum(number))
@@ -123,7 +122,7 @@ sp.data <- droplevels(subset(sp.data, fitness > 0))
 Get independent $\lambda$ values and append them to a dataframe
 
 ```{r}
-load(param_estimates)
+data(param_estimates)
 
 lambda.values <- data.frame(sp = sp.names,lambda = 0, sigma = 0)
 
