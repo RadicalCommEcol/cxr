@@ -1,0 +1,123 @@
+---
+title: "Get started with cxr"
+output: rmarkdown::html_vignette
+author: cxr team
+vignette: >
+  %\VignetteIndexEntry{Multi-species parameter optimization}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+**Introduction**
+
+The \code{cxr} package provides a general interface to parameterize population dynamics models from empirical data, and obtain a series of metrics from modern coexistence theory. 
+
+We will demonstrate the basic usage of the package, using the data included in it (see Lanuza et al. 2018 for a description of the dataset). In particular, we will obtain the values of fecundity and competition intensity of two plant species, and we will also estimate their degree of niche overlap and their average fitness ratio.
+
+**Set up**
+
+First, we load the package and the associated data
+
+```{r}
+library(cxr)
+load(competition)
+```
+
+The \code{competition} dataset includes observation from **20** different plant species. We will subset the information to consider only two of them, ...
+
+```{r}
+my.sp <- c("CHFU", "LEMA")
+two.sp.data <- subset(competition, focal.sp %in% my.sp & competitor %in% my.sp)
+```
+
+In order to estimate the different parameters for both species, we need to store separately the information on their observations and competitors
+
+```{r}
+comp.matrix <- as.matrix(two.sp.data[,10:ncol(two.sp.data)])
+sp1.comp.matrix <- comp.matrix[which(two.sp.data$focal == my.sp[1]),]
+sp2.comp.matrix <- comp.matrix[which(two.sp.data$focal == my.sp[2]),]
+
+```
+
+and also the fitness of each observation, here assumed to be the production of seeds of each individual. Note that we pass the log of the fitness metric to the optimization procedure.
+
+```{r}
+sp1.fitness <- two.sp.data$seed[which(two.sp.data$focal == my.sp[1])]
+sp1.log.fitness <- log(sp1.fitness)
+
+sp2.fitness <- two.sp.data$seed[which(two.sp.data$focal == my.sp[2])]
+sp2.log.fitness <- log(sp2.fitness)
+```
+
+Finally, as with any optimization procedure, we need to provide initial estimates for the parameters we want to fit numerically. In this case, the initial estimate is the mean of the log number of seeds produced.
+
+```{r}
+init.lambda <- c(mean(sp1.log.fitness),mean(sp2.log.fitness))
+```
+
+We will fit the parameters of model 3, i.e.
+
+$equation$
+
+and, specifying an optimization method, we can now call the main function with sensible values of upper and lower parameter bounds
+
+```{r}
+sp1.par <- cxr_optimize(fitness.model = BH_3,
+                        optim.method = "optim_L-BFGS-B",
+                        param.list = c("lambda","alpha"),
+                        log.fitness = sp1.log.fitness,
+                        init.lambda = init.lambda[1],
+                        lower.lambda = 0,
+                        upper.lambda = 1e3,
+                        init.sigma = sd(sp1.log.fitness),
+                        lower.sigma = 0,
+                        upper.sigma = 1,
+                        init.alpha = c(1,1),
+                        lower.alpha = c(0,0),
+                        upper.alpha = c(1e3,1e3),
+                        focal.comp.matrix = sp1.comp.matrix)
+
+sp2.par <- cxr_optimize(fitness.model = BH_3,
+                        optim.method = "optim_L-BFGS-B",
+                        param.list = c("lambda","alpha"),
+                        log.fitness = sp2.log.fitness,
+                        init.lambda = init.lambda[2],
+                        lower.lambda = 0,
+                        upper.lambda = 1e3,
+                        init.sigma = sd(sp2.log.fitness),
+                        lower.sigma = 0,
+                        upper.sigma = 1,
+                        init.alpha = c(1,1),
+                        lower.alpha = c(0,0),
+                        upper.alpha = c(1e3,1e3),
+                        focal.comp.matrix = sp2.comp.matrix)
+
+```
+
+The \code{cxr_optimize} function returns a list with several components 
+
+```{r}
+sp1.par
+```
+
+In this basic example, we are only interested in lambda, the per germinant fecundity, and the alpha values, the row of the interaction matrix that corresponds to our focal species. Other components are NA either because the third model does not account for them (e.g. \code{lambda.cov} or \code{alpha.cov}), or because we are not estimating them (e.g. standard errors). In any case, we can retrieve the estimated 2x2 interaction matrix from the results.
+
+```{r}
+interaction.matrix <- matrix(c(sp1.par$alpha, sp2.par$alpha), byrow = TRUE)
+```
+
+and obtain the niche overlap and average fitness ratio between the two species
+
+```{r}
+
+overlap <- NicheOverlap()
+fitness.ratio <- AverageFitnessRatio()
+
+```
+
+
+
+
+
+
+
