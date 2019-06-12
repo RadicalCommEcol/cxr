@@ -1,4 +1,8 @@
-source("R/BevertonHolt_models.R")
+source("R/BH_1.R")
+source("R/BH_2.R")
+source("R/BH_3.R")
+source("R/BH_4.R")
+source("R/BH_5.R")
 source("R/SEbootstrap_caracoles.R")
 source("R/cxr_optimize.R")
 source("R/InitParams.R")
@@ -24,7 +28,7 @@ focal.sp <- unique(competition.data$focal)
 comp.matrix <- as.matrix(competition.data[,10:ncol(competition.data)])
 
 # covariate: salinity
-salinity <- readr::read_delim(file = "../Caracoles/data/salinity.csv",delim = ";")
+salinity <- readr::read_delim(file = "./data/salinity.csv",delim = ";")
 
 # one observation per row of competition.data
 salinity <- salinity[,c("plot","subplot","year","sum_salinity")]
@@ -49,10 +53,10 @@ models <- 3:5
 # which values do we optimize for each model?
 param.list <- list(c("lambda","alpha"),
                    c("lambda","alpha","lambda.cov","alpha.cov"),
-                   c("lambda","alpha","lambda.cov","alpha.cov"))
+                   c("lambda","alpha","lambda.cov","alpha.cov","lambda.cov_NL"))
 
 #Choose the non-linearity function
-#function_NL <- function1
+function_NL <- function1
 function1 <-function(a,b,x){
   return(a*x^2/(b+x^2))
 }
@@ -104,10 +108,19 @@ upper.lambda.cov <- 1e4
 init.alpha.cov <- 1
 lower.alpha.cov <- 0
 upper.alpha.cov <- 1e4
+# lambda.cov_NL
+init.lambda.cov_NL <- 1
+lower.lambda.cov_NL <- 0
+upper.lambda.cov_NL <- 1e4
+# alpha.cov
+init.alpha.cov_NL <- 1
+lower.alpha.cov_NL <- 0
+upper.alpha.cov_NL <- 1e4
+
 
 # if we want quicker calculations, we can disable 
 # the bootstrapping for the standard errors
-generate.errors <- TRUE
+generate.errors <- FALSE
 bootstrap.samples <- 3
 
 # store results?
@@ -153,7 +166,7 @@ names(param.matrices) <- focal.sp
 ###############################
 # main loop
 
-for(i.sp in 1:length(focal.sp)){
+for(i.sp in 1:1){
   
   # subset and prepare the data
   
@@ -217,6 +230,16 @@ for(i.sp in 1:length(focal.sp)){
   }else{
     current.init.lambda.cov <- init.lambda.cov[i.sp]  
   }
+  
+  #lamda.cov_NL
+  if("lambda.cov_NL" %in% param.list[[i.model]]){
+    if(length(init.lambda.cov_NL) != num.covariates){
+      current.init.lambda.cov_NL <- rep(init.lambda.cov_NL[1],num.covariates)
+    }else{
+      current.init.lambda.cov_NL <- init.lambda.cov_NL  
+    }
+  }
+  
   # alpha.cov
   if("alpha.cov" %in% param.list[[i.model]]){
     if(models[i.model]<=4){
@@ -231,6 +254,20 @@ for(i.sp in 1:length(focal.sp)){
     }  
   }else{
     current.init.alpha.cov <- init.alpha.cov[i.sp]  
+  }
+  
+  # alpha.cov_NL
+  if("alpha.cov_NL" %in% param.list[[i.model]]){
+    if(models[i.model]<=4){
+      length.alpha.cov_NL <- num.covariates
+    }else if(models[i.model]>4){
+      length.alpha.cov_NL <- num.covariates*num.competitors
+    }
+    if(length(init.alpha.cov_NL) != length.alpha.cov){
+      current.init.alpha.cov_NL <- rep(init.alpha.cov_NL[1],length.alpha.cov)
+    }else{
+      current.init.alpha.cov_NL <- init.alpha.cov_NL  
+    }  
   }
   
   # model to optimize  
@@ -270,7 +307,8 @@ for(i.sp in 1:length(focal.sp)){
                                    focal.comp.matrix = focal.comp.matrix,
                                    focal.covariates = focal.covariates,
                                    generate.errors = generate.errors,
-                                   bootstrap.samples = bootstrap.samples)
+                                   bootstrap.samples = bootstrap.samples,
+                                   function_NL=function_NL)
       ###############
       # clean up results
       
@@ -329,6 +367,7 @@ for(i.sp in 1:length(focal.sp)){
           }
         }# if model > 2
       }
+    }
     
     # lambda.cov
     if("lambda.cov" %in% param.list[[i.model]]){
@@ -370,10 +409,10 @@ for(i.sp in 1:length(focal.sp)){
       }
     }
     
+    
   }# for i.model
 }# for i.sp
 
 if(write.results){
   save(param.matrices,file = "./results/param_estimates.Rdata")
 }
-

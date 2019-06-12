@@ -51,6 +51,6 @@ RetrieveParams <- function(optim.params, param.list, alpha.length, alpha.cov.len
     alpha.cov_NL <- optim.params[pos:(pos+alpha.cov.length-1)]
   }
   
-  return(list(lambda = lambda, alpha = alpha, lambda.cov = lambda.cov, alpha.cov = alpha.cov, sigma = sigma))
+  return(list(lambda = lambda, alpha = alpha, lambda.cov = lambda.cov, alpha.cov = alpha.cov,lambda.cov_NL = lambda.cov_NL, alpha.cov_NL = alpha.cov_NL, sigma = sigma))
   
 }

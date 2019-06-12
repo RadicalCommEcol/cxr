@@ -54,13 +54,6 @@ InitParams <- function(init.lambda = NULL,
     upper.bounds <- c(upper.bounds,rep(upper.alpha,length(init.alpha)))                  
   }
   
-  # alpha value/matrix non linear
-  if(!is.null(init.alpha_NL)){
-    init.par <- c(init.par,init.alpha_NL)
-    lower.bounds <- c(lower.bounds,rep(lower.alpha,length(init.alpha_NL)))
-    upper.bounds <- c(upper.bounds,rep(upper.alpha,length(init.alpha_NL)))                  
-  }
-  
   # effect of covariates on alpha
   if(!is.null(init.alpha.cov)){
     init.par <- c(init.par,init.alpha.cov)
