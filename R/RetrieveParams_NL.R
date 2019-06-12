@@ -7,7 +7,7 @@
 #' @param num.competitors how many competitor species
 #' @param num.covariates how many covariates
 #'
-#' @return list with elements "lambda", "alpha", "lambda.cov", "alpha.cov", "sigma". If one of these elements is not present, NULL is the value returned.
+#' @return list with elements "lambda", "alpha", "lambda.cov", "alpha.cov","lambda.cov_NL", "alpha.cov_NL", "sigma". If one of these elements is not present, NULL is the value returned.
 #' @export
 #'
 #' @examples
@@ -17,6 +17,8 @@ RetrieveParams <- function(optim.params, param.list, alpha.length, alpha.cov.len
   alpha <- NULL
   lambda.cov <- NULL
   alpha.cov <- NULL
+  lambda.cov_NL <- NULL
+  alpha.cov_NL <- NULL
   sigma <- optim.params[length(optim.params)]
   
   pos <- 1
@@ -31,6 +33,11 @@ RetrieveParams <- function(optim.params, param.list, alpha.length, alpha.cov.len
     pos <- pos + num.covariates
   }
   
+  if("lambda.cov_NL" %in% param.list){
+    lambda.cov_NL <- optim.params[pos:(pos+num.covariates-1)]
+    pos <- pos + num.covariates
+  }
+  
   if("alpha" %in% param.list){
     alpha <- optim.params[pos:(pos+alpha.length-1)]
     pos <- pos + alpha.length
@@ -38,6 +45,10 @@ RetrieveParams <- function(optim.params, param.list, alpha.length, alpha.cov.len
   
   if("alpha.cov" %in% param.list){
     alpha.cov <- optim.params[pos:(pos+alpha.cov.length-1)]
+  }
+  
+  if("alpha.cov_NL" %in% param.list){
+    alpha.cov_NL <- optim.params[pos:(pos+alpha.cov.length-1)]
   }
   
   return(list(lambda = lambda, alpha = alpha, lambda.cov = lambda.cov, alpha.cov = alpha.cov, sigma = sigma))

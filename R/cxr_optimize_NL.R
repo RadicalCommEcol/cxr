@@ -101,16 +101,18 @@ cxr_optimize <- function(fitness.model,
   # lambda covariates non linear
   if("lambda.cov_NL" %in% param.list){
     my.init.lambda.cov_NL <- init.lambda.cov_NL
-  }else{
-    fixed.terms[["lambda.cov_NL"]] <- init.lambda.cov_NL
   }
+  # else{
+  #   fixed.terms[["lambda.cov_NL"]] <- init.lambda.cov_NL
+  # }
   
   # alpha covariates non linear, single value or matrix
   if("alpha.cov_NL" %in% param.list){
     my.init.alpha.cov_NL <- init.alpha.cov_NL
-  }else{
-    fixed.terms[["alpha.cov_NL"]] <- init.alpha.cov_NL
   }
+  # else{
+  #   fixed.terms[["alpha.cov_NL"]] <- init.alpha.cov_NL
+  # }
   
   
   
