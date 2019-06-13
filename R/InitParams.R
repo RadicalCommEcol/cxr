@@ -33,13 +33,13 @@ InitParams <- function(init.lambda = NULL,
                        init.alpha.cov = NULL,
                        lower.lambda = 1,
                        upper.lambda = 1e5,
-                       lower.sigma = 1e-10,
+                       lower.sigma = 1e-5,
                        upper.sigma = 1e5,
-                       lower.alpha = 0,
+                       lower.alpha = 1e-5,
                        upper.alpha = 1e5,
-                       lower.lambda.cov = 1e-4,
+                       lower.lambda.cov = 1e-5,
                        upper.lambda.cov = 1e5,
-                       lower.alpha.cov = 1e-4,
+                       lower.alpha.cov = 1e-5,
                        upper.alpha.cov = 1e5,
                        num.competitors,
                        num.covariates
@@ -80,6 +80,8 @@ InitParams <- function(init.lambda = NULL,
   init.par <- c(init.par,init.sigma)
   lower.bounds <- c(lower.bounds,lower.sigma)
   upper.bounds <- c(upper.bounds,upper.sigma)
+  
+  lower.bounds <- ifelse(lower.bounds > 0, lower.bounds, 1e-5)
   
   return(list(init.par = init.par, lower.bounds = lower.bounds, upper.bounds = upper.bounds))
 }
