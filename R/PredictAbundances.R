@@ -9,10 +9,13 @@
 #' @param timesteps number of timesteps to project
 #' @param abundance.model a function that accepts parameters from sp.par, a set of initial abundances, and optionally other parameters.
 #' The function returns the projected abundances at t+1
+#' @param return.seeds boolean flag, whether the prediction should return 
+#' number of seeds (i.e. $N_{i,t+1}$ eq. 1 of Lanuza et al. 2018), or number of
+#' adult individuals, (i.e. $N_{i,t+1} * g$ )
 #'
 #' @return dataframe with fields "timestep","site","sp","abundance", giving the expected abundance for each species, timestep, and site.
 #' @export
-PredictAbundances <- function(par,timesteps,abundance.model){
+PredictAbundances <- function(par,timesteps,abundance.model, return.seeds = TRUE){
   sites <- unique(par$initial.values$site)
   sp <- unique(par$initial.values$species)
   num.sp <- nrow(par$sp.par)
@@ -38,7 +41,8 @@ PredictAbundances <- function(par,timesteps,abundance.model){
                                                                                                cov.values = cov.values, 
                                                                                                alpha.matrix = par$other.par$alpha.matrix,
                                                                                                lambda.cov.matrix = par$other.par$lambda.cov,
-                                                                                               alpha.cov.matrix = par$other.par$alpha.cov)
+                                                                                               alpha.cov.matrix = par$other.par$alpha.cov,
+                                                                                               return.seeds = return.seeds)
     }# i.site
   }# i.timestep
   return(predicted.abundances)
