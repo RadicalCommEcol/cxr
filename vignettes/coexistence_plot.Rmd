@@ -71,42 +71,38 @@ for(i.pair in 1:nrow(pairwise.ratios)){
 }
 ```
 
-For making the plot, we use the great example from ..., in which they show the regions leading to coexistence, exclusion, and priority effects between species pairs. Most of the following code is only necessary for the color filling of the different regions.
+For making the plot, we adapt, simplified, the great example from Ke and Letten (2018), in which they show the regions leading to coexistence, exclusion, and priority effects between species pairs.
+
+First, generate a dataframe for the limits of the different regions, and specify the axes limits
 
 ```{r}
+x <- seq(1,-1,by=-0.001)
+y1 <- 1/(1-x)
+y2 <- 1-x
 
-# auxiliary dataframes for the boundaries of coexistence regions
-lines.pos = data.frame(x = c(x.1, x.1), 
-                     y = c(y1.1, y2.1), 
-                     fun = c(rep("y1", times = length(seq(1, 0, by=-0.001))), 
-                                rep("y2", times = length(seq(1, 0, by=-0.001)))))
-ribbon.pos = data.frame(min.dim = y1.1, max.dim = y2.1, x.dim = x.1)
+lines <- data.frame(x = c(x,x), 
+                    y = c(y1,y2), 
+                    fun = c(rep("y1", times = length(seq(1, -1, by=-0.001))), 
+                            rep("y2", times = length(seq(1, -1, by=-0.001)))))
+my.lim.x = 0.5
+my.lim.y = 1.7
+```
 
-lines.neg = data.frame(x = c(x.2, x.2), 
-                     y = c(y1.2, y2.2), 
-                     fun = c(rep("y1", times = length(seq(0, -1, by=-0.001))), 
-                                rep("y2", times = length(seq(0, -1, by=-0.001)))))
-ribbon.neg = data.frame(min.dim = y1.2, max.dim = y2.2, x.dim = x.2)
+and the code for the plot
 
-#################
-# plot
-coexistence.plot <- ggplot() + 
-  # positive side
-  geom_ribbon(data = ribbon.pos, aes(x = x.dim, ymin = min.dim, ymax = max.dim), fill = "darkgrey", alpha = 0.6) +
-  geom_line(data = lines.pos, aes(x = x, y = y,linetype = fun,group = fun), col = "black") + 
-  # negative side
-  geom_ribbon(data = ribbon.neg, aes(x = x.dim, ymin = min.dim, ymax = max.dim), fill = "darkgrey", alpha = 0.6) +
-  geom_line(data = lines.neg, aes(x = x, y = y,linetype = fun,group = fun), col = "black") + 
+```{r}
+coex.plot <- ggplot() + 
+  geom_line(data = lines, aes(x = x, y = y,linetype = fun,group = fun), col = "black") +
   # grid lines
-  geom_abline(intercept = 0, slope = 0, lty = 2, col = "darkgrey") + 
+  geom_abline(intercept = 0, slope = 0, lty = 2, col = "darkgrey") +
   geom_vline(xintercept = 0, lty = 2, col = "darkgrey") +
   # points
   geom_point(data = pairwise.ratios, aes(x = (1 - niche.overlap), y = log(fitness.ratio))) +
   # log-scale
   scale_y_log10() +
-  # trim to desired coords
-  coord_cartesian(expand = c(0, 0), 
-                  xlim = c(-my.lim.x,my.lim.x), 
+  # # trim to desired coords
+  coord_cartesian(expand = c(0, 0),
+                  xlim = c(-my.lim.x,my.lim.x),
                   ylim = c(1/my.lim.y, my.lim.y)) +
   # axes, legend, etc
   xlab(expression(paste("(1 - ", rho, " )", sep = ""))) + 
@@ -115,7 +111,7 @@ coexistence.plot <- ggplot() +
         axis.title.y = element_text(angle = 90), 
         axis.title = element_text(size = 20)) +
   NULL
- coexistence.plot
+coex.plot
 ```
  
  
