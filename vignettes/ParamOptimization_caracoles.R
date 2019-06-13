@@ -60,14 +60,14 @@ param.list <- list(c("lambda","alpha"),
 fitness.models <- list(BH_1 = BH_1,BH_2 = BH_2,BH_3 = BH_3,BH_4 = BH_4,BH_5 = BH_5)
 
 # environmental covariates
-covariates <- full.data[,"sum_salinity"]
+covariates <- as.matrix(full.data[,"sum_salinity"])
 # if no covariates, comment above and uncomment here
 # covariates <- 0
 
 # optimization methods to use
-optim.methods <- c("optim_NM"
+optim.methods <- c(#"optim_NM"
                   # "optim_L-BFGS-B"
-                  #"nloptr_CRS2_LM"
+                  "nloptr_CRS2_LM"
                    # "nloptr_ISRES"
                    # "nloptr_DIRECT_L_RAND"
                     # "GenSA"
@@ -103,7 +103,7 @@ upper.alpha.cov <- 1e4
 
 # if we want quicker calculations, we can disable 
 # the bootstrapping for the standard errors
-generate.errors <- FALSE
+generate.errors <- TRUE
 bootstrap.samples <- 3
 
 # store results?

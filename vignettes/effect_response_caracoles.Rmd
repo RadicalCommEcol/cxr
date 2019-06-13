@@ -16,6 +16,7 @@ In this example we calculate per-species competitive responses and effects, as o
 
 ```{r}
 library(cxr)
+library(tidyverse)
 data(competition)
 ```
 

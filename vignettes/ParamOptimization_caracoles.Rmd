@@ -55,7 +55,7 @@ models <- 3:5
 
 the output from model 3 will be taken as initial estimates for model 4, and the output from model 4 will be the initial estimates for model 5. Note, as well, that models 4 and 5 differ from model 3 in that they include the effect of covariates on species fecundity and interactions. Therefore, you should only include these models if you have at least one covariate in your data (see Lanuza et al. 2018).
 
-We can estimate the whole parameter set for each model, or fix certain parameters, for example, if we have independent field estimates of them. This information is passed to the package in a list, in which each element is a string vector giving the set of parameters that are to be optimized for each model. In our example, we optimize all parameters (note that model 3 has only $\lambda$ and $\alpha$ parameters, whereas models 4 and 5 also include the effect of covariates).
+We can estimate the whole parameter set for each model, or fix certain parameters, for example, if we have independent field estimates of them. This information is passed to the function in a list, in which each element is a string vector giving the set of parameters that are to be optimized for each model. In our example, we optimize all parameters (note that model 3 has only $\lambda$ and $\alpha$ parameters, whereas models 4 and 5 also include the effect of covariates).
 
 ```{r}
 # which values do we optimize for each model?
@@ -64,7 +64,7 @@ param.list <- list(c("lambda","alpha"),
                    c("lambda","alpha","lambda.cov","alpha.cov"))
 ```
 
-In case you had independent estimates of parameters, pass them with the following:
+In case you had independent estimates of parameters, you would have something along these lines:
 
 ```{r}
 # init.lambda <- rep(1,length(focal.sp))
@@ -77,11 +77,11 @@ Keep the model definitions in a list, for ease:
 fitness.models <- list(BH_1 = BH_1,BH_2 = BH_2,BH_3 = BH_3,BH_4 = BH_4,BH_5 = BH_5)
 ```
 
-Get back the covariates, after matching with the competition observations
+Get back the covariates, after matching with the competition observations. It is important that covariates are passed in a matrix format.
 
 ```{r}
 # environmental covariates
-covariates <- full.data[,"sum_salinity"]
+covariates <- as.matrix(full.data[,"sum_salinity"])
 # if no covariates, comment above and uncomment here
 # covariates <- 0
 ```
@@ -90,9 +90,9 @@ Here we specify which optimization methods to use. You can include more than one
 
 ```{r}
 # optimization methods to use
-optim.methods <- c(#"optim_NM",
-                   "optim_L-BFGS-B",
-                  "nloptr_CRS2_LM"
+optim.methods <- c("optim_NM",
+                   "optim_L-BFGS-B"
+                  # "nloptr_CRS2_LM"
                    # "nloptr_ISRES"
                    # "nloptr_DIRECT_L_RAND"
                     # "GenSA"
@@ -118,11 +118,11 @@ We also need to specify the initial values for the first model (model 3, in this
 lower.lambda <- 1
 upper.lambda <- 1e4
 # sigma
-lower.sigma <- 0.000001
+lower.sigma <- 1e-5
 upper.sigma <- 1
 # alpha
 init.alpha <- 1e-4
-lower.alpha <- 0
+lower.alpha <- 1e-5
 upper.alpha <- 1e5
 # lambda.cov
 init.lambda.cov <- 1
@@ -145,12 +145,12 @@ And we provide a flag for storing or not the results of the analysis
 
 ```{r}
 # store results?
-write.results <- TRUE
+write.results <- FALSE
 ```
 
 **Initialize results structure** 
 
-We will store the results of our analysis in a nested list, following the nested design of the experiment. For each focal species, we calculate three different models (given in \code{models}), and for each of these models, we obtain the parameterization from a series of optimization methods (given in \code{optim.methods}). Thus, we create a series of nested lists, named \code{param_estimates}, of the form:
+We will store the results of our analysis in a nested list, following the nested design of the experiment. For each focal species, we calculate three different models (given in \code{models}), and for each of these models, we obtain the parameterization from a series of optimization methods (given in \code{optim.methods}). Thus, we create a list, named \code{param_estimates}, of the form:
 
 \code{param_estimates[[species]][[model]][[method]]}
 
@@ -276,9 +276,9 @@ for(i.sp in 1:length(focal.sp)){
   # model to optimize  
   for(i.model in 1:length(models)){
     
-    print("*********************************")
-    print(paste(date()," - starting focal sp ",focal.sp[i.sp],", model ",models[i.model],sep=""))
-    print("*********************************")
+    # print("*********************************")
+    # print(paste(date()," - starting focal sp ",focal.sp[i.sp],", model ",models[i.model],sep=""))
+    # print("*********************************")
 
     ######################
     # 3) compute each method
@@ -307,7 +307,7 @@ for(i.sp in 1:length(focal.sp)){
                                    focal.comp.matrix = focal.comp.matrix,
                                    focal.covariates = focal.covariates,
                                    generate.errors = generate.errors,
-                                   bootstrap.samples = bootstrap.samples)
+                                   bootstrap.samples = bootstrap.samples,verbose = TRUE)
       ###############
       # 4) store results
       

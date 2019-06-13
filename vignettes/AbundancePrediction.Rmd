@@ -49,7 +49,7 @@ test.data <- GenerateTestData(focal.sp = focal.sp,
                               num.obs = num.obs,
                               fitness.model = 5,
                               focal.lambda = focal.lambda,
-                              alpha.matrix = alpha.matrix.orig,
+                              alpha = alpha.matrix.orig,
                               alpha.cov = alpha.cov.orig,
                               lambda.cov = lambda.cov.orig)
 ```
@@ -85,23 +85,12 @@ cov.time$value <- runif(nrow(cov.time),0,10)
 put together all parameters for calling the function
 
 ```{r}
-# effect of covariates on alpha and lambda
-lambda.cov.matrix <- matrix(unlist(lambda.cov.orig),nrow = num.sp)
-
-alpha.cov.matrix <- list()
-for(i.cov in 1:num.cov){
-  alpha.cov.matrix[[i.cov]] <- matrix(nrow = num.sp,ncol = num.sp)
-  for(i.sp in 1:num.sp){
-    alpha.cov.matrix[[i.cov]][i.sp,] <- alpha.cov.orig[[i.sp]][,i.cov]
-  }
-}
-
 par <- list(sp.par = sp.par, 
             initial.values = init.abund, 
             covariates = cov.time, 
             other.par = list(alpha.matrix = alpha.matrix.orig, 
-                             lambda.cov.matrix = lambda.cov.matrix, 
-                             alpha.cov.matrix = alpha.cov.matrix))
+                             lambda.cov.matrix = lambda.cov.orig, 
+                             alpha.cov.matrix = alpha.cov.orig))
 
 abundance.model <- BH_abundance_5
 ```
@@ -112,10 +101,10 @@ In this simple set up, we choose to predict the number of seeds, instead of numb
 predicted.abundances <- PredictAbundances(par = par,
                                           timesteps = timesteps,
                                           abundance.model = abundance.model,
-                                          return.seeds = TRUE)
+                                          return.seeds = FALSE)
 ```
 
-As an example, a very simple plot showing the temporal trend in see abundances
+As an example, a very simple plot showing the temporal trend in seed abundances
 
 ```{r}
 predicted.abundances$timestep <- as.factor(predicted.abundances$timestep)

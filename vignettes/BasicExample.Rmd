@@ -27,15 +27,20 @@ The \code{competition} dataset includes observation from **20** different plant 
 
 ```{r}
 my.sp <- c("CHFU", "LEMA")
-two.sp.data <- subset(competition, focal.sp %in% my.sp & competitor %in% my.sp)
+two.sp.data <- subset(competition, focal %in% my.sp & competitor %in% my.sp)
 ```
 
-In order to estimate the different parameters for both species, we need to store separately the information on their observations and competitors
+In order to estimate the different parameters for both species, we need to store separately the information on their observations and competitors.
 
 ```{r}
 comp.matrix <- as.matrix(two.sp.data[,10:ncol(two.sp.data)])
-sp1.comp.matrix <- comp.matrix[which(two.sp.data$focal == my.sp[1]),]
-sp2.comp.matrix <- comp.matrix[which(two.sp.data$focal == my.sp[2]),]
+sp1.comp.matrix <- as.matrix(comp.matrix[which(two.sp.data$focal == my.sp[1]),])
+# optional: name the column with the competitor species
+colnames(sp1.comp.matrix) <- my.sp[2]
+
+sp2.comp.matrix <- as.matrix(comp.matrix[which(two.sp.data$focal == my.sp[2]),])
+# optional: name the column with the competitor species
+colnames(sp2.comp.matrix) <- my.sp[1]
 
 ```
 
@@ -70,10 +75,10 @@ sp1.par <- cxr_optimize(fitness.model = BH_3,
                         lower.lambda = 0,
                         upper.lambda = 1e3,
                         init.sigma = sd(sp1.log.fitness),
-                        lower.sigma = 0,
+                        lower.sigma = 1e-5,
                         upper.sigma = 1,
                         init.alpha = c(1,1),
-                        lower.alpha = c(0,0),
+                        lower.alpha = c(1e-5,1e-5),
                         upper.alpha = c(1e3,1e3),
                         focal.comp.matrix = sp1.comp.matrix)
 
@@ -85,10 +90,10 @@ sp2.par <- cxr_optimize(fitness.model = BH_3,
                         lower.lambda = 0,
                         upper.lambda = 1e3,
                         init.sigma = sd(sp2.log.fitness),
-                        lower.sigma = 0,
+                        lower.sigma = 1e-5,
                         upper.sigma = 1,
                         init.alpha = c(1,1),
-                        lower.alpha = c(0,0),
+                        lower.alpha = c(1e-5,1e-5),
                         upper.alpha = c(1e3,1e3),
                         focal.comp.matrix = sp2.comp.matrix)
 
@@ -103,15 +108,16 @@ sp1.par
 In this basic example, we are only interested in lambda, the per germinant fecundity, and the alpha values, the row of the interaction matrix that corresponds to our focal species. Other components are NA either because the third model does not account for them (e.g. \code{lambda.cov} or \code{alpha.cov}), or because we are not estimating them (e.g. standard errors). In any case, we can retrieve the estimated 2x2 interaction matrix from the results.
 
 ```{r}
-interaction.matrix <- matrix(c(sp1.par$alpha, sp2.par$alpha), byrow = TRUE)
+interaction.matrix <- matrix(c(sp1.par$alpha, sp2.par$alpha), nrow = length(my.sp), byrow = TRUE)
 ```
 
 and obtain the niche overlap and average fitness ratio between the two species
 
 ```{r}
 
-overlap <- NicheOverlap()
-fitness.ratio <- AverageFitnessRatio()
+NicheOverlap(pair.matrix = interaction.matrix)
+
+AvgFitnessRatio(lambda = c(sp1.par$lambda,sp2.par$lambda),pair.matrix = interaction.matrix)
 
 ```
 

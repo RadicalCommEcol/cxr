@@ -12,6 +12,7 @@ In this document, we draw the coexistence region of our plant community and loca
 
 ```{r}
 library(cxr)
+library(ggplot2)
 data(param_estimates)
 data(species_rates)
 ```
@@ -25,12 +26,16 @@ lambda.values <- numeric(length(sp.names))
 names(lambda.values) <- sp.names
 rownames(alpha.matrix) <- colnames(alpha.matrix) <- sp.names
 # from which model and optimization method are we gathering parameters
-estimates.model <- "BH_5"
+estimates.model <- "BH_4"
 estimates.method <- "optim_NM"
 for(i.sp in 1:length(sp.names)){
   lambda.values[i.sp] <- param.matrices[[i.sp]][[estimates.model]][[estimates.method]]$lambda
   alpha.matrix[i.sp,] <- param.matrices[[i.sp]][[estimates.model]][[estimates.method]]$alpha[sp.names]
 }
+# for(i.sp in 1:length(sp.names)){
+#   lambda.values[i.sp] <- param_estimates[[i.sp]][[estimates.model]][[estimates.method]]$lambda
+#   alpha.matrix[i.sp,] <- param_estimates[[i.sp]][[estimates.model]][[estimates.method]]$alpha[sp.names]
+# }
 ```
 
 Now, we build a dataframe with all unique pairwise combinations of species
@@ -64,8 +69,8 @@ for(i.pair in 1:nrow(pairwise.ratios)){
   my.matrix <- abs(alpha.matrix[my.sp,my.sp])
   ###########
   pairwise.ratios$fitness.ratio[i.pair] <- AvgFitnessRatio(lambda = lambda.values[my.sp],
-                                                           germ.rate = species.rates$germination[species.rates$code %in% my.sp],
-                                                           survival.rate = species.rates$`seed survival`[species.rates$code %in% my.sp],
+                                                           germ.rate = species_rates$germination[species_rates$code %in% my.sp],
+                                                           survival.rate = species_rates$`seed survival`[species_rates$code %in% my.sp],
                                                            pair.matrix = my.matrix)[[3]]
   pairwise.ratios$niche.overlap[i.pair] <- NicheOverlap(pair.matrix = my.matrix)
 }
