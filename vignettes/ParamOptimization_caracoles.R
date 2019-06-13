@@ -4,7 +4,7 @@ source("R/BH_2.R")
 source("R/BH_3.R")
 source("R/BH_4.R")
 source("R/BH_5.R")
-source("R/SEbootstrap_caracoles.R")
+source("R/SEbootstrap.R")
 source("R/cxr_optimize.R")
 source("R/InitParams.R")
 source("R/RetrieveParams.R")
@@ -18,10 +18,10 @@ library(tidyverse)
 
 ###########################
 # Caracoles competition data
-competition.data <- readr::read_delim(file = "./data/competition.csv",delim = ";")
+load(file = "./data/competition.RData")
 
 # spread the data from long to wide format
-competition.data <- spread(competition.data,competitor,number,fill = 0)
+competition.data <- spread(competition,key = competitor,value = number,fill = 0)
 # how many focal species
 focal.sp <- unique(competition.data$focal)
 
@@ -29,7 +29,7 @@ focal.sp <- unique(competition.data$focal)
 comp.matrix <- as.matrix(competition.data[,10:ncol(competition.data)])
 
 # covariate: salinity
-salinity <- readr::read_delim(file = "../Caracoles/data/salinity.csv",delim = ";")
+load(file = "./data/salinity.RData")
 
 # one observation per row of competition.data
 salinity <- salinity[,c("plot","subplot","year","sum_salinity")]
@@ -65,9 +65,9 @@ covariates <- full.data[,"sum_salinity"]
 # covariates <- 0
 
 # optimization methods to use
-optim.methods <- c(#"optim_NM",
-                   "optim_L-BFGS-B",
-                  "nloptr_CRS2_LM"
+optim.methods <- c("optim_NM"
+                  # "optim_L-BFGS-B"
+                  #"nloptr_CRS2_LM"
                    # "nloptr_ISRES"
                    # "nloptr_DIRECT_L_RAND"
                     # "GenSA"
@@ -103,7 +103,7 @@ upper.alpha.cov <- 1e4
 
 # if we want quicker calculations, we can disable 
 # the bootstrapping for the standard errors
-generate.errors <- TRUE
+generate.errors <- FALSE
 bootstrap.samples <- 3
 
 # store results?
@@ -337,6 +337,6 @@ for(i.sp in 1:length(focal.sp)){
 }# for i.sp
 
 if(write.results){
-  save(param.matrices,file = "./results/param_estimates.Rdata")
+  save(param.matrices,file = "../temp/results/temp_param_estimates.Rdata")
 }
 
