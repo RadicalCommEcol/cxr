@@ -28,7 +28,7 @@ cxr_optimize <- function(fitness.model,
                          focal.covariates,
                          generate.errors = FALSE,
                          bootstrap.samples = 0){
-  
+
   num.competitors <- dim(focal.comp.matrix)[2]
   name.competitors <- colnames(focal.comp.matrix)
   num.covariates <- ifelse(is.null(ncol(focal.covariates)),0,ncol(focal.covariates))
@@ -46,7 +46,7 @@ cxr_optimize <- function(fitness.model,
   my.init.alpha.cov_NL <- NULL
   
   # initialize fixed terms list
-  fixed.terms <- list(lambda = NULL, lambda.cov = NULL, alpha = NULL, alpha.cov = NULL, lambda.cov_NL = NULL, alpha.cov_NL = NULL)
+  fixed.terms <- list(lambda = NULL, lambda.cov = NULL, alpha = NULL, alpha.cov = NULL)
   
   # only parameters on "param.list" will be optimized
   # otherwise, get their values and put them in the "fixed.term" list
@@ -157,11 +157,11 @@ cxr_optimize <- function(fitness.model,
                           param.list = param.list,
                           log.fitness = log.fitness, 
                           focal.comp.matrix = focal.comp.matrix,
-                          function_NL = function_NL,
                           num.covariates = num.covariates, 
                           num.competitors = num.competitors, 
                           focal.covariates = focal.covariates,
-                          fixed.terms = fixed.terms)
+                          fixed.terms = fixed.terms,
+                          function_NL = function_NL)
   }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "optim_L-BFGS-B"){
     tryCatch({
@@ -429,7 +429,7 @@ cxr_optimize <- function(fitness.model,
   alpha.cov_NL <- optim.params[["alpha.cov_NL"]]
   alpha.cov_NL.lower.error <- optim.params[["alpha.cov_NL"]]-1.96*error.params[["alpha.cov_NL"]]
   alpha.cov_NL.upper.error <- optim.params[["alpha.cov_NL"]]+1.96*error.params[["alpha.cov_NL"]]
-  }else{
+  }else{ 
   alpha.cov_NL <- NULL
   alpha.cov_NL.lower.error <- NULL
   alpha.cov_NL.upper.error <- NULL

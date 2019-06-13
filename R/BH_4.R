@@ -69,7 +69,7 @@ BH_4 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
   if("lambda.cov_NL" %in% param.list){
     for(z in 1:num.covariates){
       num <- num + function_NL(lambda.cov[z],lambda.cov_NL[z],focal.cov.matrix[,z])
-      print(num)
+      
     }
   }else{
   for(z in 1:num.covariates){

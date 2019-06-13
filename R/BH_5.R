@@ -22,7 +22,7 @@
 #'
 #' @return log-likelihood value
 #' @export
-BH_5 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms){
+BH_5 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms, function_NL){
   
   pos <- 1
   if("lambda" %in% param.list){
@@ -78,7 +78,7 @@ BH_5 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
   }
   }
   cov_term_x <- list()
-  if ("alpha.cov" %in% param.list){
+  if ("alpha.cov_NL" %in% param.list){
     for(v in 1:num.covariates){
       cov_temp <- focal.cov.matrix[,v]
       for(z in 1:num.competitors){

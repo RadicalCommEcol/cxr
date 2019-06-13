@@ -52,18 +52,17 @@ models <- 3:5
 
 # which values do we optimize for each model?
 param.list <- list(c("lambda","alpha"),
-                   c("lambda","alpha","lambda.cov","alpha.cov"),
-                   c("lambda","alpha","lambda.cov","alpha.cov","lambda.cov_NL"))
+                   c("lambda","alpha","lambda.cov","alpha.cov","lambda.cov_NL","alpha.cov_NL"),
+                   c("lambda","alpha","lambda.cov","alpha.cov","lambda.cov_NL","alpha.cov_NL"))
 
 #Choose the non-linearity function
-function_NL <- function1
 function1 <-function(a,b,x){
   return(a*x^2/(b+x^2))
 }
 function2 <-function(a,b,x){
   return(a*(1-exp(b*x)))
 }
-
+function_NL <- function2
 # keep the model definitions in a list, for ease
 fitness.models <- list(BH_1 = BH_1,BH_2 = BH_2,BH_3 = BH_3,BH_4 = BH_4,BH_5 = BH_5)
 
