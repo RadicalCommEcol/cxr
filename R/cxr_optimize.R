@@ -57,11 +57,16 @@ cxr_optimize <- function(fitness.model,
                          lower.alpha.cov = 1e-4,
                          upper.alpha.cov = 1e5,
                          focal.comp.matrix,
-                         focal.covariates,
+                         focal.covariates = NULL,
                          generate.errors = FALSE,
-                         bootstrap.samples = 0){
+                         bootstrap.samples = 0,
+                         verbose = FALSE){
   
-  num.competitors <- dim(focal.comp.matrix)[2]
+  if(verbose){
+    #suppressWarnings(message(date()," -- cxr_optimize: fitting ",length(log.fitness)," observations with method ",optim.method," started"))
+  }
+  
+  num.competitors <- dim(as.matrix(focal.comp.matrix))[2]
   name.competitors <- colnames(focal.comp.matrix)
   num.covariates <- ifelse(is.null(ncol(focal.covariates)),0,ncol(focal.covariates))
   name.covariates <- colnames(focal.covariates)
@@ -251,8 +256,8 @@ cxr_optimize <- function(fitness.model,
     # sink("/dev/null")
     optim.result <- hydroPSO::hydroPSO(par = init.par$init.par,
                                        fn = fitness.model,
-                                       lower = lower.bounds,
-                                       upper = upper.bounds, 
+                                       lower = init.par$lower.bounds,
+                                       upper = init.par$upper.bounds, 
                                        control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
                                        param.list = param.list,
                                        log.fitness = log.fitness, 
@@ -275,14 +280,17 @@ cxr_optimize <- function(fitness.model,
                                        fixed.terms = fixed.terms)
     }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }
-  
+
   ##################################
   # gather the output from the method
   # if-else the method outputs optim-like values
+  
   if(optim.method %in% c("optim_NM","optim_L-BFGS-B","DEoptimR","hydroPSO","GenSA")){
     
-    print(paste("...",optim.method," finished with convergence status ",optim.result$convergence,sep=""))
-    
+    if(verbose){
+      #suppressWarnings(message(date()," -- cxr_optimize: method ",optim.method," completed with convergence status ",optim.result$convergence))
+    }
+
     if(!is.null(optim.result)){
     
     optim.params <- RetrieveParams(optim.params = optim.result$par,
@@ -306,8 +314,9 @@ cxr_optimize <- function(fitness.model,
     
   }else{ # methods with different nomenclature
     
-    print(paste("...",optim.method," finished with convergence status ",optim.result$status,sep=""))
-    
+    if(verbose){
+      #suppressWarnings(message(date()," -- cxr_optimize: ",length(log.fitness)," observations, method ",optim.method," completed with convergence status ",optim.result$status))
+    }    
     if(!is.null(optim.result)){
     
     optim.params <- RetrieveParams(optim.params = optim.result$solution,
@@ -334,6 +343,10 @@ cxr_optimize <- function(fitness.model,
   # standard errors via bootstrapping
   if(generate.errors){
     
+    if(verbose){
+      #suppressWarnings(message(date()," -- cxr_optimize: generating standard errors for ",length(log.fitness)," observations and ",bootstrap.samples," bootstrap samples"))
+    }
+    
     errors <- SEbootstrap(fitness.model = fitness.model,
                           optim.method = optim.method,
                           param.list = param.list,
@@ -347,6 +360,10 @@ cxr_optimize <- function(fitness.model,
                           nsamples = bootstrap.samples)
   }else{
     errors <- rep(NA,length(init.par))
+  }
+  
+  if(verbose){
+    #suppressWarnings(message(date()," -- cxr_optimize: standard errors computed"))
   }
   
   error.params <- RetrieveParams(optim.params = errors,

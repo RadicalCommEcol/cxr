@@ -1,18 +1,25 @@
-# plot some pairwise relationships
-source("R/AvgFitnessRatio.R")
-source("R/NicheOverlap.R")
+---
+title: "Plot pairwise species coexistence"
+output: rmarkdown::html_vignette
+author: cxr team
+vignette: >
+  %\VignetteIndexEntry{Multi-species parameter optimization}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
 
-library(tidyverse)
-library(scales)
+In this document, we draw the coexistence region of our plant community and locate every pair of species in this region. For that, we use the parameters previously calculated for each species (see vignette \code{Multi-species parameter optimization}), and the germination and survival rates, which are both stored with the package. 
 
-#################
-# load data
+```{r}
+library(cxr)
+library(ggplot2)
+data(param_estimates)
+data(species_rates)
+```
 
-# germination and seed survival rates
-load("data/species_rates.RData")
-# lambda and alpha coefficients
-load("../temp/results/temp_param_estimates.Rdata")
+First, compile the parameters from the original results, which are in a nested list. We will use the estimates from the most complex model (BH_5), and the optimization method ...
 
+```{r}
 sp.names <- sort(unique(names(param.matrices)))
 alpha.matrix <- matrix(0,nrow = length(sp.names),ncol = length(sp.names))
 lambda.values <- numeric(length(sp.names))
@@ -25,11 +32,15 @@ for(i.sp in 1:length(sp.names)){
   lambda.values[i.sp] <- param.matrices[[i.sp]][[estimates.model]][[estimates.method]]$lambda
   alpha.matrix[i.sp,] <- param.matrices[[i.sp]][[estimates.model]][[estimates.method]]$alpha[sp.names]
 }
+# for(i.sp in 1:length(sp.names)){
+#   lambda.values[i.sp] <- param_estimates[[i.sp]][[estimates.model]][[estimates.method]]$lambda
+#   alpha.matrix[i.sp,] <- param_estimates[[i.sp]][[estimates.model]][[estimates.method]]$alpha[sp.names]
+# }
+```
 
-#################
-# prepare data
+Now, we build a dataframe with all unique pairwise combinations of species
 
-# generate a dataframe with pairwise data
+```{r}
 # function from https://stackoverflow.com/questions/17171148/non-redundant-version-of-expand-grid
 expand.grid.unique <- function(x, y, include.equals=FALSE)
 {
@@ -46,7 +57,11 @@ pairwise.ratios <- as.data.frame(expand.grid.unique(sp.names,sp.names,include.eq
 names(pairwise.ratios) <- c("sp1","sp2")
 pairwise.ratios$fitness.ratio <- 0
 pairwise.ratios$niche.overlap <- 0
+```
 
+and compute the average fitness ratio and niche overlap between pairs
+
+```{r}
 # gather fitness ratio/niche overlap between each pair
 for(i.pair in 1:nrow(pairwise.ratios)){
   my.sp <- c(pairwise.ratios$sp1[i.pair],pairwise.ratios$sp2[i.pair])
@@ -59,28 +74,29 @@ for(i.pair in 1:nrow(pairwise.ratios)){
                                                            pair.matrix = my.matrix)[[3]]
   pairwise.ratios$niche.overlap[i.pair] <- NicheOverlap(pair.matrix = my.matrix)
 }
+```
 
-#################
-# prepare plot
-x.1 = seq(1, 0, by=-0.001)
-x.2 = seq(0, -1, by=-0.001)
-y1.1 = 1/((1-x.1))
-y2.1 = 1-x.1
-y1.2 = 1/((1-x.2))
-y2.2 = 1-x.2
-my.lim.x = 0.5
-my.lim.y = 1.7
+For making the plot, we adapt, simplified, the great example from Ke and Letten (2018), in which they show the regions leading to coexistence, exclusion, and priority effects between species pairs.
 
-x.complete <- seq(1,-1,by=-0.001)
-y1 <- 1/(1-x.complete)
-y2 <- 1-x.complete
+First, generate a dataframe for the limits of the different regions, and specify the axes limits
 
-lines <- data.frame(x = c(x.complete,x.complete), 
+```{r}
+x <- seq(1,-1,by=-0.001)
+y1 <- 1/(1-x)
+y2 <- 1-x
+
+lines <- data.frame(x = c(x,x), 
                     y = c(y1,y2), 
                     fun = c(rep("y1", times = length(seq(1, -1, by=-0.001))), 
                             rep("y2", times = length(seq(1, -1, by=-0.001)))))
+my.lim.x = 0.5
+my.lim.y = 1.7
+```
 
-coexistence.simple <- ggplot() + 
+and the code for the plot
+
+```{r}
+coex.plot <- ggplot() + 
   geom_line(data = lines, aes(x = x, y = y,linetype = fun,group = fun), col = "black") +
   # grid lines
   geom_abline(intercept = 0, slope = 0, lty = 2, col = "darkgrey") +
@@ -100,48 +116,7 @@ coexistence.simple <- ggplot() +
         axis.title.y = element_text(angle = 90), 
         axis.title = element_text(size = 20)) +
   NULL
-coexistence.simple
-
-# this is the complete version, with inner fill
-
-# auxiliary dataframes for the boundaries of coexistence regions
-lines.pos = data.frame(x = c(x.1, x.1), 
-                     y = c(y1.1, y2.1), 
-                     fun = c(rep("y1", times = length(seq(1, 0, by=-0.001))), 
-                                rep("y2", times = length(seq(1, 0, by=-0.001)))))
-ribbon.pos = data.frame(min.dim = y1.1, max.dim = y2.1, x.dim = x.1)
-
-lines.neg = data.frame(x = c(x.2, x.2), 
-                     y = c(y1.2, y2.2), 
-                     fun = c(rep("y1", times = length(seq(0, -1, by=-0.001))), 
-                                rep("y2", times = length(seq(0, -1, by=-0.001)))))
-ribbon.neg = data.frame(min.dim = y1.2, max.dim = y2.2, x.dim = x.2)
-
-#################
-# plot
-coexistence.plot <- ggplot() + 
-  # positive side
-  geom_ribbon(data = ribbon.pos, aes(x = x.dim, ymin = min.dim, ymax = max.dim), fill = "darkgrey", alpha = 0.6) +
-  geom_line(data = lines.pos, aes(x = x, y = y,linetype = fun,group = fun), col = "black") +
-  # negative side
-  geom_ribbon(data = ribbon.neg, aes(x = x.dim, ymin = min.dim, ymax = max.dim), fill = "darkgrey", alpha = 0.6) +
-  geom_line(data = lines.neg, aes(x = x, y = y,linetype = fun,group = fun), col = "black") +
-  # grid lines
-  geom_abline(intercept = 0, slope = 0, lty = 2, col = "darkgrey") +
-  geom_vline(xintercept = 0, lty = 2, col = "darkgrey") +
-  # points
-  geom_point(data = pairwise.ratios, aes(x = (1 - niche.overlap), y = log(fitness.ratio))) +
-  # log-scale
-  scale_y_log10() +
-  # # trim to desired coords
-  coord_cartesian(expand = c(0, 0),
-                  xlim = c(-my.lim.x,my.lim.x),
-                  ylim = c(1/my.lim.y, my.lim.y)) +
-  # axes, legend, etc
-  xlab(expression(paste("(1 - ", rho, " )", sep = ""))) + 
-  ylab(expression(paste("Fitness ratio ( ", frac(italic(f[2]), italic(f[1])), " )", sep=""))) +
-  theme(legend.position = "none", 
-        axis.title.y = element_text(angle = 90), 
-        axis.title = element_text(size = 20)) +
-  NULL
- coexistence.plot
+coex.plot
+```
+ 
+ 

@@ -3,7 +3,7 @@
 \docType{data}
 \name{abundance}
 \alias{abundance}
-\title{Abundance measurments}
+\title{Abundance measurements}
 \format{A data frame with 7452 rows and 7 variables}
 \usage{
 data(abundance)
