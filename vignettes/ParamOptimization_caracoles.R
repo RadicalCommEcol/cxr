@@ -48,10 +48,10 @@ full.data <- left_join(competition.data,salinity)
 # models to parameterize
 # be aware of including 4 and 5 ONLY if there are covariates
 # otherwise it makes no sense (see equations in Lanuza et al. 2018)
-models <- 4:5
+models <- 3:5
 
 # which values do we optimize for each model?
-param.list <- list(c("lambda","alpha","lambda.cov","alpha.cov","lambda.cov_NL","alpha.cov_NL"),
+param.list <- list(c("lambda","alpha"),c("lambda","alpha","lambda.cov","alpha.cov","lambda.cov_NL","alpha.cov_NL"),
                    c("lambda","alpha","lambda.cov","alpha.cov","lambda.cov_NL","alpha.cov_NL"))
 
 #Choose the non-linearity function
@@ -345,7 +345,7 @@ for(i.sp in 1:length(focal.sp)){
     
     #######################
     # update initial values for the different parameters
-    
+    if(i.model < length(param.list)){
     # lambda
     if("lambda" %in% param.list[[i.model+1]]){
       if(!is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda)){
@@ -364,7 +364,7 @@ for(i.sp in 1:length(focal.sp)){
       if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha)) == 0){
         current.init.alpha <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha
         # is the current estimate of the appropriate length?
-        if(models(i.model) > 2){
+        if(models[i.model] > 2){
           if(length(current.init.alpha) == 1){
             current.init.alpha <- rep(current.init.alpha,num.competitors)
           }
@@ -392,7 +392,7 @@ for(i.sp in 1:length(focal.sp)){
             if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)) == 0){
         current.init.alpha.cov <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov
         # is the current estimate of the appropriate length?
-        if(i.model > 4){ print(i.model)
+        if(models[i.model+1] > 4){ print(i.model)
           if(length(current.init.alpha.cov) == num.covariates){
             current.init.alpha.cov <- rep(current.init.alpha.cov,num.competitors)
           }
@@ -413,7 +413,7 @@ for(i.sp in 1:length(focal.sp)){
         }# if model > 4
       }
     }
-    
+    } #last model
     
   }# for i.model
 }# for i.sp
