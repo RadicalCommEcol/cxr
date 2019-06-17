@@ -172,7 +172,7 @@ for(i.sp in 1:length(focal.sp)){
   # or gather them from data if they are not to be optimized
   
   # lambda
-  if("lambda" %in% param.list[[1]]){
+  if("lambda" %in% unlist(param.list)){
     current.init.lambda <- mean(log.fitness)
   }else{
     current.init.lambda <- init.lambda[i.sp]
@@ -183,7 +183,7 @@ for(i.sp in 1:length(focal.sp)){
     current.init.sigma <- upper.sigma
   }
   # alpha
-  if("alpha" %in% param.list[[1]]){
+  if("alpha" %in% unlist(param.list)){
     if(models[1]<=2){
       alpha.length <- 1
     }else{
@@ -198,7 +198,7 @@ for(i.sp in 1:length(focal.sp)){
     current.init.alpha <- init.alpha[i.sp,]
   }
   # lambda.cov
-  if("lambda.cov" %in% param.list[[1]]){
+  if("lambda.cov" %in% unlist(param.list)){
     if(length(init.lambda.cov) != num.covariates){
       current.init.lambda.cov <- rep(init.lambda.cov[1],num.covariates)
     }else{
@@ -208,7 +208,7 @@ for(i.sp in 1:length(focal.sp)){
     current.init.lambda.cov <- init.lambda.cov[i.sp]  
   }
   # alpha.cov
-  if("alpha.cov" %in% param.list[[1]]){
+  if("alpha.cov" %in% unlist(param.list)){
     if(models[1]<=4){
       length.alpha.cov <- num.covariates
     }else if(models[1]>4){
@@ -308,7 +308,7 @@ for(i.sp in 1:length(focal.sp)){
         if(sum(is.na(param_estimates[[i.sp]][[i.model]][[init.par.method]]$alpha)) == 0){
           current.init.alpha <- param_estimates[[i.sp]][[i.model]][[init.par.method]]$alpha
           # is the current estimate of the appropriate length?
-          if(models[i.model] > 2){
+          if(models[i.model+1] > 2){
             if(length(current.init.alpha) == 1){
               current.init.alpha <- rep(current.init.alpha,num.competitors)
             }
@@ -326,7 +326,7 @@ for(i.sp in 1:length(focal.sp)){
         if(sum(is.na(param_estimates[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)) == 0){
           current.init.alpha.cov <- param_estimates[[i.sp]][[i.model]][[init.par.method]]$alpha.cov
           # is the current estimate of the appropriate length?
-          if(models[i.model] > 4){
+          if(models[i.model+1] > 4){
             if(length(current.init.alpha.cov) == num.covariates){
               current.init.alpha.cov <- rep(current.init.alpha.cov,num.competitors)
             }
