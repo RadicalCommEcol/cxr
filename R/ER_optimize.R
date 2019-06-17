@@ -83,6 +83,7 @@ ER_optimize <- function(lambda.vector,
                         generate.errors = FALSE,
                         bootstrap.samples = 0){
   
+  # some sanity checks
   if(!is.null(covariates)){
     if(is.null(lambda.cov) | is.null(e.cov) | is.null(r.cov) | is.null(lambda.cov.lower.bound) | is.null(lambda.cov.upper.bound) | is.null(e.cov.lower.bound) | is.null(e.cov.upper.bound)
        | is.null(r.cov.lower.bound) | is.null(r.cov.upper.bound)){
@@ -90,6 +91,22 @@ ER_optimize <- function(lambda.vector,
     }
   }
   
+  if (optim.method %in% c("nloptr_CRS2_LM","nloptr_ISRES","nloptr_DIRECT_L_RAND") & !requireNamespace("nloptr", quietly = TRUE)) {
+    stop("ER_optimize ERROR: Package \"nloptr\" needed for the method selected to work.",
+         call. = FALSE)
+  }
+  if (optim.method == "GenSA" & !requireNamespace("GenSA", quietly = TRUE)) {
+    stop("ER_optimize ERROR: Package \"GenSA\" needed for the method selected to work.",
+         call. = FALSE)
+  }
+  if (optim.method == "hydroPSO" & !requireNamespace("hydroPSO", quietly = TRUE)) {
+    stop("ER_optimize ERROR: Package \"hydroPSO\" needed for the method selected to work.",
+         call. = FALSE)
+  }
+  if (optim.method == "DEoptimR" & !requireNamespace("DEoptimR", quietly = TRUE)) {
+    stop("ER_optimize ERROR: Package \"DEoptimR\" needed for the method selected to work.",
+         call. = FALSE)
+  }
   # fill up matrices
   # num.sp x num.observations. 1 if species is focal in a given observation, 0 otherwise
   target_all <- NULL
@@ -100,7 +117,7 @@ ER_optimize <- function(lambda.vector,
   log.fitness <- log(sp.data$fitness)
   
   # species names and number
-  sp.list <- unique(sp.data$focal)
+  sp.list <- as.character(unique(sp.data$focal))
   num.sp <- length(sp.list)
   
   for(i.sp in 1:num.sp){
@@ -260,19 +277,19 @@ ER_optimize <- function(lambda.vector,
     
     if(optimize.lambda){
       tryCatch({
-      optim.par <- nloptr(x0 = init.par,
-                          eval_f = effect.response.model,
-                          opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
-                          lb = lower.bounds,
-                          ub = upper.bounds,
-                          target_all = target_all,
-                          density_all = density_all,
-                          log.fitness = log.fitness,
-                          covariates = covariates)
+        optim.par <- nloptr::nloptr(x0 = init.par,
+                                    eval_f = effect.response.model,
+                                    opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
+                                    lb = lower.bounds,
+                                    ub = upper.bounds,
+                                    target_all = target_all,
+                                    density_all = density_all,
+                                    log.fitness = log.fitness,
+                                    covariates = covariates)
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }else{
       tryCatch({
-      optim.par <- nloptr(x0 = init.par,
+      optim.par <- nloptr::nloptr(x0 = init.par,
                           eval_f = effect.response.model,
                           opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
                           lb = lower.bounds,
@@ -289,7 +306,7 @@ ER_optimize <- function(lambda.vector,
     
     if(optimize.lambda){
       tryCatch({
-    optim.par <- nloptr(x0 = init.par,
+    optim.par <- nloptr::nloptr(x0 = init.par,
                         eval_f = effect.response.model,
                         opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e3),
                         lb = lower.bounds,
@@ -301,7 +318,7 @@ ER_optimize <- function(lambda.vector,
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }else{
       tryCatch({
-      optim.par <- nloptr(x0 = init.par,
+      optim.par <- nloptr::nloptr(x0 = init.par,
                           eval_f = effect.response.model,
                           opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e3),
                           lb = lower.bounds,
@@ -318,7 +335,7 @@ ER_optimize <- function(lambda.vector,
     
     if(optimize.lambda){
       tryCatch({
-      optim.par <- nloptr(x0 = init.par,
+      optim.par <- nloptr::nloptr(x0 = init.par,
                           eval_f = effect.response.model,
                           opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e3),
                           lb = lower.bounds,
@@ -330,7 +347,7 @@ ER_optimize <- function(lambda.vector,
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }else{
       tryCatch({
-      optim.par <- nloptr(x0 = init.par,
+      optim.par <- nloptr::nloptr(x0 = init.par,
                           eval_f = effect.response.model,
                           opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e3),
                           lb = lower.bounds,
@@ -347,7 +364,7 @@ ER_optimize <- function(lambda.vector,
     
     if(optimize.lambda){
       tryCatch({
-      optim.par <- GenSA(par = init.par,
+      optim.par <- GenSA::GenSA(par = init.par,
                          fn = effect.response.model,
                          lower = lower.bounds,
                          upper = upper.bounds, 
@@ -359,7 +376,7 @@ ER_optimize <- function(lambda.vector,
       }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
     }else{
       tryCatch({
-      optim.par <- GenSA(par = init.par,
+      optim.par <- GenSA::GenSA(par = init.par,
                          fn = effect.response.model,
                          lower = lower.bounds,
                          upper = upper.bounds, 
