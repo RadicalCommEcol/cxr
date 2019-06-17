@@ -1,7 +1,7 @@
 #' Title Beverton-Holt fecundity, first model
 #' 
 #' These functions return the negative log-likelihood of the data
-#' given the model and parameters. BH_1 is $F_i = \lambda_i$
+#' given the model and parameters. BH_1 is \eqn{F_i = \lambda_i}
 #'
 #' @param par vector containing lambda of focal sp and sigma value
 #' @param param.list not used in BH_1
