@@ -222,9 +222,8 @@ for(i.sp in 1:length(focal.sp)){
       current.init.alpha <- init.alpha
     }
   }
-  
   # lambda.cov
-  if("lambda.cov" %in% param.list[[i.model]]){
+  if("lambda.cov" %in% param.list[[1]]){
     if(length(init.lambda.cov) != num.covariates){
       current.init.lambda.cov <- rep(init.lambda.cov[1],num.covariates)
     }else{
@@ -234,8 +233,9 @@ for(i.sp in 1:length(focal.sp)){
     current.init.lambda.cov <- init.lambda.cov[i.sp]  
   }
   
+
   #lamda.cov_NL
-  if("lambda.cov_NL" %in% param.list[[i.model]]){
+  if("lambda.cov_NL" %in% param.list[[1]]){
     if(length(init.lambda.cov_NL) != num.covariates){
       current.init.lambda.cov_NL <- rep(init.lambda.cov_NL[1],num.covariates)
     }else{
@@ -244,13 +244,10 @@ for(i.sp in 1:length(focal.sp)){
   }
   
   # alpha.cov
-  print("he")
-  print(models[i.model])
-  if("alpha.cov" %in% param.list[[i.model]]){
-    if(models[i.model]<=4){
+  if("alpha.cov" %in% param.list[[1]]){
+    if(models[1]<=4){
       length.alpha.cov <- num.covariates
-      print(length.alpha.cov)
-    }else if(models[i.model]>4){
+    }else if(models[1]>4){
       length.alpha.cov <- num.covariates*num.competitors
     }
     if(length(init.alpha.cov) != length.alpha.cov){
@@ -263,10 +260,10 @@ for(i.sp in 1:length(focal.sp)){
   }
   
   # alpha.cov_NL
-  if("alpha.cov_NL" %in% param.list[[i.model]]){
-    if(models[i.model]<=4){
+  if("alpha.cov_NL" %in% param.list[[1]]){
+    if(models[1]<=4){
       length.alpha.cov_NL <- num.covariates
-    }else if(models[i.model]>4){
+    }else if(models[1]>4){
       length.alpha.cov_NL <- num.covariates*num.competitors
     }
     if(length(init.alpha.cov_NL) != length.alpha.cov){
@@ -350,7 +347,7 @@ for(i.sp in 1:length(focal.sp)){
     # update initial values for the different parameters
     
     # lambda
-    if("lambda" %in% param.list[[i.model]]){
+    if("lambda" %in% param.list[[i.model+1]]){
       if(!is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda)){
         current.init.lambda <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda
       }
@@ -363,11 +360,11 @@ for(i.sp in 1:length(focal.sp)){
       }
     }
     # alpha
-    if("alpha" %in% param.list[[i.model]]){
+    if("alpha" %in% param.list[[i.model+1]]){
       if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha)) == 0){
         current.init.alpha <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha
         # is the current estimate of the appropriate length?
-        if(i.model > 2){
+        if(models(i.model) > 2){
           if(length(current.init.alpha) == 1){
             current.init.alpha <- rep(current.init.alpha,num.competitors)
           }
@@ -376,21 +373,21 @@ for(i.sp in 1:length(focal.sp)){
     }
     
     # lambda.cov
-    if("lambda.cov" %in% param.list[[i.model]]){
+    if("lambda.cov" %in% param.list[[i.model+1]]){
       if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov)) == 0){
         current.init.lambda.cov <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov
       }
     }
     
     # lambda.cov_NL
-    if("lambda.cov_NL" %in% param.list[[i.model]]){
+    if("lambda.cov_NL" %in% param.list[[i.model+1]]){
       if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov_NL)) == 0){
         current.init.lambda.cov_NL <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov_NL
       }
     }
     
     # alpha.cov
-    if("alpha.cov" %in% param.list[[i.model]]){
+    if("alpha.cov" %in% param.list[[i.model+1]]){
       print(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)))  
             if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)) == 0){
         current.init.alpha.cov <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov
@@ -405,7 +402,7 @@ for(i.sp in 1:length(focal.sp)){
     }
     
     # alpha.cov_NL
-    if("alpha.cov_NL" %in% param.list[[i.model]]){
+    if("alpha.cov_NL" %in% param.list[[i.model+1]]){
       if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov_NL)) == 0){
         current.init.alpha.cov_NL <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov_NL
         # is the current estimate of the appropriate length?
