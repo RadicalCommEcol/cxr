@@ -57,12 +57,17 @@ param.list <- list(c("lambda","alpha"),
 
 #Choose the non-linearity function
 function1 <-function(a,b,x){
-  return(a*x^2/(b+x^2))
-}
+  vector <-vector("numeric",length(x))
+  for(i in 1:length(x)){
+  if (x[i]!=0){vector[i]<- (a*x[i]^2/(b+x[i]^2))}
+  }
+  return(vector)
+  }
+
 function2 <-function(a,b,x){
   return(a*(1-exp(b*x)))
 }
-function_NL <- function2
+function_NL <- function1
 # keep the model definitions in a list, for ease
 fitness.models <- list(BH_1 = BH_1,BH_2 = BH_2,BH_3 = BH_3,BH_4 = BH_4,BH_5 = BH_5)
 
@@ -97,23 +102,23 @@ lower.sigma <- 0.000001
 upper.sigma <- 1
 # alpha
 init.alpha <- 1e-4
-lower.alpha <- 0
+lower.alpha <- 1e-4
 upper.alpha <- 1e5
 # lambda.cov
 init.lambda.cov <- 1
-lower.lambda.cov <- 0
+lower.lambda.cov <- 1e-4
 upper.lambda.cov <- 1e4
 # alpha.cov
 init.alpha.cov <- 1
-lower.alpha.cov <- 0
+lower.alpha.cov <- 1e-4
 upper.alpha.cov <- 1e4
 # lambda.cov_NL
 init.lambda.cov_NL <- 1
-lower.lambda.cov_NL <- 0
-upper.lambda.cov_NL <- 1e4
+lower.lambda.cov_NL <- 1e-4
+upper.lambda.cov_NL <- 1e2
 # alpha.cov
 init.alpha.cov_NL <- 1
-lower.alpha.cov_NL <- 0
+lower.alpha.cov_NL <- 1e-4
 upper.alpha.cov_NL <- 1e4
 
 
