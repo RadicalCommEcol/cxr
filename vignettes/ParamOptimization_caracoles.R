@@ -210,22 +210,19 @@ for(i.sp in 1:length(focal.sp)){
     current.init.sigma <- upper.sigma
   }
   # alpha
-  print("ho")
-  print(i.model)
-  if("alpha" %in% param.list[[i.model]]){
-    if(models[i.model]<=2){
+  if("alpha" %in% param.list[[1]]){
+    if(models[1]<=2){
       alpha.length <- 1
     }else{
       alpha.length <- num.competitors
     }
     if(length(init.alpha) != alpha.length){
-     current.init.alpha <- rep(init.alpha[1],alpha.length) 
+      current.init.alpha <- rep(init.alpha[1],alpha.length) 
     }else{
       current.init.alpha <- init.alpha
     }
-  }else{
-    current.init.alpha <- init.alpha[i.sp,]
   }
+  
   # lambda.cov
   if("lambda.cov" %in% param.list[[i.model]]){
     if(length(init.lambda.cov) != num.covariates){
