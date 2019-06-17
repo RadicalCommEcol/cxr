@@ -48,11 +48,10 @@ full.data <- left_join(competition.data,salinity)
 # models to parameterize
 # be aware of including 4 and 5 ONLY if there are covariates
 # otherwise it makes no sense (see equations in Lanuza et al. 2018)
-models <- 3:5
+models <- 4:5
 
 # which values do we optimize for each model?
-param.list <- list(c("lambda","alpha"),
-                   c("lambda","alpha","lambda.cov","alpha.cov","lambda.cov_NL","alpha.cov_NL"),
+param.list <- list(c("lambda","alpha","lambda.cov","alpha.cov","lambda.cov_NL","alpha.cov_NL"),
                    c("lambda","alpha","lambda.cov","alpha.cov","lambda.cov_NL","alpha.cov_NL"))
 
 #Choose the non-linearity function
@@ -78,8 +77,8 @@ covariates <- full.data[,"sum_salinity"]
 
 # optimization methods to use
 optim.methods <- c(#"optim_NM",
-                   "optim_L-BFGS-B",
-                  "nloptr_CRS2_LM"
+                   "optim_L-BFGS-B"
+                  #"nloptr_CRS2_LM"
                    # "nloptr_ISRES"
                    # "nloptr_DIRECT_L_RAND"
                     # "GenSA"
@@ -138,6 +137,7 @@ param.matrices <- list()
 for(i.sp in 1:length(focal.sp)){
   param.matrices[[i.sp]] <- list()
   for(i.model in 1:length(models)){
+    
     param.matrices[[i.sp]][[i.model]] <- list()
     for(i.method in 1:length(optim.methods)){
       param.matrices[[i.sp]][[i.model]][[i.method]] <- list(lambda = 0,
@@ -170,7 +170,7 @@ names(param.matrices) <- focal.sp
 ###############################
 # main loop
 
-for(i.sp in 1:1){
+for(i.sp in 1:length(focal.sp)){
   
   # subset and prepare the data
   
@@ -210,6 +210,8 @@ for(i.sp in 1:1){
     current.init.sigma <- upper.sigma
   }
   # alpha
+  print("ho")
+  print(i.model)
   if("alpha" %in% param.list[[i.model]]){
     if(models[i.model]<=2){
       alpha.length <- 1
@@ -245,9 +247,12 @@ for(i.sp in 1:1){
   }
   
   # alpha.cov
+  print("he")
+  print(models[i.model])
   if("alpha.cov" %in% param.list[[i.model]]){
     if(models[i.model]<=4){
       length.alpha.cov <- num.covariates
+      print(length.alpha.cov)
     }else if(models[i.model]>4){
       length.alpha.cov <- num.covariates*num.competitors
     }
@@ -389,14 +394,16 @@ for(i.sp in 1:1){
     
     # alpha.cov
     if("alpha.cov" %in% param.list[[i.model]]){
-      if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)) == 0){
+      print(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)))  
+            if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)) == 0){
         current.init.alpha.cov <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov
         # is the current estimate of the appropriate length?
-        if(i.model > 4){
+        if(i.model > 4){ print(i.model)
           if(length(current.init.alpha.cov) == num.covariates){
             current.init.alpha.cov <- rep(current.init.alpha.cov,num.competitors)
           }
         }# if model > 4
+        print(current.init.alpha.cov)
       }
     }
     
