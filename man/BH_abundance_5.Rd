@@ -5,7 +5,7 @@
 \title{Project abundance of individuals according to the Beverton-Holt fifth model}
 \usage{
 BH_abundance_5(sp.par, init.abund, cov.values, alpha.matrix,
-  lambda.cov.matrix, alpha.cov.matrix)
+  lambda.cov.matrix, alpha.cov.matrix, return.seeds = TRUE)
 }
 \arguments{
 \item{sp.par}{dataframe with species in rows, and the following columns:

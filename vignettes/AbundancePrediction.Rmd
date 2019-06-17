@@ -3,7 +3,7 @@ title: "Predicting short-term variations in species abundances"
 output: rmarkdown::html_vignette
 author: cxr team
 vignette: >
-  %\VignetteIndexEntry{Multi-species parameter optimization}
+  %\VignetteIndexEntry{Abundance prediction}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
@@ -111,8 +111,8 @@ predicted.abundances$timestep <- as.factor(predicted.abundances$timestep)
 predicted.abundances$site <- as.factor(predicted.abundances$site)
 predicted.abundances$sp <- as.factor(predicted.abundances$sp)
 
-abund.plot <- ggplot2::ggplot(predicted.abundances,aes(x = timestep,y = abundance, group = sp)) + 
-  ggplot2::geom_line(aes(color = sp)) + 
+abund.plot <- ggplot2::ggplot(predicted.abundances,ggplot2::aes(x = timestep,y = abundance, group = sp)) + 
+  ggplot2::geom_line(ggplot2::aes(color = sp)) + 
   ggplot2::facet_grid(site~.)+
   NULL
 abund.plot

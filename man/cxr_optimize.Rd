@@ -11,7 +11,8 @@ cxr_optimize(fitness.model, optim.method, param.list, log.fitness,
   init.lambda.cov = 0.001, lower.lambda.cov = 1e-04,
   upper.lambda.cov = 1e+05, init.alpha.cov = 0.001,
   lower.alpha.cov = 1e-04, upper.alpha.cov = 1e+05, focal.comp.matrix,
-  focal.covariates, generate.errors = FALSE, bootstrap.samples = 0)
+  focal.covariates = NULL, generate.errors = FALSE,
+  bootstrap.samples = 0, verbose = FALSE)
 }
 \arguments{
 \item{fitness.model}{function giving the population dynamics model. Any functional form is allowed, but the model must be constrained

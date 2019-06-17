@@ -66,8 +66,8 @@ covariates <- as.matrix(full.data[,"sum_salinity"])
 
 # optimization methods to use
 optim.methods <- c(#"optim_NM"
-                  # "optim_L-BFGS-B"
-                  "nloptr_CRS2_LM"
+                  "optim_L-BFGS-B"
+                  #"nloptr_CRS2_LM"
                    # "nloptr_ISRES"
                    # "nloptr_DIRECT_L_RAND"
                     # "GenSA"
@@ -107,19 +107,19 @@ generate.errors <- TRUE
 bootstrap.samples <- 3
 
 # store results?
-write.results <- FALSE
+write.results <- TRUE
 
 ##############################
 # initialize data structures
 # elements are matrices/vectors within nested lists, of the form matrix[[focal.sp]][[model]][[method]]
 
-param.matrices <- list()
+param_estimates <- list()
 for(i.sp in 1:length(focal.sp)){
-  param.matrices[[i.sp]] <- list()
+  param_estimates[[i.sp]] <- list()
   for(i.model in 1:length(models)){
-    param.matrices[[i.sp]][[i.model]] <- list()
+    param_estimates[[i.sp]][[i.model]] <- list()
     for(i.method in 1:length(optim.methods)){
-      param.matrices[[i.sp]][[i.model]][[i.method]] <- list(lambda = 0,
+      param_estimates[[i.sp]][[i.model]][[i.method]] <- list(lambda = 0,
                                                             lambda.lower.error = 0,
                                                             lambda.upper.error = 0,
                                                             sigma = 0,
@@ -134,11 +134,11 @@ for(i.sp in 1:length(focal.sp)){
                                                             alpha.cov.upper.error = 0,
                                                             log.likelihood = 0)
     }
-    names(param.matrices[[i.sp]][[i.model]]) <- optim.methods
+    names(param_estimates[[i.sp]][[i.model]]) <- optim.methods
   }
-  names(param.matrices[[i.sp]]) <- names(fitness.models)[models]
+  names(param_estimates[[i.sp]]) <- names(fitness.models)[models]
 }
-names(param.matrices) <- focal.sp
+names(param_estimates) <- focal.sp
 
 ###############################
 # main loop
@@ -264,25 +264,25 @@ for(i.sp in 1:length(focal.sp)){
       ###############
       # clean up results
       
-      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda <- temp.results$lambda
-      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.lower.error <- temp.results$lambda.lower.error
-      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.upper.error <- temp.results$lambda.upper.error
+      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda <- temp.results$lambda
+      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda.lower.error <- temp.results$lambda.lower.error
+      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda.upper.error <- temp.results$lambda.upper.error
       
-      param.matrices[[i.sp]][[i.model]][[i.method]]$sigma <- temp.results$sigma
+      param_estimates[[i.sp]][[i.model]][[i.method]]$sigma <- temp.results$sigma
       
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha <- temp.results$alpha
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.upper.error <- temp.results$alpha.upper.error
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.lower.error <- temp.results$alpha.lower.error
+      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha <- temp.results$alpha
+      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha.upper.error <- temp.results$alpha.upper.error
+      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha.lower.error <- temp.results$alpha.lower.error
       
-      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov <- temp.results$lambda.cov
-      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov.upper.error <- temp.results$lambda.cov.upper.error
-      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov.lower.error <- temp.results$lambda.cov.lower.error
+      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda.cov <- temp.results$lambda.cov
+      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda.cov.upper.error <- temp.results$lambda.cov.upper.error
+      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda.cov.lower.error <- temp.results$lambda.cov.lower.error
       
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov <- temp.results$alpha.cov
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov.upper.error <- temp.results$alpha.cov.upper.error
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov.lower.error <- temp.results$alpha.cov.lower.error
+      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha.cov <- temp.results$alpha.cov
+      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha.cov.upper.error <- temp.results$alpha.cov.upper.error
+      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha.cov.lower.error <- temp.results$alpha.cov.lower.error
       
-      param.matrices[[i.sp]][[i.model]][[i.method]]$log.likelihood <- temp.results$log.likelihood
+      param_estimates[[i.sp]][[i.model]][[i.method]]$log.likelihood <- temp.results$log.likelihood
       
     }# for i.method
     
@@ -291,21 +291,21 @@ for(i.sp in 1:length(focal.sp)){
     
     # lambda
     if("lambda" %in% param.list[[i.model]]){
-      if(!is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda)){
-        current.init.lambda <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda
+      if(!is.na(param_estimates[[i.sp]][[i.model]][[init.par.method]]$lambda)){
+        current.init.lambda <- param_estimates[[i.sp]][[i.model]][[init.par.method]]$lambda
       }
     }
     # sigma
-    if(!is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$sigma)){
-      current.init.sigma <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$sigma
+    if(!is.na(param_estimates[[i.sp]][[i.model]][[init.par.method]]$sigma)){
+      current.init.sigma <- param_estimates[[i.sp]][[i.model]][[init.par.method]]$sigma
       if(current.init.sigma > upper.sigma){
         current.init.sigma <- upper.sigma
       }
     }
     # alpha
     if("alpha" %in% param.list[[i.model]]){
-      if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha)) == 0){
-        current.init.alpha <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha
+      if(sum(is.na(param_estimates[[i.sp]][[i.model]][[init.par.method]]$alpha)) == 0){
+        current.init.alpha <- param_estimates[[i.sp]][[i.model]][[init.par.method]]$alpha
         # is the current estimate of the appropriate length?
         if(i.model > 2){
           if(length(current.init.alpha) == 1){
@@ -316,14 +316,14 @@ for(i.sp in 1:length(focal.sp)){
     }
     # lambda.cov
     if("lambda.cov" %in% param.list[[i.model]]){
-      if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov)) == 0){
-        current.init.lambda.cov <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov
+      if(sum(is.na(param_estimates[[i.sp]][[i.model]][[init.par.method]]$lambda.cov)) == 0){
+        current.init.lambda.cov <- param_estimates[[i.sp]][[i.model]][[init.par.method]]$lambda.cov
       }
     }
     # alpha.cov
     if("alpha.cov" %in% param.list[[i.model]]){
-      if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)) == 0){
-        current.init.alpha.cov <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov
+      if(sum(is.na(param_estimates[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)) == 0){
+        current.init.alpha.cov <- param_estimates[[i.sp]][[i.model]][[init.par.method]]$alpha.cov
         # is the current estimate of the appropriate length?
         if(i.model > 4){
           if(length(current.init.alpha.cov) == num.covariates){
@@ -337,6 +337,6 @@ for(i.sp in 1:length(focal.sp)){
 }# for i.sp
 
 if(write.results){
-  save(param.matrices,file = "../temp/results/temp_param_estimates.Rdata")
+  save(param_estimates,file = "../temp/results/temp_param_estimates.Rdata")
 }
 

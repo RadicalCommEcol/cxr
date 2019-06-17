@@ -29,5 +29,5 @@ log-likelihood value
 }
 \description{
 These functions return the negative log-likelihood of the data
-given the model and parameters. BH_1 is $F_i = \lambda_i$
+given the model and parameters. BH_1 is \eqn{F_i = \lambda_i}
 }
