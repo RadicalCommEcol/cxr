@@ -61,6 +61,23 @@ cxr_optimize <- function(fitness.model,
                          generate.errors = FALSE,
                          bootstrap.samples = 0,
                          verbose = FALSE){
+  # some sanity checks
+  if (optim.method %in% c("nloptr_CRS2_LM","nloptr_ISRES","nloptr_DIRECT_L_RAND") & !requireNamespace("nloptr", quietly = TRUE)) {
+    stop("cxr_optimize ERROR: Package \"nloptr\" needed for the method selected to work.",
+         call. = FALSE)
+  }
+  if (optim.method == "GenSA" & !requireNamespace("GenSA", quietly = TRUE)) {
+    stop("cxr_optimize ERROR: Package \"GenSA\" needed for the method selected to work.",
+         call. = FALSE)
+  }
+  if (optim.method == "hydroPSO" & !requireNamespace("hydroPSO", quietly = TRUE)) {
+    stop("cxr_optimize ERROR: Package \"hydroPSO\" needed for the method selected to work.",
+         call. = FALSE)
+  }
+  if (optim.method == "DEoptimR" & !requireNamespace("DEoptimR", quietly = TRUE)) {
+    stop("cxr_optimize ERROR: Package \"DEoptimR\" needed for the method selected to work.",
+         call. = FALSE)
+  }
   
   if(verbose){
     #suppressWarnings(message(date()," -- cxr_optimize: fitting ",length(log.fitness)," observations with method ",optim.method," started"))

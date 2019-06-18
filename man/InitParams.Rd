@@ -6,9 +6,9 @@
 \usage{
 InitParams(init.lambda = NULL, init.sigma = 0, init.alpha = NULL,
   init.lambda.cov = NULL, init.alpha.cov = NULL, lower.lambda = 1,
-  upper.lambda = 1e+05, lower.sigma = 1e-10, upper.sigma = 1e+05,
-  lower.alpha = 0, upper.alpha = 1e+05, lower.lambda.cov = 1e-04,
-  upper.lambda.cov = 1e+05, lower.alpha.cov = 1e-04,
+  upper.lambda = 1e+05, lower.sigma = 1e-05, upper.sigma = 1e+05,
+  lower.alpha = 1e-05, upper.alpha = 1e+05, lower.lambda.cov = 1e-05,
+  upper.lambda.cov = 1e+05, lower.alpha.cov = 1e-05,
   upper.alpha.cov = 1e+05, num.competitors, num.covariates)
 }
 \arguments{

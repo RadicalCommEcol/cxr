@@ -16,5 +16,12 @@ Imports:
   nlme,
   tidyverse
 RoxygenNote: 6.1.1
-Suggests: knitr, rmarkdown, testthat (>= 0.8.0)
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 0.8.0),
+    hydroPSO,
+    GenSA,
+    DEoptimR,
+    nloptr
 VignetteBuilder: knitr

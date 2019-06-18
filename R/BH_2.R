@@ -1,8 +1,8 @@
 #' Title Beverton-Holt fecundity, second model
 #'
 #' These functions return the negative log-likelihood of the data
-#' given the model and parameters. BH_2 is $F_i = \lambda_i/(1+\alpha*N_{j})$
-#'
+#' given the model and parameters. BH_2 is \eqn{F_i = \frac{\lambda_i}{1+\alpha \sum_jN_{j}}}
+#' 
 #' @param par vector of variable length, with the following order: first, lambda of focal sp; 
 #' second alpha, single interaction coefficient; 
 #' last, sigma value. If any element is not to be optimized, it must not be present in this vector, but rather in the "fixed.terms" list

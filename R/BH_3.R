@@ -1,7 +1,7 @@
 #' Title Beverton-Holt fecundity, third model
 #'
 #' These functions return the negative log-likelihood of the data
-#' given the model and parameters. BH_3 is $F_i = \lambda_i/(1+\alpha_{ij}*N_{j})$
+#' given the model and parameters. BH_3 is \eqn{F_i = \frac{\lambda_i}{1+\sum_j\alpha_{ij} N_{j}}}
 #' 
 #' @param par vector of variable length, with the following order: first, lambda of focal sp; 
 #' second alpha, interaction coefficients with every species; 

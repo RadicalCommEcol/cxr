@@ -4,7 +4,7 @@
 \alias{PredictAbundances}
 \title{Project abundances according to specified models and parameters}
 \usage{
-PredictAbundances(par, timesteps, abundance.model)
+PredictAbundances(par, timesteps, abundance.model, return.seeds = TRUE)
 }
 \arguments{
 \item{par}{list with the following components: 
@@ -18,6 +18,10 @@ species should be a unique identifier, character or numeric. idem for site and c
 
 \item{abundance.model}{a function that accepts parameters from sp.par, a set of initial abundances, and optionally other parameters.
 The function returns the projected abundances at t+1}
+
+\item{return.seeds}{boolean flag, whether the prediction should return 
+number of seeds (i.e. $N_{i,t+1}$ eq. 1 of Lanuza et al. 2018), or number of
+adult individuals, (i.e. $N_{i,t+1} * g$ )}
 }
 \value{
 dataframe with fields "timestep","site","sp","abundance", giving the expected abundance for each species, timestep, and site.

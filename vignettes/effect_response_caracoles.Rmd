@@ -3,7 +3,7 @@ title: "Obtain competitive responses and effects"
 output: rmarkdown::html_vignette
 author: cxr team
 vignette: >
-  %\VignetteIndexEntry{Multi-species parameter optimization}
+  %\VignetteIndexEntry{Competitive responses/effects}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
@@ -18,13 +18,14 @@ In this example we calculate per-species competitive responses and effects, as o
 library(cxr)
 library(tidyverse)
 data(competition)
+data(param_estimates)
 ```
 
 As in other vignettes, we need to specify which optimization method are we using, and whether we want to generate standard errors from bootstrapping.
 
 ```{r}
-optim.methods <- c("optim_NM"
-                   # "optim_L-BGFS-B",
+optim.methods <- c(#"optim_NM"
+                   "optim_L-BFGS-B"
                    # "nloptr_CRS2_LM", 
                    # "nloptr_ISRES", 
                    # "nloptr_DIRECT_L_RAND", 
@@ -64,13 +65,16 @@ write.results <- FALSE
 It is possible to estimate, alongside competitive effects and responses, the effect of covariates over these terms. For simplicity, we will assume no effect of covariates in this example, but their addition is similar to the workflow exemplified in the vignette \code{Multi-species parameter optimization}. The dataset included with the package includes observations from 2016, but here we provide general code for any number of years (or sampling campaigns). We group observations in year x site records, where a site is a subplot within a specific plot (e.g. subplot A1 of plot 1).
 
 ```{r}
-sp.data <- competition.data %>% group_by(year,plot,subplot,focal,competitor) %>% summarise(seed = sum(seed),number = sum(number))
+sp.data <- competition %>% group_by(year,plot,subplot,focal,competitor) %>% summarise(seed = sum(seed),number = sum(number))
 names(sp.data)[which(names(sp.data) == "seed")] <- "fitness"
 sp.data$site <- paste(sp.data$year,sp.data$plot,sp.data$subplot,sep="_")
 sp.data <- sp.data[,c("site","focal","fitness","competitor","number")]
 
 # this is the set of species we are fitting
-sp.names <- sort(unique(sp.data$focal))
+# only those with proper lambda estimates
+focal.sp <- levels(sp.data$focal)
+sp.with.lambda <- names(param_estimates)
+sp.names <- sort(focal.sp[which(focal.sp %in% sp.with.lambda)])
 ```
 
 For the \code{ER_optimize} function to work properly, the dataset must be complete, with explicit zeros if a combination focal.sp-competitor was not observed in a given record. In case the sp.data dataframe does not include explicit missing competitors, here is a somewhat convoluted way for setting zeros to it so that for each focal sp, all competitor sp are included. 
@@ -123,19 +127,17 @@ sp.data <- droplevels(subset(sp.data, fitness > 0))
 Get independent $\lambda$ values and append them to a dataframe
 
 ```{r}
-data(param_estimates)
-
 lambda.values <- data.frame(sp = sp.names,lambda = 0, sigma = 0)
 
 # from which model and optimization method are we taking estimates?
 estimates.model <- "BH_5" #Beverton-holt model number 5
-estimates.method <- "optim_NM"
+estimates.method <- "optim_L-BFGS-B"
 
 # gather lambda from fitted data
 for(i.sp in 1:length(sp.names)){
-  if(!is.null(param.matrices[[sp.names[i.sp]]])){
-    lambda.values$lambda[lambda.values$sp == sp.names[i.sp]] <- param.matrices[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$lambda
-    lambda.values$sigma[lambda.values$sp == sp.names[i.sp]] <- param.matrices[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$sigma
+  if(!is.null(param_estimates[[sp.names[i.sp]]])){
+    lambda.values$lambda[lambda.values$sp == sp.names[i.sp]] <- param_estimates[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$lambda
+    lambda.values$sigma[lambda.values$sp == sp.names[i.sp]] <- param_estimates[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$sigma
   }
 }
 
@@ -145,7 +147,7 @@ lambda.values <- dplyr::arrange(subset(lambda.values, sp %in% sp.data$focal),sp.
 sigma <- mean(lambda.values$sigma)
 ```
 
-Ensure that we only include species that have proper estimates
+Double-check that we only include species that have proper estimates
 
 ```{r}
 sp.data <- subset(sp.data, focal %in% lambda.values$sp & competitor %in% lambda.values$sp)
@@ -249,4 +251,17 @@ if(write.results){
 
 ```
 
+Again, a simple plot showing the variations in competitive effects and responses among species. For that, we have to format the data into a dataframe
+
+```{r}
+er.data <- data.frame(species = sp.names, competitive.effect = ER.list[[1]]$effect, competitive.response = ER.list[[1]]$response)
+
+er.data.long <- gather(er.data,key = "var",value = "value",-species)
+
+er.plot <- ggplot(er.data.long,aes(y = species, x = value, group = var))+
+  geom_point()+
+  facet_grid(.~var, scales = "free_x")+
+  NULL
+er.plot
+```
 

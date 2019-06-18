@@ -3,7 +3,7 @@ title: "Plot pairwise species coexistence"
 output: rmarkdown::html_vignette
 author: cxr team
 vignette: >
-  %\VignetteIndexEntry{Multi-species parameter optimization}
+  %\VignetteIndexEntry{Coexistence plot}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
@@ -20,7 +20,7 @@ data(species_rates)
 First, compile the parameters from the original results, which are in a nested list. We will use the estimates from the most complex model (BH_5), and the optimization method ...
 
 ```{r}
-sp.names <- sort(unique(names(param.matrices)))
+sp.names <- sort(unique(names(param_estimates)))
 alpha.matrix <- matrix(0,nrow = length(sp.names),ncol = length(sp.names))
 lambda.values <- numeric(length(sp.names))
 names(lambda.values) <- sp.names
@@ -29,8 +29,8 @@ rownames(alpha.matrix) <- colnames(alpha.matrix) <- sp.names
 estimates.model <- "BH_4"
 estimates.method <- "optim_NM"
 for(i.sp in 1:length(sp.names)){
-  lambda.values[i.sp] <- param.matrices[[i.sp]][[estimates.model]][[estimates.method]]$lambda
-  alpha.matrix[i.sp,] <- param.matrices[[i.sp]][[estimates.model]][[estimates.method]]$alpha[sp.names]
+  lambda.values[i.sp] <- param_estimates[[i.sp]][[estimates.model]][[estimates.method]]$lambda
+  alpha.matrix[i.sp,] <- param_estimates[[i.sp]][[estimates.model]][[estimates.method]]$alpha[sp.names]
 }
 # for(i.sp in 1:length(sp.names)){
 #   lambda.values[i.sp] <- param_estimates[[i.sp]][[estimates.model]][[estimates.method]]$lambda

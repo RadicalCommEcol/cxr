@@ -37,5 +37,6 @@ log-likelihood value
 }
 \description{
 These functions return the negative log-likelihood of the data
-given the model and parameters. TODO: BH_5 is $F_i = \lambda_i/(1+\alpha_{ij}*N_{j})$
+given the model and parameters. BH_5 is 
+\eqn{F_i = \frac{\lambda_i + \sum_k b_k \Theta_{i,k}}{1+\sum_j(\alpha_{ij} +\sum_k b_k \phi_{i,j,k})N_{j}}}
 }

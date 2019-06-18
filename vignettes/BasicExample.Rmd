@@ -3,7 +3,7 @@ title: "Get started with cxr"
 output: rmarkdown::html_vignette
 author: cxr team
 vignette: >
-  %\VignetteIndexEntry{Multi-species parameter optimization}
+  %\VignetteIndexEntry{Getting started}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
