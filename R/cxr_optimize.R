@@ -294,7 +294,7 @@ cxr_optimize <- function(fitness.model,
                                    alpha.cov.length = length(init.alpha.cov),
                                    num.competitors = num.competitors,
                                    num.covariates = num.covariates)
-
+print(optim.params)
     log.likelihood <- optim.result$value
     
     }else{
