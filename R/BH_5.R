@@ -23,7 +23,6 @@
 #' @return log-likelihood value
 #' @export
 BH_5 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms, function_NL){
-  
   pos <- 1
   if("lambda" %in% param.list){
     lambda <- par[pos] ## same as model 1
@@ -61,6 +60,7 @@ BH_5 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
     alpha.cov_NL <- par[pos:(pos+(num.covariates*num.competitors)-1)]
     pos <- pos + (num.covariates*num.competitors)
   }
+ 
   
   sigma <- par[length(par)]
   
@@ -80,8 +80,10 @@ BH_5 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
   cov_term_x <- list()
   if ("alpha.cov_NL" %in% param.list){
     for(v in 1:num.covariates){
-      cov_temp <- focal.cov.matrix[,v]
+      cov_temp <- as.matrix(focal.cov.matrix)[,v]
+      
       for(z in 1:num.competitors){
+       
         cov_term_x[[z+(num.competitors*(v-1))]] <- function_NL(alpha.cov[z+(num.competitors*(v-1))],alpha.cov_NL[z+(num.competitors*(v-1))], cov_temp)  #create  alpha.cov_i*cov_i vector
       }
     }
@@ -109,9 +111,9 @@ BH_5 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
     term <- term + (alpha[z] + cov_term[[z]]) * focal.comp.matrix[,z]  
   }
   pred <- lambda * (num) / term 
+  
   # likelihood as before:
   llik <- dnorm(log.fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
   # return sum of negative log likelihoods
-  print(sum(-1*llik))
   return(sum(-1*llik))
 }

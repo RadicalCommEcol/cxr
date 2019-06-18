@@ -64,9 +64,13 @@ function1 <-function(a,b,x){
   }
 
 function2 <-function(a,b,x){
-  return(a*(1-exp(b*x)))
+  for(i in 1:length(x)){
+    vector <-vector("numeric",length(x))
+    if (x[i]!=0){vector[i]<- (a*x[i]^2/(b+x[i]^2))}
+  }
+  return(vector)
 }
-function_NL <- function1
+function_NL <- function2
 # keep the model definitions in a list, for ease
 fitness.models <- list(BH_1 = BH_1,BH_2 = BH_2,BH_3 = BH_3,BH_4 = BH_4,BH_5 = BH_5)
 
@@ -170,7 +174,7 @@ names(param.matrices) <- focal.sp
 ###############################
 # main loop
 
-for(i.sp in 1:length(focal.sp)){
+for(i.sp in 3:length(focal.sp)){
   
   # subset and prepare the data
   
@@ -223,7 +227,7 @@ for(i.sp in 1:length(focal.sp)){
     }
   }
   # lambda.cov
-  if("lambda.cov" %in% param.list[[1]]){
+  if("lambda.cov" %in% param.list[[2]]){
     if(length(init.lambda.cov) != num.covariates){
       current.init.lambda.cov <- rep(init.lambda.cov[1],num.covariates)
     }else{
@@ -235,7 +239,7 @@ for(i.sp in 1:length(focal.sp)){
   
 
   #lamda.cov_NL
-  if("lambda.cov_NL" %in% param.list[[1]]){
+  if("lambda.cov_NL" %in% param.list[[2]]){
     if(length(init.lambda.cov_NL) != num.covariates){
       current.init.lambda.cov_NL <- rep(init.lambda.cov_NL[1],num.covariates)
     }else{
@@ -244,7 +248,7 @@ for(i.sp in 1:length(focal.sp)){
   }
   
   # alpha.cov
-  if("alpha.cov" %in% param.list[[1]]){
+  if("alpha.cov" %in% param.list[[2]]){
     if(models[1]<=4){
       length.alpha.cov <- num.covariates
     }else if(models[1]>4){
@@ -260,7 +264,7 @@ for(i.sp in 1:length(focal.sp)){
   }
   
   # alpha.cov_NL
-  if("alpha.cov_NL" %in% param.list[[1]]){
+  if("alpha.cov_NL" %in% param.list[[2]]){
     if(models[1]<=4){
       length.alpha.cov_NL <- num.covariates
     }else if(models[1]>4){
@@ -272,7 +276,7 @@ for(i.sp in 1:length(focal.sp)){
       current.init.alpha.cov_NL <- init.alpha.cov_NL  
     }  
   }
-  
+
   # model to optimize  
   for(i.model in 1:length(models)){
     
@@ -307,6 +311,12 @@ for(i.sp in 1:length(focal.sp)){
                                    init.alpha.cov = current.init.alpha.cov,
                                    lower.alpha.cov = lower.alpha.cov,
                                    upper.alpha.cov = upper.alpha.cov,
+                                   init.lambda.cov_NL = current.init.lambda.cov_NL,
+                                   lower.lambda.cov_NL = lower.lambda.cov_NL,
+                                   upper.lambda.cov_NL = upper.lambda.cov_NL,
+                                   init.alpha.cov_NL = current.init.alpha.cov_NL,
+                                   lower.alpha.cov_NL = lower.alpha.cov_NL,
+                                   upper.alpha.cov_NL = upper.alpha.cov_NL,
                                    focal.comp.matrix = focal.comp.matrix,
                                    focal.covariates = focal.covariates,
                                    generate.errors = generate.errors,
@@ -374,9 +384,10 @@ for(i.sp in 1:length(focal.sp)){
     
     # lambda.cov
     if("lambda.cov" %in% param.list[[i.model+1]]){
+     
       if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov)) == 0){
         current.init.lambda.cov <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov
-      }
+         }
     }
     
     # lambda.cov_NL
@@ -388,16 +399,14 @@ for(i.sp in 1:length(focal.sp)){
     
     # alpha.cov
     if("alpha.cov" %in% param.list[[i.model+1]]){
-      print(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)))  
             if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)) == 0){
         current.init.alpha.cov <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov
         # is the current estimate of the appropriate length?
-        if(models[i.model+1] > 4){ print(i.model)
+        if(models[i.model+1] > 4){ 
           if(length(current.init.alpha.cov) == num.covariates){
             current.init.alpha.cov <- rep(current.init.alpha.cov,num.competitors)
           }
         }# if model > 4
-        print(current.init.alpha.cov)
       }
     }
     
@@ -406,7 +415,7 @@ for(i.sp in 1:length(focal.sp)){
       if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov_NL)) == 0){
         current.init.alpha.cov_NL <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov_NL
         # is the current estimate of the appropriate length?
-        if(i.model > 4){
+        if(models[i.model+1] > 4){
           if(length(current.init.alpha.cov_NL) == num.covariates){
             current.init.alpha.cov_NL <- rep(current.init.alpha.cov_NL,num.competitors)
           }
