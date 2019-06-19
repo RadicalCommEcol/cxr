@@ -19,6 +19,7 @@ library(tidyverse)
 #' giving the effect of the covariate in question over each element of the interaction matrix. 
 #' 
 #' @return dataset with a fitness metric calculated for each focal species and observation, according to the fitness model selected
+#' @import stats
 #' @export
 GenerateTestData <- function(focal.sp = 1,
                              num.sp = 2,

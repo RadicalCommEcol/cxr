@@ -13,6 +13,7 @@ License: MIT + file LICENSE
 Depends:
   R (>= 3.5)
 Imports:
+  stats,
   nlme,
   tidyverse
 RoxygenNote: 6.1.1

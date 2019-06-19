@@ -21,6 +21,7 @@
 #' @param nsamples how many bootstrap samples to compute.
 #'
 #' @return 1d vector, the standard error of each parameter in init.par
+#' @import stats 
 #' @export
 SEbootstrap <- function(fitness.model,
                         optim.method,
@@ -99,7 +100,7 @@ SEbootstrap <- function(fitness.model,
       }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
     }else if(optim.method == "nloptr_CRS2_LM"){
       tryCatch({
-      my.boot.par <- nloptr(x0 = init.par,eval_f = fitness.model,opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
+      my.boot.par <- nloptr::nloptr(x0 = init.par,eval_f = fitness.model,opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
                             lb = lower.bounds,
                             ub = upper.bounds,
                             param.list = param.list,
@@ -113,7 +114,7 @@ SEbootstrap <- function(fitness.model,
       }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
     }else if(optim.method == "nloptr_ISRES"){
       tryCatch({
-      my.boot.par <- nloptr(x0 = init.par,eval_f = fitness.model,opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e3),
+      my.boot.par <- nloptr::nloptr(x0 = init.par,eval_f = fitness.model,opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e3),
                             lb = lower.bounds,
                             ub = upper.bounds,
                             param.list = param.list,
@@ -127,7 +128,7 @@ SEbootstrap <- function(fitness.model,
       }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
     }else if(optim.method == "nloptr_DIRECT_L_RAND"){
       tryCatch({
-      my.boot.par <- nloptr(x0 = init.par,eval_f = fitness.model,opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e3),
+      my.boot.par <- nloptr::nloptr(x0 = init.par,eval_f = fitness.model,opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e3),
                             lb = lower.bounds,
                             ub = upper.bounds,
                             param.list = param.list,
@@ -141,7 +142,7 @@ SEbootstrap <- function(fitness.model,
       }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
     }else if(optim.method == "GenSA"){
       tryCatch({
-      my.boot.par <- GenSA(par = init.par,fn = fitness.model,
+      my.boot.par <- GenSA::GenSA(par = init.par,fn = fitness.model,
                            lower = lower.bounds,
                            upper = upper.bounds, 
                            control = list(maxit = 1e2), 

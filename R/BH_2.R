@@ -18,6 +18,7 @@
 #' to look for it in \code{par}, and will not consider it here. In this model, \code{lambda.cov} and \code{alpha.cov} are not considered.
 #'
 #' @return log-likelihood value
+#' @import stats 
 #' @export
 BH_2 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms){
   pos <- 1

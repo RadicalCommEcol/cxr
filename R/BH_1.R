@@ -13,6 +13,7 @@
 #' @param fixed.terms not used in BH_1
 #'
 #' @return log-likelihood value
+#' @import stats 
 #' @export
 BH_1 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms){
   #lambda and sigma parameters for the normal distribution

@@ -153,7 +153,7 @@ ER_SEbootstrap <- function(effect.response.model,
       }
       my.boot.par <- my.boot.par$par
       
-    }else if(optim.methods[i.method] == "optim_L-BGFS-B"){
+    }else if(optim.method == "optim_L-BGFS-B"){
       
       if(optimize.lambda){
         tryCatch({
@@ -190,11 +190,11 @@ ER_SEbootstrap <- function(effect.response.model,
       
       my.boot.par <- my.boot.par$par
       
-    }else if(optim.methods[i.method] == "nloptr_CRS2_LM"){
+    }else if(optim.method == "nloptr_CRS2_LM"){
       
       if(optimize.lambda){
         tryCatch({
-        my.boot.par <- nloptr(x0 = init.par,
+        my.boot.par <- nloptr::nloptr(x0 = init.par,
                               eval_f = effect.response.model,
                               opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
                               lb = lower.bounds,
@@ -206,7 +206,7 @@ ER_SEbootstrap <- function(effect.response.model,
         }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
       }else{
         tryCatch({
-        my.boot.par <- nloptr(x0 = init.par,
+        my.boot.par <- nloptr::nloptr(x0 = init.par,
                               eval_f = effect.response.model,
                               opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),
                               lb = lower.bounds,
@@ -221,11 +221,11 @@ ER_SEbootstrap <- function(effect.response.model,
 
       my.boot.par <- my.boot.par$solution
       
-    }else if(optim.methods[i.method] == "nloptr_ISRES"){
+    }else if(optim.method == "nloptr_ISRES"){
       
       if(optimize.lambda){
         tryCatch({
-        my.boot.par <- nloptr(x0 = init.par,
+        my.boot.par <- nloptr::nloptr(x0 = init.par,
                               eval_f = effect.response.model,
                               opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e3),
                               lb = lower.bounds,
@@ -237,7 +237,7 @@ ER_SEbootstrap <- function(effect.response.model,
         }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
       }else{
         tryCatch({
-        my.boot.par <- nloptr(x0 = init.par,
+        my.boot.par <- nloptr::nloptr(x0 = init.par,
                               eval_f = effect.response.model,
                               opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e3),
                               lb = lower.bounds,
@@ -252,11 +252,11 @@ ER_SEbootstrap <- function(effect.response.model,
     
       my.boot.par <- my.boot.par$solution
       
-    }else if(optim.methods[i.method] == "nloptr_DIRECT_L_RAND"){
+    }else if(optim.method == "nloptr_DIRECT_L_RAND"){
       
       if(optimize.lambda){
         tryCatch({
-        my.boot.par <- nloptr(x0 = init.par,
+        my.boot.par <- nloptr::nloptr(x0 = init.par,
                               eval_f = effect.response.model,
                               opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e3),
                               lb = lower.bounds,
@@ -268,7 +268,7 @@ ER_SEbootstrap <- function(effect.response.model,
         }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
       }else{
         tryCatch({
-        my.boot.par <- nloptr(x0 = init.par,
+        my.boot.par <- nloptr::nloptr(x0 = init.par,
                               eval_f = effect.response.model,
                               opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e3),
                               lb = lower.bounds,
@@ -283,11 +283,11 @@ ER_SEbootstrap <- function(effect.response.model,
       
       my.boot.par <- my.boot.par$solution
       
-    }else if(optim.methods[i.method] == "GenSA"){
+    }else if(optim.method == "GenSA"){
       
       if(optimize.lambda){
         tryCatch({
-        my.boot.par <- GenSA(par = init.par,
+        my.boot.par <- GenSA::GenSA(par = init.par,
                              fn = effect.response.model,
                              lower = lower.bounds,
                              upper = upper.bounds, 
@@ -299,7 +299,7 @@ ER_SEbootstrap <- function(effect.response.model,
         }, error=function(e){cat("ER_optimize ERROR :",conditionMessage(e), "\n")})
       }else{
         tryCatch({
-        my.boot.par <- GenSA(par = init.par,
+        my.boot.par <- GenSA::GenSA(par = init.par,
                              fn = effect.response.model,
                              lower = lower.bounds,
                              upper = upper.bounds, 
@@ -314,7 +314,7 @@ ER_SEbootstrap <- function(effect.response.model,
       
       my.boot.par <- my.boot.par$par
       
-    }else if(optim.methods[i.method] == "hydroPSO"){
+    }else if(optim.method == "hydroPSO"){
       
       if(optimize.lambda){
         # suppress annoying output
@@ -349,7 +349,7 @@ ER_SEbootstrap <- function(effect.response.model,
       
       my.boot.par <- my.boot.par$par
       
-    }else if(optim.methods[i.method] == "DEoptimR"){
+    }else if(optim.method == "DEoptimR"){
       
       if(optimize.lambda){
         tryCatch({

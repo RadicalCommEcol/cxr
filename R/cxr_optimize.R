@@ -33,9 +33,11 @@
 #' @param generate.errors boolean, whether to compute bootstrap errors for the fitted parameters. Note that, depending on 
 #' the data, model, and optimization method, this may be computationally expensive.
 #' @param bootstrap.samples how many bootstrap samples to compute.
+#' @param verbose work in progress
 #'
 #' @return list with the fitted parameters, and the loglikelihood of the fit. If a parameter is taken as a constant, the list will return 
 #' the original value given.
+#' @import stats
 #' @export
 cxr_optimize <- function(fitness.model,
                          optim.method,

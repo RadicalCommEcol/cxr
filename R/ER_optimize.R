@@ -552,10 +552,10 @@ ER_optimize <- function(lambda.vector,
         fit.effect.upper.error <- fit.effect + 1.96*errors[(num.sp+1+num.sp):(num.sp+num.sp+num.sp)]
         fit.lambda.cov.lower.error <- fit.lambda.cov - 1.96*errors[(num.sp+num.sp+num.sp+1):(num.sp+num.sp+num.sp+(num.sp*ncol(covariates)))]
         fit.lambda.cov.upper.error <- fit.lambda.cov + 1.96*errors[(num.sp+num.sp+num.sp+1):(num.sp+num.sp+num.sp+(num.sp*ncol(covariates)))]
-        fit.response.cov.lower.error <- fit.response.cov - 1.96*errors[(num.sp+num.sp+num.sp+(num.sp*ncol(covariates))+1):(num.sp+num.sp+num.sp+(num.sp*ncol(covariates))+(num.sp*ncol(covariates)))]
-        fit.response.cov.upper.error <- fit.response.cov + 1.96*errors[(num.sp+num.sp+num.sp+(num.sp*ncol(covariates))+1):(num.sp+num.sp+num.sp+(num.sp*ncol(covariates))+(num.sp*ncol(covariates)))]
-        fit.effect.cov.lower.error <- fit.effect.cov - 1.96*errors[(num.sp+num.sp+num.sp+(num.sp*ncol(covariates))+(num.sp*ncol(covariates))+1):(length(init.par)-1)]
-        fit.effect.cov.upper.error <- fit.effect.cov + 1.96*errors[(num.sp+num.sp+num.sp+(num.sp*ncol(covariates))+(num.sp*ncol(covariates))+1):(length(init.par)-1)]
+        fit.r.cov.lower.error <- fit.r.cov - 1.96*errors[(num.sp+num.sp+num.sp+(num.sp*ncol(covariates))+1):(num.sp+num.sp+num.sp+(num.sp*ncol(covariates))+(num.sp*ncol(covariates)))]
+        fit.r.cov.upper.error <- fit.r.cov + 1.96*errors[(num.sp+num.sp+num.sp+(num.sp*ncol(covariates))+1):(num.sp+num.sp+num.sp+(num.sp*ncol(covariates))+(num.sp*ncol(covariates)))]
+        fit.e.cov.lower.error <- fit.e.cov - 1.96*errors[(num.sp+num.sp+num.sp+(num.sp*ncol(covariates))+(num.sp*ncol(covariates))+1):(length(init.par)-1)]
+        fit.e.cov.upper.error <- fit.e.cov + 1.96*errors[(num.sp+num.sp+num.sp+(num.sp*ncol(covariates))+(num.sp*ncol(covariates))+1):(length(init.par)-1)]
       }      
     }else{
       fit.response.lower.error <- fit.response - 1.96*errors[1:num.sp]
@@ -569,10 +569,10 @@ ER_optimize <- function(lambda.vector,
         fit.effect.upper.error <- fit.effect + 1.96*errors[(num.sp+1):(num.sp+num.sp)]
         fit.lambda.cov.lower.error <- fit.lambda.cov - 1.96*errors[(num.sp+num.sp+1):(num.sp+num.sp+(num.sp*ncol(covariates)))]
         fit.lambda.cov.upper.error <- fit.lambda.cov + 1.96*errors[(num.sp+num.sp+1):(num.sp+num.sp+(num.sp*ncol(covariates)))]
-        fit.response.cov.lower.error <- fit.response.cov - 1.96*errors[(num.sp+num.sp+(num.sp*ncol(covariates))+1):(num.sp+num.sp+(num.sp*ncol(covariates))+(num.sp*ncol(covariates)))]
-        fit.response.cov.upper.error <- fit.response.cov + 1.96*errors[(num.sp+num.sp+(num.sp*ncol(covariates))+1):(num.sp+num.sp+(num.sp*ncol(covariates))+(num.sp*ncol(covariates)))]
-        fit.effect.cov.lower.error <- fit.effect.cov - 1.96*errors[(num.sp+num.sp+(num.sp*ncol(covariates))+(num.sp*ncol(covariates))+1):(length(init.par)-1)]
-        fit.effect.cov.upper.error <- fit.effect.cov + 1.96*errors[(num.sp+num.sp+(num.sp*ncol(covariates))+(num.sp*ncol(covariates))+1):(length(init.par)-1)]
+        fit.r.cov.lower.error <- fit.r.cov - 1.96*errors[(num.sp+num.sp+(num.sp*ncol(covariates))+1):(num.sp+num.sp+(num.sp*ncol(covariates))+(num.sp*ncol(covariates)))]
+        fit.r.cov.upper.error <- fit.r.cov + 1.96*errors[(num.sp+num.sp+(num.sp*ncol(covariates))+1):(num.sp+num.sp+(num.sp*ncol(covariates))+(num.sp*ncol(covariates)))]
+        fit.e.cov.lower.error <- fit.e.cov - 1.96*errors[(num.sp+num.sp+(num.sp*ncol(covariates))+(num.sp*ncol(covariates))+1):(length(init.par)-1)]
+        fit.e.cov.upper.error <- fit.e.cov + 1.96*errors[(num.sp+num.sp+(num.sp*ncol(covariates))+(num.sp*ncol(covariates))+1):(length(init.par)-1)]
       }
 
     }# if-else
