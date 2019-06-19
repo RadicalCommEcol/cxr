@@ -294,9 +294,8 @@ cxr_optimize <- function(fitness.model,
                                    alpha.cov.length = length(init.alpha.cov),
                                    num.competitors = num.competitors,
                                    num.covariates = num.covariates)
-print(optim.params)
     log.likelihood <- optim.result$value
-    
+    print(log.likelihood)
     }else{
       optim.params <- RetrieveParams(optim.params = rep(NA,length(init.par$init.par)),
                                      param.list = param.list,
@@ -347,7 +346,8 @@ print(optim.params)
                           upper.bounds = init.par$upper.bounds,
                           focal.comp.matrix = focal.comp.matrix,
                           focal.covariates = focal.covariates,
-                          nsamples = bootstrap.samples)
+                          nsamples = bootstrap.samples,
+                          function_NL = function_NL)
   }else{
     errors <- rep(NA,length(init.par))
   }

@@ -11,7 +11,8 @@ SEbootstrap <- function(fitness.model,
                         upper.bounds,
                         focal.comp.matrix,
                         focal.covariates,
-                        nsamples){
+                        nsamples,
+                        function_NL = function_NL){
   
   if(nsamples<2){
     print("SEbootstrap: number of bootstrap samples cannot be < 2. Setting bootstrap samples to 2.")
@@ -54,7 +55,8 @@ SEbootstrap <- function(fitness.model,
                            num.covariates = num.covariates, 
                            num.competitors = num.competitors, 
                            focal.covariates = boot.covariates,
-                           fixed.terms = fixed.terms)
+                           fixed.terms = fixed.terms,
+                           function_NL = function_NL)
       my.boot.par <- my.boot.par$par
       }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
     }else if(optim.method == "optim_L-BFGS-B"){
@@ -73,7 +75,8 @@ SEbootstrap <- function(fitness.model,
                            num.covariates = num.covariates, 
                            num.competitors = num.competitors, 
                            focal.covariates = boot.covariates,
-                           fixed.terms = fixed.terms)
+                           fixed.terms = fixed.terms,
+                           function_NL = function_NL)
       my.boot.par <- my.boot.par$par
       }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
     }else if(optim.method == "nloptr_CRS2_LM"){
@@ -87,7 +90,8 @@ SEbootstrap <- function(fitness.model,
                             num.covariates = num.covariates, 
                             num.competitors = num.competitors, 
                             focal.covariates = boot.covariates,
-                            fixed.terms = fixed.terms)
+                            fixed.terms = fixed.terms,
+                            function_NL = function_NL)
       my.boot.par <- my.boot.par$solution
       }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
     }else if(optim.method == "nloptr_ISRES"){
@@ -101,7 +105,8 @@ SEbootstrap <- function(fitness.model,
                             num.covariates = num.covariates, 
                             num.competitors = num.competitors, 
                             focal.covariates = boot.covariates,
-                            fixed.terms = fixed.terms)
+                            fixed.terms = fixed.terms,
+                            function_NL = function_NL)
       my.boot.par <- my.boot.par$solution
       }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
     }else if(optim.method == "nloptr_DIRECT_L_RAND"){
@@ -115,7 +120,8 @@ SEbootstrap <- function(fitness.model,
                             num.covariates = num.covariates, 
                             num.competitors = num.competitors, 
                             focal.covariates = boot.covariates,
-                            fixed.terms = fixed.terms)
+                            fixed.terms = fixed.terms,
+                            function_NL = function_NL)
       my.boot.par <- my.boot.par$solution
       }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
     }else if(optim.method == "GenSA"){
@@ -130,7 +136,8 @@ SEbootstrap <- function(fitness.model,
                            num.covariates = num.covariates, 
                            num.competitors = num.competitors, 
                            focal.covariates = boot.covariates,
-                           fixed.terms = fixed.terms)
+                           fixed.terms = fixed.terms,
+                           function_NL = function_NL)
       my.boot.par <- my.boot.par$par
       }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
     }else if(optim.method == "hydroPSO"){
@@ -146,7 +153,8 @@ SEbootstrap <- function(fitness.model,
                                         num.covariates = num.covariates, 
                                         num.competitors = num.competitors, 
                                         focal.covariates = boot.covariates,
-                                        fixed.terms = fixed.terms)
+                                        fixed.terms = fixed.terms,
+                                        function_NL = function_NL)
 
       my.boot.par <- my.boot.par$par
       }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
@@ -162,7 +170,8 @@ SEbootstrap <- function(fitness.model,
                                         num.covariates = num.covariates, 
                                         num.competitors = num.competitors, 
                                         focal.covariates = boot.covariates,
-                                        fixed.terms = fixed.terms)
+                                        fixed.terms = fixed.terms,
+                                        function_NL = function_NL)
       my.boot.par <- my.boot.par$par
       }, error=function(e){cat("bootstrap routine ERROR :",conditionMessage(e), "\n")})
     }

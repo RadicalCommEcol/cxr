@@ -48,11 +48,10 @@ full.data <- left_join(competition.data,salinity)
 # models to parameterize
 # be aware of including 4 and 5 ONLY if there are covariates
 # otherwise it makes no sense (see equations in Lanuza et al. 2018)
-models <- 3:5
+models <- 3:4
 
 # which values do we optimize for each model?
-param.list <- list(c("lambda","alpha"),c("lambda","alpha","lambda.cov","alpha.cov","lambda.cov_NL","alpha.cov_NL"),
-                   c("lambda","alpha","lambda.cov","alpha.cov","lambda.cov_NL","alpha.cov_NL"))
+param.list <- list(c("lambda","alpha"),c("lambda","alpha","lambda.cov","alpha.cov","lambda.cov_NL","alpha.cov_NL"))
 
 #Choose the non-linearity function
 function1 <-function(a,b,x){
@@ -127,7 +126,7 @@ upper.alpha.cov_NL <- 1e4
 
 # if we want quicker calculations, we can disable 
 # the bootstrapping for the standard errors
-generate.errors <- FALSE
+generate.errors <- TRUE
 bootstrap.samples <- 3
 
 # store results?
@@ -350,7 +349,6 @@ for(i.sp in 3:length(focal.sp)){
       param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov_NL.lower.error <- temp.results$alpha.cov_NL.lower.error
       
       param.matrices[[i.sp]][[i.model]][[i.method]]$log.likelihood <- temp.results$log.likelihood
-      
     }# for i.method
     
     #######################
@@ -402,6 +400,7 @@ for(i.sp in 3:length(focal.sp)){
             if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)) == 0){
         current.init.alpha.cov <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov
         # is the current estimate of the appropriate length?
+        print(models[i.model+1])
         if(models[i.model+1] > 4){ 
           if(length(current.init.alpha.cov) == num.covariates){
             current.init.alpha.cov <- rep(current.init.alpha.cov,num.competitors)
