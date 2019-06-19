@@ -14,10 +14,13 @@ Depends:
   R (>= 3.5)
 Imports:
   stats,
-  nlme,
-  tidyverse
+  nlme
 RoxygenNote: 6.1.1
 Suggests: 
+    ggplot2,
+    tidyr,
+    dplyr,
+    magrittr,
     knitr,
     rmarkdown,
     testthat (>= 0.8.0),
