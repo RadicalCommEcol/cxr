@@ -27,7 +27,8 @@ cxr_optimize <- function(fitness.model,
                          focal.comp.matrix,
                          focal.covariates,
                          generate.errors = FALSE,
-                         bootstrap.samples = 0){
+                         bootstrap.samples = 0,
+                         number.model){
 
   num.competitors <- dim(focal.comp.matrix)[2]
   name.competitors <- colnames(focal.comp.matrix)
@@ -461,6 +462,8 @@ cxr_optimize <- function(fitness.model,
       }
     }
   }
+  AIC <- AIC(log.likelihood,num.covariates, num.competitors,number.model,param.list)
+  print(AIC)
   return.list <- list(lambda = lambda,
                       lambda.lower.error = lambda.lower.error,
                       lambda.upper.error = lambda.upper.error,
@@ -480,7 +483,8 @@ cxr_optimize <- function(fitness.model,
                       alpha.cov_NL = alpha.cov_NL,
                       alpha.cov_NL.lower.error = alpha.cov_NL.lower.error,
                       alpha.cov_NL.upper.error = alpha.cov_NL.upper.error,
-                      log.likelihood = log.likelihood)
+                      log.likelihood = log.likelihood,
+                      AIC = AIC)
   
   return.list[lengths(return.list) == 0] <- NA_character_
   

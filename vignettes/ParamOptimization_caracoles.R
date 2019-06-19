@@ -3,6 +3,7 @@ source("R/BH_2.R")
 source("R/BH_3.R")
 source("R/BH_4.R")
 source("R/BH_5.R")
+source("R/AIC.R")
 source("R/SEbootstrap_caracoles.R")
 source("R/cxr_optimize.R")
 source("R/InitParams.R")
@@ -320,7 +321,8 @@ for(i.sp in 3:length(focal.sp)){
                                    focal.covariates = focal.covariates,
                                    generate.errors = generate.errors,
                                    bootstrap.samples = bootstrap.samples,
-                                   function_NL=function_NL)
+                                   function_NL=function_NL,
+                                   number.model=models[i.model])
       ###############
       # clean up results
       
@@ -349,6 +351,7 @@ for(i.sp in 3:length(focal.sp)){
       param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov_NL.lower.error <- temp.results$alpha.cov_NL.lower.error
       
       param.matrices[[i.sp]][[i.model]][[i.method]]$log.likelihood <- temp.results$log.likelihood
+      param.matrices[[i.sp]][[i.model]][[i.method]]$AIC <- temp.results$AIC
     }# for i.method
     
     #######################
@@ -400,7 +403,6 @@ for(i.sp in 3:length(focal.sp)){
             if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)) == 0){
         current.init.alpha.cov <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov
         # is the current estimate of the appropriate length?
-        print(models[i.model+1])
         if(models[i.model+1] > 4){ 
           if(length(current.init.alpha.cov) == num.covariates){
             current.init.alpha.cov <- rep(current.init.alpha.cov,num.competitors)
