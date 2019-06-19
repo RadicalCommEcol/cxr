@@ -464,6 +464,7 @@ cxr_optimize <- function(fitness.model,
   }
   AIC <- AIC(log.likelihood,num.covariates, num.competitors,number.model,param.list)
   print(AIC)
+  print("he")
   return.list <- list(lambda = lambda,
                       lambda.lower.error = lambda.lower.error,
                       lambda.upper.error = lambda.upper.error,
