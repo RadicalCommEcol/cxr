@@ -1,5 +1,3 @@
-library(tidyverse)
-
 #' Generate simulated competition data
 #'
 #' @param focal.sp number of focal species

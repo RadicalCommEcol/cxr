@@ -211,7 +211,7 @@ cxr_optimize <- function(fitness.model,
     }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "nloptr_CRS2_LM"){
     tryCatch({
-    optim.result <- nloptr(x0 = init.par$init.par,
+    optim.result <- nloptr::nloptr(x0 = init.par$init.par,
                            eval_f = fitness.model,
                            opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e4),
                            lb = init.par$lower.bounds,
@@ -226,7 +226,7 @@ cxr_optimize <- function(fitness.model,
     }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "nloptr_ISRES"){
     tryCatch({
-    optim.result <- nloptr(x0 = init.par$init.par,
+    optim.result <- nloptr::nloptr(x0 = init.par$init.par,
                            eval_f = fitness.model,
                            opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e4),
                            lb = init.par$lower.bounds,
@@ -241,7 +241,7 @@ cxr_optimize <- function(fitness.model,
     }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "nloptr_DIRECT_L_RAND"){
     tryCatch({
-    optim.result <- nloptr(x0 = init.par$init.par,
+    optim.result <- nloptr::nloptr(x0 = init.par$init.par,
                            eval_f = fitness.model,
                            opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e4),
                            lb = init.par$lower.bounds,
@@ -256,7 +256,7 @@ cxr_optimize <- function(fitness.model,
     }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "GenSA"){
     tryCatch({
-    optim.result <- GenSA(par = init.par$init.par,
+    optim.result <- GenSA::GenSA(par = init.par$init.par,
                           fn = fitness.model,
                           lower = init.par$lower.bounds,
                           upper = init.par$upper.bounds, 

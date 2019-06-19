@@ -24,7 +24,6 @@ We start loading the package and the associated dataset. We set up 9 plots [...]
 
 ```{r}
 library(cxr)
-library(tidyverse)
 data(competition)
 data(salinity)
 ```
@@ -189,7 +188,7 @@ names(param_estimates) <- focal.sp
 
 Now, we are ready to go, species by species, performing the analysis. As the main function, \code{cxr_optimize}, accepts the input for a single species, we code a loop for going through all species. Inside this loop, we include the following steps:
 - 1) subset the competition data for the focal species 
-- 2) generate the actual initial values, considering all situations. Remember that, depending on the model, some parameters will have different length. For example, $\alpha$ is a single value in model 2 and a matrix in model 3 onwards. Thus, for species **i**, $alpha_{ij}$ is a vector of length equal to the number of competitor species.
+- 2) generate the actual initial values, considering all situations. Remember that, depending on the model, some parameters will have different length. For example, $\alpha$ is a single value in model 2 and a matrix in model 3 onwards. Thus, for species *i*, $alpha_{ij}$ is a vector of length equal to the number of competitor species.
 - 3) the actual call to \code{cxr_optimize}
 - 4) store the results in the nested list we created above
 - 5) update the initial values to be passed on to the next model

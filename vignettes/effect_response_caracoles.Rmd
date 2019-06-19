@@ -16,7 +16,8 @@ In this example we calculate per-species competitive responses and effects, as o
 
 ```{r}
 library(cxr)
-library(tidyverse)
+# for usign the pipe operator, %>%
+library(magrittr)
 data(competition)
 data(param_estimates)
 ```
@@ -65,7 +66,7 @@ write.results <- FALSE
 It is possible to estimate, alongside competitive effects and responses, the effect of covariates over these terms. For simplicity, we will assume no effect of covariates in this example, but their addition is similar to the workflow exemplified in the vignette \code{Multi-species parameter optimization}. The dataset included with the package includes observations from 2016, but here we provide general code for any number of years (or sampling campaigns). We group observations in year x site records, where a site is a subplot within a specific plot (e.g. subplot A1 of plot 1).
 
 ```{r}
-sp.data <- competition %>% group_by(year,plot,subplot,focal,competitor) %>% summarise(seed = sum(seed),number = sum(number))
+sp.data <- competition %>% dplyr::group_by(year,plot,subplot,focal,competitor) %>% dplyr::summarise(seed = sum(seed),number = sum(number))
 names(sp.data)[which(names(sp.data) == "seed")] <- "fitness"
 sp.data$site <- paste(sp.data$year,sp.data$plot,sp.data$subplot,sep="_")
 sp.data <- sp.data[,c("site","focal","fitness","competitor","number")]

@@ -8,7 +8,7 @@
 #' @param survival.rate annual survival of ungerminated seed in the soil
 #' @param competitive.response parameter reflecting the species' sensitivity to competition
 #'
-#' @return competitive ability of the species
+#' @return single numeric value, competitive ability of the species
 #' @export
 #'
 CompetitiveAbility <- function(lambda, germ.rate = NULL, survival.rate = NULL,competitive.response){

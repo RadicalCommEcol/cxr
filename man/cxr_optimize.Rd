@@ -66,6 +66,8 @@ in a given observation.}
 the data, model, and optimization method, this may be computationally expensive.}
 
 \item{bootstrap.samples}{how many bootstrap samples to compute.}
+
+\item{verbose}{work in progress}
 }
 \value{
 list with the fitted parameters, and the loglikelihood of the fit. If a parameter is taken as a constant, the list will return 

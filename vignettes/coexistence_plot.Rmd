@@ -12,7 +12,6 @@ In this document, we draw the coexistence region of our plant community and loca
 
 ```{r}
 library(cxr)
-library(ggplot2)
 data(param_estimates)
 data(species_rates)
 ```
@@ -105,11 +104,11 @@ coex.plot <- ggplot2::ggplot() +
                   xlim = c(-my.lim.x,my.lim.x),
                   ylim = c(1/my.lim.y, my.lim.y)) +
   # axes, legend, etc
-  ggplot2:: xlab(expression(paste("(1 - ", rho, " )", sep = ""))) + 
+  ggplot2::xlab(expression(paste("(1 - ", rho, " )", sep = ""))) + 
   ggplot2::ylab(expression(paste("Fitness ratio ( ", frac(italic(f[2]), italic(f[1])), " )", sep=""))) +
   ggplot2::theme(legend.position = "none", 
-        axis.title.y = element_text(angle = 90), 
-        axis.title = element_text(size = 20)) +
+        axis.title.y = ggplot2::element_text(angle = 90), 
+        axis.title = ggplot2::element_text(size = 20)) +
   NULL
 coex.plot
 ```

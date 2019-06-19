@@ -17,7 +17,7 @@ CompetitiveAbility(lambda, germ.rate = NULL, survival.rate = NULL,
 \item{competitive.response}{parameter reflecting the species' sensitivity to competition}
 }
 \value{
-competitive ability of the species
+single numeric value, competitive ability of the species
 }
 \description{
 Calculates the competitive ability of a species following eq. S2 of Godoy et al. (2014). If germ.rate and survival.rate are provided, 

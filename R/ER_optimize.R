@@ -52,6 +52,7 @@
 #' the data and optimization method, this may be computationally expensive.
 #' @param bootstrap.samples how many bootstrap samples to compute.
 #' @return list with estimated species values for e, r, lambda (optional), and if covariates are given, the effects of covariates on lambda, r, and e.
+#' @import stats
 #' @export
 #'
 ER_optimize <- function(lambda.vector,
