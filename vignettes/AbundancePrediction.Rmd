@@ -16,6 +16,7 @@ First, load the package
 
 ```{r}
 library(cxr)
+library(ggplot2)
 ```
 
 Specify basic information: how many timesteps are we projecting, and the details of the data we are going to simulate

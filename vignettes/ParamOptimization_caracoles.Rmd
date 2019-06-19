@@ -24,6 +24,7 @@ We start loading the package and the associated dataset. We set up 9 plots [...]
 
 ```{r}
 library(cxr)
+library(tidyverse)
 data(competition)
 data(salinity)
 ```
@@ -91,8 +92,8 @@ Here we specify which optimization methods to use. You can include more than one
 
 ```{r}
 # optimization methods to use
-optim.methods <- c("optim_NM",
-                   "optim_L-BFGS-B"
+optim.methods <- c("optim_NM"
+                   # "optim_L-BFGS-B"
                   # "nloptr_CRS2_LM"
                    # "nloptr_ISRES"
                    # "nloptr_DIRECT_L_RAND"
@@ -110,7 +111,7 @@ init.par.method <- optim.methods[1]
 init.method.num <- which(optim.methods == init.par.method)
 ```
 
-We also need to specify the initial values for the first model (model 3, in this example). If you have independent estimates of any parameter, comment out the appropriate lines
+We also need to specify the initial values for the first model (model 3, in this example). If you have independent estimates of any parameter, comment out the appropriate lines. Note that some of the optimization methods (e.g. optim-LFGS-B) fail with lower bounds equal to zero. Hence the small, but positive, values.
 
 ```{r}
 # values for initial estimates of parameters. 
@@ -123,15 +124,15 @@ lower.sigma <- 1e-5
 upper.sigma <- 1
 # alpha
 init.alpha <- 1e-4
-lower.alpha <- 1e-5
+lower.alpha <- 1e-10
 upper.alpha <- 1e5
 # lambda.cov
 init.lambda.cov <- 1
-lower.lambda.cov <- 0
+lower.lambda.cov <- 1e-10
 upper.lambda.cov <- 1e4
 # alpha.cov
 init.alpha.cov <- 1
-lower.alpha.cov <- 0
+lower.alpha.cov <- 1e-10
 upper.alpha.cov <- 1e4
 ```
 
@@ -381,17 +382,17 @@ for(i.sp in 1:length(focal.sp)){
           }# if model > 4
         }
       }# alpha.cov
-    
+    }# if still models to run
   }# for i.model
 }# for i.sp
 
 ```
 
-If we set the flag, the nested list will be written to disk. The list structure is very convenient for handling these results in R, as it maintains the nested design of the parameterization (per species, model, and optimization method). However, it may also be necessary to have the results as dataframes and csv files, e.g. for plotting. Here we build four dataframes for the different sets of parameters: lambda, alpha, lambda.cov, and alpha.cov and store all results. This assumes that covariates are named, so the vector from the list are also named.
+If we set the flag, the nested list will be written to disk as a .RData file. The list structure is very convenient for handling these results in R, as it maintains the nested design of the parameterization (per species, model, and optimization method). However, it may also be necessary to have the results as dataframes and csv files, e.g. for plotting. Here we build four dataframes, in long format, for the different sets of parameters: lambda, alpha, lambda.cov, and alpha.cov. This assumes that covariates are named, so the vectors returned from the list are also named.
 
 ```{r}
 if(write.results){
-  save(param_estimates,file = "./results/param_estimates.Rdata")
+  # save(param_estimates,file = "./results/param_estimates.Rdata")
   
   # just in case it is a factor
   focal.sp <- sort(as.character(focal.sp))
@@ -413,14 +414,14 @@ if(write.results){
   alpha.values$alpha.lower <- 0
   alpha.values$alpha.upper <- 0
   
-  # lambda.cov -- covariate included "by hand"
+  # lambda.cov
   lambda.cov.values <- expand.grid(focal.sp,my.models,optim.methods,my.covariates)
   names(lambda.cov.values) <- c("species","model","method","covariate")
   lambda.cov.values$lambda.cov <- 0
   lambda.cov.values$lambda.cov.lower <- 0
   lambda.cov.values$lambda.cov.upper <- 0
   
-  # alpha.cov -- covariate included "by hand"
+  # alpha.cov
   alpha.cov.values <- expand.grid(focal.sp,competitors,my.models,optim.methods,my.covariates)
   names(alpha.cov.values) <- c("focal","competitor","model","method","covariate")
   alpha.cov.values$alpha.cov <- 0
@@ -495,10 +496,10 @@ if(write.results){
     }# for each model
   }# for each sp
   
-  write.csv(lambda.values,file = "./results/lambda_values.csv",sep = ";")
-  write.csv(lambda.values,file = "./results/alpha_values.csv",sep = ";")
-  write.csv(lambda.values,file = "./results/lambda_cov_values.csv",sep = ";")
-  write.csv(lambda.values,file = "./results/alpha_cov_values.csv",sep = ";")
+  # write.csv(lambda.values,file = "./results/lambda_values.csv",sep = ";")
+  # write.csv(lambda.values,file = "./results/alpha_values.csv",sep = ";")
+  # write.csv(lambda.values,file = "./results/lambda_cov_values.csv",sep = ";")
+  # write.csv(lambda.values,file = "./results/alpha_cov_values.csv",sep = ";")
   
 }
 ```

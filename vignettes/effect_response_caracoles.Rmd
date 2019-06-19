@@ -115,7 +115,7 @@ for(i.site in 1:length(sites)){
 missing.data <- droplevels(subset(missing.data,competitor != "0"))
 
 sp.data <- rbind(sp.data,missing.data)
-sp.data <- arrange(sp.data, focal, site, competitor)
+sp.data <- dplyr::arrange(sp.data, focal, site, competitor)
 ```
 
 Discard focal species with no seeds
@@ -251,16 +251,16 @@ if(write.results){
 
 ```
 
-Again, a simple plot showing the variations in competitive effects and responses among species. For that, we have to format the data into a dataframe
+Next, a simple plot showing the variations in competitive effects and responses among species. For that, we have to format the data into a dataframe
 
 ```{r}
 er.data <- data.frame(species = sp.names, competitive.effect = ER.list[[1]]$effect, competitive.response = ER.list[[1]]$response)
 
-er.data.long <- gather(er.data,key = "var",value = "value",-species)
+er.data.long <- tidyr::gather(er.data,key = "var",value = "value",-species)
 
-er.plot <- ggplot(er.data.long,aes(y = species, x = value, group = var))+
-  geom_point()+
-  facet_grid(.~var, scales = "free_x")+
+er.plot <- ggplot2::ggplot(er.data.long,ggplot2::aes(y = species, x = value, group = var))+
+  ggplot2::geom_point()+
+  ggplot2::facet_grid(.~var, scales = "free_x")+
   NULL
 er.plot
 ```

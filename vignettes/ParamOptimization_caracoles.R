@@ -106,10 +106,10 @@ upper.alpha.cov <- 1e4
 # if we want quicker calculations, we can disable 
 # the bootstrapping for the standard errors
 generate.errors <- TRUE
-bootstrap.samples <- 100
+bootstrap.samples <- 3
 
 # store results?
-write.results <- TRUE
+write.results <- FALSE
 
 ##############################
 # initialize data structures

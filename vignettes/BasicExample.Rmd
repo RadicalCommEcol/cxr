@@ -23,7 +23,7 @@ library(cxr)
 data(competition)
 ```
 
-The \code{competition} dataset includes observation from **20** different plant species. We will subset the information to consider only two of them, ...
+The \code{competition} dataset includes observation from *20* different plant species. We will subset the information to consider only two of them, *Chamaemelum fuscatum* and *Leontodon maroccanus*
 
 ```{r}
 my.sp <- c("CHFU", "LEMA")

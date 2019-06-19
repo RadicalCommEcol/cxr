@@ -26,16 +26,12 @@ lambda.values <- numeric(length(sp.names))
 names(lambda.values) <- sp.names
 rownames(alpha.matrix) <- colnames(alpha.matrix) <- sp.names
 # from which model and optimization method are we gathering parameters
-estimates.model <- "BH_4"
-estimates.method <- "optim_NM"
+estimates.model <- "BH_5"
+estimates.method <- "optim_L-BFGS-B"
 for(i.sp in 1:length(sp.names)){
   lambda.values[i.sp] <- param_estimates[[i.sp]][[estimates.model]][[estimates.method]]$lambda
   alpha.matrix[i.sp,] <- param_estimates[[i.sp]][[estimates.model]][[estimates.method]]$alpha[sp.names]
 }
-# for(i.sp in 1:length(sp.names)){
-#   lambda.values[i.sp] <- param_estimates[[i.sp]][[estimates.model]][[estimates.method]]$lambda
-#   alpha.matrix[i.sp,] <- param_estimates[[i.sp]][[estimates.model]][[estimates.method]]$alpha[sp.names]
-# }
 ```
 
 Now, we build a dataframe with all unique pairwise combinations of species
@@ -65,9 +61,8 @@ and compute the average fitness ratio and niche overlap between pairs
 # gather fitness ratio/niche overlap between each pair
 for(i.pair in 1:nrow(pairwise.ratios)){
   my.sp <- c(pairwise.ratios$sp1[i.pair],pairwise.ratios$sp2[i.pair])
-  ########### TEST ONLY!!! remove ABS
-  my.matrix <- abs(alpha.matrix[my.sp,my.sp])
-  ###########
+  my.matrix <- alpha.matrix[my.sp,my.sp]
+  
   pairwise.ratios$fitness.ratio[i.pair] <- AvgFitnessRatio(lambda = lambda.values[my.sp],
                                                            germ.rate = species_rates$germination[species_rates$code %in% my.sp],
                                                            survival.rate = species_rates$`seed survival`[species_rates$code %in% my.sp],
@@ -96,23 +91,23 @@ my.lim.y = 1.7
 and the code for the plot
 
 ```{r}
-coex.plot <- ggplot() + 
-  geom_line(data = lines, aes(x = x, y = y,linetype = fun,group = fun), col = "black") +
+coex.plot <- ggplot2::ggplot() + 
+  ggplot2::geom_line(data = lines, ggplot2::aes(x = x, y = y,linetype = fun,group = fun), col = "black") +
   # grid lines
-  geom_abline(intercept = 0, slope = 0, lty = 2, col = "darkgrey") +
-  geom_vline(xintercept = 0, lty = 2, col = "darkgrey") +
+  ggplot2::geom_abline(intercept = 0, slope = 0, lty = 2, col = "darkgrey") +
+  ggplot2::geom_vline(xintercept = 0, lty = 2, col = "darkgrey") +
   # points
-  geom_point(data = pairwise.ratios, aes(x = (1 - niche.overlap), y = log(fitness.ratio))) +
+  ggplot2::geom_point(data = pairwise.ratios, ggplot2::aes(x = (1 - niche.overlap), y = log(fitness.ratio))) +
   # log-scale
-  scale_y_log10() +
+  ggplot2::scale_y_log10() +
   # # trim to desired coords
-  coord_cartesian(expand = c(0, 0),
+  ggplot2::coord_cartesian(expand = c(0, 0),
                   xlim = c(-my.lim.x,my.lim.x),
                   ylim = c(1/my.lim.y, my.lim.y)) +
   # axes, legend, etc
-  xlab(expression(paste("(1 - ", rho, " )", sep = ""))) + 
-  ylab(expression(paste("Fitness ratio ( ", frac(italic(f[2]), italic(f[1])), " )", sep=""))) +
-  theme(legend.position = "none", 
+  ggplot2:: xlab(expression(paste("(1 - ", rho, " )", sep = ""))) + 
+  ggplot2::ylab(expression(paste("Fitness ratio ( ", frac(italic(f[2]), italic(f[1])), " )", sep=""))) +
+  ggplot2::theme(legend.position = "none", 
         axis.title.y = element_text(angle = 90), 
         axis.title = element_text(size = 20)) +
   NULL
