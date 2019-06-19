@@ -77,11 +77,12 @@ Keep the model definitions in a list, for ease:
 fitness.models <- list(BH_1 = BH_1,BH_2 = BH_2,BH_3 = BH_3,BH_4 = BH_4,BH_5 = BH_5)
 ```
 
-Get back the covariates, after matching with the competition observations. It is important that covariates are passed in a matrix format.
+Get back the covariates, after matching with the competition observations. It is important that covariates are passed in a matrix format. If they are named, the output will also include the names.
 
 ```{r}
 # environmental covariates
 covariates <- as.matrix(full.data[,"sum_salinity"])
+colnames(covariates) <- "sum_salinity"
 # if no covariates, comment above and uncomment here
 # covariates <- 0
 ```
@@ -141,7 +142,7 @@ generate.errors <- TRUE
 bootstrap.samples <- 3
 ```
 
-And we provide a flag for storing or not the results of the analysis
+And a flag for storing or not the results of the analysis
 
 ```{r}
 # store results?
@@ -185,7 +186,7 @@ for(i.sp in 1:length(focal.sp)){
 names(param_estimates) <- focal.sp
 ```
 
-Now, we are ready to go, species by species, performing the analysis. As the main function, \code{cxr_optimize}, accepts the input for a single species, we code a loop for going through all species. Inside this loop, we include the following:
+Now, we are ready to go, species by species, performing the analysis. As the main function, \code{cxr_optimize}, accepts the input for a single species, we code a loop for going through all species. Inside this loop, we include the following steps:
 - 1) subset the competition data for the focal species 
 - 2) generate the actual initial values, considering all situations. Remember that, depending on the model, some parameters will have different length. For example, $\alpha$ is a single value in model 2 and a matrix in model 3 onwards. Thus, for species **i**, $alpha_{ij}$ is a vector of length equal to the number of competitor species.
 - 3) the actual call to \code{cxr_optimize}
@@ -386,13 +387,119 @@ for(i.sp in 1:length(focal.sp)){
 
 ```
 
-Finally, if we set the flag, the results will be written to disk
+If we set the flag, the nested list will be written to disk. The list structure is very convenient for handling these results in R, as it maintains the nested design of the parameterization (per species, model, and optimization method). However, it may also be necessary to have the results as dataframes and csv files, e.g. for plotting. Here we build four dataframes for the different sets of parameters: lambda, alpha, lambda.cov, and alpha.cov and store all results. This assumes that covariates are named, so the vector from the list are also named.
 
 ```{r}
 if(write.results){
   save(param_estimates,file = "./results/param_estimates.Rdata")
+  
+  # just in case it is a factor
+  focal.sp <- sort(as.character(focal.sp))
+  competitors <- sort(names(param_estimates[[1]][[names(fitness.models)[models[models == max(models)]]]][[1]]$alpha))
+  my.models <- names(fitness.models)[models]
+  my.covariates <- c("sum_salinity")
+  
+  # lambda
+  lambda.values <- expand.grid(focal.sp,my.models,optim.methods)
+  names(lambda.values) <- c("species","model","method")
+  lambda.values$lambda <- 0
+  lambda.values$lambda.lower <- 0
+  lambda.values$lambda.upper <- 0
+  
+  # alpha
+  alpha.values <- expand.grid(focal.sp,competitors,my.models,optim.methods)
+  names(alpha.values) <- c("focal","competitor","model","method")
+  alpha.values$alpha <- 0
+  alpha.values$alpha.lower <- 0
+  alpha.values$alpha.upper <- 0
+  
+  # lambda.cov -- covariate included "by hand"
+  lambda.cov.values <- expand.grid(focal.sp,my.models,optim.methods,my.covariates)
+  names(lambda.cov.values) <- c("species","model","method","covariate")
+  lambda.cov.values$lambda.cov <- 0
+  lambda.cov.values$lambda.cov.lower <- 0
+  lambda.cov.values$lambda.cov.upper <- 0
+  
+  # alpha.cov -- covariate included "by hand"
+  alpha.cov.values <- expand.grid(focal.sp,competitors,my.models,optim.methods,my.covariates)
+  names(alpha.cov.values) <- c("focal","competitor","model","method","covariate")
+  alpha.cov.values$alpha.cov <- 0
+  alpha.cov.values$alpha.cov.lower <- 0
+  alpha.cov.values$alpha.cov.upper <- 0
+  
+  # fill up the dataframes
+  for(i.sp in 1:length(focal.sp)){
+    for(i.model in 1:length(my.models)){
+      for(i.method in 1:length(optim.methods)){
+
+        # lambda
+        lambda.pos <- which(lambda.values$species == focal.sp[i.sp] &
+                              lambda.values$model == my.models[i.model] &
+                              lambda.values$method == optim.methods[i.method])
+        lambda.values$lambda[lambda.pos] <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda
+        lambda.values$lambda.lower[lambda.pos] <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.lower.error
+        lambda.values$lambda.upper[lambda.pos] <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.upper.error
+
+        # alpha
+        my.alpha.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha
+        my.alpha.lower.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.lower.error
+        my.alpha.upper.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.upper.error
+
+        alpha.pos <- which(alpha.values$focal == focal.sp[i.sp] &
+                                alpha.values$model == my.models[i.model] &
+                                alpha.values$method == optim.methods[i.method] &
+                                alpha.values$competitor %in% names(my.alpha.vector))
+
+        alpha.values$alpha[alpha.pos] <- my.alpha.vector
+        alpha.values$alpha.lower[alpha.pos] <- my.alpha.lower.vector
+        alpha.values$alpha.upper[alpha.pos] <- my.alpha.upper.vector
+
+        # lambda.cov
+        my.lambda.cov.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov
+        my.lambda.cov.lower.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov.lower.error
+        my.lambda.cov.upper.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov.upper.error
+        
+        # all covariates at once, should be ok
+        lambda.cov.pos <- which(lambda.cov.values$species == focal.sp[i.sp] &
+                                  lambda.cov.values$model == my.models[i.model] &
+                                  lambda.cov.values$method == optim.methods[i.method])
+
+        lambda.cov.values$lambda.cov[lambda.cov.pos] <- my.lambda.cov.vector
+        lambda.cov.values$lambda.cov.lower[lambda.cov.pos] <- my.lambda.cov.lower.vector
+        lambda.cov.values$lambda.cov.upper[lambda.cov.pos] <- my.lambda.cov.upper.vector
+
+        # alpha.cov
+        my.alpha.cov.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov
+        my.alpha.cov.lower.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov.lower.error
+        my.alpha.cov.upper.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov.upper.error
+        
+        my.alpha.cov.comp <- substr(names(my.alpha.cov.vector),str_length(names(my.alpha.cov.vector))-3,str_length(names(my.alpha.cov.vector)))
+        
+        for(i.covariate in 1:length(my.covariates)){
+          my.cov <- my.alpha.cov.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.vector)))]
+          my.lower.cov <- my.alpha.cov.lower.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.lower.vector)))]
+          my.upper.cov <- my.alpha.cov.upper.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.upper.vector)))]
+          
+          alpha.cov.pos <- which(alpha.cov.values$focal == focal.sp[i.sp] &
+                                   alpha.cov.values$model == my.models[i.model] &
+                                   alpha.cov.values$method == optim.methods[i.method] &
+                                   alpha.cov.values$competitor %in% my.alpha.cov.comp & 
+                                   alpha.cov.values$covariate == my.covariates[i.covariate])
+          
+          alpha.cov.values$alpha.cov[alpha.cov.pos] <- my.cov
+          alpha.cov.values$alpha.cov.lower[alpha.cov.pos] <- my.lower.cov
+          alpha.cov.values$alpha.cov.upper[alpha.cov.pos] <- my.upper.cov
+        }
+
+      }# for each method
+    }# for each model
+  }# for each sp
+  
+  write.csv(lambda.values,file = "./results/lambda_values.csv",sep = ";")
+  write.csv(lambda.values,file = "./results/alpha_values.csv",sep = ";")
+  write.csv(lambda.values,file = "./results/lambda_cov_values.csv",sep = ";")
+  write.csv(lambda.values,file = "./results/alpha_cov_values.csv",sep = ";")
+  
 }
 ```
-
-
 
