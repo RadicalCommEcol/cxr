@@ -459,12 +459,26 @@ if(write.results){
   lambda.cov.values$lambda.cov.lower <- 0
   lambda.cov.values$lambda.cov.upper <- 0
   
+  # lambda.cov_NL -- covariate included "by hand"
+  lambda.cov_NL.values <- expand.grid(focal.sp,my.models,optim.methods,my.covariates)
+  names(lambda.cov_NL.values) <- c("species","model","method","covariate")
+  lambda.cov_NL.values$lambda.cov_NL <- 0
+  lambda.cov_NL.values$lambda.cov__NL.lower <- 0
+  lambda.cov_NL.values$lambda.cov_NL.upper <- 0
+  
   # alpha.cov -- covariate included "by hand"
   alpha.cov.values <- expand.grid(focal.sp,competitors,my.models,optim.methods,my.covariates)
   names(alpha.cov.values) <- c("focal","competitor","model","method","covariate")
   alpha.cov.values$alpha.cov <- 0
   alpha.cov.values$alpha.cov.lower <- 0
   alpha.cov.values$alpha.cov.upper <- 0
+  
+  # alpha.cov_NL -- covariate included "by hand"
+  alpha.cov_NL.values <- expand.grid(focal.sp,competitors,my.models,optim.methods,my.covariates)
+  names(alpha.cov_NL.values) <- c("focal","competitor","model","method","covariate")
+  alpha.cov_NL.values$alpha.cov <- 0
+  alpha.cov_NL.values$alpha.cov.lower <- 0
+  alpha.cov_NL.values$alpha.cov.upper <- 0
   
   # fill up the dataframes
   for(i.sp in 1:length(focal.sp)){
@@ -497,6 +511,11 @@ if(write.results){
         my.lambda.cov.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov
         my.lambda.cov.lower.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov.lower.error
         my.lambda.cov.upper.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov.upper.error
+        
+        # lambda.cov_NL
+        my.lambda.cov_NL.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov_NL
+        my.lambda.cov_NL.lower.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov_NL.lower.error
+        my.lambda.cov_NL.upper.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov_NL.upper.error
         
         # all covariates at once, should be ok
         lambda.cov.pos <- which(lambda.cov.values$species == focal.sp[i.sp] &
@@ -533,8 +552,7 @@ if(write.results){
       }# for each method
     }# for each model
   }# for each sp
-  
-  write.csv(lambda.values,file = "./data/lambda_values.csv",sep = ";")
+  write.table(lambda.values, file = "./data/lambda_values.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
   write.csv(lambda.values,file = "./data/alpha_values.csv",sep = ";")
   write.csv(lambda.values,file = "./data/lambda_cov_values.csv",sep = ";")
   write.csv(lambda.values,file = "./data/alpha_cov_values.csv",sep = ";")
