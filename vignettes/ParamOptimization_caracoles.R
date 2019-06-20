@@ -51,7 +51,7 @@ full.data <- left_join(competition.data,salinity)
 models <- 3:4
 
 # which values do we optimize for each model?
-param.list <- list(c("lambda","alpha"),c("lambda","alpha","lambda.cov","alpha.cov","lambda.cov_NL","alpha.cov_NL"))
+param.list <- list(c("lambda","alpha"),c("lambda","alpha","lambda.cov","alpha.cov"))
 
 #Choose the non-linearity function
 function1 <-function(a,b,x){
@@ -69,7 +69,7 @@ function2 <-function(a,b,x){
   }
   return(vector)
 }
-function_NL <- function1
+function_NL <- function2
 # keep the model definitions in a list, for ease
 fitness.models <- list(BH_1 = BH_1,BH_2 = BH_2,BH_3 = BH_3,BH_4 = BH_4,BH_5 = BH_5)
 
@@ -479,7 +479,18 @@ if(write.results){
   alpha.cov_NL.values$alpha.cov <- 0
   alpha.cov_NL.values$alpha.cov.lower <- 0
   alpha.cov_NL.values$alpha.cov.upper <- 0
-  
+  #AIC
+  AIC <-list()
+  for (i in models){
+    AIC[[i]]<-vector("numeric",length(focal.sp))
+    names(AIC[[i]])<-focal.sp
+  }
+  for(i.sp in 1:length(focal.sp)){
+    for(i.model in 1: length(models)){
+      AIC[[models[i.model]]][i.sp]<- param.matrices[[i.sp]][[i.model]][[1]]$AIC
+    }
+  }
+   save(AIC,file="data/AIC.RData")
   #log-likelihood
   llik <-list()
   for (i in models){
@@ -491,7 +502,7 @@ if(write.results){
       llik[[models[i.model]]][i.sp]<- param.matrices[[i.sp]][[i.model]][[1]]$log.likelihood
     }
   }
-  save(llik,file="data/llik.RData")
+  # save(llik,file="data/llik.RData")
     
   # fill up the dataframes
   for(i.sp in 1:length(focal.sp)){
