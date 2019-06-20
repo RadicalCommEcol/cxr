@@ -69,7 +69,7 @@ function2 <-function(a,b,x){
   }
   return(vector)
 }
-function_NL <- function2
+function_NL <- function1
 # keep the model definitions in a list, for ease
 fitness.models <- list(BH_1 = BH_1,BH_2 = BH_2,BH_3 = BH_3,BH_4 = BH_4,BH_5 = BH_5)
 
@@ -173,7 +173,7 @@ names(param.matrices) <- focal.sp
 ###############################
 # main loop
 
-for(i.sp in 1:3){
+for(i.sp in 1:length(focal.sp)){
   
   # subset and prepare the data
   
@@ -480,6 +480,19 @@ if(write.results){
   alpha.cov_NL.values$alpha.cov.lower <- 0
   alpha.cov_NL.values$alpha.cov.upper <- 0
   
+  #log-likelihood
+  llik <-list()
+  for (i in models){
+    llik[[i]]<-vector("numeric",length(focal.sp))
+    names(llik[[i]])<-focal.sp
+  }
+  for(i.sp in 1:length(focal.sp)){
+    for(i.model in 1: length(models)){
+      llik[[models[i.model]]][i.sp]<- param.matrices[[i.sp]][[i.model]][[1]]$log.likelihood
+    }
+  }
+  save(llik,file="data/llik.RData")
+    
   # fill up the dataframes
   for(i.sp in 1:length(focal.sp)){
     for(i.model in 1:length(my.models)){
