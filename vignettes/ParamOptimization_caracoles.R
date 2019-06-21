@@ -21,12 +21,12 @@ library(tidyverse)
 data(competition)
 
 # spread the data from long to wide format
-competition.data <- spread(competition,key = competitor,value = number,fill = 0)
+competition.data <- tidyr::spread(competition,key = competitor,value = number,fill = 0)
 # how many focal species
 focal.sp <- unique(competition.data$focal)
 
 # competition matrix
-comp.matrix <- as.matrix(competition.data[,10:ncol(competition.data)])
+comp.matrix <- as.matrix(competition.data[,9:ncol(competition.data)])
 
 # covariate: salinity
 load(file = "./data/salinity.RData")
@@ -341,7 +341,7 @@ for(i.sp in 1:length(focal.sp)){
 }# for i.sp
 
 if(write.results){
-  save(param_estimates,file = "../temp/results/temp_param_estimates.Rdata")
+  save(param_estimates,file = "../temp/results/param_estimates.RData")
   
   # also, create and store dataframes
   
@@ -447,10 +447,10 @@ if(write.results){
     }# for each model
   }# for each sp
   
-  write.csv(lambda.values,file = "./data/lambda_values.csv",sep = ";")
-  write.csv(lambda.values,file = "./data/alpha_values.csv",sep = ";")
-  write.csv(lambda.values,file = "./data/lambda_cov_values.csv",sep = ";")
-  write.csv(lambda.values,file = "./data/alpha_cov_values.csv",sep = ";")
+  write.table(lambda.values,file = "../temp/results/lambda_values.csv",sep = ";",append = FALSE)
+  write.table(alpha.values,file = "../temp/results/alpha_values.csv",sep = ";",append = FALSE)
+  write.table(lambda.cov.values,file = "../temp/results/lambda_cov_values.csv",sep = ";",append = FALSE)
+  write.table(alpha.cov.values,file = "../temp/results/alpha_cov_values.csv",sep = ";",append = FALSE)
   
 }
 

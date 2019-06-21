@@ -68,11 +68,14 @@ for(i.pair in 1:nrow(pairwise.ratios)){
                                                            pair.matrix = my.matrix)[[3]]
   pairwise.ratios$niche.overlap[i.pair] <- NicheOverlap(pair.matrix = my.matrix)
 }
+
+pairwise.ratios$pair.ID <- paste(pairwise.ratios$sp1,"_",pairwise.ratios$sp2,sep="")
+
 ```
 
 For making the plot, we adapt, simplified, the great example from Ke and Letten (2018), in which they show the regions leading to coexistence, exclusion, and priority effects between species pairs.
 
-First, generate a dataframe for the limits of the different regions, and specify the axes limits
+First, generate a dataframe for the limits of the different regions, and specify the axes limits. In this example, we focus on species pairs that are close to the region of coexistence. Many species pairs display wide average fitness ratios, falling clearly on the exclusion areas.
 
 ```{r}
 x <- seq(1,-1,by=-0.001)
@@ -84,12 +87,13 @@ lines <- data.frame(x = c(x,x),
                     fun = c(rep("y1", times = length(seq(1, -1, by=-0.001))), 
                             rep("y2", times = length(seq(1, -1, by=-0.001)))))
 my.lim.x = 0.5
-my.lim.y = 1.7
+my.lim.y = 2
 ```
 
-and the code for the plot
+the code for the plot itself is
 
-```{r}
+```{r echo=FALSE}
+
 coex.plot <- ggplot2::ggplot() + 
   ggplot2::geom_line(data = lines, ggplot2::aes(x = x, y = y,linetype = fun,group = fun), col = "black") +
   # grid lines
@@ -97,12 +101,15 @@ coex.plot <- ggplot2::ggplot() +
   ggplot2::geom_vline(xintercept = 0, lty = 2, col = "darkgrey") +
   # points
   ggplot2::geom_point(data = pairwise.ratios, ggplot2::aes(x = (1 - niche.overlap), y = log(fitness.ratio))) +
+  ggplot2::geom_text(data = pairwise.ratios, ggplot2::aes(x = (1 - niche.overlap), y = log(fitness.ratio), label = pair.ID), hjust = 0, nudge_y = -0.01, nudge_x = 0.01, check_overlap = TRUE, size = 3)+
   # log-scale
   ggplot2::scale_y_log10() +
   # # trim to desired coords
   ggplot2::coord_cartesian(expand = c(0, 0),
                   xlim = c(-my.lim.x,my.lim.x),
                   ylim = c(1/my.lim.y, my.lim.y)) +
+    # ggplot2::coord_cartesian(expand = c(0, 0),
+    #               xlim = c(-my.lim.x,my.lim.x)) +
   # axes, legend, etc
   ggplot2::xlab(expression(paste("(1 - ", rho, " )", sep = ""))) + 
   ggplot2::ylab(expression(paste("Fitness ratio ( ", frac(italic(f[2]), italic(f[1])), " )", sep=""))) +
