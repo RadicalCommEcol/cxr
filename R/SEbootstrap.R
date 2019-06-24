@@ -55,6 +55,8 @@ SEbootstrap <- function(fitness.model,
     # boot.covariates <- ifelse(is.data.frame(focal.covariates),focal.covariates[my.sample,],0)
     if(is.data.frame(focal.covariates)){
       boot.covariates <- as.data.frame(focal.covariates[my.sample,])
+    }else if(is.matrix(focal.covariates)){
+      boot.covariates <- as.data.frame(focal.covariates[my.sample,])
     }else{
       boot.covariates <- 0
     }
