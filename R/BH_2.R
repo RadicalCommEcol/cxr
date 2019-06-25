@@ -20,7 +20,14 @@
 #' @return log-likelihood value
 #' @import stats 
 #' @export
-BH_2 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms){
+BH_2 <- function(par, 
+                 param.list = c("lambda","alpha"), 
+                 log.fitness, 
+                 focal.comp.matrix, 
+                 num.covariates = NULL, 
+                 num.competitors = NULL, 
+                 focal.covariates = NULL, 
+                 fixed.terms = NULL){
   pos <- 1
   if("lambda" %in% param.list){
     lambda <- par[pos] ## same as model 1

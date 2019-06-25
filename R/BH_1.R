@@ -15,7 +15,14 @@
 #' @return log-likelihood value
 #' @import stats 
 #' @export
-BH_1 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms){
+BH_1 <- function(par, 
+                 param.list = NULL, 
+                 log.fitness, 
+                 focal.comp.matrix = NULL, 
+                 num.covariates = NULL, 
+                 num.competitors = NULL, 
+                 focal.covariates = NULL, 
+                 fixed.terms = NULL){
   #lambda and sigma parameters for the normal distribution
   #(assuming lognormal error- seed data are logged) 
   lambda <- par[1]

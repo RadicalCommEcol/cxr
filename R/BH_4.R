@@ -24,7 +24,14 @@
 #' @return log-likelihood value
 #' @import stats 
 #' @export
-BH_4 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms){
+BH_4 <- function(par, 
+                 param.list, 
+                 log.fitness, 
+                 focal.comp.matrix, 
+                 num.covariates, 
+                 num.competitors, 
+                 focal.covariates, 
+                 fixed.terms){
   
   pos <- 1
   if("lambda" %in% param.list){
