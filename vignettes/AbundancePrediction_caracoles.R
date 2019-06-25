@@ -6,7 +6,7 @@ library(tidyverse)
 timesteps <- 4
 
 ######
-source("./R/BevertonHolt_abundance_models.R")
+source("./R/BH_abundance_5.R")
 source("./R/PredictAbundances.R")
 
 ####################
@@ -28,40 +28,42 @@ covariates$timestep <- covariates$timestep - 2014
 ##############
 # TODO: change when abundances is part of the package
 ##############
-abundances <- readr::read_delim("./data/abundances.csv",delim = ";")
+# abundances <- readr::read_delim("./data/abundances.csv",delim = ";")
 # complete missing sp-year combinations
-abundances <- tidyr::complete(abundances, year,plot,subplot,species, fill = list(individuals = 0, month = 0, day = 0, order = 0))
-
+# abundances <- tidyr::complete(abundance, year,plot,subplot,species, fill = list(individuals = 0, month = 0, day = 0, order = 0))
+abundances <- read.table(file = "../Caracoles/data/abundances.csv",header = T,sep = ";",stringsAsFactors = F)
 ###########
 # read lambda,s,g, and alpha values
-load("./results/param_estimates.Rdata")
+# load("./results/param_estimates.Rdata")
 ##############
-# TODO: change when species.rates is part of the package
+# TODO: change when species_rates is part of the package
 ##############
-species.rates <- readr::read_delim("../Caracoles/raw_data/seed_germination_survival.txt",delim = "\t")
+# species_rates <- readr::read_delim("../Caracoles/raw_data/seed_germination_survival.txt",delim = "\t")
+data(species_rates)
+data(param_estimates)
 
 # only species with germination/survival rates
-sp.names <- sort(unique(species.rates$code))
+sp.names <- sort(as.character(unique(species_rates$code)))
 
 estimates.model <- "BH_5" #Beverton-holt model number 5
-estimates.method <- "optim_NM"
+estimates.method <- "optim_L-BFGS-B"
 
 # gather lambda from fitted data
-species.rates$lambda <- 0
+species_rates$lambda <- 0
 for(i.sp in 1:length(sp.names)){
-  if(!is.null(param.matrices[[sp.names[i.sp]]])){
-    species.rates$lambda[species.rates$code == sp.names[i.sp]] <- param.matrices[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$lambda
+  if(!is.null(param_estimates[[sp.names[i.sp]]])){
+    species_rates$lambda[species_rates$code == sp.names[i.sp]] <- param_estimates[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$lambda
   }
 }
 
 # subset species set to these with valid s,g, and lambda estimates
-species.rates <- subset(species.rates,lambda != 0)
+species_rates <- subset(species_rates,lambda != 0)
 # clean up the species rates dataframe
-sp.par <- species.rates[,c("lambda","germination","seed survival")]
+sp.par <- species_rates[,c("lambda","germination","seed.survival")]
 names(sp.par) <- c("lambda","germ.rate","survival.rate")
 
 # update sp.names
-sp.names <- sort(unique(species.rates$code))
+sp.names <- sort(as.character(unique(species_rates$code)))
 num.sp <- length(sp.names)
 
 # gather the complete competition matrix from the fitted data
@@ -69,17 +71,18 @@ alpha.matrix <- matrix(0,nrow=num.sp,ncol=num.sp)
 rownames(alpha.matrix) <- sp.names
 colnames(alpha.matrix) <- sp.names
 
-estimated.names <- names(param.matrices)
-valid.positions <- match(estimated.names,sp.names)
+# estimated.names <- names(param_estimates)
+# valid.positions <- match(estimated.names,sp.names)
 
 for(i.sp in 1:num.sp){
-  my.sp.alpha <- rep(0,num.sp)
+  # my.sp.alpha <- rep(0,num.sp)
   
   # including a temporary hack for valid sorting of species positions
-  my.sp.alpha <- param.matrices[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$alpha[valid.positions]
-  my.sp.alpha <- my.sp.alpha[!is.na(my.sp.alpha)]
+  my.sp.alpha <- param_estimates[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$alpha
   
-  alpha.matrix[sp.names[i.sp],] <- my.sp.alpha
+  my.alpha.pos <- my.sp.alpha[which(!is.na(match(names(my.sp.alpha),sp.names)))]
+  
+  alpha.matrix[sp.names[i.sp],] <- my.alpha.pos
 }
 
 #####################
@@ -96,7 +99,7 @@ if(num.cov > 0){
   # lambda.cov
   for(i.sp in 1:num.sp){
     for(i.cov in 1:num.cov){
-      lambda.cov[i.sp,i.cov] <- param.matrices[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$lambda.cov[i.cov]
+      lambda.cov[i.sp,i.cov] <- param_estimates[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$lambda.cov[i.cov]
     }
   }
   
@@ -104,7 +107,7 @@ if(num.cov > 0){
   for(i.cov in 1:num.cov){
     alpha.cov[[i.cov]] <- matrix(nrow = num.sp,ncol = num.sp)
     for(i.sp in 1:num.sp){
-      alpha.cov[[i.cov]][i.sp,] <- param.matrices[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$alpha.cov[i.sp+(num.sp*(i.cov-1))]
+      alpha.cov[[i.cov]][i.sp,] <- param_estimates[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$alpha.cov[i.sp+(num.sp*(i.cov-1))]
     }
   }
   
@@ -116,6 +119,7 @@ if(num.cov > 0){
 
 ###################
 # which year to take as a starting point
+# year.abund <- init.abund
 year.abund <- subset(init.abund, year == 2015)
 
 par <- list(sp.par = sp.par, initial.values = year.abund, 
@@ -125,25 +129,24 @@ par <- list(sp.par = sp.par, initial.values = year.abund,
 
 
 abundance.model <- BH_abundance_5
-predicted.abundances <- PredictAbundances(par = par,timesteps = timesteps,abundance.model = abundance.model)
+predicted.abundances <- PredictAbundances(par = par,timesteps = timesteps,abundance.model = abundance.model,return.seeds = F)
 predicted.abundances$timestep <- as.factor(predicted.abundances$timestep)
 predicted.abundances$site <- as.factor(predicted.abundances$site)
 predicted.abundances$sp <- as.factor(predicted.abundances$sp)
 
 # some quick summarising for plotting
-plot.data <- predicted.abundances %>% group_by(timestep,sp) %>% summarise(mean.abund = mean(abundance), sd.abund = sd(abundance))
-
-# mean predicted abundance 
-abund.mean.plot <- ggplot(plot.data,aes(x = timestep,y = mean.abund, group = sp)) + 
-  geom_point(aes(color = sp)) + 
+# plot.data <- predicted.abundances %>% group_by(timestep,sp) %>% summarise(mean.abund = mean(abundance), sd.abund = sd(abundance))
+abund.mean.plot <- ggplot(plot.data,aes(x = timestep,y = mean.abund, group = sp)) +
+  geom_point(aes(color = sp)) +
   geom_line(aes(color = sp)) +
   # geom_errorbar(aes(ymin = mean.abund - sd.abund, ymax = mean.abund + sd.abund))+
   # facet_wrap(site~.,ncol = 4)+
-  # ylim(-10,10)+
+   # ylim(-10,10)+
   NULL
-# abund.mean.plot
+abund.mean.plot
 
 # prepare data for comparing observed vs predicted
+
 obs.pred <- abundances[,c("year","plot","subplot","species","individuals")]
 # timestep to real years
 predicted.abundances$timestep <- as.numeric(as.character(predicted.abundances$timestep)) + 2015
@@ -159,11 +162,24 @@ obs.pred$year <- as.factor(obs.pred$year)
 
 # observed and predicted abundances
 obs.pred.plot <- ggplot(obs.pred,aes(x = individuals,y = predicted,group = species)) + 
-  geom_point(aes(color = species, shape = year)) + 
-  geom_abline(slope = 1) +
-  facet_wrap(plot~., scales = "free_y") +
-  xlim(0,100) + ylim(0,100) +
+  geom_point(aes(color = species))+ #shape = year)) + 
+  geom_abline(slope = 1, color = "lightgrey") +
+  facet_wrap(year~plot, scales = "free", ncol = 9) +
+  # xlim(0,10) + ylim(0,10) +
   NULL
 obs.pred.plot
 
+# only predicted
+pred.mean <- obs.pred %>% group_by(year,plot,species) %>% summarise(all.ind = sum(individuals),all.pred = sum(predicted))
 
+pred.plot <- ggplot(pred.mean,aes(x = year,y = all.pred,group = species)) + 
+  geom_point(aes(color = species))+ #shape = year)) + 
+  geom_line(aes(color = species)) +
+  
+  # geom_abline(slope = 1, color = "lightgrey") +
+  facet_grid(plot~., scales = "free_y") +
+  # xlim(0,10) + ylim(0,10) +
+  NULL
+pred.plot
+
+pred.mean %>% group_by(species) %>% summarise(mean.total = mean(all.pred))
