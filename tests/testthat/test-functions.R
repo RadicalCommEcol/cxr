@@ -102,3 +102,61 @@ test_that("Expected classes", {
   expect_equal(class(results_optimize$log.likelihood), "numeric")
 })
 
+# effect-response function----
+
+# lambda.vector <- focal.lambda
+# e.vector <- runif(2,1,5)
+# r.vector <- runif(2,1,5)
+# lambda.cov <- lambda.cov.orig[1:2,]
+# e.cov <- matrix(runif(4,0.01,0.1),nrow = 2)
+# r.cov <- matrix(runif(4,0.01,0.1),nrow = 2)
+# sigma <- sd(log(test.focal$fitness))
+# lower.e <- rep(1e-5,2)
+# upper.e <- rep(1e2,2)
+# lower.r <- rep(1e-5,2)
+# upper.r <- rep(1e2,2)
+# lower.e.cov <- 1e-5
+# upper.e.cov <- 1e2
+# lower.r.cov <- 1e-5
+# upper.r.cov <- 1e2
+# optim.method <- "optim_L-BFGS-B"
+# sp.data <- test.data
+# sp.data$site <- rep((1:num.obs),2)
+# sp.data <- sp.data[,c("site","focal","sp1","sp2","fitness")]
+# sp.data.long <- tidyr::gather(sp.data,key ="competitor",value = "number",sp1,sp2)
+# generate.errors <- TRUE
+# bootstrap.samples <- 3
+# 
+# # first function
+# optimize.lambda <- TRUE
+# effect.response.model <- EffectResponse_lambda
+# 
+# results_ER <- ER_optimize(lambda.vector = lambda.vector,
+#                           e.vector = e.vector,
+#                           r.vector = r.vector,
+#                           lambda.cov = lambda.cov,
+#                           e.cov = e.cov,
+#                           r.cov = r.cov,
+#                           sigma = init.sigma,
+#                           lambda.lower.bound = lower.lambda,
+#                           lambda.upper.bound = upper.lambda,
+#                           e.lower.bound = lower.e,
+#                           e.upper.bound = upper.e,
+#                           r.lower.bound = lower.r,
+#                           r.upper.bound = upper.r,
+#                           lambda.cov.lower.bound = lower.lambda.cov,
+#                           lambda.cov.upper.bound = upper.lambda.cov,
+#                           e.cov.lower.bound = lower.e.cov,
+#                           e.cov.upper.bound = upper.e.cov,
+#                           r.cov.lower.bound = lower.r.cov,
+#                           r.cov.upper.bound = upper.r.cov,
+#                           sigma.lower.bound = lower.sigma,
+#                           sigma.upper.bound = upper.sigma,
+#                           effect.response.model = effect.response.model,
+#                           optim.method = optim.method,
+#                           sp.data = sp.data.long,
+#                           covariates = focal.covariates,
+#                           optimize.lambda = optimize.lambda,
+#                           generate.errors = generate.errors,
+#                           bootstrap.samples = bootstrap.samples)
+
