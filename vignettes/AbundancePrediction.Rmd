@@ -10,7 +10,7 @@ vignette: >
 
 Another feature of \code{cxr} is the projection of population abundances in time given a population dynamics model and a set of parameters. This feature is available for models with the same set of parameters as the ones provided (i.e. **lambda**, **alpha**, **lambda.cov**, and **alpha.cov**). In the package we include a version of the five Beverton-Holt fecundity models, but users are encouraged to code their own predictive models.
 
-In this document, we exemplify the use of our projection function. We project the abundances of a set of species from a simulated dataset. We use simulated data to show the usage of the function \code{GenerateTestData}, also included in the package.
+In this document, we exemplify the use of our projection function. We project the abundances of a set of species from a simulated dataset, in order to show the usage of the function \code{GenerateTestData}, also included in the package.
 
 First, load the package
 
