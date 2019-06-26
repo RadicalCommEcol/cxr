@@ -50,8 +50,8 @@ GenerateTestData <- function(focal.sp = 1,
     temp.data <- data.frame(focal = rep(focal.sp[i.focal],num.obs))
     
     # neighbour occurrences
-    neigh.data <- matrix(data = round(rpois(num.sp*num.obs,0.5)),nrow = num.obs)
-    colnames(neigh.data) <- paste("sp",as.character(1:num.sp),sep="")
+    neigh.data <- matrix(data = round(rpois(num.sp*num.obs,3)),nrow = num.obs)
+    colnames(neigh.data) <- as.character(1:num.sp)#paste("sp",as.character(1:num.sp),sep="")
     temp.data <- cbind(temp.data,neigh.data)
     
     # covariates
