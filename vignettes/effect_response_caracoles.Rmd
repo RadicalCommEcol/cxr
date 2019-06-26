@@ -48,12 +48,12 @@ optimize.lambda <- FALSE
 # model is different...
 if(optimize.lambda){
   effect.response.model <- EffectResponse_lambda
-  lambda.lower.bound <- 0
-  lambda.upper.bound <- 1e3
+  lower.lambda <- 0
+  upper.lambda <- 1e3
 }else{
   effect.response.model <- EffectResponse
-  lambda.lower.bound <- NA
-  lambda.upper.bound <- NA
+  lower.lambda <- NA
+  upper.lambda <- NA
 }
 ```
 
@@ -154,18 +154,18 @@ Double-check that we only include species that have proper estimates
 sp.data <- subset(sp.data, focal %in% lambda.values$sp & competitor %in% lambda.values$sp)
 ```
 
-Finally, set initial values for e (competitive effects) and r (competitive responses), as well as their lower and upper bounds
+Finally, set initial values for e (competitive effects) and r (competitive responses), as well as their lower and upper bounds. Lower and upper bounds are most likely to be the same for all species, and in that case it is convenient to provide a single value. If we want to specify different values for every species, we can pass vectors of the same length as the lambda, e, and r parameters.
 
 ```{r}
 r.values <- rep(1,nrow(lambda.values))
 e.values <- rep(1,nrow(lambda.values))
 
-r.lower.bound <- rep(0, times=nrow(lambda.values))
-r.upper.bound <- rep(1e2, times=nrow(lambda.values))
-e.lower.bound <- r.lower.bound
-e.upper.bound <- r.upper.bound
-sigma.lower.bound <- 0.0000000001
-sigma.upper.bound <- 1
+lower.r <- 0
+upper.r <- 1e2
+lower.e <- lower.r
+upper.e <- upper.r
+lower.sigma <- 0.0000000001
+upper.sigma <- 1
 ```
 
 We can now initialize the results data structure, a list in which each component will consist of the estimates from an optimization method.
@@ -208,14 +208,14 @@ for(i.method in 1:length(optim.methods)){
                                e.vector = e.values,
                                r.vector = r.values,
                                sigma = sigma,
-                               lambda.lower.bound = lambda.lower.bound,
-                               lambda.upper.bound = lambda.upper.bound,
-                               e.lower.bound = e.lower.bound,
-                               e.upper.bound = e.upper.bound,
-                               r.lower.bound = r.lower.bound,
-                               r.upper.bound = r.upper.bound,
-                               sigma.lower.bound = sigma.lower.bound,
-                               sigma.upper.bound = sigma.upper.bound,
+                               lower.lambda = lower.lambda,
+                               upper.lambda = upper.lambda,
+                               lower.e = lower.e,
+                               upper.e = upper.e,
+                               lower.r = lower.r,
+                               upper.r = upper.r,
+                               lower.sigma = lower.sigma,
+                               upper.sigma = upper.sigma,
                                effect.response.model = effect.response.model,
                                optim.method = optim.methods[i.method],
                                sp.data = sp.data,
@@ -252,7 +252,7 @@ if(write.results){
 
 ```
 
-Next, a simple plot showing the variations in competitive effects and responses among species. For that, we have to format the data into a dataframe
+Next, a simple plot showing the variations in competitive effects and responses among species. For that, we have to format the results into a dataframe
 
 ```{r}
 er.data <- data.frame(species = sp.names, competitive.effect = ER.list[[1]]$effect, competitive.response = ER.list[[1]]$response)

@@ -14,26 +14,26 @@
 #' @param r.cov numeric matrix of num.sp x num.covariates, effect of every covariate on species' competitive response. 
 #' Discarded if covariates are not passed.
 #' @param sigma initial value for variation estimate.
-#' @param lambda.lower.bound lower bounds for lambda, in case it is optimized. Same dimensions as lambda.vector
-#' @param lambda.upper.bound upper bounds for lambda, in case it is optimized. Same dimensions as lambda.vector
-#' @param e.lower.bound lower bounds for competitive effects. Same dimensions as e.vector
-#' @param e.upper.bound upper bounds for competitive effects. Same dimensions as e.vector
-#' @param r.lower.bound lower bounds for competitive responses. Same dimensions as r.vector
-#' @param r.upper.bound upper bounds for competitive responses. Same dimensions as r.vector
-#' @param lambda.cov.lower.bound lower bounds for covariate effects on lambda. Same dimensions as lambda.cov. 
+#' @param lower.lambda lower bound for lambda, in case it is optimized. Either length 1 or same length as lambda.vector
+#' @param upper.lambda upper bound for lambda, in case it is optimized. Either length 1 or same length as lambda.vector
+#' @param lower.e lower bound for competitive effects. Either length 1 or same length as e.vector
+#' @param upper.e upper bound for competitive effects. Either length 1 or same length as e.vector
+#' @param lower.r lower bound for competitive responses. Either length 1 or same length as r.vector
+#' @param upper.r upper bound for competitive responses. Either length 1 or same length as r.vector
+#' @param lower.lambda.cov lower bound for covariate effects on lambda. Either length 1 or same length as lambda.cov. 
 #' Discarded if covariates are not passed.
-#' @param lambda.cov.upper.bound upper bounds for covariate effects on lambda. Same dimensions as lambda.cov. 
+#' @param upper.lambda.cov upper bound for covariate effects on lambda. Either length 1 or same length as lambda.cov. 
 #' Discarded if covariates are not passed. 
-#' @param e.cov.lower.bound lower bounds for covariate effects on e. Same dimensions as e.cov. 
+#' @param lower.e.cov lower bound for covariate effects on e. Either length 1 or same length as e.cov. 
 #' Discarded if covariates are not passed.
-#' @param e.cov.upper.bound upper bounds for covariate effects on e. Same dimensions as e.cov. 
+#' @param upper.e.cov upper bound for covariate effects on e. Either length 1 or same length as e.cov. 
 #' Discarded if covariates are not passed. 
-#' @param r.cov.lower.bound lower bounds for covariate effects on r. Same dimensions as r.cov. 
+#' @param lower.r.cov lower bound for covariate effects on r. Either length 1 or same length as r.cov. 
 #' Discarded if covariates are not passed.
-#' @param r.cov.upper.bound upper bounds for covariate effects on r. Same dimensions as r.cov. 
+#' @param upper.r.cov upper bound for covariate effects on r. Either length 1 or same length as r.cov. 
 #' Discarded if covariates are not passed.
-#' @param sigma.lower.bound lower bound for sigma.
-#' @param sigma.upper.bound upper bound for sigma.
+#' @param lower.sigma lower bound for sigma. Length 1.
+#' @param upper.sigma upper bound for sigma. Length 1.
 #' @param effect.response.model function returning a value to optimize over, e.g. maximum likelihood
 #' @param optim.method optimization method to use. One of the following: "optim_NM","optim_L-BFGS-B","nloptr_CRS2_LM", 
 #' "nloptr_ISRES","nloptr_DIRECT_L_RAND","GenSA","hydroPSO","DEoptimR".
@@ -47,7 +47,7 @@
 #' - number: number of neighbouring/competitor individuals from the associated species. Observations without competitors of a given species
 #' must be explicit, i.e. setting number to zero.
 #' @param covariates optional matrix/dataframe with as many rows as observations and covariates in columns.
-#' @param optimize.lambda boolean, whether we want to optimize lambda values or not
+#' @param optimize.lambda boolean, whether we want to optimize lambda values or not.
 #' @param generate.errors boolean, whether to compute bootstrap errors for the fitted parameters. Note that, depending on 
 #' the data and optimization method, this may be computationally expensive.
 #' @param bootstrap.samples how many bootstrap samples to compute.
@@ -62,20 +62,20 @@ ER_optimize <- function(lambda.vector,
                         e.cov = NULL,
                         r.cov = NULL,
                         sigma,
-                        lambda.lower.bound = 0,
-                        lambda.upper.bound = 1e3,
-                        e.lower.bound,
-                        e.upper.bound,
-                        r.lower.bound,
-                        r.upper.bound,
-                        lambda.cov.lower.bound = NULL,
-                        lambda.cov.upper.bound = NULL,
-                        e.cov.lower.bound = NULL,
-                        e.cov.upper.bound = NULL,
-                        r.cov.lower.bound = NULL,
-                        r.cov.upper.bound = NULL,
-                        sigma.lower.bound,
-                        sigma.upper.bound,
+                        lower.lambda = 0,
+                        upper.lambda = 1e3,
+                        lower.e,
+                        upper.e,
+                        lower.r,
+                        upper.r,
+                        lower.lambda.cov = NULL,
+                        upper.lambda.cov = NULL,
+                        lower.e.cov = NULL,
+                        upper.e.cov = NULL,
+                        lower.r.cov = NULL,
+                        upper.r.cov = NULL,
+                        lower.sigma,
+                        upper.sigma,
                         effect.response.model,
                         optim.method,
                         sp.data,
@@ -86,8 +86,8 @@ ER_optimize <- function(lambda.vector,
   
   # some sanity checks
   if(!is.null(covariates)){
-    if(is.null(lambda.cov) | is.null(e.cov) | is.null(r.cov) | is.null(lambda.cov.lower.bound) | is.null(lambda.cov.upper.bound) | is.null(e.cov.lower.bound) | is.null(e.cov.upper.bound)
-       | is.null(r.cov.lower.bound) | is.null(r.cov.upper.bound)){
+    if(is.null(lambda.cov) | is.null(e.cov) | is.null(r.cov) | is.null(lower.lambda.cov) | is.null(upper.lambda.cov) | is.null(lower.e.cov) | is.null(upper.e.cov)
+       | is.null(lower.r.cov) | is.null(upper.r.cov)){
       stop("ER_optimize ERROR: Covariates are given but initial values/bounds for lambda.cov, r.cov, or e.cov are missing")
     }
   }
@@ -139,27 +139,67 @@ ER_optimize <- function(lambda.vector,
   rownames(target_all) <- sp.list
   rownames(density_all) <- sp.list
   
+  # check the dimensions of lower and upper bounds for the optimization vectors
+  if(length(lower.lambda) == 1){
+    lower.lambda.vector <- rep(lower.lambda,length(lambda.vector))
+  }
+  if(length(upper.lambda) == 1){
+    upper.lambda.vector <- rep(upper.lambda,length(lambda.vector))
+  }
+  if(length(lower.e) == 1){
+    lower.e.vector <- rep(lower.e,length(e.vector))
+  }
+  if(length(upper.e) == 1){
+    upper.e.vector <- rep(upper.e,length(e.vector))
+  }
+  if(length(lower.r) == 1){
+    lower.r.vector <- rep(lower.r,length(r.vector))
+  }
+  if(length(upper.r) == 1){
+    upper.r.vector <- rep(upper.r,length(r.vector))
+  }
+  if(!is.null(covariates)){
+    if(length(lower.lambda.cov) == 1){
+      lower.lambda.cov.vector <- rep(lower.lambda.cov,length(lambda.cov))
+    }
+    if(length(upper.lambda.cov) == 1){
+      upper.lambda.cov.vector <- rep(upper.lambda.cov,length(lambda.cov))
+    }
+    if(length(lower.e.cov) == 1){
+      lower.e.cov.vector <- rep(lower.e.cov,length(e.cov))
+    }
+    if(length(upper.e.cov) == 1){
+      upper.e.cov.vector <- rep(upper.e.cov,length(e.cov))
+    }
+    if(length(lower.r.cov) == 1){
+      lower.r.cov.vector <- rep(lower.r.cov,length(r.cov))
+    }
+    if(length(upper.r.cov) == 1){
+      upper.r.cov.vector <- rep(upper.r.cov,length(r.cov))
+    }
+  }
+  
   # which model to use depending on whether we optimize lambda or not
   # also depending on whether there are covariates
   if(optimize.lambda){
     if(is.null(covariates)){
       init.par <- c(lambda.vector,r.vector,e.vector,sigma)
-      lower.bounds <- c(lambda.lower.bound,r.lower.bound,e.lower.bound,sigma.lower.bound)
-      upper.bounds <- c(lambda.upper.bound,r.upper.bound,e.upper.bound,sigma.upper.bound)
+      lower.bounds <- c(lower.lambda,lower.r,lower.e,lower.sigma)
+      upper.bounds <- c(upper.lambda,upper.r,upper.e,upper.sigma)
     }else{
       init.par <- c(lambda.vector,r.vector,e.vector,lambda.cov,r.cov,e.cov,sigma)
-      lower.bounds <- c(lambda.lower.bound,r.lower.bound,e.lower.bound,lambda.cov.lower.bound,r.cov.lower.bound,e.cov.lower.bound,sigma.lower.bound)
-      upper.bounds <- c(lambda.upper.bound,r.upper.bound,e.upper.bound,lambda.cov.upper.bound,r.cov.upper.bound,e.cov.upper.bound,sigma.upper.bound)
+      lower.bounds <- c(lower.lambda,lower.r,lower.e,lower.lambda.cov,lower.r.cov,lower.e.cov,lower.sigma)
+      upper.bounds <- c(upper.lambda,upper.r,upper.e,upper.lambda.cov,upper.r.cov,upper.e.cov,upper.sigma)
     }
   }else{
     if(is.null(covariates)){
       init.par <- c(r.vector,e.vector,sigma)
-      lower.bounds <- c(r.lower.bound,e.lower.bound,sigma.lower.bound)
-      upper.bounds <- c(r.upper.bound,e.upper.bound,sigma.upper.bound)
+      lower.bounds <- c(lower.r,lower.e,lower.sigma)
+      upper.bounds <- c(upper.r,upper.e,upper.sigma)
     }else{
       init.par <- c(r.vector,e.vector,lambda.cov,r.cov,e.cov,sigma)
-      lower.bounds <- c(r.lower.bound,e.lower.bound,lambda.cov.lower.bound,r.cov.lower.bound,e.cov.lower.bound,sigma.lower.bound)
-      upper.bounds <- c(r.upper.bound,e.upper.bound,lambda.cov.upper.bound,r.cov.upper.bound,e.cov.upper.bound,sigma.upper.bound)
+      lower.bounds <- c(lower.r,lower.e,lower.lambda.cov,lower.r.cov,lower.e.cov,lower.sigma)
+      upper.bounds <- c(upper.r,upper.e,upper.lambda.cov,upper.r.cov,upper.e.cov,upper.sigma)
     }# if-else covariates
   }# if-else optimize lambda
   
@@ -454,7 +494,7 @@ ER_optimize <- function(lambda.vector,
   # if-else the method outputs optim-like values
   if(optim.method %in% c("optim_NM","optim_L-BFGS-B","DEoptimR","hydroPSO","GenSA")){
     
-    print(paste("Effect-Response:",optim.method," finished with convergence status ",optim.par$convergence,sep=""))
+    #print(paste("Effect-Response:",optim.method," finished with convergence status ",optim.par$convergence,sep=""))
     
     if(optimize.lambda){
       fit.lambda <- optim.par$par[1:num.sp]
@@ -487,7 +527,7 @@ ER_optimize <- function(lambda.vector,
     
   }else{ # methods with different nomenclature
     
-    print(paste("Effect-Response:",optim.method," finished with convergence status ",optim.par$status,sep=""))
+    #print(paste("Effect-Response:",optim.method," finished with convergence status ",optim.par$status,sep=""))
     
     if(optimize.lambda){
       fit.lambda <- optim.par$solution[1:num.sp]
