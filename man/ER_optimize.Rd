@@ -5,15 +5,13 @@
 \title{Estimate competition effects and responses for a set of species}
 \usage{
 ER_optimize(lambda.vector, e.vector, r.vector, lambda.cov = NULL,
-  e.cov = NULL, r.cov = NULL, sigma, lambda.lower.bound = 0,
-  lambda.upper.bound = 1000, e.lower.bound, e.upper.bound, r.lower.bound,
-  r.upper.bound, lambda.cov.lower.bound = NULL,
-  lambda.cov.upper.bound = NULL, e.cov.lower.bound = NULL,
-  e.cov.upper.bound = NULL, r.cov.lower.bound = NULL,
-  r.cov.upper.bound = NULL, sigma.lower.bound, sigma.upper.bound,
-  effect.response.model, optim.method, sp.data, covariates = NULL,
-  optimize.lambda = FALSE, generate.errors = FALSE,
-  bootstrap.samples = 0)
+  e.cov = NULL, r.cov = NULL, sigma, lower.lambda = 0,
+  upper.lambda = 1000, lower.e, upper.e, lower.r, upper.r,
+  lower.lambda.cov = NULL, upper.lambda.cov = NULL,
+  lower.e.cov = NULL, upper.e.cov = NULL, lower.r.cov = NULL,
+  upper.r.cov = NULL, lower.sigma, upper.sigma, effect.response.model,
+  optim.method, sp.data, covariates = NULL, optimize.lambda = FALSE,
+  generate.errors = FALSE, bootstrap.samples = 0)
 }
 \arguments{
 \item{lambda.vector}{1d vector of lambda estimates/initial values (depending on whether lambda values are optimized or not)}
@@ -33,39 +31,39 @@ Discarded if covariates are not passed.}
 
 \item{sigma}{initial value for variation estimate.}
 
-\item{lambda.lower.bound}{lower bounds for lambda, in case it is optimized. Same dimensions as lambda.vector}
+\item{lower.lambda}{lower bound for lambda, in case it is optimized. Either length 1 or same length as lambda.vector}
 
-\item{lambda.upper.bound}{upper bounds for lambda, in case it is optimized. Same dimensions as lambda.vector}
+\item{upper.lambda}{upper bound for lambda, in case it is optimized. Either length 1 or same length as lambda.vector}
 
-\item{e.lower.bound}{lower bounds for competitive effects. Same dimensions as e.vector}
+\item{lower.e}{lower bound for competitive effects. Either length 1 or same length as e.vector}
 
-\item{e.upper.bound}{upper bounds for competitive effects. Same dimensions as e.vector}
+\item{upper.e}{upper bound for competitive effects. Either length 1 or same length as e.vector}
 
-\item{r.lower.bound}{lower bounds for competitive responses. Same dimensions as r.vector}
+\item{lower.r}{lower bound for competitive responses. Either length 1 or same length as r.vector}
 
-\item{r.upper.bound}{upper bounds for competitive responses. Same dimensions as r.vector}
+\item{upper.r}{upper bound for competitive responses. Either length 1 or same length as r.vector}
 
-\item{lambda.cov.lower.bound}{lower bounds for covariate effects on lambda. Same dimensions as lambda.cov. 
+\item{lower.lambda.cov}{lower bound for covariate effects on lambda. Either length 1 or same length as lambda.cov. 
 Discarded if covariates are not passed.}
 
-\item{lambda.cov.upper.bound}{upper bounds for covariate effects on lambda. Same dimensions as lambda.cov. 
+\item{upper.lambda.cov}{upper bound for covariate effects on lambda. Either length 1 or same length as lambda.cov. 
 Discarded if covariates are not passed.}
 
-\item{e.cov.lower.bound}{lower bounds for covariate effects on e. Same dimensions as e.cov. 
+\item{lower.e.cov}{lower bound for covariate effects on e. Either length 1 or same length as e.cov. 
 Discarded if covariates are not passed.}
 
-\item{e.cov.upper.bound}{upper bounds for covariate effects on e. Same dimensions as e.cov. 
+\item{upper.e.cov}{upper bound for covariate effects on e. Either length 1 or same length as e.cov. 
 Discarded if covariates are not passed.}
 
-\item{r.cov.lower.bound}{lower bounds for covariate effects on r. Same dimensions as r.cov. 
+\item{lower.r.cov}{lower bound for covariate effects on r. Either length 1 or same length as r.cov. 
 Discarded if covariates are not passed.}
 
-\item{r.cov.upper.bound}{upper bounds for covariate effects on r. Same dimensions as r.cov. 
+\item{upper.r.cov}{upper bound for covariate effects on r. Either length 1 or same length as r.cov. 
 Discarded if covariates are not passed.}
 
-\item{sigma.lower.bound}{lower bound for sigma.}
+\item{lower.sigma}{lower bound for sigma. Length 1.}
 
-\item{sigma.upper.bound}{upper bound for sigma.}
+\item{upper.sigma}{upper bound for sigma. Length 1.}
 
 \item{effect.response.model}{function returning a value to optimize over, e.g. maximum likelihood}
 
@@ -82,9 +80,9 @@ as the set of focal species.
 - number: number of neighbouring/competitor individuals from the associated species. Observations without competitors of a given species
 must be explicit, i.e. setting number to zero.}
 
-\item{covariates}{optional matrix/dataframe with as many rows as observations and covariates in columns.}
+\item{covariates}{optional matrix/dataframe with as many rows as the sp.data dataframe, and covariates in columns.}
 
-\item{optimize.lambda}{boolean, whether we want to optimize lambda values or not}
+\item{optimize.lambda}{boolean, whether we want to optimize lambda values or not.}
 
 \item{generate.errors}{boolean, whether to compute bootstrap errors for the fitted parameters. Note that, depending on 
 the data and optimization method, this may be computationally expensive.}

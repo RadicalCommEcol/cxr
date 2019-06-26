@@ -4,8 +4,9 @@
 \alias{BH_3}
 \title{Title Beverton-Holt fecundity, third model}
 \usage{
-BH_3(par, param.list, log.fitness, focal.comp.matrix, num.covariates,
-  num.competitors, focal.covariates, fixed.terms)
+BH_3(par, param.list = c("lambda", "alpha"), log.fitness,
+  focal.comp.matrix, num.covariates = NULL, num.competitors = NULL,
+  focal.covariates = NULL, fixed.terms = NULL)
 }
 \arguments{
 \item{par}{vector of variable length, with the following order: first, lambda of focal sp; 

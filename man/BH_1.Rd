@@ -4,8 +4,9 @@
 \alias{BH_1}
 \title{Title Beverton-Holt fecundity, first model}
 \usage{
-BH_1(par, param.list, log.fitness, focal.comp.matrix, num.covariates,
-  num.competitors, focal.covariates, fixed.terms)
+BH_1(par, param.list = NULL, log.fitness, focal.comp.matrix = NULL,
+  num.covariates = NULL, num.competitors = NULL,
+  focal.covariates = NULL, fixed.terms = NULL)
 }
 \arguments{
 \item{par}{vector containing lambda of focal sp and sigma value}
