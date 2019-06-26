@@ -193,7 +193,7 @@ Now, we are ready to go, species by species, performing the analysis. As the mai
 - 4) store the results in the nested list we created above
 - 5) update the initial values to be passed on to the next model
 
-```{r}
+```{r echo=FALSE}
 for(i.sp in 1:length(focal.sp)){
   
   # 1) subset and prepare the data
