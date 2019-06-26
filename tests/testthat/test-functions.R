@@ -9,7 +9,7 @@ skip_on_cran()
 # generate test data
 focal.sp <- c(1,2)
 num.sp <- 5
-num.cov <- 2
+num.cov <- 1
 num.obs <- 10 # sites, per focal species
 
 focal.lambda <- c(100,200)
@@ -31,8 +31,6 @@ test.data <- GenerateTestData(focal.sp = focal.sp,
                               lambda.cov = lambda.cov.orig)
 # select a focal sp
 test.focal <- test.data[test.data$focal == 1,]
-focal.comp.matrix <- test.focal[,2:6]
-focal.covariates <- test.focal[,7:8]
 
 # function params
 fitness.model <- BH_5
@@ -51,11 +49,11 @@ upper.alpha <- 1e4
 init.lambda.cov <- lambda.cov.orig[1,]
 lower.lambda.cov <- 1e-5
 upper.lambda.cov <- 1e4
-init.alpha.cov <- c(alpha.cov.orig[[1]][1,],alpha.cov.orig[[2]][1,])
+init.alpha.cov <- alpha.cov.orig[[1]][1,]
 lower.alpha.cov <- 1e-5
 upper.alpha.cov <- 1e4
 focal.comp.matrix <- test.focal[,2:6]
-focal.covariates <- test.focal[,7:8]
+focal.covariates <- as.matrix(test.focal[,7])
 generate.errors <- TRUE
 bootstrap.samples <- 3
 
@@ -104,59 +102,85 @@ test_that("Expected classes", {
 
 # effect-response function----
 
-# lambda.vector <- focal.lambda
-# e.vector <- runif(2,1,5)
-# r.vector <- runif(2,1,5)
-# lambda.cov <- lambda.cov.orig[1:2,]
-# e.cov <- matrix(runif(4,0.01,0.1),nrow = 2)
-# r.cov <- matrix(runif(4,0.01,0.1),nrow = 2)
-# sigma <- sd(log(test.focal$fitness))
-# lower.e <- rep(1e-5,2)
-# upper.e <- rep(1e2,2)
-# lower.r <- rep(1e-5,2)
-# upper.r <- rep(1e2,2)
-# lower.e.cov <- 1e-5
-# upper.e.cov <- 1e2
-# lower.r.cov <- 1e-5
-# upper.r.cov <- 1e2
-# optim.method <- "optim_L-BFGS-B"
-# sp.data <- test.data
-# sp.data$site <- rep((1:num.obs),2)
-# sp.data <- sp.data[,c("site","focal","sp1","sp2","fitness")]
-# sp.data.long <- tidyr::gather(sp.data,key ="competitor",value = "number",sp1,sp2)
-# generate.errors <- TRUE
-# bootstrap.samples <- 3
-# 
-# # first function
-# optimize.lambda <- TRUE
-# effect.response.model <- EffectResponse_lambda
-# 
-# results_ER <- ER_optimize(lambda.vector = lambda.vector,
-#                           e.vector = e.vector,
-#                           r.vector = r.vector,
-#                           lambda.cov = lambda.cov,
-#                           e.cov = e.cov,
-#                           r.cov = r.cov,
-#                           sigma = init.sigma,
-#                           lambda.lower.bound = lower.lambda,
-#                           lambda.upper.bound = upper.lambda,
-#                           e.lower.bound = lower.e,
-#                           e.upper.bound = upper.e,
-#                           r.lower.bound = lower.r,
-#                           r.upper.bound = upper.r,
-#                           lambda.cov.lower.bound = lower.lambda.cov,
-#                           lambda.cov.upper.bound = upper.lambda.cov,
-#                           e.cov.lower.bound = lower.e.cov,
-#                           e.cov.upper.bound = upper.e.cov,
-#                           r.cov.lower.bound = lower.r.cov,
-#                           r.cov.upper.bound = upper.r.cov,
-#                           sigma.lower.bound = lower.sigma,
-#                           sigma.upper.bound = upper.sigma,
-#                           effect.response.model = effect.response.model,
-#                           optim.method = optim.method,
-#                           sp.data = sp.data.long,
-#                           covariates = focal.covariates,
-#                           optimize.lambda = optimize.lambda,
-#                           generate.errors = generate.errors,
-#                           bootstrap.samples = bootstrap.samples)
+lambda.vector <- focal.lambda
+e.vector <- runif(2,1,5)
+r.vector <- runif(2,1,5)
+lambda.cov <- lambda.cov.orig[1:2,]
+e.cov <- matrix(runif(2,0.01,0.1),nrow = 2)
+r.cov <- matrix(runif(2,0.01,0.1),nrow = 2)
+sigma <- sd(log(test.focal$fitness))
+lower.e <- 1e-5
+upper.e <- 1e2
+lower.r <- 1e-5
+upper.r <- 1e2
+lower.e.cov <- 1e-5
+upper.e.cov <- 1e2
+lower.r.cov <- 1e-5
+upper.r.cov <- 1e2
+optim.method <- "optim_L-BFGS-B"
+sp.data <- test.data
+sp.data$site <- rep((1:num.obs),2)
+# sp.data <- sp.data[,c("site","focal","1","2","fitness")]
+sp.data.long <- tidyr::gather(sp.data,key ="competitor",value = "number","1","2")
+ER.covariates <- as.matrix(sp.data.long[,c("cov1")])
+sp.data.long <- sp.data.long[,c("site","focal","fitness","competitor","number")]
+generate.errors <- TRUE
+bootstrap.samples <- 3
 
+# first function
+optimize.lambda <- TRUE
+effect.response.model <- EffectResponse_lambda
+
+results_ER <- ER_optimize(lambda.vector = lambda.vector,
+                          e.vector = e.vector,
+                          r.vector = r.vector,
+                          lambda.cov = lambda.cov,
+                          e.cov = e.cov,
+                          r.cov = r.cov,
+                          sigma = init.sigma,
+                          lower.lambda = lower.lambda,
+                          upper.lambda = upper.lambda,
+                          lower.e = lower.e,
+                          upper.e = upper.e,
+                          lower.r = lower.r,
+                          upper.r = upper.r,
+                          lower.lambda.cov = lower.lambda.cov,
+                          upper.lambda.cov = upper.lambda.cov,
+                          lower.e.cov = lower.e.cov,
+                          upper.e.cov = upper.e.cov,
+                          lower.r.cov = lower.r.cov,
+                          upper.r.cov = upper.r.cov,
+                          lower.sigma = lower.sigma,
+                          upper.sigma = upper.sigma,
+                          effect.response.model = effect.response.model,
+                          optim.method = optim.method,
+                          sp.data = sp.data.long,
+                          covariates = ER.covariates,
+                          optimize.lambda = optimize.lambda,
+                          generate.errors = generate.errors,
+                          bootstrap.samples = bootstrap.samples)
+
+# test----
+test_that("Expected classes", {
+  expect_equal(class(results_ER), "list")
+  expect_equal(class(results_ER$lambda), "numeric")
+  expect_equal(class(results_ER$lambda.lower.error), "numeric")
+  expect_equal(class(results_ER$lambda.upper.error), "numeric")
+  expect_equal(class(results_ER$response), "numeric")
+  expect_equal(class(results_ER$response.lower.error), "numeric")
+  expect_equal(class(results_ER$response.upper.error), "numeric")
+  expect_equal(class(results_ER$effect), "numeric")
+  expect_equal(class(results_ER$effect.lower.error), "numeric")
+  expect_equal(class(results_ER$effect.upper.error), "numeric")
+  expect_equal(class(results_ER$sigma), "numeric")
+  expect_equal(class(results_ER$lambda.cov), "numeric")
+  expect_equal(class(results_ER$lambda.cov.lower.error), "numeric")
+  expect_equal(class(results_ER$lambda.cov.upper.error), "numeric")
+  expect_equal(class(results_ER$response.cov), "numeric")
+  expect_equal(class(results_ER$response.cov.lower.error), "numeric")
+  expect_equal(class(results_ER$response.cov.upper.error), "numeric")
+  expect_equal(class(results_ER$effect.cov), "numeric")
+  expect_equal(class(results_ER$effect.cov.lower.error), "numeric")
+  expect_equal(class(results_ER$effect.cov.upper.error), "numeric")
+  expect_equal(class(results_ER$log.likelihood), "numeric")
+})
