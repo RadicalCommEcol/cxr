@@ -1,4 +1,5 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^CONDUCT\.md$
 /cuts
 .travis.yml
