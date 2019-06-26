@@ -18,7 +18,9 @@ library(tidyverse)
 
 ###########################
 # Caracoles competition data
-data(competition)
+competition <- read.table(file = "../Caracoles/data/competition.csv",header = T,sep = ";", stringsAsFactors = F)
+# competition <- competition[,-1]
+# data(competition)
 
 # spread the data from long to wide format
 competition.data <- tidyr::spread(competition,key = competitor,value = number,fill = 0)
@@ -29,7 +31,7 @@ focal.sp <- unique(competition.data$focal)
 comp.matrix <- as.matrix(competition.data[,9:ncol(competition.data)])
 
 # covariate: salinity
-load(file = "./data/salinity.RData")
+salinity <- read.table(file = "../Caracoles/data/salinity.csv",header = T,sep = ";", stringsAsFactors = F)
 
 # one observation per row of competition.data
 salinity <- salinity[,c("plot","subplot","year","sum_salinity")]
@@ -92,15 +94,15 @@ lower.sigma <- 0.000001
 upper.sigma <- 1
 # alpha
 init.alpha <- 1e-4
-lower.alpha <- 1e-10
+lower.alpha <- 1e-5
 upper.alpha <- 1e5
 # lambda.cov
 init.lambda.cov <- 1
-lower.lambda.cov <- 1e-10
+lower.lambda.cov <- 1e-5
 upper.lambda.cov <- 1e4
 # alpha.cov
 init.alpha.cov <- 1
-lower.alpha.cov <- 1e-10
+lower.alpha.cov <- 1e-5
 upper.alpha.cov <- 1e4
 
 # if we want quicker calculations, we can disable 
@@ -109,7 +111,7 @@ generate.errors <- TRUE
 bootstrap.samples <- 100
 
 # store results?
-write.results <- TRUE
+write.results <- FALSE
 
 ##############################
 # initialize data structures
@@ -341,7 +343,7 @@ for(i.sp in 1:length(focal.sp)){
 }# for i.sp
 
 if(write.results){
-  save(param_estimates,file = "../temp/results/param_estimates.RData")
+  save(param_estimates,file = "../temp/results/param_estimates_aggr.RData")
   
   # also, create and store dataframes
   
@@ -447,10 +449,10 @@ if(write.results){
     }# for each model
   }# for each sp
   
-  write.table(lambda.values,file = "../temp/results/lambda_values.csv",sep = ";",append = FALSE)
-  write.table(alpha.values,file = "../temp/results/alpha_values.csv",sep = ";",append = FALSE)
-  write.table(lambda.cov.values,file = "../temp/results/lambda_cov_values.csv",sep = ";",append = FALSE)
-  write.table(alpha.cov.values,file = "../temp/results/alpha_cov_values.csv",sep = ";",append = FALSE)
+  write.table(lambda.values,file = "../temp/results/lambda_values_aggr.csv",sep = ";",append = FALSE)
+  write.table(alpha.values,file = "../temp/results/alpha_values_aggr.csv",sep = ";",append = FALSE)
+  write.table(lambda.cov.values,file = "../temp/results/lambda_cov_values_aggr.csv",sep = ";",append = FALSE)
+  write.table(alpha.cov.values,file = "../temp/results/alpha_cov_values_aggr.csv",sep = ";",append = FALSE)
   
 }
 
