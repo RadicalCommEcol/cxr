@@ -85,7 +85,7 @@ ER_SEbootstrap <- function(effect.response.model,
       boot.covariates <- NULL
     }else{
       positions <- match(boot.data$orig.site,sp.data$site)
-      boot.covariates <- covariates[positions,]
+      boot.covariates <- as.matrix(covariates[positions,])
     }    
     boot.data$site <- as.character(boot.data$site)
     
@@ -153,7 +153,7 @@ ER_SEbootstrap <- function(effect.response.model,
       }
       my.boot.par <- my.boot.par$par
       
-    }else if(optim.method == "optim_L-BGFS-B"){
+    }else if(optim.method == "optim_L-BFGS-B"){
       
       if(optimize.lambda){
         tryCatch({

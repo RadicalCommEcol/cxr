@@ -46,7 +46,7 @@
 #' as the set of focal species.
 #' - number: number of neighbouring/competitor individuals from the associated species. Observations without competitors of a given species
 #' must be explicit, i.e. setting number to zero.
-#' @param covariates optional matrix/dataframe with as many rows as observations and covariates in columns.
+#' @param covariates optional matrix/dataframe with as many rows as the sp.data dataframe, and covariates in columns.
 #' @param optimize.lambda boolean, whether we want to optimize lambda values or not.
 #' @param generate.errors boolean, whether to compute bootstrap errors for the fitted parameters. Note that, depending on 
 #' the data and optimization method, this may be computationally expensive.
@@ -184,22 +184,22 @@ ER_optimize <- function(lambda.vector,
   if(optimize.lambda){
     if(is.null(covariates)){
       init.par <- c(lambda.vector,r.vector,e.vector,sigma)
-      lower.bounds <- c(lower.lambda,lower.r,lower.e,lower.sigma)
-      upper.bounds <- c(upper.lambda,upper.r,upper.e,upper.sigma)
+      lower.bounds <- c(lower.lambda.vector,lower.r.vector,lower.e.vector,lower.sigma)
+      upper.bounds <- c(upper.lambda.vector,upper.r.vector,upper.e.vector,upper.sigma)
     }else{
       init.par <- c(lambda.vector,r.vector,e.vector,lambda.cov,r.cov,e.cov,sigma)
-      lower.bounds <- c(lower.lambda,lower.r,lower.e,lower.lambda.cov,lower.r.cov,lower.e.cov,lower.sigma)
-      upper.bounds <- c(upper.lambda,upper.r,upper.e,upper.lambda.cov,upper.r.cov,upper.e.cov,upper.sigma)
+      lower.bounds <- c(lower.lambda.vector,lower.r.vector,lower.e.vector,lower.lambda.cov.vector,lower.r.cov.vector,lower.e.cov.vector,lower.sigma)
+      upper.bounds <- c(upper.lambda.vector,upper.r.vector,upper.e.vector,upper.lambda.cov.vector,upper.r.cov.vector,upper.e.cov.vector,upper.sigma)
     }
   }else{
     if(is.null(covariates)){
       init.par <- c(r.vector,e.vector,sigma)
-      lower.bounds <- c(lower.r,lower.e,lower.sigma)
-      upper.bounds <- c(upper.r,upper.e,upper.sigma)
+      lower.bounds <- c(lower.r.vector,lower.e.vector,lower.sigma)
+      upper.bounds <- c(upper.r.vector,upper.e.vector,upper.sigma)
     }else{
       init.par <- c(r.vector,e.vector,lambda.cov,r.cov,e.cov,sigma)
-      lower.bounds <- c(lower.r,lower.e,lower.lambda.cov,lower.r.cov,lower.e.cov,lower.sigma)
-      upper.bounds <- c(upper.r,upper.e,upper.lambda.cov,upper.r.cov,upper.e.cov,upper.sigma)
+      lower.bounds <- c(lower.r.vector,lower.e.vector,lower.lambda.cov.vector,lower.r.cov.vector,lower.e.cov.vector,lower.sigma)
+      upper.bounds <- c(upper.r.vector,upper.e.vector,upper.lambda.cov.vector,upper.r.cov.vector,upper.e.cov.vector,upper.sigma)
     }# if-else covariates
   }# if-else optimize lambda
   
@@ -222,15 +222,15 @@ ER_optimize <- function(lambda.vector,
   fit.effect.upper.error <- rep(NA, num.sp)
   
   if(!is.null(covariates)){
-    fit.lambda.cov <- matrix(NA,nrow = num.sp,ncol = ncol(covariates))
-    fit.r.cov <- matrix(NA,nrow = num.sp,ncol = ncol(covariates))
-    fit.e.cov <- matrix(NA,nrow = num.sp,ncol = ncol(covariates))
-    fit.lambda.cov.lower.error <- matrix(NA,nrow = num.sp,ncol = ncol(covariates))
-    fit.lambda.cov.upper.error <- matrix(NA,nrow = num.sp,ncol = ncol(covariates))
-    fit.r.cov.lower.error <- matrix(NA,nrow = num.sp,ncol = ncol(covariates))
-    fit.r.cov.upper.error <- matrix(NA,nrow = num.sp,ncol = ncol(covariates))
-    fit.e.cov.lower.error <- matrix(NA,nrow = num.sp,ncol = ncol(covariates))
-    fit.e.cov.upper.error <- matrix(NA,nrow = num.sp,ncol = ncol(covariates))
+    fit.lambda.cov <- rep(NA, num.sp*ncol(covariates))
+    fit.r.cov <- rep(NA, num.sp*ncol(covariates))
+    fit.e.cov <- rep(NA, num.sp*ncol(covariates))
+    fit.lambda.cov.lower.error <- rep(NA, num.sp*ncol(covariates))
+    fit.lambda.cov.upper.error <- rep(NA, num.sp*ncol(covariates))
+    fit.r.cov.lower.error <- rep(NA, num.sp*ncol(covariates))
+    fit.r.cov.upper.error <- rep(NA, num.sp*ncol(covariates))
+    fit.e.cov.lower.error <- rep(NA, num.sp*ncol(covariates))
+    fit.e.cov.upper.error <- rep(NA, num.sp*ncol(covariates))
   }else{
     fit.lambda.cov <- NA
     fit.r.cov <- NA
@@ -501,7 +501,7 @@ ER_optimize <- function(lambda.vector,
       fit.response <- optim.par$par[(num.sp+1):(num.sp+num.sp)]
       
       if(!is.null(covariates)){
-        fit.effect <- optim.par$par[(num.sp+1+num.sp):num.sp+num.sp+num.sp]
+        fit.effect <- optim.par$par[(num.sp+1+num.sp):(num.sp+num.sp+num.sp)]
         fit.lambda.cov <- optim.par$par[(num.sp + num.sp + num.sp + 1):(num.sp + num.sp + num.sp + (num.sp*ncol(covariates)))]
         fit.r.cov <- optim.par$par[(num.sp + num.sp + num.sp + (num.sp*ncol(covariates)) + 1):(num.sp + num.sp + num.sp + (num.sp*ncol(covariates)) + (num.sp*ncol(covariates)))]
         fit.e.cov <- optim.par$par[(num.sp + num.sp + num.sp + (num.sp*ncol(covariates)) + (num.sp*ncol(covariates)) + 1):(num.sp + num.sp + num.sp + (num.sp*ncol(covariates)) + (num.sp*ncol(covariates)) + (num.sp*ncol(covariates)))]
@@ -632,32 +632,32 @@ ER_optimize <- function(lambda.vector,
   names(fit.effect.upper.error) <- sp.list
   
   if(!is.null(covariates)){
-    if(nrow(lambda.cov) == length(sp.list)){
-      rownames(lambda.cov) <- sp.list
+    if(length(fit.lambda.cov) == length(sp.list)){
+      names(fit.lambda.cov) <- sp.list
     }
-    if(nrow(lambda.cov.lower.error) == length(sp.list)){
-      rownames(lambda.cov.lower.error) <- sp.list
+    if(length(fit.lambda.cov.lower.error) == length(sp.list)){
+      names(fit.lambda.cov.lower.error) <- sp.list
     }
-    if(nrow(lambda.cov.upper.error) == length(sp.list)){
-      rownames(lambda.cov.upper.error) <- sp.list
+    if(length(fit.lambda.cov.upper.error) == length(sp.list)){
+      names(fit.lambda.cov.upper.error) <- sp.list
     }
-    if(nrow(response.cov) == length(sp.list)){
-      rownames(response.cov) <- sp.list
+    if(length(fit.r.cov) == length(sp.list)){
+      names(fit.r.cov) <- sp.list
     }
-    if(nrow(response.cov.lower.error) == length(sp.list)){
-      rownames(response.cov.lower.error) <- sp.list
+    if(length(fit.r.cov.lower.error) == length(sp.list)){
+      names(fit.r.cov.lower.error) <- sp.list
     }
-    if(nrow(response.cov.upper.error) == length(sp.list)){
-      rownames(response.cov.upper.error) <- sp.list
+    if(length(fit.r.cov.upper.error) == length(sp.list)){
+      names(fit.r.cov.upper.error) <- sp.list
     }
-    if(nrow(effect.cov) == length(sp.list)){
-      rownames(effect.cov) <- sp.list
+    if(length(fit.e.cov) == length(sp.list)){
+      names(fit.e.cov) <- sp.list
     }
-    if(nrow(effect.cov.lower.error) == length(sp.list)){
-      rownames(effect.cov.lower.error) <- sp.list
+    if(length(fit.e.cov.lower.error) == length(sp.list)){
+      names(fit.e.cov.lower.error) <- sp.list
     }
-    if(nrow(effect.cov.upper.error) == length(sp.list)){
-      rownames(effect.cov.upper.error) <- sp.list
+    if(length(fit.e.cov.upper.error) == length(sp.list)){
+      names(fit.e.cov.upper.error) <- sp.list
     }
   }
   
