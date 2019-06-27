@@ -25,13 +25,13 @@ Specify basic information: how many timesteps are we projecting, and the details
 timesteps <- 50
 
 # test data
-focal.sp <- c(1,2)
-num.sp <- 5
+focal.sp <- c(1,2,3,4,5)
+num.sp <- length(focal.sp)
 num.cov <- 2
 num.obs <- 3 # sites, per focal species
 
-focal.lambda <- c(100,200)
-alpha.matrix.orig <- matrix(data = runif(num.sp*num.sp,0.002,0),nrow = num.sp, ncol = num.sp)
+focal.lambda <- runif(num.sp,50,1000)
+alpha.matrix.orig <- matrix(data = runif(num.sp*num.sp,0.01,0.1),nrow = num.sp, ncol = num.sp)
 lambda.cov.orig <- matrix(rnorm(num.sp*num.cov,0,0.005),nrow = num.sp, ncol = num.cov)
 alpha.cov.orig <- list()
 for(i.cov in 1:num.cov){
@@ -60,8 +60,8 @@ We also need to specify the seed survival and germination rates, in order to pro
 # lambda, s, g
 sp.par <- data.frame(species = 1:num.sp,lambda = 0,germ.rate = 0, survival.rate = 0)
 sp.par$lambda[focal.sp] <- focal.lambda
-sp.par$germ.rate[focal.sp] <- runif(length(focal.sp),0,0.5)
-sp.par$survival.rate[focal.sp] <- runif(length(focal.sp),0,0.5)
+sp.par$germ.rate[focal.sp] <- runif(length(focal.sp),0.7,1)
+sp.par$survival.rate[focal.sp] <- runif(length(focal.sp),0.7,1)
 ```
 
 and set the initial abundances. The \code{PredictAbundances} function is able to project populations from any number of independent sites. These will be treated as disconnected populations, but will share the species parameterization.
@@ -70,7 +70,7 @@ and set the initial abundances. The \code{PredictAbundances} function is able to
 # initial abundances
 init.abund <- expand.grid(1:num.obs,1:num.sp)
 names(init.abund) <- c("site","species")
-init.abund$abundance <- rnorm(nrow(init.abund),100,50)
+init.abund$abundance <- rnorm(nrow(init.abund),10,2)
 ```
 
 We also specify stochastic environmental covariates and their value for the timesteps projected
@@ -79,7 +79,7 @@ We also specify stochastic environmental covariates and their value for the time
 # environmental heterogeneity
 cov.time <- expand.grid(1:num.obs,1:timesteps,1:num.cov)
 names(cov.time) <- c("site","timestep","covariate")
-cov.time$value <- runif(nrow(cov.time),0,10)
+cov.time$value <- runif(nrow(cov.time),0,5)
 ```
 
 put together all parameters for calling the function
