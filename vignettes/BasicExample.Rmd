@@ -10,9 +10,9 @@ vignette: >
 
 **Introduction**
 
-The \code{cxr} package provides a general interface to parameterize population dynamics models from empirical data, and obtain a series of metrics from modern coexistence theory. 
+The \code{cxr} package provides a general interface to parameterize population dynamics models from empirical data, and obtain from the estimations of these parameters (species vital rates and interaction coefficients) a series of metrics associated with modern coexistence theory. These metrics measure the species competitive ability, their responses to competition as well as niche and average fitness differences (both demographic and competitive response differences)
 
-We will demonstrate the basic usage of the package, using the data included in it (see Lanuza et al. 2018 for a description of the dataset). In particular, we will obtain the values of fecundity and competition intensity of two plant species, and we will also estimate their degree of niche overlap and their average fitness ratio.
+We will demonstrate the basic usage of the package, using the data included in it (see Lanuza, Bartomeus, Godoy. 2018 Ecology Letters 21(6) 865-874 for a description of the dataset). In particular, with this dataset, we will obtain the values of seed production in the absence of neighbours and the strength of competitive interactions between pairs of species. Once obtained this information, these are the basis for estimating the degree of niche overlap and average fitness differences between a pair of species. 
 
 **Set up**
 
@@ -44,7 +44,7 @@ colnames(sp2.comp.matrix) <- my.sp[1]
 
 ```
 
-and also the fitness of each observation, here assumed to be the production of seeds of each individual. Note that we pass the log of the fitness metric to the optimization procedure.
+and also the estimation of fitness assocaited with each observation. In this particular case this is the seed production of focal individual to which the number of neighbours were also estimated from field observations. Note that we pass the log of the seed production (fitness metric) for facilitating the optimization procedure.
 
 ```{r}
 sp1.fitness <- two.sp.data$seed[which(two.sp.data$focal == my.sp[1])]
@@ -60,11 +60,11 @@ Finally, as with any optimization procedure, we need to provide initial estimate
 init.lambda <- c(mean(sp1.log.fitness),mean(sp2.log.fitness))
 ```
 
-We will fit the parameters of model 3, i.e.
+We will fit the parameters of model 3, i.e.(This model differentiates between intra- and inter-specific competition but does not include yet the effects of environmental covariates or other type of trophic interactions besides competition, see Lanuza et al. 2018, Godoy and Levine 2014 Ecology 95(3) 726-736 for further details)
 
 $equation$
 
-and, specifying an optimization method, we can now call the main function with sensible values of upper and lower parameter bounds
+and, specifying an optimization method (Oscar comments, DO WE NEED TO REFER THE DIFFERENT OPTIMIZATION METHODS WE HAVE), we can now call the main function with sensible values of upper and lower parameter bounds
 
 ```{r}
 sp1.par <- cxr_optimize(fitness.model = BH_3,
@@ -105,7 +105,7 @@ The \code{cxr_optimize} function returns a list with several components
 sp1.par
 ```
 
-In this basic example, we are only interested in lambda, the per germinant fecundity, and the alpha values, the row of the interaction matrix that corresponds to our focal species. Other components are NA either because the third model does not account for them (e.g. \code{lambda.cov} or \code{alpha.cov}), or because we are not estimating them (e.g. standard errors). In any case, we can retrieve the estimated 2x2 interaction matrix from the results.
+In this basic example, we are only interested in obtaining from the optimization process the seed production in the absence of competition (lambda), and the alpha values (both intra and inter specific interactions), the row of the interaction matrix that corresponds to our focal species. Other components are NA either because the third model does not account for them (e.g. \code{lambda.cov} or \code{alpha.cov}), or because we are not estimating them (e.g. standard errors). In any case, we can retrieve the estimated 2x2 interaction matrix from the results.
 
 ```{r}
 interaction.matrix <- matrix(c(sp1.par$alpha, sp2.par$alpha), nrow = length(my.sp), byrow = TRUE)
