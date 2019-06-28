@@ -10,17 +10,17 @@ vignette: >
 
 **Introduction**
 
-In this document, we explain how to perform a complete analysis on a plant community. The aim is to use field data to obtain the parameterization of a model of the form: 
+This document explains how to optimize several models to obtain parameters asociated with species vital rates and interactions coefficients between plants within an ecological community. These models predict species fecundity due to density independent and density dependence effects. These models can be parametereized in isolation but have also a nested structure. This means that models with increasing number is a more complex version of the previous model. This procedure is intended to avoid overfitting problems and promote convergence of the more complex models. Here, we present how to use data obtained from experiments or field observations to predict species fecundity as a function of the intrinsic ability of species to produce offspring (lambda), and interaction coefficients with other species (alpha). The model is its most simpler version takes the follwoing form:
 
 $F = \frac{\lambda}{1+\alpha}$
 
-which will allow us to analyze the interaction matrix, the effect of environmental or biotic covariates, and in turn, different outcomes regarding the coexistence patterns between species. Most of the vignette will be dedicated to prepare the data from what is obtained in the field to the appropriate format for the analysis. 
+This model takes basically the form or a Beverton-Holt model, which allow us obtaining which will allow us to analyze the interaction matrix, the effect of environmental or biotic covariates, and in turn, different outcomes regarding the coexistence patterns between species. Most of the vignette will be dedicated to prepare the data from what is obtained in the field to the appropriate format for the analysis. 
 
 **Setup**
 
 We start loading the package and the associated dataset. We set up 9 plots [...]. We will use the following data:
 - \code{competition}: measurement of fruit and seed set of plant individuals in presence of competitors of the same or other species.
-- \code{salinity}: soil salinity for each subplot.
+- \code{salinity}: soil salinity for each subplot. This is our abiotic covariate, but any other types of covariates can be included. 
 
 ```{r}
 library(cxr)
