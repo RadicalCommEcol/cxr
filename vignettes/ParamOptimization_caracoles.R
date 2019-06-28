@@ -48,28 +48,35 @@ full.data <- left_join(competition.data,salinity)
 # models to parameterize
 # be aware of including 4 and 5 ONLY if there are covariates
 # otherwise it makes no sense (see equations in Lanuza et al. 2018)
-models <- 3:4
+models <- 3:5
 
 # which values do we optimize for each model?
-param.list <- list(c("lambda","alpha"),c("lambda","alpha","lambda.cov","alpha.cov"))
+param.list <- list(c("lambda","alpha"),c("lambda","alpha","lambda.cov","alpha.cov","lambda.cov_NL","alpha.cov_NL"),c("lambda","alpha","lambda.cov","alpha.cov","lambda.cov_NL","alpha.cov_NL"))
 
-#Choose the non-linearity function
-function1 <-function(a,b,x){
+#Choose the non-linear function
+
+#functional response type 2
+function2 <-function(a,b,x){
   vector <-vector("numeric",length(x))
   for(i in 1:length(x)){
-  if (x[i]!=0){vector[i]<- (a*x[i]^2/(b+x[i]^2))}
+    if (x[i]!=0){vector[i]<- a*(1-exp(-b*x[i]))
+             }
   }
   return(vector)
-  }
+}
 
-function2 <-function(a,b,x){
+#functional response type 3
+function3 <-function(a,b,x){
+  vector <-vector("numeric",length(x))
   for(i in 1:length(x)){
-    vector <-vector("numeric",length(x))
     if (x[i]!=0){vector[i]<- (a*x[i]^2/(b+x[i]^2))}
   }
   return(vector)
 }
-function_NL <- function2
+
+#choose the function
+vector.lambda.cov_NL <- c(1)
+vector.alpha.cov_NL <-c(2)
 # keep the model definitions in a list, for ease
 fitness.models <- list(BH_1 = BH_1,BH_2 = BH_2,BH_3 = BH_3,BH_4 = BH_4,BH_5 = BH_5)
 
@@ -136,14 +143,14 @@ write.results <- TRUE
 # initialize data structures
 # elements are matrices/vectors within nested lists, of the form matrix[[focal.sp]][[model]][[method]]
 
-param.matrices <- list()
+param_matrices <- list()
 for(i.sp in 1:length(focal.sp)){
-  param.matrices[[i.sp]] <- list()
+  param_matrices[[i.sp]] <- list()
   for(i.model in 1:length(models)){
     
-    param.matrices[[i.sp]][[i.model]] <- list()
+    param_matrices[[i.sp]][[i.model]] <- list()
     for(i.method in 1:length(optim.methods)){
-      param.matrices[[i.sp]][[i.model]][[i.method]] <- list(lambda = 0,
+      param_matrices[[i.sp]][[i.model]][[i.method]] <- list(lambda = 0,
                                                             lambda.lower.error = 0,
                                                             lambda.upper.error = 0,
                                                             sigma = 0,
@@ -164,11 +171,11 @@ for(i.sp in 1:length(focal.sp)){
                                                             alpha.cov_NL.upper.error = 0,
                                                             log.likelihood = 0)
     }
-    names(param.matrices[[i.sp]][[i.model]]) <- optim.methods
+    names(param_matrices[[i.sp]][[i.model]]) <- optim.methods
   }
-  names(param.matrices[[i.sp]]) <- names(fitness.models)[models]
+  names(param_matrices[[i.sp]]) <- names(fitness.models)[models]
 }
-names(param.matrices) <- focal.sp
+names(param_matrices) <- focal.sp
 
 ###############################
 # main loop
@@ -239,8 +246,8 @@ for(i.sp in 1:length(focal.sp)){
 
   #lamda.cov_NL
   if("lambda.cov_NL" %in% param.list[[2]]){
-    if(length(init.lambda.cov_NL) != num.covariates){
-      current.init.lambda.cov_NL <- rep(init.lambda.cov_NL[1],num.covariates)
+    if(length(init.lambda.cov_NL) != sum(vector.lambda.cov_NL!=1)){
+      current.init.lambda.cov_NL <- rep(init.lambda.cov_NL[1],sum(vector.lambda.cov_NL!=1))
     }else{
       current.init.lambda.cov_NL <- init.lambda.cov_NL  
     }
@@ -265,11 +272,11 @@ for(i.sp in 1:length(focal.sp)){
   # alpha.cov_NL
   if("alpha.cov_NL" %in% param.list[[2]]){
     if(models[1]<=4){
-      length.alpha.cov_NL <- num.covariates
+      length.alpha.cov_NL <- sum(vector.alpha.cov_NL!=1)
     }else if(models[1]>4){
-      length.alpha.cov_NL <- num.covariates*num.competitors
+      length.alpha.cov_NL <- sum(vector.alpha.cov_NL!=1)*num.competitors
     }
-    if(length(init.alpha.cov_NL) != length.alpha.cov){
+    if(length(init.alpha.cov_NL) != length.alpha.cov_NL){
       current.init.alpha.cov_NL <- rep(init.alpha.cov_NL[1],length.alpha.cov)
     }else{
       current.init.alpha.cov_NL <- init.alpha.cov_NL  
@@ -320,37 +327,38 @@ for(i.sp in 1:length(focal.sp)){
                                    focal.covariates = focal.covariates,
                                    generate.errors = generate.errors,
                                    bootstrap.samples = bootstrap.samples,
-                                   function_NL=function_NL,
+                                   vector.lambda.cov_NL,
+                                   vector.alpha.cov_NL,
                                    number.model=models[i.model])
       ###############
       # clean up results
       
-      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda <- temp.results$lambda
-      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.lower.error <- temp.results$lambda.lower.error
-      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.upper.error <- temp.results$lambda.upper.error
+      param_matrices[[i.sp]][[i.model]][[i.method]]$lambda <- temp.results$lambda
+      param_matrices[[i.sp]][[i.model]][[i.method]]$lambda.lower.error <- temp.results$lambda.lower.error
+      param_matrices[[i.sp]][[i.model]][[i.method]]$lambda.upper.error <- temp.results$lambda.upper.error
       
-      param.matrices[[i.sp]][[i.model]][[i.method]]$sigma <- temp.results$sigma
+      param_matrices[[i.sp]][[i.model]][[i.method]]$sigma <- temp.results$sigma
       
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha <- temp.results$alpha
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.upper.error <- temp.results$alpha.upper.error
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.lower.error <- temp.results$alpha.lower.error
+      param_matrices[[i.sp]][[i.model]][[i.method]]$alpha <- temp.results$alpha
+      param_matrices[[i.sp]][[i.model]][[i.method]]$alpha.upper.error <- temp.results$alpha.upper.error
+      param_matrices[[i.sp]][[i.model]][[i.method]]$alpha.lower.error <- temp.results$alpha.lower.error
 
-      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov <- temp.results$lambda.cov
-      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov.upper.error <- temp.results$lambda.cov.upper.error
-      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov.lower.error <- temp.results$lambda.cov.lower.error
-      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov_NL <- temp.results$lambda.cov_NL
-      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov_NL.upper.error <- temp.results$lambda.cov_NL.upper.error
-      param.matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov_NL.lower.error <- temp.results$lambda.cov_NL.lower.error
+      param_matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov <- temp.results$lambda.cov
+      param_matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov.upper.error <- temp.results$lambda.cov.upper.error
+      param_matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov.lower.error <- temp.results$lambda.cov.lower.error
+      param_matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov_NL <- temp.results$lambda.cov_NL
+      param_matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov_NL.upper.error <- temp.results$lambda.cov_NL.upper.error
+      param_matrices[[i.sp]][[i.model]][[i.method]]$lambda.cov_NL.lower.error <- temp.results$lambda.cov_NL.lower.error
       
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov <- temp.results$alpha.cov
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov.upper.error <- temp.results$alpha.cov.upper.error
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov.lower.error <- temp.results$alpha.cov.lower.error
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov_NL <- temp.results$alpha.cov_NL
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov_NL.upper.error <- temp.results$alpha.cov_NL.upper.error
-      param.matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov_NL.lower.error <- temp.results$alpha.cov_NL.lower.error
+      param_matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov <- temp.results$alpha.cov
+      param_matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov.upper.error <- temp.results$alpha.cov.upper.error
+      param_matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov.lower.error <- temp.results$alpha.cov.lower.error
+      param_matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov_NL <- temp.results$alpha.cov_NL
+      param_matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov_NL.upper.error <- temp.results$alpha.cov_NL.upper.error
+      param_matrices[[i.sp]][[i.model]][[i.method]]$alpha.cov_NL.lower.error <- temp.results$alpha.cov_NL.lower.error
       
-      param.matrices[[i.sp]][[i.model]][[i.method]]$log.likelihood <- temp.results$log.likelihood
-      param.matrices[[i.sp]][[i.model]][[i.method]]$AIC <- temp.results$AIC
+      param_matrices[[i.sp]][[i.model]][[i.method]]$log.likelihood <- temp.results$log.likelihood
+      param_matrices[[i.sp]][[i.model]][[i.method]]$AIC <- temp.results$AIC
     }# for i.method
     
     #######################
@@ -358,21 +366,21 @@ for(i.sp in 1:length(focal.sp)){
     if(i.model < length(param.list)){
     # lambda
     if("lambda" %in% param.list[[i.model+1]]){
-      if(!is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda)){
-        current.init.lambda <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda
+      if(!is.na(param_matrices[[i.sp]][[i.model]][[init.par.method]]$lambda)){
+        current.init.lambda <- param_matrices[[i.sp]][[i.model]][[init.par.method]]$lambda
       }
     }
     # sigma
-    if(!is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$sigma)){
-      current.init.sigma <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$sigma
+    if(!is.na(param_matrices[[i.sp]][[i.model]][[init.par.method]]$sigma)){
+      current.init.sigma <- param_matrices[[i.sp]][[i.model]][[init.par.method]]$sigma
       if(current.init.sigma > upper.sigma){
         current.init.sigma <- upper.sigma
       }
     }
     # alpha
     if("alpha" %in% param.list[[i.model+1]]){
-      if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha)) == 0){
-        current.init.alpha <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha
+      if(sum(is.na(param_matrices[[i.sp]][[i.model]][[init.par.method]]$alpha)) == 0){
+        current.init.alpha <- param_matrices[[i.sp]][[i.model]][[init.par.method]]$alpha
         # is the current estimate of the appropriate length?
         if(models[i.model] > 2){
           if(length(current.init.alpha) == 1){
@@ -385,22 +393,22 @@ for(i.sp in 1:length(focal.sp)){
     # lambda.cov
     if("lambda.cov" %in% param.list[[i.model+1]]){
      
-      if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov)) == 0){
-        current.init.lambda.cov <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov
+      if(sum(is.na(param_matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov)) == 0){
+        current.init.lambda.cov <- param_matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov
          }
     }
     
     # lambda.cov_NL
     if("lambda.cov_NL" %in% param.list[[i.model+1]]){
-      if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov_NL)) == 0){
-        current.init.lambda.cov_NL <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov_NL
+      if(sum(is.na(param_matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov_NL)) == 0){
+        current.init.lambda.cov_NL <- param_matrices[[i.sp]][[i.model]][[init.par.method]]$lambda.cov_NL
       }
     }
     
     # alpha.cov
     if("alpha.cov" %in% param.list[[i.model+1]]){
-            if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)) == 0){
-        current.init.alpha.cov <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov
+            if(sum(is.na(param_matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)) == 0){
+        current.init.alpha.cov <- param_matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov
         # is the current estimate of the appropriate length?
         if(models[i.model+1] > 4){ 
           if(length(current.init.alpha.cov) == num.covariates){
@@ -412,11 +420,11 @@ for(i.sp in 1:length(focal.sp)){
     
     # alpha.cov_NL
     if("alpha.cov_NL" %in% param.list[[i.model+1]]){
-      if(sum(is.na(param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov_NL)) == 0){
-        current.init.alpha.cov_NL <- param.matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov_NL
+      if(sum(is.na(param_matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov_NL)) == 0){
+        current.init.alpha.cov_NL <- param_matrices[[i.sp]][[i.model]][[init.par.method]]$alpha.cov_NL
         # is the current estimate of the appropriate length?
         if(models[i.model+1] > 4){
-          if(length(current.init.alpha.cov_NL) == num.covariates){
+          if(length(current.init.alpha.cov_NL) == sum(vector.alpha.cov_NL!=1)){
             current.init.alpha.cov_NL <- rep(current.init.alpha.cov_NL,num.competitors)
           }
         }# if model > 4
@@ -428,13 +436,13 @@ for(i.sp in 1:length(focal.sp)){
 }# for i.sp
 
 if(write.results){
-  save(param.matrices,file = "./temp_param.matrices.Rdata")
+  save(param_matrices,file = "./temp_param_matrices.Rdata")
   
   # also, create and store dataframes
   
   # just in case it is a factor
   focal.sp <- sort(as.character(focal.sp))
-  competitors <- sort(names(param.matrices[[1]][[names(fitness.models)[models[models == max(models)]]]][[1]]$alpha))
+  competitors <- sort(names(param_matrices[[1]][[names(fitness.models)[models[models == max(models)]]]][[1]]$alpha))
   my.models <- names(fitness.models)[models]
   my.covariates <- c("sum_salinity")
   
@@ -463,64 +471,63 @@ if(write.results){
   lambda.cov_NL.values <- expand.grid(focal.sp,my.models,optim.methods,my.covariates)
   names(lambda.cov_NL.values) <- c("species","model","method","covariate")
   lambda.cov_NL.values$lambda.cov_NL <- 0
-  lambda.cov_NL.values$lambda.cov__NL.lower <- 0
+  lambda.cov_NL.values$lambda.cov_NL.lower <- 0
   lambda.cov_NL.values$lambda.cov_NL.upper <- 0
   
-  # alpha.cov -- covariate included "by hand"
-  alpha.cov.values <- expand.grid(focal.sp,competitors,my.models,optim.methods,my.covariates)
-  names(alpha.cov.values) <- c("focal","competitor","model","method","covariate")
-  alpha.cov.values$alpha.cov <- 0
-  alpha.cov.values$alpha.cov.lower <- 0
-  alpha.cov.values$alpha.cov.upper <- 0
-  
-  # alpha.cov_NL -- covariate included "by hand"
-  alpha.cov_NL.values <- expand.grid(focal.sp,competitors,my.models,optim.methods,my.covariates)
-  names(alpha.cov_NL.values) <- c("focal","competitor","model","method","covariate")
-  alpha.cov_NL.values$alpha.cov <- 0
-  alpha.cov_NL.values$alpha.cov.lower <- 0
-  alpha.cov_NL.values$alpha.cov.upper <- 0
+  # # alpha.cov -- covariate included "by hand"
+  # alpha.cov.values <- expand.grid(focal.sp,competitors,my.models,optim.methods,my.covariates)
+  # names(alpha.cov.values) <- c("focal","competitor","model","method","covariate")
+  # alpha.cov.values$alpha.cov <- 0
+  # alpha.cov.values$alpha.cov.lower <- 0
+  # alpha.cov.values$alpha.cov.upper <- 0
+  # 
+  # # alpha.cov_NL -- covariate included "by hand"
+  # alpha.cov_NL.values <- expand.grid(focal.sp,competitors,my.models,optim.methods,my.covariates)
+  # names(alpha.cov_NL.values) <- c("focal","competitor","model","method","covariate")
+  # alpha.cov_NL.values$alpha.cov <- 0
+  # alpha.cov_NL.values$alpha.cov.lower <- 0
+  # alpha.cov_NL.values$alpha.cov.upper <- 0
+  # 
   #AIC
-  AIC <-list()
-  for (i in models){
-    AIC[[i]]<-vector("numeric",length(focal.sp))
-    names(AIC[[i]])<-focal.sp
-  }
-  for(i.sp in 1:length(focal.sp)){
-    for(i.model in 1: length(models)){
-      AIC[[models[i.model]]][i.sp]<- param.matrices[[i.sp]][[i.model]][[1]]$AIC
-    }
-  }
-   save(AIC,file="data/AIC.RData")
-  #log-likelihood
-  llik <-list()
-  for (i in models){
-    llik[[i]]<-vector("numeric",length(focal.sp))
-    names(llik[[i]])<-focal.sp
-  }
-  for(i.sp in 1:length(focal.sp)){
-    for(i.model in 1: length(models)){
-      llik[[models[i.model]]][i.sp]<- param.matrices[[i.sp]][[i.model]][[1]]$log.likelihood
-    }
-  }
-  # save(llik,file="data/llik.RData")
-    
+    AIC.values <- expand.grid(focal.sp,my.models,optim.methods)
+  names(AIC.values) <- c("species","model","method")
+  AIC.values$AIC <- 0
+  
+  #log likelihood
+    llik.values <- expand.grid(focal.sp,my.models,optim.methods)
+  names(llik.values) <- c("species","model","method")
+  llik.values$llik <- 0
+  
   # fill up the dataframes
   for(i.sp in 1:length(focal.sp)){
     for(i.model in 1:length(my.models)){
       for(i.method in 1:length(optim.methods)){
         
+        #log likelihood
+        llik.pos <- which(llik.values$species == focal.sp[i.sp] &
+                            llik.values$model == my.models[i.model] &
+                            llik.values$method == optim.methods[i.method])
+        llik.values$llik[llik.pos] <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$log.likelihood
+        
+        #AIC
+        AIC.pos <- which(AIC.values$species == focal.sp[i.sp] &
+                           AIC.values$model == my.models[i.model] &
+                           AIC.values$method == optim.methods[i.method])
+        
+        AIC.values$AIC[AIC.pos] <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$AIC
+        
         # lambda
         lambda.pos <- which(lambda.values$species == focal.sp[i.sp] &
                               lambda.values$model == my.models[i.model] &
                               lambda.values$method == optim.methods[i.method])
-        lambda.values$lambda[lambda.pos] <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda
-        lambda.values$lambda.lower[lambda.pos] <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.lower.error
-        lambda.values$lambda.upper[lambda.pos] <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.upper.error
+        lambda.values$lambda[lambda.pos] <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda
+        lambda.values$lambda.lower[lambda.pos] <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.lower.error
+        lambda.values$lambda.upper[lambda.pos] <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.upper.error
         
         # alpha
-        my.alpha.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha
-        my.alpha.lower.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.lower.error
-        my.alpha.upper.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.upper.error
+        my.alpha.vector <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha
+        my.alpha.lower.vector <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.lower.error
+        my.alpha.upper.vector <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.upper.error
         
         alpha.pos <- which(alpha.values$focal == focal.sp[i.sp] &
                              alpha.values$model == my.models[i.model] &
@@ -532,14 +539,14 @@ if(write.results){
         alpha.values$alpha.upper[alpha.pos] <- my.alpha.upper.vector
         
         # lambda.cov
-        my.lambda.cov.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov
-        my.lambda.cov.lower.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov.lower.error
-        my.lambda.cov.upper.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov.upper.error
+        my.lambda.cov.vector <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov
+        my.lambda.cov.lower.vector <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov.lower.error
+        my.lambda.cov.upper.vector <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov.upper.error
         
         # lambda.cov_NL
-        my.lambda.cov_NL.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov_NL
-        my.lambda.cov_NL.lower.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov_NL.lower.error
-        my.lambda.cov_NL.upper.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov_NL.upper.error
+        my.lambda.cov_NL.vector <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov_NL
+        my.lambda.cov_NL.lower.vector <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov_NL.lower.error
+        my.lambda.cov_NL.upper.vector <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov_NL.upper.error
         
         # all covariates at once, should be ok
         lambda.cov.pos <- which(lambda.cov.values$species == focal.sp[i.sp] &
@@ -550,35 +557,70 @@ if(write.results){
         lambda.cov.values$lambda.cov.lower[lambda.cov.pos] <- my.lambda.cov.lower.vector
         lambda.cov.values$lambda.cov.upper[lambda.cov.pos] <- my.lambda.cov.upper.vector
         
-        # alpha.cov
-        my.alpha.cov.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov
-        my.alpha.cov.lower.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov.lower.error
-        my.alpha.cov.upper.vector <- param.matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov.upper.error
+        lambda.cov_NL.pos <- which(lambda.cov_NL.values$species == focal.sp[i.sp] &
+                                  lambda.cov_NL.values$model == my.models[i.model] &
+                                  lambda.cov_NL.values$method == optim.methods[i.method])
         
-        my.alpha.cov.comp <- substr(names(my.alpha.cov.vector),str_length(names(my.alpha.cov.vector))-3,str_length(names(my.alpha.cov.vector)))
+        lambda.cov_NL.values$lambda.cov_NL[lambda.cov_NL.pos] <- my.lambda.cov_NL.vector
+        lambda.cov_NL.values$lambda.cov_NL.lower[lambda.cov_NL.pos] <- my.lambda.cov_NL.lower.vector
+        lambda.cov_NL.values$lambda.cov_NL.upper[lambda.cov_NL.pos] <- my.lambda.cov_NL.upper.vector
         
-        for(i.covariate in 1:length(my.covariates)){
-          my.cov <- my.alpha.cov.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.vector)))]
-          my.lower.cov <- my.alpha.cov.lower.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.lower.vector)))]
-          my.upper.cov <- my.alpha.cov.upper.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.upper.vector)))]
-          
-          alpha.cov.pos <- which(alpha.cov.values$focal == focal.sp[i.sp] &
-                                   alpha.cov.values$model == my.models[i.model] &
-                                   alpha.cov.values$method == optim.methods[i.method] &
-                                   alpha.cov.values$competitor %in% my.alpha.cov.comp & 
-                                   alpha.cov.values$covariate == my.covariates[i.covariate])
-          
-          alpha.cov.values$alpha.cov[alpha.cov.pos] <- my.cov
-          alpha.cov.values$alpha.cov.lower[alpha.cov.pos] <- my.lower.cov
-          alpha.cov.values$alpha.cov.upper[alpha.cov.pos] <- my.upper.cov
-        }
+        # # alpha.cov
+        # my.alpha.cov.vector <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov
+        # my.alpha.cov.lower.vector <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov.lower.error
+        # my.alpha.cov.upper.vector <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov.upper.error
+        # my.alpha.cov.comp <- substr(names(my.alpha.cov.vector),str_length(names(my.alpha.cov.vector))-3,str_length(names(my.alpha.cov.vector)))
+        # 
+        # # alpha.cov_NL
+        # my.alpha.cov_NL.vector <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov_NL
+        # my.alpha.cov_NL.lower.vector <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov_NL.lower.error
+        # my.alpha.cov_NL.upper.vector <- param_matrices[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov_NL.upper.error
+        # my.alpha.cov_NL.comp <- substr(names(my.alpha.cov_NL.vector),str_length(names(my.alpha.cov_NL.vector))-3,str_length(names(my.alpha.cov_NL.vector)))
+        # 
+        # 
+        # 
+        #         for(i.covariate in 1:length(my.covariates)){
+        #   my.cov <- my.alpha.cov.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.vector)))]
+        #   my.lower.cov <- my.alpha.cov.lower.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.lower.vector)))]
+        #   my.upper.cov <- my.alpha.cov.upper.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.upper.vector)))]
+        #   
+        #   alpha.cov.pos <- which(alpha.cov.values$focal == focal.sp[i.sp] &
+        #                            alpha.cov.values$model == my.models[i.model] &
+        #                            alpha.cov.values$method == optim.methods[i.method] &
+        #                            alpha.cov.values$competitor %in% my.alpha.cov.comp & 
+        #                            alpha.cov.values$covariate == my.covariates[i.covariate])
+        #   
+        #   alpha.cov.values$alpha.cov[alpha.cov.pos] <- my.cov
+        #   alpha.cov.values$alpha.cov.lower[alpha.cov.pos] <- my.lower.cov
+        #   alpha.cov.values$alpha.cov.upper[alpha.cov.pos] <- my.upper.cov
+        #   my.cov <- my.alpha.cov.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.vector)))]
+        #   my.lower.cov <- my.alpha.cov.lower.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.lower.vector)))]
+        #   my.upper.cov <- my.alpha.cov.upper.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.upper.vector)))]
+        #   
+        #   #alpha.cov_NL
+        #   
+        #   alpha.cov_NL.pos <- which(alpha.cov_NL.values$focal == focal.sp[i.sp] &
+        #                            alpha.cov_NL.values$model == my.models[i.model] &
+        #                            alpha.cov_NL.values$method == optim.methods[i.method] &
+        #                            alpha.cov_NL.values$competitor %in% my.alpha.cov_NL.comp & 
+        #                            alpha.cov_NL.values$covariate == my.covariates[i.covariate])
+        #   
+        #   alpha.cov_NL.values$alpha.cov_NL[alpha.cov_NL.pos] <- my.cov
+        #   alpha.cov_NL.values$alpha.cov_NL.lower[alpha.cov_NL.pos] <- my.lower.cov
+        #   alpha.cov_NL.values$alpha.cov_NL.upper[alpha.cov_NL.pos] <- my.upper.cov
+        #   
+           
         
       }# for each method
     }# for each model
   }# for each sp
-  write.table(lambda.values, file = "./data/lambda_values.csv",row.names=FALSE, na="",col.names=FALSE, sep=",")
-  write.csv(lambda.values,file = "./data/alpha_values.csv",sep = ";")
-  write.csv(lambda.values,file = "./data/lambda_cov_values.csv",sep = ";")
-  write.csv(lambda.values,file = "./data/alpha_cov_values.csv",sep = ";")
+  write.csv2(lambda.values, file = "./data/lambda_values_NL2.csv")
+  write.csv2(alpha.values,file = "./data/alpha_values_NL2.csv")
+  write.csv2(lambda.cov.values,file = "./data/lambda_cov_values_NL2.csv")
+  # write.csv2(alpha.cov.values,file = "./data/alpha_cov_values_NL2.csv")
+  # write.csv2(alpha.cov_NL.values,file = "./data/alpha_cov_values_NL_NL2.csv")
+  write.csv2(lambda.cov_NL.values,file = "./data/lambda_cov_values_NL_NL2.csv")
+  write.csv2(AIC.values,file = "./data/AIC_values_NL2.csv")
+  write.csv2(llik.values,file = "./data/llik_values_NL2.csv")
   
 }

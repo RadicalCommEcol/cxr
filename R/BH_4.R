@@ -22,7 +22,8 @@
 #'
 #' @return log-likelihood value
 #' @export
-BH_4 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms,function_NL){
+source("R/functional_response.R")
+BH_4 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms,vector.alpha.cov_NL,vector.lambda.cov_NL){
   
   pos <- 1
   if("lambda" %in% param.list){
@@ -39,8 +40,8 @@ BH_4 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
     lambda.cov <- fixed.terms[["lambda.cov"]]
   }
   if("lambda.cov_NL" %in% param.list){
-    lambda.cov_NL <- par[pos:(pos+num.covariates-1)]
-    pos <- pos + num.covariates
+    lambda.cov_NL <- par[pos:(pos+sum(vector.lambda.cov_NL!=1)-1)]
+    pos <- pos + sum(vector.lambda.cov_NL!=1)
   }
   
   if("alpha" %in% param.list){
@@ -59,29 +60,52 @@ BH_4 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
   }
   
   if("alpha.cov_NL" %in% param.list){
-    alpha.cov_NL <- par[pos:(pos+num.covariates-1)]
-    pos <- pos + num.covariates
+    alpha.cov_NL <- par[pos:(pos+sum(vector.alpha.cov_NL!=1)-1)]
+    pos <- pos + sum(vector.alpha.cov_NL!=1)
   }
   sigma <- par[length(par)]
   
   num = 1
   focal.cov.matrix <- as.matrix(focal.covariates)
   if("lambda.cov_NL" %in% param.list){
+    pos=1
     for(z in 1:num.covariates){
-      num <- num + function_NL(lambda.cov[z],lambda.cov_NL[z],focal.cov.matrix[,z])
-      
+      if (vector.lambda.cov_NL[z]==1){
+        num <- num + lambda.cov[z]*focal.cov.matrix[,z]
+      }
+      else if(vector.lambda.cov_NL[z]==2){
+      num <- num + function2(lambda.cov[z],lambda.cov_NL[pos],focal.cov.matrix[,z])
+      pos<-pos+1
+      }
     }
+    else if(vector.lambda.cov_NL[z]==3){
+      num <- num + function3(lambda.cov[z],lambda.cov_NL[pos],focal.cov.matrix[,z])
+    pos<-pos+1
+    }
+  
   }else{
   for(z in 1:num.covariates){
+    
     num <- num + lambda.cov[z]*focal.cov.matrix[,z]
   }
   }
     
   cov_term <- 0 
+  
   if("alpha.cov_NL" %in% param.list){
-    for(v in 1:num.covariates){
-      cov_term <- cov_term + function_NL(alpha.cov[v],alpha.cov_NL[v], focal.cov.matrix[,v])
+    pos <-1
+    for(z in 1:num.covariates){
+      if(vector.alpha.cov_NL[z]==1){
+      cov_term <- cov_term + alpha.cov[z]*focal.cov.matrix[,z]
     }
+    else if(vector.alpha.cov_NL[z]==2){
+      cov_term <- cov_term + function2(alpha.cov[z],alpha.cov_NL[pos],focal.cov.matrix[,z])
+    pos<-pos+1
+  }
+  else if(vector.alpha.cov_NL[z]==3){
+    cov_term <- cov_term + function3(alpha.cov[z],alpha.cov_NL[pos],focal.cov.matrix[,z])
+  pos<-pos+1
+  }
   
   }else{
   for(v in 1:num.covariates){

@@ -2,7 +2,7 @@
 library(ggplot2)
 
 # change
-lambda.values <- read.csv2("./data/lambda_values.csv",stringsAsFactors = FALSE)
+lambda.values <- read.csv2("./data/lambda_values_NL1.csv",stringsAsFactors = FALSE)
 head(lambda.values)
 str(lambda.values)
 
@@ -14,8 +14,8 @@ lambda.plot <- ggplot(lambda.values) +
   facet_grid(~model)+
   theme(axis.text.x  = element_text(angle=45, hjust = 1, vjust=1, size = 6))+
   NULL
-lambda.plot
+print(lambda.plot)
 
-pdf(file = "./data/lambda_values.pdf",width = 7,height = 6)
-lambda.plot
-dev.off()
+# pdf(file = "./data/lambda_values.pdf",width = 7,height = 6)
+# lambda.plot
+# dev.off()

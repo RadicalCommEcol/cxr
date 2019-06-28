@@ -22,7 +22,8 @@
 #'
 #' @return log-likelihood value
 #' @export
-BH_5 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms, function_NL){
+source("R/functional_response.R")
+BH_5 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms, vector.lambda.cov_NL,vector.alpha.cov_NL){
   pos <- 1
   if("lambda" %in% param.list){
     lambda <- par[pos] ## same as model 1
@@ -39,8 +40,8 @@ BH_5 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
   }
   
   if("lambda.cov_NL" %in% param.list){
-    lambda.cov_NL <- par[pos:(pos+num.covariates-1)]
-    pos <- pos + num.covariates
+    lambda.cov_NL <- par[pos:(pos+sum(vector.lambda.cov_NL!=1)-1)]
+    pos <- pos + sum(vector.lambda.cov_NL!=1)
   }
   
   if("alpha" %in% param.list){
@@ -57,8 +58,8 @@ BH_5 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
     alpha.cov <- fixed.terms[["alpha.cov"]]
   }
   if("alpha.cov_NL" %in% param.list){
-    alpha.cov_NL <- par[pos:(pos+(num.covariates*num.competitors)-1)]
-    pos <- pos + (num.covariates*num.competitors)
+    alpha.cov_NL <- par[pos:(pos+(sum(vector.alpha.cov_NL!=1)*num.competitors)-1)]
+    pos <- pos + (sum(vector.alpha.cov_NL!=1)*num.competitors)
   }
  
   
@@ -68,25 +69,50 @@ BH_5 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
   focal.cov.matrix <- as.matrix(focal.covariates)
   
   if("lambda.cov_NL" %in% param.list){
-    for(v in 1:num.covariates){
-      num <- num + function_NL(lambda.cov[v],lambda.cov_NL[v],focal.cov.matrix[,v]) 
+    pos=1
+    for(z in 1:num.covariates){
+      if (vector.lambda.cov_NL[z]==1){
+        num <- num + lambda.cov[z]*focal.cov.matrix[,z]
+      }
+      else if(vector.lambda.cov_NL[z]==2){
+        num <- num + function2(lambda.cov[z],lambda.cov_NL[pos],focal.cov.matrix[,z])
+        pos<-pos+1
+      }
     }
-    
+    else if(vector.lambda.cov_NL[z]==3){
+      num <- num + function3(lambda.cov[z],lambda.cov_NL[pos],focal.cov.matrix[,z])
+      pos<-pos+1
+    }
+  
   }else{
   for(v in 1:num.covariates){
     num <- num + lambda.cov[v]*focal.cov.matrix[,v] 
   }
   }
   cov_term_x <- list()
-  if ("alpha.cov_NL" %in% param.list){
-    for(v in 1:num.covariates){
-      cov_temp <- as.matrix(focal.cov.matrix)[,v]
-      
-      for(z in 1:num.competitors){
-       
-        cov_term_x[[z+(num.competitors*(v-1))]] <- function_NL(alpha.cov[z+(num.competitors*(v-1))],alpha.cov_NL[z+(num.competitors*(v-1))], cov_temp)  #create  alpha.cov_i*cov_i vector
+  
+    if("alpha.cov_NL" %in% param.list){
+      pos <-1
+      for(v in 1:num.covariates){
+        cov_temp <- as.matrix(focal.cov.matrix)[,v]
+        if(vector.alpha.cov_NL[v]==1){
+          for(z in 1:num.competitors){
+            cov_term_x[[z+(num.competitors*(v-1))]] <- alpha.cov[z+(num.competitors*(v-1))] * cov_temp         
+          }
+        }
+        else if(vector.alpha.cov_NL[v]==2){
+          for(z in 1:num.competitors){
+          cov_term_x[[z+(num.competitors*(v-1))]] <- function2(alpha.cov[z+(num.competitors*(v-1))],alpha.cov_NL[pos], cov_temp)
+          pos<-pos+1
+          }
+        }
+        else if(vector.alpha.cov_NL[v]==3){
+          for(z in 1:num.competitors){
+          cov_term_x[[z+(num.competitors*(v-1))]] <- function3(alpha.cov[z+(num.competitors*(v-1))],alpha.cov_NL[pos], cov_temp)
+          pos<-pos+1
+          }
+        }
       }
-    }
   }else{
   for(v in 1:num.covariates){
     cov_temp <- focal.cov.matrix[,v]
