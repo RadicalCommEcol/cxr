@@ -10,11 +10,11 @@ vignette: >
 
 **Introduction**
 
-This document explains how to optimize several models to obtain parameters asociated with species vital rates and interactions coefficients between plants within an ecological community. These models predict species fecundity due to density independent and density dependence effects. These models can be parametereized in isolation but have also a nested structure. This means that models with increasing number is a more complex version of the previous model. This procedure is intended to avoid overfitting problems and promote convergence of the more complex models. Here, we present how to use data obtained from experiments or field observations to predict species fecundity as a function of the intrinsic ability of species to produce offspring (lambda), and interaction coefficients with other species (alpha). The model is its most simpler version takes the follwoing form:
+This document explains how to optimize several models that predict species fecundity. This means that models with increasing number is a more complex version of the previous model. This procedure is intended to avoid overfitting problems and promote convergence of the more complex models. Here, we present how to use data obtained from experiments or field observations to predict species fecundity as a function of the intrinsic ability of species to produce offspring (lambda), and interaction coefficients with other species (alpha). The model is its most simpler version takes the following form:
 
 $F = \frac{\lambda}{1+\alpha}$
 
-This model takes basically the form or a Beverton-Holt model, which allow us obtaining which will allow us to analyze the interaction matrix, the effect of environmental or biotic covariates, and in turn, different outcomes regarding the coexistence patterns between species. Most of the vignette will be dedicated to prepare the data from what is obtained in the field to the appropriate format for the analysis. 
+This form is basically a Beverton-Holt model. Following modifications of this model will allow us obtaining the interactions matrix for paris of species, and the effect of covariables (including biotic and abiotic factors) on both lambda and alpha coefficients. All together this information is key for obtaining information of different drivers determining the outcome of species interaction at local scales, which are widely used in "modern" coexistence studies. Most of this vignette presents data preparation from how is obtained in the field to the appropriate format for the analysis. 
 
 **Setup**
 
@@ -30,7 +30,7 @@ data(salinity)
 
 **Preparing the data**
 
-We need to 1) build a data structure that will hold the results for all species, and 2) prepare the field data for the analysis.
+This part consists in two different points. First we build a data structure that will hold the results for all species, and second we prepare the example database for the analysis.
 
 ```{r}
 # spread the data from long to wide format
@@ -47,15 +47,17 @@ full.data <- dplyr::left_join(competition.data,salinity)
 ```
 
 Now, we set some general variables regarding the models we want to use, and the parameters we want to estimate.
-Note that if we include more than one model, the optimization procedures proceed sequentially; e.g., if we estimate parameters from models 3, 4, and 5
+Note that if we include more than one model, the optimization procedures proceed sequentially; e.g., if we estimate parameters from models 3, 4, and 5. 
+
+IMPORTANT POINT HERE DO WE NEED TO DESCRIBE THE STRUCTURE OF THESE DIFFERENT MODELS??
 
 ```{r}
 models <- 3:5
 ```
 
-the output from model 3 will be taken as initial estimates for model 4, and the output from model 4 will be the initial estimates for model 5. Note, as well, that models 4 and 5 differ from model 3 in that they include the effect of covariates on species fecundity and interactions. Therefore, you should only include these models if you have at least one covariate in your data (see Lanuza et al. 2018).
+This sequential procedure means tha the output from model 3 will be taken as initial estimates for model 4, and the output from model 4 will be the initial estimates for model 5. Note, as well, that models 4 and 5 differ from model 3 in that they include the effect of covariates on species seed production in the absence of competition and interactions. Therefore, you should only include these models if you have at least one covariate in your data (see Lanuza, Bartomeus, Godoy 2018, Ecology Letters 21(6) 865-874).
 
-We can estimate the whole parameter set for each model, or fix certain parameters, for example, if we have independent field estimates of them. This information is passed to the function in a list, in which each element is a string vector giving the set of parameters that are to be optimized for each model. In our example, we optimize all parameters (note that model 3 has only $\lambda$ and $\alpha$ parameters, whereas models 4 and 5 also include the effect of covariates).
+We can estimate the whole parameter set for each model, or fix certain parameters, for example, that would be the case if there are independent field estimation of some of them. This information is passed to the function in a list, in which each element is a string vector giving the set of parameters that are to be optimized for each model. In our example, we optimize all parameters (note that model 3 has only $\lambda$ and $\alpha$ parameters, whereas models 4 and 5 also include the effect of covariates).
 
 ```{r}
 # which values do we optimize for each model?
@@ -135,7 +137,7 @@ lower.alpha.cov <- 1e-10
 upper.alpha.cov <- 1e4
 ```
 
-The package can also compute the standard errors of the estimation, via bootstrapping. This can be, depending on the model and optimization method, computationally expensive. Here we provide a minimal example of it.
+Importantly, the package allow computing estimations of standard errors. This error estimation is done via bootstrapping by two reasons. One is that obtaining estimation of error by Hessian Matrix is unstable due to several computational issues, but sencondly and more importantly, error distributions of your variable might not follow a normal distribution. Please remember that the estimation of errors can be, depending on the model and optimization method, computationally expensive. We recommend 999 runs, yet we provide here a minimal example of it (see bootstrap.samples).
 
 ```{r}
 generate.errors <- TRUE
