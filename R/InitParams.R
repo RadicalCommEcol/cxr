@@ -81,7 +81,7 @@ InitParams <- function(init.lambda = NULL,
   lower.bounds <- c(lower.bounds,lower.sigma)
   upper.bounds <- c(upper.bounds,upper.sigma)
   
-  lower.bounds <- ifelse(lower.bounds > 0, lower.bounds, 1e-10)
+  # lower.bounds <- ifelse(lower.bounds > 0, lower.bounds, 1e-10)
   
   return(list(init.par = init.par, lower.bounds = lower.bounds, upper.bounds = upper.bounds))
 }
