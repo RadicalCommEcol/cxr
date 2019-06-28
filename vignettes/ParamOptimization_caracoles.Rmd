@@ -153,7 +153,7 @@ write.results <- FALSE
 
 **Initialize results structure** 
 
-We will store the results of our analysis in a nested list, following the nested design of the experiment. For each focal species, we calculate three different models (given in \code{models}), and for each of these models, we obtain the parameterization from a series of optimization methods (given in \code{optim.methods}). Thus, we create a list, named \code{param_estimates}, of the form:
+We will store the results of our analysis in a nested list, following the nested design of the optimization proccess. For each focal species, we calculate three different models (given in \code{models}), and for each of these models, we obtain the parameterization from a series of optimization methods (given in \code{optim.methods}). Thus, we create a list, named \code{param_estimates}, of the form:
 
 \code{param_estimates[[species]][[model]][[method]]}
 
@@ -188,9 +188,9 @@ for(i.sp in 1:length(focal.sp)){
 names(param_estimates) <- focal.sp
 ```
 
-Now, we are ready to go, species by species, performing the analysis. As the main function, \code{cxr_optimize}, accepts the input for a single species, we code a loop for going through all species. Inside this loop, we include the following steps:
+With this procedure, we are now ready to optimize the data set. This is done species by species. As the main function, \code{cxr_optimize}, accepts the input for a single species, we code a loop for going through all species. Inside this loop, we include the following steps:
 - 1) subset the competition data for the focal species 
-- 2) generate the actual initial values, considering all situations. Remember that, depending on the model, some parameters will have different length. For example, $\alpha$ is a single value in model 2 and a matrix in model 3 onwards. Thus, for species *i*, $alpha_{ij}$ is a vector of length equal to the number of competitor species.
+- 2) generate the actual initial values, considering all situations. Remember that, depending on the model, some parameters will have different length. For example, $\alpha$ is a single value in model 2 and a matrix in model 3 onwards. This matrix will not be squared if the number of focal species for which fecundity is predicted is lower than the number of competitors. Thus, for species *i*, $alpha_{ij}$ is a vector of length equal to the number of competitor species.
 - 3) the actual call to \code{cxr_optimize}
 - 4) store the results in the nested list we created above
 - 5) update the initial values to be passed on to the next model
