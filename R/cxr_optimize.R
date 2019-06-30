@@ -87,8 +87,11 @@ cxr_optimize <- function(fitness.model,
   
   num.competitors <- dim(as.matrix(focal.comp.matrix))[2]
   name.competitors <- colnames(focal.comp.matrix)
-  num.covariates <- ifelse(is.null(ncol(focal.covariates)),0,ncol(focal.covariates))
-  name.covariates <- colnames(focal.covariates)
+  
+  if(!is.null(focal.covariates)){
+    num.covariates <- ncol(as.matrix(focal.covariates))
+    name.covariates <- colnames(focal.covariates)
+  }
   
   # generate vector of initial parameters
   # depending on which ones we want to optimize
