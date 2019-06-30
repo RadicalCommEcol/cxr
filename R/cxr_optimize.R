@@ -91,6 +91,9 @@ cxr_optimize <- function(fitness.model,
   if(!is.null(focal.covariates)){
     num.covariates <- ncol(as.matrix(focal.covariates))
     name.covariates <- colnames(focal.covariates)
+  }else{
+    num.covariates <- 0
+    name.covariates <- NULL
   }
   
   # generate vector of initial parameters
