@@ -8,7 +8,7 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
-In this document, we draw the coexistence region of our plant community and locate every pair of species in this region accroding to two orthogonal axes. Average fitness differences (y-axis) and niche differences (x-axis). For that, we use the parameters previously calculated for each species (see vignette \code{Multi-species parameter optimization}), and the germination and seed soil bank survival rates, which are both stored with the package. Please note that germination and seed survival rates are a particular feature of the annual plant model (see Godoy and Levine 2014 Ecology 95(3) 726-736 for details), but other models might be adapted to other species particularities. 
+In this document, we draw the coexistence region of our plant community and locate every pair of species in this region accroding to two orthogonal axes. Average fitness differences (y-axis) and niche differences (x-axis). For that, we use the parameters previously calculated for each species (see vignette \code{Multi-species parameter optimization}), and the germination and seed soil bank survival rates, which are both stored with the package. Please note that germination and seed survival rates are a particular feature of the annual plant model (see *Godoy and Levine. 2014. Ecology 95: 726-736* for details), but other models might be adapted to other species particularities. 
 
 ```{r}
 library(cxr)
@@ -16,7 +16,7 @@ data(param_estimates)
 data(species_rates)
 ```
 
-First, compile the parameters from the original results, which are in a nested list. We will use the estimates from the most complex model (BH_5), and the optimization method ...
+First, compile the parameters from the original results, which are in a nested list. We will use the estimates from the most complex model (BH_5), and the optimization method *L-BFGS-B* (see the help of \code{stats::optim} for details).
 
 ```{r}
 sp.names <- sort(unique(names(param_estimates)))
@@ -73,9 +73,9 @@ pairwise.ratios$pair.ID <- paste(pairwise.ratios$sp1,"_",pairwise.ratios$sp2,sep
 
 ```
 
-For drawing the plot, we adapt, simplified, the great example from Ke and Letten (2018) Nature Ecology and Evolution 2(11) 1691, in which they show the regions leading to coexistence, exclusion, and priority effects between species pairs.
+For drawing the plot, we adapt, simplified, the great example from *Ke and Letten, 2018, Nature Ecology and Evolution 2:1691*, in which they show the regions leading to coexistence, exclusion, and priority effects between species pairs.
 
-First, generate a dataframe for the limits of the different regions, and specify the axes limits. In this example, we focus on species pairs that are close to the region of coexistence. Many species pairs display wide average fitness ratios, falling clearly on the exclusion areas.
+First, generate a dataframe for the limits of the different regions, and specify the axes limits. In this example, we focus on species pairs that are close to the region of coexistence. Many species pairs, not shown in the plot, display wide average fitness ratios, falling clearly on the exclusion areas.
 
 ```{r}
 x <- seq(1,-1,by=-0.001)

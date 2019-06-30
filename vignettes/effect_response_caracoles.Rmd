@@ -10,7 +10,7 @@ vignette: >
 
 **Introduction**
 
-In previous examples we have estimated a series of interactions coefficients between pairs of species. These estimations allow species to be differentiated in their niche and their average fitness (via competitive response differences). However, it is also possible to obtain a metric per species of the average interaction effect to all other species, or their average response when interacting with all other species. This is done by estimating all these coefficients for all species at the same time, and not each species as a time as previous modelling procedures. With this procedure, we do not allow species to be differentiated in their niche (see Godoy, Kraft, and Levine 2014 Ecology Letters 17(7) 836-844 for further details). Again, here is included the plant species in the associated data. Please note that here per-germinant fecundity estimates ($\lambda$) generated independently are used as fixed parameters.
+In other vignettes we have estimated a series of interactions coefficients between pairs of species. These estimations allow species to be differentiated in their niche and their average fitness (via competitive response differences). However, it is also possible to obtain a metric per species of the average interaction effect to all other species, or their average response when interacting with all other species. This is done by estimating all these coefficients for all species at the same time, and not each species as a time as previous modelling procedures. With this procedure, we do not allow species to be differentiated in their niche (see *Godoy, Kraft, and Levine, 2014, Ecology Letters 17:836-844* for further details). Again, here we consider the plant species from the associated data. Please note that here per-germinant fecundity estimates ($\lambda$) generated independently are used as fixed parameters.
 
 **Set up**
 
@@ -79,6 +79,7 @@ sp.names <- sort(focal.sp[which(focal.sp %in% sp.with.lambda)])
 ```
 
 For the \code{ER_optimize} function to work properly, the dataset must be complete, with explicit zeros if a combination focal.sp-competitor was not observed in a given record. In case the sp.data dataframe does not include explicit missing competitors, here is a somewhat convoluted way for setting zeros to it so that for each focal sp, all competitor sp are included. 
+
 ```{r}
 sites <- unique(sp.data$site)
 
