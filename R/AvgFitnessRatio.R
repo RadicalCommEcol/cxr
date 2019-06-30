@@ -1,5 +1,6 @@
 
 #' Average fitness differences between a pair of species
+#' 
 #' Calculates the product of (1) the demographic ratio, and (2) the competitive response ratio between two species
 #' according to their vital rates and competition coefficients. First species in the parameters is numerator 
 #' (j in eq. 4 of Godoy et al. 2014). If germ.rate and survival.rate are provided, it calculates the ratio
