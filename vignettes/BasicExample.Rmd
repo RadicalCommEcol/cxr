@@ -10,9 +10,9 @@ vignette: >
 
 **Introduction**
 
-The \code{cxr} package provides a general interface to parameterize population dynamics models from empirical data, and obtain from the estimations of these parameters (species vital rates and interaction coefficients) a series of metrics associated with modern coexistence theory. These metrics measure the species competitive ability, their responses to competition as well as niche and average fitness differences (both demographic and competitive response differences)
+The \code{cxr} package provides a general interface to parameterize population dynamics models from empirical data, and obtain from the estimations of these parameters (species vital rates and interaction coefficients) a series of metrics associated with modern coexistence theory. These metrics measure the species competitive ability, their responses to competition as well as niche and average fitness differences (both demographic and competitive response differences).
 
-We will demonstrate the basic usage of the package, using the data included in it (see Lanuza, Bartomeus, Godoy. 2018 Ecology Letters 21(6) 865-874 for a description of the dataset). In particular, with this dataset, we will obtain the values of seed production in the absence of neighbours and the strength of competitive interactions between pairs of species. Once obtained this information, these are the basis for estimating the degree of niche overlap and average fitness differences between a pair of species. 
+We will demonstrate the basic usage of the package, using the data included in it (see *Lanuza, Bartomeus, Godoy. 2018. Ecology Letters 21:865-874* for a description of the dataset). In particular, with this dataset, we will obtain the values of seed production in the absence of neighbours and the strength of competitive interactions between pairs of species. Once obtained this information, these are the basis for estimating the degree of niche overlap and average fitness differences between a pair of species. 
 
 **Set up**
 
@@ -23,7 +23,7 @@ library(cxr)
 data(competition)
 ```
 
-The \code{competition} dataset includes observation from *20* different plant species. We will subset the information to consider only two of them, *Chamaemelum fuscatum* and *Leontodon maroccanus*
+The \code{competition} dataset includes observation from *20* different plant species. We will subset the information to consider only two of them, *Chamaemelum fuscatum* and *Leontodon maroccanus*.
 
 ```{r}
 my.sp <- c("CHFU", "LEMA")
@@ -60,11 +60,11 @@ Finally, as with any optimization procedure, we need to provide initial estimate
 init.lambda <- c(mean(sp1.log.fitness),mean(sp2.log.fitness))
 ```
 
-We will fit the parameters of model 3, i.e.(This model differentiates between intra- and inter-specific competition but does not include yet the effects of environmental covariates or other type of trophic interactions besides competition, see Lanuza et al. 2018, Godoy and Levine 2014 Ecology 95(3) 726-736 for further details)
+We will fit the parameters of model 3, i.e.(This model differentiates between intra- and inter-specific competition but does not include yet the effects of environmental covariates or other type of trophic interactions besides competition, see *Lanuza et al. 2018*, *Godoy and Levine. 2014. Ecology 95:726-736* for further details)
 
 $equation$
 
-and, specifying an optimization method (Oscar comments, DO WE NEED TO REFER THE DIFFERENT OPTIMIZATION METHODS WE HAVE), we can now call the main function with sensible values of upper and lower parameter bounds
+and, specifying an optimization method. we can now call the main function with sensible values of upper and lower parameter bounds. We have implemented optimization with eight different optimization methods, that cover a range of methodologies (see e.g. the help of cxr_optimize for the available methods, and *Mullen, K.M. 2014. Continuous Global Optimization in R. Journal of Statistical Software 60:1–45* for an overview of optimization methods.)
 
 ```{r}
 sp1.par <- cxr_optimize(fitness.model = BH_3,
