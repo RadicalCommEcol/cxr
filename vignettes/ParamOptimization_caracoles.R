@@ -327,8 +327,8 @@ for(i.sp in 1:length(focal.sp)){
                                    focal.covariates = focal.covariates,
                                    generate.errors = generate.errors,
                                    bootstrap.samples = bootstrap.samples,
-                                   vector.lambda.cov_NL,
-                                   vector.alpha.cov_NL,
+                                   vector.lambda.cov_NL = vector.lambda.cov_NL,
+                                   vector.alpha.cov_NL = vector.alpha.cov_NL,
                                    number.model=models[i.model])
       ###############
       # clean up results

@@ -23,7 +23,8 @@ cxr_optimize <- function(fitness.model,
                          init.alpha.cov_NL = 1e-3,
                          lower.alpha.cov_NL = 1e-4,
                          upper.alpha.cov_NL = 1e5,
-                         function_NL = NULL,
+                         vector.lambda.cov_NL = rep(1,num.covariates),
+                         vector.alpha.cov_NL = rep(1,num.covariates),
                          focal.comp.matrix,
                          focal.covariates,
                          generate.errors = FALSE,
@@ -162,7 +163,8 @@ cxr_optimize <- function(fitness.model,
                           num.competitors = num.competitors, 
                           focal.covariates = focal.covariates,
                           fixed.terms = fixed.terms,
-                          function_NL = function_NL)
+                          vector.lambda.cov_NL = vector.lambda.cov_NL,
+                          vector.alpha.cov_NL = vector.alpha.cov_NL)
   }, error=function(e){cat("cxr_optimize ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "optim_L-BFGS-B"){
     tryCatch({
@@ -177,7 +179,8 @@ cxr_optimize <- function(fitness.model,
                           param.list = param.list,
                           log.fitness = log.fitness, 
                           focal.comp.matrix = focal.comp.matrix,
-                          function_NL = function_NL,
+                          vector.lambda.cov_NL = vector.lambda.cov_NL,
+                          vector.alpha.cov_NL = vector.alpha.cov_NL,
                           num.covariates = num.covariates, 
                           num.competitors = num.competitors, 
                           focal.covariates = focal.covariates,
@@ -193,7 +196,8 @@ cxr_optimize <- function(fitness.model,
                            param.list = param.list,
                            log.fitness = log.fitness, 
                            focal.comp.matrix = focal.comp.matrix,
-                           function_NL = function_NL,
+                           vector.lambda.cov_NL = vector.lambda.cov_NL,
+                           vector.alpha.cov_NL = vector.alpha.cov_NL,
                            num.covariates = num.covariates, 
                            num.competitors = num.competitors, 
                            focal.covariates = focal.covariates,
@@ -209,7 +213,8 @@ cxr_optimize <- function(fitness.model,
                            param.list = param.list,
                            log.fitness = log.fitness, 
                            focal.comp.matrix = focal.comp.matrix,
-                           function_NL = function_NL,
+                           vector.lambda.cov_NL = vector.lambda.cov_NL,
+                           vector.alpha.cov_NL = vector.alpha.cov_NL,
                            num.covariates = num.covariates, 
                            num.competitors = num.competitors, 
                            focal.covariates = focal.covariates,
@@ -225,7 +230,8 @@ cxr_optimize <- function(fitness.model,
                            param.list = param.list,
                            log.fitness = log.fitness, 
                            focal.comp.matrix = focal.comp.matrix,
-                           function_NL = function_NL,
+                           vector.lambda.cov_NL = vector.lambda.cov_NL,
+                           vector.alpha.cov_NL = vector.alpha.cov_NL,
                            num.covariates = num.covariates, 
                            num.competitors = num.competitors, 
                            focal.covariates = focal.covariates,
@@ -240,7 +246,8 @@ cxr_optimize <- function(fitness.model,
                           control = list(maxit = 1e3), 
                           param.list = param.list,
                           log.fitness = log.fitness, 
-                          function_NL = function_NL,
+                          vector.lambda.cov_NL = vector.lambda.cov_NL,
+                          vector.alpha.cov_NL = vector.alpha.cov_NL,
                           focal.comp.matrix = focal.comp.matrix,
                           num.covariates = num.covariates, 
                           num.competitors = num.competitors, 
@@ -259,7 +266,8 @@ cxr_optimize <- function(fitness.model,
                                        param.list = param.list,
                                        log.fitness = log.fitness, 
                                        focal.comp.matrix = focal.comp.matrix,
-                                       function_NL = function_NL,
+                                       vector.lambda.cov_NL = vector.lambda.cov_NL,
+                                       vector.alpha.cov_NL = vector.alpha.cov_NL,
                                        num.covariates = num.covariates, 
                                        num.competitors = num.competitors, 
                                        focal.covariates = focal.covariates,
@@ -272,7 +280,8 @@ cxr_optimize <- function(fitness.model,
                                        param.list = param.list,
                                        log.fitness = log.fitness, 
                                        focal.comp.matrix = focal.comp.matrix,
-                                       function_NL = function_NL,
+                                       vector.lambda.cov_NL = vector.lambda.cov_NL,
+                                       vector.alpha.cov_NL = vector.alpha.cov_NL,
                                        num.covariates = num.covariates, 
                                        num.competitors = num.competitors, 
                                        focal.covariates = focal.covariates,
@@ -293,8 +302,10 @@ cxr_optimize <- function(fitness.model,
                                    param.list = param.list,
                                    alpha.length = length(init.alpha),
                                    alpha.cov.length = length(init.alpha.cov),
+                                   alpha.cov_NL.length = length(init.alpha.cov_NL),
                                    num.competitors = num.competitors,
-                                   num.covariates = num.covariates)
+                                   num.covariates = num.covariates,
+                                   vector.lambda.cov_NL = vector.lambda.cov_NL)
     log.likelihood <- optim.result$value
     print(log.likelihood)
     }else{
@@ -302,8 +313,10 @@ cxr_optimize <- function(fitness.model,
                                      param.list = param.list,
                                      alpha.length = length(init.alpha),
                                      alpha.cov.length = length(init.alpha.cov),
+                                     alpha.cov_NL.length = length(init.alpha.cov_NL),
                                      num.competitors = num.competitors,
-                                     num.covariates = num.covariates)
+                                     num.covariates = num.covariates,
+                                     vector.lambda.cov_NL = vector.lambda.cov_NL)
       log.likelihood <- NA
     }
     
@@ -317,8 +330,10 @@ cxr_optimize <- function(fitness.model,
                                    param.list = param.list,
                                    alpha.length = length(init.alpha),
                                    alpha.cov.length = length(init.alpha.cov),
+                                   alpha.cov_NL.length = length(init.alpha.cov_NL),
                                    num.competitors = num.competitors,
-                                   num.covariates = num.covariates)
+                                   num.covariates = num.covariates,
+                                   vector.lambda.cov_NL = vector.lambda.cov_NL)
     
     log.likelihood <- optim.result$objective
     
@@ -327,8 +342,10 @@ cxr_optimize <- function(fitness.model,
                                      param.list = param.list,
                                      alpha.length = length(init.alpha),
                                      alpha.cov.length = length(init.alpha.cov),
+                                     alpha.cov_NL.length = length(init.alpha.cov_NL),
                                      num.competitors = num.competitors,
-                                     num.covariates = num.covariates)
+                                     num.covariates = num.covariates,
+                                     vector.lambda.cov_NL = vector.lambda.cov_NL)
       log.likelihood <- NA
     }
   }  
@@ -348,7 +365,8 @@ cxr_optimize <- function(fitness.model,
                           focal.comp.matrix = focal.comp.matrix,
                           focal.covariates = focal.covariates,
                           nsamples = bootstrap.samples,
-                          function_NL = function_NL)
+                          vector.lambda.cov_NL = vector.lambda.cov_NL,
+                          vector.alpha.cov_NL = vector.alpha.cov_NL)
   }else{
     errors <- rep(NA,length(init.par))
   }
@@ -357,8 +375,10 @@ cxr_optimize <- function(fitness.model,
                                  param.list = param.list,
                                  alpha.length = length(init.alpha),
                                  alpha.cov.length = length(init.alpha.cov),
+                                 alpha.cov_NL.length = length(init.alpha.cov_NL),
                                  num.competitors = num.competitors,
-                                 num.covariates = num.covariates)
+                                 num.covariates = num.covariates,
+                                 vector.lambda.cov_NL = vector.lambda.cov_NL)
   # return list of results
   lambda <- optim.params[["lambda"]]
   lambda.lower.error <- optim.params[["lambda"]]-1.96*error.params[["lambda"]]
@@ -410,14 +430,14 @@ cxr_optimize <- function(fitness.model,
   }
   if("lambda.cov_NL" %in% param.list){
     if(!is.null(name.covariates)){
-      if(length(lambda.cov_NL) == length(name.covariates)){
-        names(lambda.cov_NL) <- name.covariates
+      if(length(lambda.cov_NL) == length(name.covariates)-sum(vector.lambda.cov_NL!=1)){
+        names(lambda.cov_NL) <- name.covariates[vector.lambda.cov_NL!=1]
       }
-      if(length(lambda.cov_NL.lower.error) == length(name.covariates)){
-        names(lambda.cov_NL.lower.error) <- name.covariates
+      if(length(lambda.cov_NL.lower.error) == length(name.covariates)-sum(vector.lambda.cov_NL==1)){
+        names(lambda.cov_NL.lower.error) <- name.covariates[vector.lambda.cov_NL!=1]
       }
-      if(length(lambda.cov_NL.upper.error) == length(name.covariates)){
-        names(lambda.cov_NL.upper.error) <- name.covariates
+      if(length(lambda.cov_NL.upper.error) == length(name.covariates)-sum(vector.lambda.cov_NL==1)){
+        names(lambda.cov_NL.upper.error) <- name.covariates[vector.lambda.cov_NL!=1]
       }
     }
   }
@@ -450,13 +470,13 @@ cxr_optimize <- function(fitness.model,
   }
   if("alpha.cov_NL" %in% param.list){
     if(!is.null(name.competitors) & !is.null(name.covariates)){
-      name.alpha.cov_NL <- paste(rep(name.covariates,each = num.competitors),rep(name.competitors,num.covariates),sep="_")
+      name.alpha.cov_NL <- paste(rep(name.covariates[vector.alpha.cov_NL!=1],each = num.competitors),rep(name.competitors,num.covariates-sum(vector.alpha.cov_NL==1)),sep="_")
       if(length(alpha.cov_NL) == length(name.alpha.cov_NL)){
         names(alpha.cov_NL) <- name.alpha.cov_NL
       }
       if(length(alpha.cov_NL.lower.error) == length(name.alpha.cov_NL)){
         names(alpha.cov_NL.lower.error) <- name.alpha.cov_NL
-      }
+        }
       if(length(alpha.cov_NL.upper.error) == length(name.alpha.cov_NL)){
         names(alpha.cov_NL.upper.error) <- name.alpha.cov_NL
       }
@@ -464,7 +484,6 @@ cxr_optimize <- function(fitness.model,
   }
   AIC <- AIC(log.likelihood,num.covariates, num.competitors,number.model,param.list)
   print(AIC)
-  print("he")
   return.list <- list(lambda = lambda,
                       lambda.lower.error = lambda.lower.error,
                       lambda.upper.error = lambda.upper.error,

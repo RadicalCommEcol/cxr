@@ -20,15 +20,15 @@ AIC <- function(negative_llik, num.covariates, num.competitors,model.number,para
   
   else if(model.number==4){
     num.parameters <- 1 + num.competitors + 2*num.covariates #lambda, lambda.cov, one alpha per competitor, one alpha.cov per covariate
-    if("lambda.cov_NL" %in% param.list){num.parameters<-num.parameters + num.covariates}
-    if("alpha.cov_NL" %in% param.list){num.parameters<-num.parameters + num.covariates}
+    if("lambda.cov_NL" %in% param.list){num.parameters<-num.parameters + sum(vector.lambda.cov_NL!=1)}
+    if("alpha.cov_NL" %in% param.list){num.parameters<-num.parameters + sum(vector.alpha.cov_NL!=1)}
     return(2*negative_llik + 2*num.parameters)
   }
   
   else if(model.number==5){
     num.parameters <- 1 + num.competitors + num.covariates*(num.competitors+1) #lambda, lambda.cov, one alpha per competitor, one alpha.cov per covariate and per competirors
-    if("lambda.cov_NL" %in% param.list){num.parameters <- num.parameters + num.covariates*num.competitors}
-    if("alpha.cov_NL" %in% param.list){num.parameters <- num.parameters + num.covariates*num.competitors}
+    if("lambda.cov_NL" %in% param.list){num.parameters <- num.parameters + sum(vector.lambda.cov_NL!=1)}
+    if("alpha.cov_NL" %in% param.list){num.parameters <- num.parameters + sum(vector.alpha.cov_NL!=1)*num.competitors}
     return(2*negative_llik + 2*num.parameters)
   }
 }
