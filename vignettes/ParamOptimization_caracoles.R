@@ -233,7 +233,7 @@ for(i.sp in 1:length(focal.sp)){
     }
   }
   # lambda.cov
-  if("lambda.cov" %in% param.list[[2]]){
+  if("lambda.cov" %in% unlist(param.list)){
     if(length(init.lambda.cov) != num.covariates){
       current.init.lambda.cov <- rep(init.lambda.cov[1],num.covariates)
     }else{
@@ -245,7 +245,7 @@ for(i.sp in 1:length(focal.sp)){
   
 
   #lamda.cov_NL
-  if("lambda.cov_NL" %in% param.list[[2]]){
+  if("lambda.cov_NL" %in% unlist(param.list)){
     if(length(init.lambda.cov_NL) != sum(vector.lambda.cov_NL!=1)){
       current.init.lambda.cov_NL <- rep(init.lambda.cov_NL[1],sum(vector.lambda.cov_NL!=1))
     }else{
@@ -254,7 +254,7 @@ for(i.sp in 1:length(focal.sp)){
   }
   
   # alpha.cov
-  if("alpha.cov" %in% param.list[[2]]){
+  if("alpha.cov" %in% unlist(param.list)){
     if(models[1]<=4){
       length.alpha.cov <- num.covariates
     }else if(models[1]>4){
@@ -270,7 +270,7 @@ for(i.sp in 1:length(focal.sp)){
   }
   
   # alpha.cov_NL
-  if("alpha.cov_NL" %in% param.list[[2]]){
+  if("alpha.cov_NL" %in% unlist(param.list)){
     if(models[1]<=4){
       length.alpha.cov_NL <- sum(vector.alpha.cov_NL!=1)
     }else if(models[1]>4){
