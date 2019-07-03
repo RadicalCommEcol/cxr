@@ -78,12 +78,12 @@ BH_5 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
         num <- num + function2(lambda.cov[z],lambda.cov_NL[pos],focal.cov.matrix[,z])
         pos<-pos+1
       }
-    }
+    
     else if(vector.lambda.cov_NL[z]==3){
       num <- num + function3(lambda.cov[z],lambda.cov_NL[pos],focal.cov.matrix[,z])
       pos<-pos+1
     }
-  
+    }
   }else{
   for(v in 1:num.covariates){
     num <- num + lambda.cov[v]*focal.cov.matrix[,v] 

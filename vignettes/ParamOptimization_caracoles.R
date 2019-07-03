@@ -75,8 +75,8 @@ function3 <-function(a,b,x){
 }
 
 #choose the function
-vector.lambda.cov_NL <- c(1)
-vector.alpha.cov_NL <-c(2)
+vector.lambda.cov_NL <- c(2)
+vector.alpha.cov_NL <-c(3)
 # keep the model definitions in a list, for ease
 fitness.models <- list(BH_1 = BH_1,BH_2 = BH_2,BH_3 = BH_3,BH_4 = BH_4,BH_5 = BH_5)
 
@@ -130,6 +130,8 @@ init.alpha.cov_NL <- 1
 lower.alpha.cov_NL <- 1e-4
 upper.alpha.cov_NL <- 1e4
 
+if(sum(vector.lambda.cov_NL!=1)==0){init.lambda.cov_NL<-NA}
+if(sum(vector.alpha.cov_NL!=1)==0){init.alpha.cov_NL<-NA}
 
 # if we want quicker calculations, we can disable 
 # the bootstrapping for the standard errors
@@ -137,7 +139,7 @@ generate.errors <- FALSE
 bootstrap.samples <- 3
 
 # store results?
-write.results <- TRUE
+write.results <- FALSE
 
 ##############################
 # initialize data structures
@@ -246,8 +248,9 @@ for(i.sp in 1:length(focal.sp)){
 
   #lamda.cov_NL
   if("lambda.cov_NL" %in% unlist(param.list)){
-    if(length(init.lambda.cov_NL) != sum(vector.lambda.cov_NL!=1)){
-      current.init.lambda.cov_NL <- rep(init.lambda.cov_NL[1],sum(vector.lambda.cov_NL!=1))
+    if (sum(vector.lambda.cov_NL!=1)==0){current.init.lambda.cov_NL<-NA}
+      else if(length(init.lambda.cov_NL) != sum(vector.lambda.cov_NL!=1)){
+      current.init.lambda.cov_NL <- rep(init.lambda.cov_NL,sum(vector.lambda.cov_NL!=1))
     }else{
       current.init.lambda.cov_NL <- init.lambda.cov_NL  
     }
@@ -273,11 +276,13 @@ for(i.sp in 1:length(focal.sp)){
   if("alpha.cov_NL" %in% unlist(param.list)){
     if(models[1]<=4){
       length.alpha.cov_NL <- sum(vector.alpha.cov_NL!=1)
+      print("length")
+      print(length.alpha.cov_NL)
     }else if(models[1]>4){
       length.alpha.cov_NL <- sum(vector.alpha.cov_NL!=1)*num.competitors
     }
     if(length(init.alpha.cov_NL) != length.alpha.cov_NL){
-      current.init.alpha.cov_NL <- rep(init.alpha.cov_NL[1],length.alpha.cov)
+      current.init.alpha.cov_NL <- rep(init.alpha.cov_NL,length.alpha.cov_NL)
     }else{
       current.init.alpha.cov_NL <- init.alpha.cov_NL  
     }  
@@ -359,7 +364,7 @@ for(i.sp in 1:length(focal.sp)){
       
       param_matrices[[i.sp]][[i.model]][[i.method]]$log.likelihood <- temp.results$log.likelihood
       param_matrices[[i.sp]][[i.model]][[i.method]]$AIC <- temp.results$AIC
-    }# for i.method
+   print(param_matrices[[i.sp]][[i.model]][[i.method]]) }# for i.method
     
     #######################
     # update initial values for the different parameters

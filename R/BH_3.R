@@ -21,7 +21,7 @@
 #' @export
 #'
 #' @examples
-BH_3 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms,function_NL){
+BH_3 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates, num.competitors, focal.covariates, fixed.terms,vector.lambda.cov_NL,vector.alpha.cov_NL){
   
   pos <- 1
   if("lambda" %in% param.list){

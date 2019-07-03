@@ -11,7 +11,7 @@
 #' @export
 #'
 #' @examples
-RetrieveParams <- function(optim.params, param.list, alpha.length, alpha.cov.length,alpha.cov_NL.length, num.competitors, num.covariates,vector.lambda.cov_NL){
+RetrieveParams <- function(optim.params, param.list, alpha.length, alpha.cov.length,alpha.cov_NL.length, num.competitors, num.covariates,vector.lambda.cov_NL,vector.alpha.cov_NL){
   
   lambda <- NULL
   alpha <- NULL
@@ -34,8 +34,11 @@ RetrieveParams <- function(optim.params, param.list, alpha.length, alpha.cov.len
   }
   
   if("lambda.cov_NL" %in% param.list){
+    if (sum(vector.lambda.cov_NL!=1)==0){lambda.cov_NL<-NA}
+    else{
     lambda.cov_NL <- optim.params[pos:(pos+sum(vector.lambda.cov_NL!=1)-1)]
     pos <- pos + sum(vector.lambda.cov_NL!=1)
+    }
   }
   
   if("alpha" %in% param.list){
@@ -48,7 +51,9 @@ RetrieveParams <- function(optim.params, param.list, alpha.length, alpha.cov.len
   }
   
   if("alpha.cov_NL" %in% param.list){
-    alpha.cov_NL <- optim.params[pos:(pos+alpha.cov_NL.length-1)]
+    if (length.alpha.cov_NL==0){alpha.cov_NL<-NA}
+    else {alpha.cov_NL <- optim.params[pos:(pos+alpha.cov_NL.length-1)]
+    }
   }
   
   return(list(lambda = lambda, alpha = alpha, lambda.cov = lambda.cov, alpha.cov = alpha.cov,lambda.cov_NL = lambda.cov_NL, alpha.cov_NL = alpha.cov_NL, sigma = sigma))

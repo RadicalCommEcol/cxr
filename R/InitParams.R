@@ -20,7 +20,9 @@ InitParams <- function(init.lambda = NULL,
                        lower.alpha.cov_NL = 1e-4,
                        upper.alpha.cov_NL = 1e5,
                        num.competitors,
-                       num.covariates
+                       num.covariates,
+                       vector.lambda.cov_NL,
+                       vector.alpha.cov_NL
 ){
   init.par <- NULL
   lower.bounds <- NULL
@@ -42,9 +44,13 @@ InitParams <- function(init.lambda = NULL,
   
   # effect of non linearity of covariates on lambda
   if(!is.null(init.lambda.cov_NL)){
+    for (z in 1:num.covariates){
+      if(vector.lambda.cov_NL[z]!=1){
     init.par <- c(init.par,init.lambda.cov_NL)
     lower.bounds <- c(lower.bounds,rep(lower.lambda.cov_NL,length(init.lambda.cov_NL)))
     upper.bounds <- c(upper.bounds,rep(upper.lambda.cov_NL,length(init.lambda.cov_NL)))
+    }
+    }
   }
   
   # alpha value/matrix
@@ -63,9 +69,13 @@ InitParams <- function(init.lambda = NULL,
   
    # effect of non linearity of covariates on alpha
   if(!is.null(init.alpha.cov_NL)){
+    for (z in 1:num.covariates){
+      if(vector.alpha.cov_NL[z]!=1){
     init.par <- c(init.par,init.alpha.cov_NL)
     lower.bounds <- c(lower.bounds,rep(lower.alpha.cov_NL,length(init.alpha.cov_NL)))
     upper.bounds <- c(upper.bounds,rep(upper.alpha.cov_NL,length(init.alpha.cov_NL)))
+      }
+    }
   }
   
   # sigma goes at the end

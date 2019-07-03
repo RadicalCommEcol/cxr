@@ -112,9 +112,9 @@ cxr_optimize <- function(fitness.model,
   if("alpha.cov_NL" %in% param.list){
     my.init.alpha.cov_NL <- init.alpha.cov_NL
   }
-  # else{
-  #   fixed.terms[["alpha.cov_NL"]] <- init.alpha.cov_NL
-  # }
+  else{
+    fixed.terms[["alpha.cov_NL"]] <- init.alpha.cov_NL
+  }
   
   
   
@@ -141,7 +141,9 @@ cxr_optimize <- function(fitness.model,
                          lower.alpha.cov_NL = lower.alpha.cov_NL,
                          upper.alpha.cov_NL = upper.alpha.cov_NL,
                          num.competitors = num.competitors,
-                         num.covariates = num.covariates)
+                         num.covariates = num.covariates,
+                         vector.lambda.cov_NL = vector.lambda.cov_NL,
+                         vector.alpha.cov_NL = vector.alpha.cov_NL)
   
   # in case of error
   optim.result <- NULL
@@ -305,9 +307,9 @@ cxr_optimize <- function(fitness.model,
                                    alpha.cov_NL.length = length(init.alpha.cov_NL),
                                    num.competitors = num.competitors,
                                    num.covariates = num.covariates,
-                                   vector.lambda.cov_NL = vector.lambda.cov_NL)
+                                   vector.lambda.cov_NL = vector.lambda.cov_NL,
+                                   vector.alpha.cov_NL = vector.alpha.cov_NL)
     log.likelihood <- optim.result$value
-    print(log.likelihood)
     }else{
       optim.params <- RetrieveParams(optim.params = rep(NA,length(init.par$init.par)),
                                      param.list = param.list,
@@ -316,7 +318,8 @@ cxr_optimize <- function(fitness.model,
                                      alpha.cov_NL.length = length(init.alpha.cov_NL),
                                      num.competitors = num.competitors,
                                      num.covariates = num.covariates,
-                                     vector.lambda.cov_NL = vector.lambda.cov_NL)
+                                     vector.lambda.cov_NL = vector.lambda.cov_NL,
+                                     vector.alpha.cov_NL = vector.alpha.cov_NL)
       log.likelihood <- NA
     }
     
@@ -333,7 +336,8 @@ cxr_optimize <- function(fitness.model,
                                    alpha.cov_NL.length = length(init.alpha.cov_NL),
                                    num.competitors = num.competitors,
                                    num.covariates = num.covariates,
-                                   vector.lambda.cov_NL = vector.lambda.cov_NL)
+                                   vector.lambda.cov_NL = vector.lambda.cov_NL,
+                                   vector.alpha.cov_NL = vector.alpha.cov_NL)
     
     log.likelihood <- optim.result$objective
     
@@ -345,7 +349,8 @@ cxr_optimize <- function(fitness.model,
                                      alpha.cov_NL.length = length(init.alpha.cov_NL),
                                      num.competitors = num.competitors,
                                      num.covariates = num.covariates,
-                                     vector.lambda.cov_NL = vector.lambda.cov_NL)
+                                     vector.lambda.cov_NL = vector.lambda.cov_NL,
+                                     vector.alpha.cov_NL = vector.alpha.cov_NL)
       log.likelihood <- NA
     }
   }  
@@ -378,7 +383,8 @@ cxr_optimize <- function(fitness.model,
                                  alpha.cov_NL.length = length(init.alpha.cov_NL),
                                  num.competitors = num.competitors,
                                  num.covariates = num.covariates,
-                                 vector.lambda.cov_NL = vector.lambda.cov_NL)
+                                 vector.lambda.cov_NL = vector.lambda.cov_NL,
+                                 vector.alpha.cov_NL = vector.alpha.cov_NL)
   # return list of results
   lambda <- optim.params[["lambda"]]
   lambda.lower.error <- optim.params[["lambda"]]-1.96*error.params[["lambda"]]
@@ -447,6 +453,8 @@ cxr_optimize <- function(fitness.model,
   
   if("alpha.cov_NL" %in% param.list){
   alpha.cov_NL <- optim.params[["alpha.cov_NL"]]
+  print("optim.params")
+  print(optim.params[["alpha.cov_NL"]])
   alpha.cov_NL.lower.error <- optim.params[["alpha.cov_NL"]]-1.96*error.params[["alpha.cov_NL"]]
   alpha.cov_NL.upper.error <- optim.params[["alpha.cov_NL"]]+1.96*error.params[["alpha.cov_NL"]]
   }else{ 
@@ -483,7 +491,7 @@ cxr_optimize <- function(fitness.model,
     }
   }
   AIC <- AIC(log.likelihood,num.covariates, num.competitors,number.model,param.list)
-  print(AIC)
+  
   return.list <- list(lambda = lambda,
                       lambda.lower.error = lambda.lower.error,
                       lambda.upper.error = lambda.upper.error,
@@ -505,7 +513,8 @@ cxr_optimize <- function(fitness.model,
                       alpha.cov_NL.upper.error = alpha.cov_NL.upper.error,
                       log.likelihood = log.likelihood,
                       AIC = AIC)
-  
+  print("alphareturnlist")
+  print(return.list$alpha.cov_NL)
   return.list[lengths(return.list) == 0] <- NA_character_
   
   return.list
