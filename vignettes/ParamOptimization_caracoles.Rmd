@@ -12,17 +12,17 @@ vignette: >
 
 This document explains how to optimize several models that predict species fecundity. This means that models with increasing number is a more complex version of the previous model. This procedure is intended to avoid overfitting problems and promote convergence of the more complex models. Here, we present how to use data obtained from experiments or field observations to predict species fecundity as a function of the intrinsic ability of species to produce offspring (lambda), and interaction coefficients with other species (alpha). The model is its most simpler version takes the following form:
 
-$F = \frac{\lambda}{1+\alpha}$
+$$F = \frac{\lambda}{1+\alpha}$$
 
 This form is basically a Beverton-Holt model. Following modifications of this model will allow us obtaining the interactions matrix for paris of species, and the effect of covariables (including biotic and abiotic factors) on both lambda and alpha coefficients. All together this information is key for obtaining information of different drivers determining the outcome of species interaction at local scales, which are widely used in "modern" coexistence studies. Most of this vignette presents data preparation from how is obtained in the field to the appropriate format for the analysis. 
 
 **Setup**
 
-We start loading the package and the associated dataset. We set up 9 plots [...]. We will use the following data:
-- \code{competition}: measurement of fruit and seed set of plant individuals in presence of competitors of the same or other species.
-- \code{salinity}: soil salinity for each subplot. This is our abiotic covariate, but any other types of covariates can be included. 
+We start loading the package and the associated dataset (see vignette `Data and model formats` for details on the data). We will use the following data:
+- `competition`: measurement of fruit and seed set of plant individuals in presence of competitors of the same or other species.
+- `salinity`: soil salinity for each subplot. This is our abiotic covariate, but any other types of covariates can be included. 
 
-```{r}
+```{r message=F, warning=F}
 library(cxr)
 data(competition)
 data(salinity)
@@ -32,7 +32,7 @@ data(salinity)
 
 This part consists in two different points. First we build a data structure that will hold the results for all species, and second we prepare the example database for the analysis.
 
-```{r}
+```{r message=F, warning=F}
 # spread the data from long to wide format
 competition.data <- tidyr::spread(competition,competitor,number,fill = 0)
 # how many focal species
@@ -51,7 +51,7 @@ Note that if we include more than one model, the optimization procedures proceed
 
 IMPORTANT POINT HERE DO WE NEED TO DESCRIBE THE STRUCTURE OF THESE DIFFERENT MODELS??
 
-```{r}
+```{r message=F, warning=F}
 models <- 3:5
 ```
 
@@ -59,7 +59,7 @@ This sequential procedure means tha the output from model 3 will be taken as ini
 
 We can estimate the whole parameter set for each model, or fix certain parameters, for example, in case there are independent field estimation of some of them. This information is passed to the function in a list, in which each element is a string vector giving the set of parameters that are to be optimized for each model. In our example, we optimize all parameters (note that model 3 has only $\lambda$ and $\alpha$ parameters, whereas models 4 and 5 also include the effect of covariates).
 
-```{r}
+```{r message=F, warning=F}
 # which values do we optimize for each model?
 param.list <- list(c("lambda","alpha"),
                    c("lambda","alpha","lambda.cov","alpha.cov"),
@@ -68,20 +68,20 @@ param.list <- list(c("lambda","alpha"),
 
 In case you had independent estimates of parameters, you would have something along these lines:
 
-```{r}
+```{r message=F, warning=F}
 # init.lambda <- rep(1,length(focal.sp))
 # init.alpha <- matrix(rnorm(ncol(comp.matrix)*ncol(comp.matrix),1,0.01),nrow = ncol(comp.matrix),ncol = ncol(comp.matrix))
 ```
 
 Keep the model definitions in a list, for ease:
 
-```{r}
+```{r message=F, warning=F}
 fitness.models <- list(BH_1 = BH_1,BH_2 = BH_2,BH_3 = BH_3,BH_4 = BH_4,BH_5 = BH_5)
 ```
 
 Get back the covariates, after matching with the competition observations. It is important that covariates are passed in a matrix format. If they are named, the output will also include the names.
 
-```{r}
+```{r message=F, warning=F}
 # environmental covariates
 covariates <- as.matrix(full.data[,"sum_salinity"])
 colnames(covariates) <- "sum_salinity"
@@ -91,7 +91,7 @@ colnames(covariates) <- "sum_salinity"
 
 Here we specify which optimization methods to use. You can include more than one.
 
-```{r}
+```{r message=F, warning=F}
 # optimization methods to use
 optim.methods <- c("optim_NM"
                    # "optim_L-BFGS-B"
@@ -106,15 +106,15 @@ optim.methods <- c("optim_NM"
 
 Since the routine takes the input for a given model from the output of the previous model, we need to specifiy, if we selected more than one optimization method, from which method it will take these initial values:
 
-```{r}
+```{r message=F, warning=F}
 # from which method are we taking initial estimates for the next model?
 init.par.method <- optim.methods[1]
 init.method.num <- which(optim.methods == init.par.method)
 ```
 
-We also need to specify the initial values for the first model (model 3, in this example). If you have independent estimates of any parameter, comment out the appropriate lines. Note that some of the optimization methods (e.g. \code{optim-LFGS-B}) fail with lower bounds equal to zero. Hence the small, but positive, values.
+We also need to specify the initial values for the first model (model 3, in this example). If you have independent estimates of any parameter, comment out the appropriate lines. Note that some of the optimization methods (e.g. `optim-LFGS-B`) fail for parameter combinations in which the function is undefined. Hence the small, but positive, values.
 
-```{r}
+```{r message=F, warning=F}
 # values for initial estimates of parameters. 
 # Overwrite if necessary
 # init.lambda is calculated after log.fitness for each focal species
@@ -137,25 +137,25 @@ lower.alpha.cov <- 1e-10
 upper.alpha.cov <- 1e4
 ```
 
-Importantly, the package allow computing estimations of standard errors. This error estimation is done via bootstrapping by two reasons. One is that obtaining estimation of error by Hessian Matrix is unstable due to several computational issues, but sencondly and more importantly, error distributions of your variable might not follow a normal distribution. Please remember that the estimation of errors can be, depending on the model and optimization method, computationally expensive. We recommend 999 runs, yet we provide here a minimal example of it (see bootstrap.samples).
+Importantly, the package allow computing estimations of standard errors. This error estimation is done via bootstrapping for two reasons. One is that obtaining estimation of error using Hessian matrices is unstable due to several computational issues, but sencondly and more importantly, error distributions of your variable might not follow a normal distribution. Please remember that the estimation of errors can be, depending on the model and optimization method, computationally expensive. We recommend 999 runs, yet we provide here a minimal example of it (setting `bootstrap.samples` to only 3 runs).
 
-```{r}
+```{r message=F, warning=F}
 generate.errors <- TRUE
 bootstrap.samples <- 3
 ```
 
 And a flag for storing or not the results of the analysis
 
-```{r}
+```{r message=F, warning=F}
 # store results?
 write.results <- FALSE
 ```
 
 **Initialize results structure** 
 
-We will store the results of our analysis in a nested list, following the nested design of the optimization proccess. For each focal species, we calculate three different models (given in \code{models}), and for each of these models, we obtain the parameterization from a series of optimization methods (given in \code{optim.methods}). Thus, we create a list, named \code{param_estimates}, of the form:
+We will store the results of our analysis in a nested list, following the nested design of the optimization proccess. For each focal species, we calculate three different models (given in `models`), and for each of these models, we obtain the parameterization from a series of optimization methods (given in `optim.methods`). Thus, we create a list, named `param_estimates`, of the form:
 
-\code{param_estimates[[species]][[model]][[method]]}
+`param_estimates[[species]][[model]][[method]]`
 
 This is done with a series of nested loops:
 
@@ -188,14 +188,14 @@ for(i.sp in 1:length(focal.sp)){
 names(param_estimates) <- focal.sp
 ```
 
-With this setting, we are now ready to optimize the selected parameters based on our dataset. This is done species by species. As the main function, \code{cxr_optimize}, accepts the input for a single species, we code a loop for going through all species. Inside this loop, we include the following steps:
+With this setting, we are now ready to optimize the selected parameters based on our dataset. This is done species by species. As the main function, `cxr_optimize`, accepts the input for a single species, we code a loop for going through all species. Inside this loop, we include the following steps:
 - 1) subset the competition data for the focal species 
 - 2) generate the actual initial values, considering all situations. Remember that, depending on the model, some parameters will have different length. For example, $\alpha$ is a single value in model 2 and a matrix in model 3 onwards. Thus, for species *i*, $alpha_{ij}$ is a vector of length equal to the number of competitor species.
-- 3) the actual call to \code{cxr_optimize}
+- 3) the actual call to `cxr_optimize`
 - 4) store the results in the nested list we created above
 - 5) update the initial values to be passed on to the next model
 
-```{r echo=FALSE}
+```{r message=F, warning=F}
 for(i.sp in 1:length(focal.sp)){
   
   # 1) subset and prepare the data
@@ -391,7 +391,7 @@ for(i.sp in 1:length(focal.sp)){
 
 If we set the flag, the nested list will be written to disk as a .RData file. The list structure is very convenient for handling these results in R, as it maintains the nested design of the parameterization (per species, model, and optimization method). However, it may also be necessary to have the results as dataframes and csv files, e.g. for plotting. Here we build four dataframes, in long format, for the different sets of parameters: lambda, alpha, lambda.cov, and alpha.cov. This assumes that covariates are named, so the vectors returned from the list are also named.
 
-```{r}
+```{r message=F, warning=F}
 if(write.results){
   # save(param_estimates,file = "./results/param_estimates.Rdata")
   

@@ -10,7 +10,7 @@ vignette: >
 
 **Introduction**
 
-The \code{cxr} package provides a general interface to parameterize population dynamics models from empirical data, and obtain from the estimations of these parameters (species vital rates and interaction coefficients) a series of metrics associated with modern coexistence theory. These metrics measure the species competitive ability, their responses to competition as well as niche and average fitness differences (both demographic and competitive response differences).
+The `cxr` package provides a general interface to parameterize population dynamics models from empirical data, and obtain from the estimations of these parameters (species vital rates and interaction coefficients) a series of metrics associated with modern coexistence theory. These metrics measure the species competitive ability, their responses to competition as well as niche and average fitness differences (both demographic and competitive response differences).
 
 We will demonstrate the basic usage of the package, using the data included in it (see *Lanuza, Bartomeus, Godoy. 2018. Ecology Letters 21:865-874* for a description of the dataset). In particular, with this dataset, we will obtain the values of seed production in the absence of neighbours and the strength of competitive interactions between pairs of species. Once obtained this information, these are the basis for estimating the degree of niche overlap and average fitness differences between a pair of species. 
 
@@ -23,16 +23,16 @@ library(cxr)
 data(competition)
 ```
 
-The \code{competition} dataset includes observation from *20* different plant species. We will subset the information to consider only two of them, *Chamaemelum fuscatum* and *Leontodon maroccanus*.
+The `competition` dataset includes observation from *20* different plant species. We will subset the information to consider only two of them, *Chamaemelum fuscatum* and *Leontodon maroccanus*.
 
-```{r}
+```{r message=F, warning=F}
 my.sp <- c("CHFU", "LEMA")
 two.sp.data <- subset(competition, focal %in% my.sp & competitor %in% my.sp)
 ```
 
 In order to estimate the different parameters for both species, we need to store separately the information on their observations and competitors.
 
-```{r}
+```{r message=F, warning=F}
 comp.matrix <- as.matrix(two.sp.data[,10:ncol(two.sp.data)])
 sp1.comp.matrix <- as.matrix(comp.matrix[which(two.sp.data$focal == my.sp[1]),])
 # optional: name the column with the competitor species
@@ -46,7 +46,7 @@ colnames(sp2.comp.matrix) <- my.sp[1]
 
 and also the estimation of fitness assocaited with each observation. In this particular case this is the seed production of focal individual to which the number of neighbours were also estimated from field observations. Note that we pass the log of the seed production (fitness metric) for facilitating the optimization procedure.
 
-```{r}
+```{r message=F, warning=F}
 sp1.fitness <- two.sp.data$seed[which(two.sp.data$focal == my.sp[1])]
 sp1.log.fitness <- log(sp1.fitness)
 
@@ -56,17 +56,17 @@ sp2.log.fitness <- log(sp2.fitness)
 
 Finally, as with any optimization procedure, we need to provide initial estimates for the parameters we want to fit numerically. In this case, the initial estimate is the mean of the log number of seeds produced.
 
-```{r}
+```{r message=F, warning=F}
 init.lambda <- c(mean(sp1.log.fitness),mean(sp2.log.fitness))
 ```
 
-We will fit the parameters of model 3, i.e.(This model differentiates between intra- and inter-specific competition but does not include yet the effects of environmental covariates or other type of trophic interactions besides competition, see *Lanuza et al. 2018*, *Godoy and Levine. 2014. Ecology 95:726-736* for further details)
+We will fit the parameters of model 3. This model differentiates between intra- and inter-specific competition but does not include yet the effects of environmental covariates or other type of trophic interactions besides competition, see *Lanuza et al. 2018*, *Godoy and Levine. 2014. Ecology 95:726-736* for further details).
 
-$equation$
+$$F_i = \frac{\lambda_i}{1+\sum \alpha_{ij}N_j}$$
 
-and, specifying an optimization method. we can now call the main function with sensible values of upper and lower parameter bounds. We have implemented optimization with eight different optimization methods, that cover a range of methodologies (see e.g. the help of cxr_optimize for the available methods, and *Mullen, K.M. 2014. Continuous Global Optimization in R. Journal of Statistical Software 60:1–45* for an overview of optimization methods.)
+Specifying an optimization method, we can now call the main function with sensible values of upper and lower parameter bounds. We have implemented optimization with eight different optimization methods, that cover a range of methodologies (see e.g. the help of `cxr_optimize for the available methods`, and *Mullen, K.M. 2014. Continuous Global Optimization in R. Journal of Statistical Software 60:1–45* for an overview of optimization methods.)
 
-```{r}
+```{r message=F, warning=F}
 sp1.par <- cxr_optimize(fitness.model = BH_3,
                         optim.method = "optim_L-BFGS-B",
                         param.list = c("lambda","alpha"),
@@ -99,21 +99,21 @@ sp2.par <- cxr_optimize(fitness.model = BH_3,
 
 ```
 
-The \code{cxr_optimize} function returns a list with several components 
+The `cxr_optimize` function returns a list with several components 
 
-```{r}
+```{r message=F, warning=F}
 sp1.par
 ```
 
-In this basic example, we are only interested in obtaining from the optimization process the seed production in the absence of competition (lambda), and the alpha values (both intra and inter specific interactions), the row of the interaction matrix that corresponds to our focal species. Other components are NA either because the third model does not account for them (e.g. \code{lambda.cov} or \code{alpha.cov}), or because we are not estimating them (e.g. standard errors). In any case, we can retrieve the estimated 2x2 interaction matrix from the results.
+In this basic example, we are only interested in obtaining from the optimization process the seed production in the absence of competition (lambda), and the alpha values (both intra and inter specific interactions), the row of the interaction matrix that corresponds to our focal species. Other components are NA either because the third model does not account for them (e.g. `lambda.cov` or `alpha.cov`), or because we are not estimating them (e.g. standard errors). In any case, we can retrieve the estimated 2x2 interaction matrix from the results.
 
-```{r}
+```{r message=F, warning=F}
 interaction.matrix <- matrix(c(sp1.par$alpha, sp2.par$alpha), nrow = length(my.sp), byrow = TRUE)
 ```
 
 and obtain the niche overlap and average fitness ratio between the two species
 
-```{r}
+```{r message=F, warning=F}
 
 NicheOverlap(pair.matrix = interaction.matrix)
 

@@ -8,9 +8,9 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
-Another feature of \code{cxr} is the projection of population abundances in time given a population dynamics model and a set of parameters. This is particular useful when we want to know how our predicts match observed changes in the numner of individuals across time or space. This feature is available for models with the same set of parameters as the ones provided (i.e. **lambda**, **alpha**, **lambda.cov**, and **alpha.cov**). In the package we include a version of the five Beverton-Holt fecundity models, but users are encouraged to code their own predictive models.
+Another feature of `cxr` is the projection of population abundances in time given a population dynamics model and a set of parameters. This is particular useful when we want to know how our predicts match observed changes in the numner of individuals across time or space. This feature is available for models with the same set of parameters as the ones provided (i.e. **lambda**, **alpha**, **lambda.cov**, and **alpha.cov**). In the package we include a version of the five Beverton-Holt fecundity models, but users are encouraged to code their own predictive models.
 
-In this document, we exemplify the use of our projection function. We project the abundances of a set of species from a simulated dataset, in order to show the usage of the function \code{GenerateTestData}, also included in the package.
+In this document, we exemplify the use of our projection function. We project the abundances of a set of species from a simulated dataset, in order to show the usage of the function `GenerateTestData`, also included in the package.
 
 First, load the package
 
@@ -20,9 +20,9 @@ library(cxr)
 
 Specify basic information: how many timesteps are we projecting, and the details of the data we are going to simulate
 
-```{r}
+```{r message=F, warning=F}
 # timesteps
-timesteps <- 50
+timesteps <- 20
 
 # test data
 focal.sp <- c(1,2,3,4,5)
@@ -40,9 +40,9 @@ for(i.cov in 1:num.cov){
 
 ```
 
-With the above info on number of species, covariates, observations, and the associated parameters, we may call the function for generating simulated data. We also need to specify a generative fitness model, that should be one of the five variants of the Beverton-Holt fecundity models included in the package. Here we use the most complex one, model 5. Note also the structure of \code{lambda.cov} and \code{alpha.cov}. The effect of covariates on lambda values, \code{lambda.cov}, is a matrix of dimensions num.sp x num.cov. The effect of covariates on the alpha matrix, in turn, is a list with as many elements as covariates, where each element i of the list is (for model 5), a matrix of num.sp x num.sp, giving the effect of covariate i over each element of the interaction matrix.
+With the above info on number of species, covariates, observations, and the associated parameters, we may call the function for generating simulated data. We also need to specify a generative fitness model, that should be one of the five variants of the Beverton-Holt fecundity models included in the package. Here we use the most complex one, model 5. Note also the structure of `lambda.cov` and `alpha.cov`. The effect of covariates on lambda values, `lambda.cov`, is a matrix of dimensions num.sp x num.cov. The effect of covariates on the alpha matrix, in turn, is a list with as many elements as covariates, where each element i of the list is (for model 5), a matrix of num.sp x num.sp, giving the effect of covariate i over each element of the interaction matrix.
 
-```{r}
+```{r message=F, warning=F}
 test.data <- GenerateTestData(focal.sp = focal.sp,
                               num.sp = num.sp,
                               num.cov = num.cov,
@@ -56,7 +56,7 @@ test.data <- GenerateTestData(focal.sp = focal.sp,
 
 We also need to specify the seed survival and germination rates, in order to project the abundances of adult individuals
 
-```{r}
+```{r message=F, warning=F}
 # lambda, s, g
 sp.par <- data.frame(species = 1:num.sp,lambda = 0,germ.rate = 0, survival.rate = 0)
 sp.par$lambda[focal.sp] <- focal.lambda
@@ -64,9 +64,9 @@ sp.par$germ.rate[focal.sp] <- runif(length(focal.sp),0.7,1)
 sp.par$survival.rate[focal.sp] <- runif(length(focal.sp),0.7,1)
 ```
 
-and set the initial abundances. The \code{PredictAbundances} function is able to project populations from any number of independent sites. These will be treated as disconnected populations, but will share the species parameterization.
+and set the initial abundances. The `PredictAbundances` function is able to project populations from any number of independent sites. These will be treated as disconnected populations, but will share the species parameterization.
 
-```{r}
+```{r message=F, warning=F}
 # initial abundances
 init.abund <- expand.grid(1:num.obs,1:num.sp)
 names(init.abund) <- c("site","species")
@@ -75,7 +75,7 @@ init.abund$abundance <- rnorm(nrow(init.abund),10,2)
 
 We also specify stochastic environmental covariates and their value for the timesteps projected
 
-```{r}
+```{r message=F, warning=F}
 # environmental heterogeneity
 cov.time <- expand.grid(1:num.obs,1:timesteps,1:num.cov)
 names(cov.time) <- c("site","timestep","covariate")
@@ -84,7 +84,7 @@ cov.time$value <- runif(nrow(cov.time),0,5)
 
 put together all parameters for calling the function
 
-```{r}
+```{r message=F, warning=F}
 par <- list(sp.par = sp.par, 
             initial.values = init.abund, 
             covariates = cov.time, 
@@ -95,7 +95,7 @@ par <- list(sp.par = sp.par,
 abundance.model <- BH_abundance_5
 ```
 
-In this simple set up, we choose to predict the number of seeds, instead of number of individuals. See the help from e.g. \code{BH_abundance_5} for details.
+In this simple set up, we choose to predict the number of seeds, instead of number of individuals. See the help from e.g. `BH_abundance_5` for details.
 
 ```{r}
 predicted.abundances <- PredictAbundances(par = par,

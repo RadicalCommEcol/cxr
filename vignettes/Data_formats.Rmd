@@ -10,13 +10,13 @@ vignette: >
 
 **Introduction**
 
-The \code{cxr} package provides diverse functions to handle interaction datasets, but the data provided needs to be in certain formats for compatibility. We will show the structure of the included dataset, and the specific formats accepted by functions of the package. Furthermore, we briefly discuss the models included in the package.
+The `cxr` package provides diverse functions to handle interaction datasets, but the data provided needs to be in certain formats for compatibility. We will show the structure of the included dataset, and the specific formats accepted by functions of the package. Furthermore, we briefly discuss the models included in the package.
 
 **The Caracoles dataset**
 
 We include a dataset of plant annual species, for which their per capita fecundity was obtained in the field, with individuals being subject to competition from intra- or inter-specific neighbours. Also in the dataset are values of abundance of each plant species in each sampling unit. The sampling design is explained in *Lanuza, Bartomeus, Godoy, 2018, Ecology Letters 21:865-874*.
 
-The dataset for competition is
+The table for competition is
 
 ```{r}
 data("competition")
@@ -28,7 +28,7 @@ its structure is as follows: for each observation of a focal individual, the dat
 head(competition)
 ```
 
-The abundance dataset is algo stored in a long format, in which we give, for each plot and subplot, the number of individuals of each species at their developmental peak:
+The abundance table is algo stored in a long format, in which we give, for each plot and subplot, the number of individuals of each species at their developmental peak:
 
 ```{r}
 data("abundance")
@@ -49,29 +49,18 @@ data("salinity")
 head(salinity)
 ```
 
-In the package there are, broadly speaking, two types of functions. Both \code{cxr_optimize} and \code{ER_optimize} accept field data and numerically estimate parameters of a given model. On the other hand, other functions (\code{AvgFitnessRatio}, \code{NicheOverlap}, or \code{CompetitiveAbility}) take these estimates and return coexistence metrics for a single species or pairs of them.
+In the package there are, broadly speaking, two types of functions. Both `cxr_optimize` and `ER_optimize` accept field data and numerically estimate parameters of a given model. On the other hand, other functions (`AvgFitnessRatio`, `NicheOverlap`, or `CompetitiveAbility`) take these estimates and return coexistence metrics for a single species or pairs of them.
 
 *1 - Data and models for optimization functions*
 
-We have included five increasingly complex fitness models with the package (\code{BH_1} to \code{BH_5}) as well as two effect/response models that follow eq. S3 on Appendix S4 of *Godoy, O., Kraft, N.J.B. & Levine, J.M. 2014. Phylogenetic relatedness and the determinants of competitive outcomes. Ecology Letters, 17:836–844*. The two effect/response models (\code{EffectResponse} and \code{EffectResponse_lambda}) differ on whether $\lambda$ is optimized or not. Nevertheless, since all these models are passed as parameters to the respective optimizing functions, users can define their own models and use them for parameterizing their data. The constraints that user-defined models have to follow are 1) that they use the same set of parameters as our models (i.e. \code{lambda}, \code{alpha}, \code{lambda.cov}, \code{alpha.cov}), and 2) that they return a single numeric value that can be minimized numerically (in our case, a log-likelihood).
+We have included five increasingly complex fitness models with the package (`BH_1` to `BH_5`) as well as two effect/response models that follow eq. S3 on Appendix S4 of *Godoy, O., Kraft, N.J.B. & Levine, J.M. 2014. Phylogenetic relatedness and the determinants of competitive outcomes. Ecology Letters, 17:836–844*. The two effect/response models (`EffectResponse` and `EffectResponse_lambda`) differ on whether $\lambda$ is optimized or not. Nevertheless, since all these models are passed as parameters to the respective optimizing functions, users can define their own models and use them for parameterizing their data. The constraints that user-defined models have to follow are 1) that they use the same set of parameters as our models (i.e. `lambda`, `alpha`, `lambda.cov`, `alpha.cov`), and 2) that they return a single numeric value that can be minimized numerically (in our case, a log-likelihood).
 
-The data to provide to \code{cxr_optimize} is the fitness metric (log-transformed) of each observation, and the number of competitors for each observation. Thus, the length of \code{log.fitness} and the number of rows of \code{focal.comp.matrix} must match. Likewise, if covariates are provided, the number of rows of that data must also match the number of observations.
+The data to provide to `cxr_optimize` is the fitness metric (log-transformed) of each observation, and the number of competitors for each observation. Thus, the length of `log.fitness` and the number of rows of `focal.comp.matrix` must match. Likewise, if covariates are provided, the number of rows of that data must also match the number of observations.
 
-The data for \code{ER_optimize} is slightly different, since in this function, an indeterminate number of species are fit at once. Aside from the initial values of the different parameters and their bounds, the main argument is \code{sp.data}. It should be a dataframe with columns: \code{site}, \code{focal}, \code{fitness}, \code{competitor}, \code{number}. This format is mostly equivalent to the one of our competition dataset, but be aware of two particularities: 1) in this function (unlike in \code{cxr_optimize}) the set of focal species must equal the set of competitor species. 2) the missing focal-competitor pairs must be explicitly set to zero in the dataset. These constraints are due to the parallel nature of the parameter estimation.
+The data for `ER_optimize` is slightly different, since in this function, an indeterminate number of species are fit at once. Aside from the initial values of the different parameters and their bounds, the main argument is `sp.data`. It should be a dataframe with columns: `site`, `focal`, `fitness`, `competitor`, `number`. This format is mostly equivalent to the one of our competition dataset, but be aware of two particularities: 1) in this function (unlike in `cxr_optimize`) the set of focal species must equal the set of competitor species. 2) the missing focal-competitor pairs must be explicitly set to zero in the dataset. These constraints are due to the parallel nature of the parameter estimation.
 
 *2 - Data for coexistence metrics*
 
-The coexistence functions \code{AvgFitnessRatio}, \code{NicheOverlap}, and \code{CompetitiveAbility} accept, simply, pairwise interaction coefficients, and eventually, other parameters such as per capita fecundities in the absence of competition (e.g. $\lambda$), or competitive responses $r$. Thus, these metrics can be obtained with the output from \code{cxr_optimize} or \code{ER_optimize} or, in turn, with independent estimates of these parameters.
-
-
-
-
-
-
-
-
-
-  
-  
+The coexistence functions `AvgFitnessRatio`, `NicheOverlap`, and `CompetitiveAbility` accept, simply, pairwise interaction coefficients, and eventually, other parameters such as per capita fecundities in the absence of competition (e.g. $\lambda$), or competitive responses $r$. Thus, these metrics can be obtained with the output from `cxr_optimize` or `ER_optimize` or, in turn, with independent estimates of these parameters.
   
   
