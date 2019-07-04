@@ -2,12 +2,7 @@
 % Please edit documentation in R/AvgFitnessRatio.R
 \name{AvgFitnessRatio}
 \alias{AvgFitnessRatio}
-\title{Average fitness differences between a pair of species
-Calculates the product of (1) the demographic ratio, and (2) the competitive response ratio between two species
-according to their vital rates and competition coefficients. First species in the parameters is numerator 
-(j in eq. 4 of Godoy et al. 2014). If germ.rate and survival.rate are provided, it calculates the ratio
-according to eq. 4 of Godoy et al. (2014), for annual plants. Otherwise, if only lambda is provided, it
-returns the general version of the demographic ratio, where nu = lambda}
+\title{Average fitness differences between a pair of species}
 \usage{
 AvgFitnessRatio(lambda, germ.rate = NULL, survival.rate = NULL,
   pair.matrix)
@@ -26,7 +21,6 @@ list with three numeric values, giving 1) the demographic ratio, 2) the competit
 3) the average fitness ratio between the two species
 }
 \description{
-Average fitness differences between a pair of species
 Calculates the product of (1) the demographic ratio, and (2) the competitive response ratio between two species
 according to their vital rates and competition coefficients. First species in the parameters is numerator 
 (j in eq. 4 of Godoy et al. 2014). If germ.rate and survival.rate are provided, it calculates the ratio
