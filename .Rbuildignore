@@ -3,3 +3,5 @@
 ^CONDUCT\.md$
 /cuts
 .travis.yml
+^doc$
+^Meta$
