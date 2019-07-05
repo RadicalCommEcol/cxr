@@ -7,12 +7,14 @@
 PredictAbundances(par, timesteps, abundance.model, return.seeds = TRUE)
 }
 \arguments{
-\item{par}{list with the following components: 
-1 - dataframe sp.par, with the parameters to be passed to the predictive model
-2 - dataframe initial.values, with fields "site","species","abundance"
-3 - covariates, either 0 if there are no covariates, or a dataframe with fields "site","timestep","covariate","value"
-4 - list other.par, other parameters to \code{abundance model}, such as lambda.cov.matrix, alpha.cov.matrix.
-species should be a unique identifier, character or numeric. idem for site and covariate.}
+\item{par}{list with the following components:
+\itemize{
+  \item dataframe sp.par, with the parameters to be passed to the predictive model
+  \item dataframe initial.values, with fields "site","species","abundance"
+  \item covariates, either 0 if there are no covariates, or a dataframe with fields "site","timestep","covariate","value"
+  \item list other.par, other parameters to \code{abundance model}, such as lambda.cov.matrix, alpha.cov.matrix.
+}
+Note that the fields "species", "site", and "covariate" should be unique identifiers, character or numeric.}
 
 \item{timesteps}{number of timesteps to project}
 
@@ -20,8 +22,8 @@ species should be a unique identifier, character or numeric. idem for site and c
 The function returns the projected abundances at t+1}
 
 \item{return.seeds}{boolean flag, whether the prediction should return 
-number of seeds (i.e. $N_{i,t+1}$ eq. 1 of Lanuza et al. 2018), or number of
-adult individuals, (i.e. $N_{i,t+1} * g$ )}
+number of seeds (i.e. \eqn{N_{i,t+1}}, eq. 1 of Lanuza et al. 2018), or number of
+adult individuals, (i.e. \eqn{N_{i,t+1} * g} )}
 }
 \value{
 dataframe with fields "timestep","site","sp","abundance", giving the expected abundance for each species, timestep, and site.

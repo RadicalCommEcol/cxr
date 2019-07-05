@@ -38,5 +38,5 @@ log-likelihood value
 \description{
 These functions return the negative log-likelihood of the data
 given the model and parameters. BH_4 is 
-\eqn{F_i = \frac{\lambda_i + \sum_k b_k \Theta_{i,k}}{1+\sum_j(\alpha_{ij} +\sum_k b_k \phi_k)N_{j}}}
+\eqn{F_i = \frac{\lambda_i + \sum_k b_k \Theta_{i,k}}{1+\sum_j(\alpha_{ij} +\sum_k b_k \phi_k)N_{j}}}{(lambda_i + sum(b_k*theta_k))/(1 + sum(alpha_ij + sum(b_k*phi_k))N_j)}
 }
