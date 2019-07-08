@@ -75,8 +75,8 @@ function3 <-function(a,b,x){
 }
 
 #choose the function
-vector.lambda.cov_NL <- c(3)
-vector.alpha.cov_NL <-c(2)
+vector.lambda.cov_NL <- c(2)
+vector.alpha.cov_NL <-c(1)
 # keep the model definitions in a list, for ease
 fitness.models <- list(BH_1 = BH_1,BH_2 = BH_2,BH_3 = BH_3,BH_4 = BH_4,BH_5 = BH_5)
 
@@ -585,22 +585,19 @@ if(write.results){
 
 
                 for(i.covariate in 1:length(my.covariates)){
-          my.cov <- my.alpha.cov.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.vector)))]
-          my.lower.cov <- my.alpha.cov.lower.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.lower.vector)))]
-          my.upper.cov <- my.alpha.cov.upper.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.upper.vector)))]
-
-          alpha.cov.pos <- which(alpha.cov.values$focal == focal.sp[i.sp] &
-                                   alpha.cov.values$model == my.models[i.model] &
-                                   alpha.cov.values$method == optim.methods[i.method] &
-                                   alpha.cov.values$competitor %in% my.alpha.cov.comp &
-                                   alpha.cov.values$covariate == my.covariates[i.covariate])
-
-          alpha.cov.values$alpha.cov[alpha.cov.pos] <- my.cov
-          alpha.cov.values$alpha.cov.lower[alpha.cov.pos] <- my.lower.cov
-          alpha.cov.values$alpha.cov.upper[alpha.cov.pos] <- my.upper.cov
-          my.cov <- my.alpha.cov.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.vector)))]
-          my.lower.cov <- my.alpha.cov.lower.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.lower.vector)))]
-          my.upper.cov <- my.alpha.cov.upper.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.upper.vector)))]
+                  my.cov <- my.alpha.cov.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.vector)))]
+                  my.lower.cov <- my.alpha.cov.lower.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.lower.vector)))]
+                  my.upper.cov <- my.alpha.cov.upper.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.upper.vector)))]
+                  
+                  alpha.cov.pos <- which(alpha.cov.values$focal == focal.sp[i.sp] &
+                                           alpha.cov.values$model == my.models[i.model] &
+                                           alpha.cov.values$method == optim.methods[i.method] &
+                                           alpha.cov.values$competitor %in% my.alpha.cov.comp & 
+                                           alpha.cov.values$covariate == my.covariates[i.covariate])
+                  
+                  alpha.cov.values$alpha.cov[alpha.cov.pos] <- my.cov
+                  alpha.cov.values$alpha.cov.lower[alpha.cov.pos] <- my.lower.cov
+                  alpha.cov.values$alpha.cov.upper[alpha.cov.pos] <- my.upper.cov
 
           #alpha.cov_NL
 
