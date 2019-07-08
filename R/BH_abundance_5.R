@@ -13,8 +13,8 @@
 #' Each component of the list is a matrix of num.sp x num.sp,
 #' giving the effect of the covariate in question over the interaction matrix. 
 #' @param return.seeds boolean flag, whether the prediction should return 
-#' number of seeds (i.e. $N_{i,t+1}$ eq. 1 of Lanuza et al. 2018), or number of
-#' adult individuals, (i.e. $N_{i,t+1} * g$ )
+#' number of seeds (i.e. \eqn{N_{i,t+1}}, eq. 1 of Lanuza et al. 2018), or number of
+#' adult individuals, (i.e. \eqn{N_{i,t+1} * g} )
 #' 
 #' @return 1d vector with number of individuals of each species at time t+1
 #' @export
@@ -29,13 +29,27 @@ BH_abundance_5 <- function(sp.par,init.abund,cov.values,alpha.matrix,lambda.cov.
     num <- sp.par$lambda[i.sp] * lambda.cov 
     # denominator
     den <- 0
-    for(j.sp in 1:nrow(sp.par)){
-      alpha.term <- alpha.matrix[i.sp,j.sp]
-      for(i.cov in 1:ncol(lambda.cov.matrix)){
-        alpha.term <- alpha.term + alpha.cov.matrix[[i.cov]][i.sp,j.sp]*cov.values[i.cov]
-      }# for i.cov
-      den <- den + alpha.term*init.abund[j.sp]
-    }# for j.sp
+    
+    if(return.seeds){
+      # if init.abund are seeds
+      for(j.sp in 1:nrow(sp.par)){
+        alpha.term <- alpha.matrix[i.sp,j.sp]
+        for(i.cov in 1:ncol(lambda.cov.matrix)){
+          alpha.term <- alpha.term + alpha.cov.matrix[[i.cov]][i.sp,j.sp]*cov.values[i.cov]
+        }# for i.cov
+        den <- den + alpha.term*(init.abund[j.sp]*sp.par$germ.rate[j.sp])
+      }# for j.sp
+    }else{
+      # if init.abund are adult individuals
+      for(j.sp in 1:nrow(sp.par)){
+        alpha.term <- alpha.matrix[i.sp,j.sp]
+        for(i.cov in 1:ncol(lambda.cov.matrix)){
+          alpha.term <- alpha.term + alpha.cov.matrix[[i.cov]][i.sp,j.sp]*cov.values[i.cov]
+        }# for i.cov
+        den <- den + alpha.term*init.abund[j.sp]
+      }# for j.sp
+    }# if-else return.seeds
+    
     den <- 1+den
     # overall fitness metric
     fitness <- num/den
