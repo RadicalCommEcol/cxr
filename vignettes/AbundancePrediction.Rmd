@@ -60,8 +60,8 @@ We also need to specify the seed survival and germination rates, in order to pro
 # lambda, s, g
 sp.par <- data.frame(species = 1:num.sp,lambda = 0,germ.rate = 0, survival.rate = 0)
 sp.par$lambda[focal.sp] <- focal.lambda
-sp.par$germ.rate[focal.sp] <- runif(length(focal.sp),0.7,1)
-sp.par$survival.rate[focal.sp] <- runif(length(focal.sp),0.7,1)
+sp.par$germ.rate[focal.sp] <- runif(length(focal.sp),0.8,1)
+sp.par$survival.rate[focal.sp] <- runif(length(focal.sp),0.8,1)
 ```
 
 and set the initial abundances. The `PredictAbundances` function is able to project populations from any number of independent sites. These will be treated as disconnected populations, but will share the species parameterization.
@@ -79,7 +79,7 @@ We also specify stochastic environmental covariates and their value for the time
 # environmental heterogeneity
 cov.time <- expand.grid(1:num.obs,1:timesteps,1:num.cov)
 names(cov.time) <- c("site","timestep","covariate")
-cov.time$value <- runif(nrow(cov.time),0,5)
+cov.time$value <- runif(nrow(cov.time),0,2)
 ```
 
 put together all parameters for calling the function
@@ -114,6 +114,7 @@ predicted.abundances$sp <- as.factor(predicted.abundances$sp)
 abund.plot <- ggplot2::ggplot(predicted.abundances,ggplot2::aes(x = timestep,y = abundance, group = sp)) + 
   ggplot2::geom_line(ggplot2::aes(color = sp)) + 
   ggplot2::facet_grid(site~.)+
+  ggplot2::ylab("number of seeds")+
   NULL
 abund.plot
 ```

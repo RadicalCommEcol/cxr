@@ -12,7 +12,7 @@ PredictAbundances(par, timesteps, abundance.model, return.seeds = TRUE)
   \item dataframe sp.par, with the parameters to be passed to the predictive model
   \item dataframe initial.values, with fields "site","species","abundance"
   \item covariates, either 0 if there are no covariates, or a dataframe with fields "site","timestep","covariate","value"
-  \item list other.par, other parameters to \code{abundance model}, such as lambda.cov.matrix, alpha.cov.matrix.
+  \item list other.par, other parameters to \code{abundance model}, such as alpha.matrix, lambda.cov.matrix, alpha.cov.matrix.
 }
 Note that the fields "species", "site", and "covariate" should be unique identifiers, character or numeric.}
 

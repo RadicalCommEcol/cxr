@@ -5,7 +5,7 @@
 #'   \item dataframe sp.par, with the parameters to be passed to the predictive model
 #'   \item dataframe initial.values, with fields "site","species","abundance"
 #'   \item covariates, either 0 if there are no covariates, or a dataframe with fields "site","timestep","covariate","value"
-#'   \item list other.par, other parameters to \code{abundance model}, such as lambda.cov.matrix, alpha.cov.matrix.
+#'   \item list other.par, other parameters to \code{abundance model}, such as alpha.matrix, lambda.cov.matrix, alpha.cov.matrix.
 #' }
 #' Note that the fields "species", "site", and "covariate" should be unique identifiers, character or numeric.
 #' @param timesteps number of timesteps to project
@@ -31,6 +31,7 @@ PredictAbundances <- function(par,timesteps,abundance.model, return.seeds = TRUE
     for(i.site in 1:length(sites)){
       init.abund <- predicted.abundances$abundance[predicted.abundances$timestep == (i.timestep-1) & 
                                                      predicted.abundances$site == sites[i.site]]
+
       if(is.data.frame(par$covariates)){
         cov.values <- par$covariates$value[par$covariates$site == sites[i.site] & 
                                              par$covariates$timestep == i.timestep]

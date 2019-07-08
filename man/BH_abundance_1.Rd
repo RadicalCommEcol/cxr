@@ -24,8 +24,8 @@ survival.rate: annual survival of ungerminated seed}
 \item{alpha.cov.matrix}{Not used in BH_abundances_1}
 
 \item{return.seeds}{boolean flag, whether the prediction should return 
-number of seeds (i.e. $N_{i,t+1}$ eq. 1 of Lanuza et al. 2018), or number of
-adult individuals, (i.e. $N_{i,t+1} * g$ )}
+number of seeds (i.e. \eqn{N_{i,t+1}}, eq. 1 of Lanuza et al. 2018), or number of
+adult individuals, (i.e. \eqn{N_{i,t+1} * g} )}
 }
 \value{
 1d vector with number of individuals of each species at time t+1

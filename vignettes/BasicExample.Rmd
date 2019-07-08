@@ -1,5 +1,5 @@
 ---
-title: "Get started with cxr"
+title: "Getting started with cxr"
 output: rmarkdown::html_vignette
 author: cxr team
 vignette: >
