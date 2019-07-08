@@ -2,7 +2,7 @@
 #AIC=-2log(max likl)+2k #k=number of parameters
 # METHOD 2 
 #AIC=2log(max lik)-2np #np=number of parameters for a given model
-AIC <- function(negative_llik, num.covariates, num.competitors,model.number,param.list){
+AIC <- function(negative_llik, num.covariates, num.competitors,model.number,param.list,vector.lambda.cov_NL,vector.alpha.cov_NL){
   if(model.number==1){
     num.parameters <- 1 #lambda
     return(2*negative_llik + 2*num.parameters)

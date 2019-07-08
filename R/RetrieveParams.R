@@ -48,6 +48,7 @@ RetrieveParams <- function(optim.params, param.list, alpha.length, alpha.cov.len
   
   if("alpha.cov" %in% param.list){
     alpha.cov <- optim.params[pos:(pos+alpha.cov.length-1)]
+    pos <- pos + alpha.cov.length
   }
   
   if("alpha.cov_NL" %in% param.list){

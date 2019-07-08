@@ -137,7 +137,9 @@ BH_5 <- function(par, param.list, log.fitness, focal.comp.matrix, num.covariates
     term <- term + (alpha[z] + cov_term[[z]]) * focal.comp.matrix[,z]  
   }
   pred <- lambda * (num) / term 
-  
+  for( i in 1: length(pred)){
+    if (pred[i]<0){pred[i]<-1e-10}
+  }
   # likelihood as before:
   llik <- dnorm(log.fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
   # return sum of negative log likelihoods
