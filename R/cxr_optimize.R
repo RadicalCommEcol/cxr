@@ -444,7 +444,13 @@ cxr_optimize <- function(fitness.model,
   
   # named vectors
   if(!is.null(name.competitors) & !is.null(name.covariates)){
-    name.alpha.cov <- paste(rep(name.covariates,each = num.competitors),rep(name.competitors,num.covariates),sep="_")
+    
+    if(length(alpha.cov) == num.covariates){
+      name.alpha.cov <- name.covariates
+    }else{
+      name.alpha.cov <- paste(rep(name.covariates,each = num.competitors),rep(name.competitors,num.covariates),sep="_")
+    }
+    # double-check
     if(length(alpha.cov) == length(name.alpha.cov)){
       names(alpha.cov) <- name.alpha.cov
     }
@@ -454,7 +460,7 @@ cxr_optimize <- function(fitness.model,
     if(length(alpha.cov.upper.error) == length(name.alpha.cov)){
       names(alpha.cov.upper.error) <- name.alpha.cov
     }
-  }
+  }# !is.null
 
   return.list <- list(lambda = lambda,
                       lambda.lower.error = lambda.lower.error,
