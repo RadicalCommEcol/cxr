@@ -453,8 +453,6 @@ cxr_optimize <- function(fitness.model,
   
   if("alpha.cov_NL" %in% param.list){
   alpha.cov_NL <- optim.params[["alpha.cov_NL"]]
-  print("optim.params")
-  print(optim.params[["alpha.cov_NL"]])
   alpha.cov_NL.lower.error <- optim.params[["alpha.cov_NL"]]-1.96*error.params[["alpha.cov_NL"]]
   alpha.cov_NL.upper.error <- optim.params[["alpha.cov_NL"]]+1.96*error.params[["alpha.cov_NL"]]
   }else{ 
@@ -513,8 +511,7 @@ cxr_optimize <- function(fitness.model,
                       alpha.cov_NL.upper.error = alpha.cov_NL.upper.error,
                       log.likelihood = log.likelihood,
                       AIC = AIC)
-  print("alphareturnlist")
-  print(return.list$alpha.cov_NL)
+  
   return.list[lengths(return.list) == 0] <- NA_character_
   
   return.list
