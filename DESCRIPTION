@@ -21,6 +21,7 @@ Suggests:
     dplyr,
     magrittr,
     knitr,
+    stringr,
     rmarkdown,
     testthat (>= 0.8.0),
     hydroPSO,
