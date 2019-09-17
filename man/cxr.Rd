@@ -6,5 +6,5 @@
 \alias{cxr-package}
 \title{cxr}
 \description{
-makes things.
+Tools and functions for evaluating multi-species coexistence.
 }

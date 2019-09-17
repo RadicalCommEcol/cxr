@@ -2,5 +2,5 @@
 #'
 #' @name cxr
 #' @docType package
-#' @description makes things.
+#' @description Tools and functions for evaluating multi-species coexistence.
 NULL
