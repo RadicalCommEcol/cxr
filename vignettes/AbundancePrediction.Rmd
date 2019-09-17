@@ -8,7 +8,7 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
-Another feature of `cxr` is the projection of population abundances in time given a population dynamics model and a set of parameters. This is particular useful when we want to know how our predicts match observed changes in the numner of individuals across time or space. This feature is available for models with the same set of parameters as the ones provided (i.e. **lambda**, **alpha**, **lambda.cov**, and **alpha.cov**). In the package we include a version of the five Beverton-Holt fecundity models, but users are encouraged to code their own predictive models.
+Another feature of `cxr` is the projection of population abundances in time given a population dynamics model and a set of parameters. This is particularly useful when we want to know how our predictions match observed changes in the number of individuals across time or space. This feature is available for predictive models with the same set of parameters as the ones provided (i.e. **lambda**, **alpha**, **lambda.cov**, and **alpha.cov**). In the package we include a predictive version of the five Beverton-Holt fecundity models, but users are encouraged to code their own predictive models.
 
 In this document, we exemplify the use of our projection function. We project the abundances of a set of species from a simulated dataset, in order to show the usage of the function `GenerateTestData`, also included in the package.
 
@@ -24,15 +24,22 @@ Specify basic information: how many timesteps are we projecting, and the details
 # timesteps
 timesteps <- 20
 
-# test data
+# number of focal species
 focal.sp <- c(1,2,3,4,5)
+# overall number of species, in this case same as the focal ones
 num.sp <- length(focal.sp)
+# number of covariates
 num.cov <- 2
-num.obs <- 3 # sites, per focal species
+# sites, per focal species
+num.obs <- 3 
 
+# lambda values
 focal.lambda <- runif(num.sp,50,1000)
+# alpha values
 alpha.matrix.orig <- matrix(data = runif(num.sp*num.sp,0.01,0.1),nrow = num.sp, ncol = num.sp)
+# effect of covariates on lambda
 lambda.cov.orig <- matrix(rnorm(num.sp*num.cov,0,0.005),nrow = num.sp, ncol = num.cov)
+# effect of covariates on alpha
 alpha.cov.orig <- list()
 for(i.cov in 1:num.cov){
     alpha.cov.orig[[i.cov]] <- matrix(data = rnorm(num.sp*num.sp,0,0.005),nrow = num.sp, ncol = num.sp) 
@@ -40,7 +47,7 @@ for(i.cov in 1:num.cov){
 
 ```
 
-With the above info on number of species, covariates, observations, and the associated parameters, we may call the function for generating simulated data. We also need to specify a generative fitness model, that should be one of the five variants of the Beverton-Holt fecundity models included in the package. Here we use the most complex one, model 5. Note also the structure of `lambda.cov` and `alpha.cov`. The effect of covariates on lambda values, `lambda.cov`, is a matrix of dimensions num.sp x num.cov. The effect of covariates on the alpha matrix, in turn, is a list with as many elements as covariates, where each element i of the list is (for model 5), a matrix of num.sp x num.sp, giving the effect of covariate i over each element of the interaction matrix.
+With the above info on number of species, covariates, observations, and the associated parameters, we may call the function for generating simulated data. We also need to specify a generative fitness model. In our case, one of the five variants of the Beverton-Holt fecundity models included in the package. Here we use the most complex one, model 5. Note also the structure of `lambda.cov` and `alpha.cov`. The effect of covariates on lambda values, `lambda.cov`, is a matrix of dimensions num.sp x num.cov. The effect of covariates on the alpha matrix, in turn, is a list with as many elements as covariates, where each element i of the list is (for model 5), a matrix of num.sp x num.sp, giving the effect of covariate i over each element of the interaction matrix.
 
 ```{r message=F, warning=F}
 test.data <- GenerateTestData(focal.sp = focal.sp,
@@ -101,7 +108,7 @@ In this simple set up, we choose to predict the number of seeds, instead of numb
 predicted.abundances <- PredictAbundances(par = par,
                                           timesteps = timesteps,
                                           abundance.model = abundance.model,
-                                          return.seeds = FALSE)
+                                          return.seeds = TRUE)
 ```
 
 As an example, a very simple plot showing the temporal trend in seed abundances
