@@ -47,7 +47,7 @@ for(i.cov in 1:num.cov){
 
 ```
 
-With the above info on number of species, covariates, observations, and the associated parameters, we may call the function for generating simulated data. We also need to specify a generative fitness model. In our case, one of the five variants of the Beverton-Holt fecundity models included in the package. Here we use the most complex one, model 5. Note also the structure of `lambda.cov` and `alpha.cov`. The effect of covariates on lambda values, `lambda.cov`, is a matrix of dimensions num.sp x num.cov. The effect of covariates on the alpha matrix, in turn, is a list with as many elements as covariates, where each element i of the list is (for model 5), a matrix of num.sp x num.sp, giving the effect of covariate i over each element of the interaction matrix.
+With the above info on number of species, covariates, observations, and the associated parameters, we may call the function for generating simulated data. We also need to specify a generative fitness model. In our case, one of the five variants of the Beverton-Holt fecundity models included in the package. Here we use the most complex one, model 5. Note also the structure of `lambda.cov` and `alpha.cov`. The effect of covariates on lambda values, `lambda.cov`, is a matrix of dimensions `num.sp` x `num.cov`. The effect of covariates on the alpha matrix, in turn, is a list with as many elements as covariates, where each element i of the list is (for model 5), a matrix of num.sp x num.sp, giving the effect of covariate i over each element of the interaction matrix.
 
 ```{r message=F, warning=F}
 test.data <- GenerateTestData(focal.sp = focal.sp,
@@ -123,6 +123,7 @@ abund.plot <- ggplot2::ggplot(predicted.abundances,ggplot2::aes(x = timestep,y =
   ggplot2::facet_grid(site~.)+
   ggplot2::ylab("number of seeds")+
   NULL
-abund.plot
+abund.plot #legend.
 ```
 
+[IB] Can we add an example of calculating AIC elswhere? 

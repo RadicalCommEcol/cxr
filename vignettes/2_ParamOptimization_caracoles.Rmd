@@ -24,7 +24,8 @@ We start loading the package and the associated dataset (see vignette `Data and 
 
 ```{r message=F, warning=F}
 library(cxr)
-data(competition, package = "cxr")
+data(competition, package = "cxr") #R crashes if I load data twice :() Error in class(obj) <- "rs.scalar" : cannot set attribute on a symbol
+
 data(salinity, package = "cxr")
 ```
 
@@ -38,7 +39,7 @@ competition.data <- tidyr::spread(competition,competitor,number,fill = 0)
 # how many focal species
 focal.sp <- unique(competition.data$focal)
 # obtain the competition matrix
-comp.matrix <- as.matrix(competition.data[,10:ncol(competition.data)])
+comp.matrix <- as.matrix(competition.data[,10:ncol(competition.data)]) 
 
 # the rows in the covariates datasets (salinity, in our example) must match the observations of the competition dataset.
 # in order to be sure that they match, join them in a single dataset (note that they share a unique identifier, given by plot+subplot+year)
@@ -510,5 +511,11 @@ if(write.results){
   # write.csv2(alpha.cov.values,file = "your/path/alpha_cov_values.csv",row.names = F,append = F)
   
 }
+
+head(lambda.values)
+head(alpha.values)
+head(lambda.cov.values) #NA's (maybe only for model 3?)
+head(alpha.cov.values) #0's (maybe only for model 3?)
+
 ```
 

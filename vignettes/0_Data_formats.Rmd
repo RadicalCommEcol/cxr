@@ -10,7 +10,7 @@ vignette: >
 
 **Introduction**
 
-The `cxr` package provides diverse functions to handle interaction datasets, but the data provided needs to be in certain formats for compatibility. We will show the structure of the included dataset, and the specific formats accepted by functions of the package. We also discuss the structure of the population models included in the package and how users can develop their own models.
+The `cxr` package provides diverse functions to handle empirical datasets, but the data provided needs to be in certain formats for compatibility. We will show the structure of the included dataset, and the specific formats accepted by functions of the package. We also discuss the structure of the population models included in the package and how users can develop their own models.
 
 **The Caracoles dataset**
 
@@ -25,10 +25,11 @@ data("competition", package = "cxr")
 its structure is as follows: for each observation of a focal individual, the date is recorded, alongside the plot and subplot where the observation was made. Finally, we include the number of fruits and seeds of that particular individual, and how many neighbours (competitors) of each species were in its surroundings (taken as a circunference of radius 7.5 cm).
 
 ```{r}
-head(competition)
+?competition
+head(competition) #fruit and seed are then duplicated... suboptimal.
 ```
 
-The abundance table is algo stored in a long format, in which we give, for each plot and subplot, the number of individuals of each species at their developmental peak:
+The abundance table is also stored in a long format, in which we give, for each plot and subplot, the number of individuals of each species at their developmental peak:
 
 ```{r}
 data("abundance", package = "cxr")
@@ -39,7 +40,7 @@ We also include seed survival and germination rates for each species, obtained i
 
 ```{r}
 data("species_rates", package = "cxr")
-species_rates
+species_rates #names in latin should be capitalized?
 ```
 
 and the values of an environmental covariate, salinity, for each sampling unit:
@@ -49,11 +50,11 @@ data("salinity", package = "cxr")
 head(salinity)
 ```
 
-In the package there are, broadly speaking, two types of functions. Both `cxr_optimize` and `ER_optimize` accept field data and numerically estimate parameters of a given model. On the other hand, other functions (`AvgFitnessRatio`, `NicheOverlap`, or `CompetitiveAbility`) take these estimates and return coexistence metrics for a single species or pairs of them.
+In the package there are, broadly speaking, two types of functions. 1) `cxr_optimize` [...] and 2) `ER_optimize` [...]  . Both `cxr_optimize` and `ER_optimize` accept field data and numerically estimate parameters of a given model. On the other hand, other functions (`AvgFitnessRatio`, `NicheOverlap`, or `CompetitiveAbility`) take these estimates and return coexistence metrics for a single species or pairs of them.
 
 **Data for optimization functions**
 
-The data to provide to `cxr_optimize` is the fitness metric (log-transformed) of each observation, and the number of competitors for each observation. Thus, the length of `log.fitness` and the number of rows of `focal.comp.matrix` must match. Likewise, if covariates are provided, the number of rows of that matrix/dataframe must also match the number of observations.
+The data to provide to `cxr_optimize` is the fitness metric (log-transformed) of each observation, and the number of competitors of each species (in matrix format) for each observation. Thus, the length of `log.fitness` and the number of rows of `focal.comp.matrix` must match. Likewise, if covariates are provided, the number of rows of that covariates matrix/dataframe must also match the number of observations.
 
 The data for `ER_optimize` is slightly different, since in this function, an indeterminate number of species are fit at once. Aside from the initial values of the different parameters and their bounds, the main argument is `sp.data`. It should be a dataframe with columns: `site`, `focal`, `fitness`, `competitor`, `number`. This format is mostly equivalent to the one of our competition dataset, but be aware of two particularities: 1) in this function (unlike in `cxr_optimize`) the set of focal species must equal the set of competitor species. 2) the missing focal-competitor pairs must be explicitly set to zero in the dataset. These constraints are due to the parallel nature of the parameter estimation.
 
@@ -83,7 +84,7 @@ Users can estimate model parameters using the provided formulations or develop t
 
 $$F_i= f(\lambda_i,\alpha,\Theta,\phi)$$
 
-which are coded in the package functions as lambda, alpha, lambda.cov, and alpha.cov, respectively. Note that $F_i$ need not refer exclusively to plant fecundity, but can be thought as any fitness property of an individual, thus expanding the applicability of the package to any taxa in which species compete for a set of resources. In order to obtain the optimal parameter values given a model and dataset, we use numerical optimization procedures. These work by finding the minimum of an objective function within a parameter space, and thus, our second constraint is that the function to minimize must return a single numeric value. In our formulation, our models return the associated log-likelihood of the data and parameters fitted.
+which are coded in the package functions as `lambda`, `alpha`, `lambda.cov`, and `alpha.cov`, respectively. Note that $F_i$ need not refer exclusively to plant fecundity, but can be thought as any fitness property of an individual, thus expanding the applicability of the package to any taxa in which species compete for a set of resources. In order to obtain the optimal parameter values given a model and dataset, we use numerical optimization procedures. These work by finding the minimum of an objective function within a parameter space, and thus, our second constraint is that the function to minimize must return a single numeric value. In our formulation, our models return the associated log-likelihood of the data and parameters fitted.
 
 A complementary set of two models is also provided, that estimate competitive effects and responses for every species. These models follow the same equation (Appendix S4 in *Godoy, et al. 2014. Ecology Letters, 17:836–844*):
 

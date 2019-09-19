@@ -109,9 +109,12 @@ In this basic example, we are only interested in obtaining from the optimization
 
 ```{r message=F, warning=F}
 interaction.matrix <- matrix(c(sp1.par$alpha, sp2.par$alpha), nrow = length(my.sp), byrow = TRUE)
+colnames(interaction.matrix) <- c("CHFU", "LEMA")
+rownames(interaction.matrix) <- c("CHFU", "LEMA")
+interaction.matrix
 ```
 
-and obtain the niche overlap and average fitness ratio between the two species
+and obtain the niche overlap and average fitness ratio between the two species [IB define this metrics, aybe?]
 
 ```{r message=F, warning=F}
 
@@ -120,6 +123,7 @@ NicheOverlap(pair.matrix = interaction.matrix)
 AvgFitnessRatio(lambda = c(sp1.par$lambda,sp2.par$lambda),pair.matrix = interaction.matrix)
 
 ```
+
 
 
 

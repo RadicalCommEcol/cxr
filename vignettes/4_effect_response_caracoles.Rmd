@@ -264,6 +264,6 @@ er.plot <- ggplot2::ggplot(er.data.long,ggplot2::aes(y = species, x = value, gro
   ggplot2::geom_point()+
   ggplot2::facet_grid(.~var, scales = "free_x")+
   NULL
-er.plot
+er.plot #Add legend.
 ```
 

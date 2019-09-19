@@ -12,7 +12,7 @@ In this vignette, we draw the coexistence region of the plant community dataset 
 
 ```{r message=F, warning=F}
 library(cxr)
-data(param_estimates)
+data(param_estimates) #it's not when loading it twice that R crashes, but when using outcome in line.
 data(species_rates)
 ```
 
@@ -70,7 +70,7 @@ for(i.pair in 1:nrow(pairwise.ratios)){
 }
 
 pairwise.ratios$pair.ID <- paste(pairwise.ratios$sp1,"_",pairwise.ratios$sp2,sep="")
-
+head(pairwise.ratios)
 ```
 
 For drawing the plot, we adapt, simplified, the great example from *Ke and Letten, 2018, Nature Ecology and Evolution 2:1691*, in which they show the regions leading to coexistence, exclusion, and priority effects between species pairs.
@@ -117,7 +117,7 @@ coex.plot <- ggplot2::ggplot() +
         axis.title.y = ggplot2::element_text(angle = 90), 
         axis.title = ggplot2::element_text(size = 20)) +
   NULL
-coex.plot
+coex.plot #Can we add a legend? Ideally indicate wich one is coexistence and which one is exclusion.
 ```
  
  
