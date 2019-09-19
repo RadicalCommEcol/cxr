@@ -9,16 +9,15 @@
 
 # cxr
 
-An R package to ... 
-
+CXR provides a complete toolbox for modelling competitive effects between species, calculate fitness and niche differences, and calculate and predict coexistence regions. The functions are flexible and can include covariates, use different optimization algorithms, or accept user defined mathematical population models as starting points. 
 
 ### Installation
 
-The package can't be installed from CRAN yet:
+The package can't be installed from CRAN yet, but when available will be at:
 
 ```R
 install.packages("cxr")
-library("rcites")
+library("cxr")
 ```
 
 The development version can be installed via the `devtools` package:
