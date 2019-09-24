@@ -12,13 +12,14 @@ In this vignette, we draw the coexistence region of the plant community dataset 
 
 ```{r message=F, warning=F}
 library(cxr)
-data(param_estimates) #it's not when loading it twice that R crashes, but when using outcome in line.
+data(param_estimates) 
 data(species_rates)
 ```
 
-First, compile the parameters from the original results, which are in a nested list. We will retrieve the estimates from the most complex model (BH_5), and the optimization method *L-BFGS-B* (see the help of `stats::optim` for details on the optimization method).
+First, compile the parameters from the original results, which are already available in the package as a nested list. We retrieved this estimates from the most complex model (BH_5), and the optimization method *L-BFGS-B* (see the help of `stats::optim` for details on the optimization method).
 
 ```{r message=F, warning=F}
+#tidy the data
 sp.names <- sort(unique(names(param_estimates)))
 alpha.matrix <- matrix(0,nrow = length(sp.names),ncol = length(sp.names))
 lambda.values <- numeric(length(sp.names))
@@ -50,8 +51,8 @@ expand.grid.unique <- function(x, y, include.equals=FALSE)
 
 pairwise.ratios <- as.data.frame(expand.grid.unique(sp.names,sp.names,include.equals = FALSE),stringsAsFactors = FALSE)
 names(pairwise.ratios) <- c("sp1","sp2")
-pairwise.ratios$fitness.ratio <- 0
-pairwise.ratios$niche.overlap <- 0
+pairwise.ratios$fitness.ratio <- NA
+pairwise.ratios$niche.overlap <- NA
 ```
 
 and compute the average fitness ratio and niche overlap between pairs. Note that the `AvgFitnessRatio` function may calculate this quantity for the annual plant model, by providing `germ.rate` and `survival.rate`, or the general version, by only providing `lambda`.

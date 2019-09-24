@@ -4,8 +4,10 @@ output: rmarkdown::html_vignette
 author: cxr team
 vignette: >
   %\VignetteIndexEntry{Getting started}
-  %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 **Introduction**
@@ -33,7 +35,9 @@ two.sp.data <- subset(competition, focal %in% my.sp & competitor %in% my.sp)
 In order to estimate the different parameters for both species, we need to store separately the information on their observations as focal species.
 
 ```{r message=F, warning=F}
+#MAKE MATRIX FIRST!!
 comp.matrix <- as.matrix(two.sp.data[,10:ncol(two.sp.data)])
+
 sp1.comp.matrix <- as.matrix(comp.matrix[which(two.sp.data$focal == my.sp[1]),])
 # optional: name the column with the competitor species
 colnames(sp1.comp.matrix) <- my.sp[2]
@@ -47,6 +51,7 @@ colnames(sp2.comp.matrix) <- my.sp[1]
 and also the estimation of fitness assocaited with each observation. In this particular case this is the seed production of focal individuals, for which the number of neighbours (`comp.matrix`) were also taken from field observations. Note that we pass the log of the seed production (fitness metric) for facilitating the optimization procedure.
 
 ```{r message=F, warning=F}
+#use wide??
 sp1.fitness <- two.sp.data$seed[which(two.sp.data$focal == my.sp[1])]
 sp1.log.fitness <- log(sp1.fitness)
 
@@ -72,13 +77,13 @@ sp1.par <- cxr_optimize(fitness.model = BH_3,
                         param.list = c("lambda","alpha"),
                         log.fitness = sp1.log.fitness,
                         init.lambda = init.lambda[1],
-                        lower.lambda = 0,
+                        lower.lambda = 0, #negative numbers of seed production are not biologically meaningful, hence we fix lambda to a minimum of 0.
                         upper.lambda = 1e3,
                         init.sigma = sd(sp1.log.fitness),
                         lower.sigma = 1e-5,
                         upper.sigma = 1,
-                        init.alpha = c(1,1),
-                        lower.alpha = c(1e-5,1e-5),
+                        init.alpha = c(0,0), #initial competition coeficients set to no competition. Postive numbers imply competition, and negative numbers facilitation.
+                        lower.alpha = c(-1e3,-1e3),
                         upper.alpha = c(1e3,1e3),
                         focal.comp.matrix = sp1.comp.matrix)
 
@@ -114,7 +119,7 @@ rownames(interaction.matrix) <- c("CHFU", "LEMA")
 interaction.matrix
 ```
 
-and obtain the niche overlap and average fitness ratio between the two species [IB define this metrics, aybe?]
+and obtain the niche overlap and average fitness ratio between the two species [IB define this metrics, maybe?]
 
 ```{r message=F, warning=F}
 

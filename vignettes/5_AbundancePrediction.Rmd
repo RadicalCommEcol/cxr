@@ -10,7 +10,7 @@ vignette: >
 
 Another feature of `cxr` is the projection of population abundances in time given a population dynamics model and a set of parameters. This is particularly useful when we want to know how our predictions match observed changes in the number of individuals across time or space. This feature is available for predictive models with the same set of parameters as the ones provided (i.e. **lambda**, **alpha**, **lambda.cov**, and **alpha.cov**). In the package we include a predictive version of the five Beverton-Holt fecundity models, but users are encouraged to code their own predictive models.
 
-In this document, we exemplify the use of our projection function. We project the abundances of a set of species from a simulated dataset, in order to show the usage of the function `GenerateTestData`, also included in the package.
+In this document, we exemplify the use of our projection function (`predict????`). We project the abundances of a set of species from a simulated dataset, in order to show the usage of the function `GenerateTestData`, also included in the package.
 
 First, load the package
 
@@ -34,7 +34,7 @@ num.cov <- 2
 num.obs <- 3 
 
 # lambda values
-focal.lambda <- runif(num.sp,50,1000)
+focal.lambda <- runif(num.sp,50,1000) #we draw between 50 and 1000 seeds per individual.
 # alpha values
 alpha.matrix.orig <- matrix(data = runif(num.sp*num.sp,0.01,0.1),nrow = num.sp, ncol = num.sp)
 # effect of covariates on lambda

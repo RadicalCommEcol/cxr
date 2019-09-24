@@ -4,8 +4,10 @@ output: rmarkdown::html_vignette
 author: cxr team
 vignette: >
   %\VignetteIndexEntry{Data and model formats}
-  %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 **Introduction**
@@ -26,7 +28,7 @@ its structure is as follows: for each observation of a focal individual, the dat
 
 ```{r}
 ?competition
-head(competition) #fruit and seed are then duplicated... suboptimal.
+head(competition) #fruit and seed are then duplicated... suboptimal. Add individual.
 ```
 
 The abundance table is also stored in a long format, in which we give, for each plot and subplot, the number of individuals of each species at their developmental peak:
@@ -50,11 +52,13 @@ data("salinity", package = "cxr")
 head(salinity)
 ```
 
-In the package there are, broadly speaking, two types of functions. 1) `cxr_optimize` [...] and 2) `ER_optimize` [...]  . Both `cxr_optimize` and `ER_optimize` accept field data and numerically estimate parameters of a given model. On the other hand, other functions (`AvgFitnessRatio`, `NicheOverlap`, or `CompetitiveAbility`) take these estimates and return coexistence metrics for a single species or pairs of them.
+The package also includes data on floral visitors (`pollinators`), but this data is not used in the vignettes.
+
+In the package there are, broadly speaking, two types of functions. 1) `cxr_optimize`, which fits the species interaction models to empirical data and 2) `ER_optimize`, which fits overall response and effect parameters per focal species to empirical data. Both `cxr_optimize` and `ER_optimize` accept field data and numerically estimate parameters of a model provided by the user. On the other hand, other functions (`AvgFitnessRatio`, `NicheOverlap`, or `CompetitiveAbility`) take these estimates and return coexistence metrics for a single species or pairs of them.
 
 **Data for optimization functions**
 
-The data to provide to `cxr_optimize` is the fitness metric (log-transformed) of each observation, and the number of competitors of each species (in matrix format) for each observation. Thus, the length of `log.fitness` and the number of rows of `focal.comp.matrix` must match. Likewise, if covariates are provided, the number of rows of that covariates matrix/dataframe must also match the number of observations.
+The data to provide to `cxr_optimize` is the fitness metric (log-transformed) of each observation, and the number of competitors of each species (in matrix format) for each observation. Thus, the length of `log.fitness` and the number of rows of `focal.comp.matrix` must match. Likewise, if covariates are provided, the number of rows of that covariates matrix/dataframe must also match the number of observations. This requires some data formating to create the `focal.comp.matrix`.
 
 The data for `ER_optimize` is slightly different, since in this function, an indeterminate number of species are fit at once. Aside from the initial values of the different parameters and their bounds, the main argument is `sp.data`. It should be a dataframe with columns: `site`, `focal`, `fitness`, `competitor`, `number`. This format is mostly equivalent to the one of our competition dataset, but be aware of two particularities: 1) in this function (unlike in `cxr_optimize`) the set of focal species must equal the set of competitor species. 2) the missing focal-competitor pairs must be explicitly set to zero in the dataset. These constraints are due to the parallel nature of the parameter estimation.
 
@@ -86,8 +90,8 @@ $$F_i= f(\lambda_i,\alpha,\Theta,\phi)$$
 
 which are coded in the package functions as `lambda`, `alpha`, `lambda.cov`, and `alpha.cov`, respectively. Note that $F_i$ need not refer exclusively to plant fecundity, but can be thought as any fitness property of an individual, thus expanding the applicability of the package to any taxa in which species compete for a set of resources. In order to obtain the optimal parameter values given a model and dataset, we use numerical optimization procedures. These work by finding the minimum of an objective function within a parameter space, and thus, our second constraint is that the function to minimize must return a single numeric value. In our formulation, our models return the associated log-likelihood of the data and parameters fitted.
 
-A complementary set of two models is also provided, that estimate competitive effects and responses for every species. These models follow the same equation (Appendix S4 in *Godoy, et al. 2014. Ecology Letters, 17:836–844*):
+A complementary set of two models is also provided, that estimate competitive effects and responses for every species. These models follow the same equation (Appendix S4 in *Godoy, et al. 2014. Ecology Letters, 17:836–844*): 
 
 $$F_i = \frac{\lambda_i}{1+r_i \sum_j^n e_j N_j^a}$$
 
-where $r_i$ is the species’ competitive response and $e_i$ is the species’ competitive effect; our models only differ on whether is taken as a fixed parameter (function `EffectResponse.R`) or is optimized as well in the routine (function `EffectResponse_lambda.R`).
+where $r_i$ is the species’ competitive response and $e_i$ is the species’ competitive effect; our models only differ on whether is taken as a fixed parameter (function `EffectResponse.R`) or is optimized as well in the routine (function `EffectResponse_lambda.R`).[move up?]

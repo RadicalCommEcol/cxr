@@ -10,7 +10,7 @@ vignette: >
 
 **Introduction**
 
-In other vignettes we have estimated a series of interactions coefficients between pairs of species. These estimations allow species to be differentiated in their niche and their average fitness (via competitive response differences). However, it is also possible to obtain a metric per species of the average interaction effect to all other species, or their average response when interacting with all other species. This is done by estimating all these coefficients for all species at the same time, and not each species as a time as previous modelling procedures. With this procedure, we do not allow species to be differentiated in their niche (see *Godoy, Kraft, and Levine. 2014. Ecology Letters 17:836-844* for further details). Again, here we consider the plant species from the associated data. Please note that here per-germinant fecundity estimates ($\lambda$) generated independently are used as fixed parameters.
+In other vignettes we have estimated a series of interactions coefficients between pairs of species. These estimations allow species to be differentiated in their niche and their average fitness (via competitive response differences). However, it is also possible to obtain a metric per species of the average interaction effect to all other species, or their average response when interacting with all other species. This is done by estimating all these coefficients for all species at the same time, and not each species as a time as previous [check]() modelling procedures. With this procedure, we do not allow species to be differentiated in their niche (see *Godoy, Kraft, and Levine. 2014. Ecology Letters 17:836-844* for further details). Again, here we consider the plant species from the associated data. Please note that here per-germinant fecundity estimates ($\lambda$) generated independently are used as fixed parameters.
 
 **Set up**
 
@@ -45,16 +45,17 @@ Since we have independent estimates for $\lambda$, we are taking it as a fixed p
 
 ```{r message=F, warning=F}
 optimize.lambda <- FALSE
-# model is different...
+# As the model is different for the two cases, we selct the right model in each case.
 if(optimize.lambda){
-  effect.response.model <- EffectResponse_lambda
+  effect.response.model <- EffectResponse_lambda 
   lower.lambda <- 0
   upper.lambda <- 1e3
 }else{
   effect.response.model <- EffectResponse
   lower.lambda <- NA
   upper.lambda <- NA
-}
+  #yo daria el valor de lambra init aqui.
+} 
 ```
 
 Finally, a flag for writing results or not
@@ -66,7 +67,7 @@ write.results <- FALSE
 It is possible to estimate, alongside competitive effects and responses, the effect of covariates over these terms. For simplicity, we will assume no effect of covariates in this example, but their addition is similar to the workflow exemplified in the vignette `Multi-species parameter optimization`. The dataset included with the package includes observations from 2016, but here we provide general code for any number of years (or sampling campaigns). We group observations in year x site records, where a site is a subplot within a specific plot (e.g. subplot A1 of plot 1).
 
 ```{r message=F, warning=F}
-sp.data <- competition %>% dplyr::group_by(year,plot,subplot,focal,competitor) %>% dplyr::summarise(seed = sum(seed),number = sum(number))
+sp.data <- competition %>% dplyr::group_by(year,plot,subplot,focal,competitor) %>% dplyr::summarise(seed = sum(seed),number = sum(number)) # As there is only one value per group, the sum returns that seed value.
 names(sp.data)[which(names(sp.data) == "seed")] <- "fitness"
 sp.data$site <- paste(sp.data$year,sp.data$plot,sp.data$subplot,sep="_")
 sp.data <- sp.data[,c("site","focal","fitness","competitor","number")]
@@ -74,7 +75,7 @@ sp.data <- sp.data[,c("site","focal","fitness","competitor","number")]
 # this is the set of species we are fitting
 # only those with proper lambda estimates
 focal.sp <- levels(sp.data$focal)
-sp.with.lambda <- names(param_estimates)
+sp.with.lambda <- names(param_estimates) #explain why or be more expeditive here. DAVID.
 sp.names <- sort(focal.sp[which(focal.sp %in% sp.with.lambda)])
 ```
 
@@ -123,12 +124,14 @@ sp.data <- dplyr::arrange(sp.data, focal, site, competitor)
 Discard focal species with no seeds
 
 ```{r message=F, warning=F}
+#idem as above + 0.01
 sp.data <- droplevels(subset(sp.data, fitness > 0))
 ```
 
 Get independent $\lambda$ values and append them to a dataframe
 
 ```{r message=F, warning=F}
+#Move above?
 lambda.values <- data.frame(sp = sp.names,lambda = 0, sigma = 0)
 
 # from which model and optimization method are we taking estimates?
@@ -144,22 +147,23 @@ for(i.sp in 1:length(sp.names)){
 }
 
 # sanity check
-lambda.values <- dplyr::arrange(subset(lambda.values, sp %in% sp.data$focal),sp.names)
+#lambda.values <- dplyr::arrange(subset(lambda.values, sp %in% sp.data$focal),sp.names)
 # sigma is also a parameter
-sigma <- mean(lambda.values$sigma)
+sigma <- mean(lambda.values$sigma) #entra solo como valor inicial, no fijo.
 ```
 
 Double-check that we only include species that have proper estimates
 
 ```{r message=F, warning=F}
+#check first and remove first. Or remove from  data.
 sp.data <- subset(sp.data, focal %in% lambda.values$sp & competitor %in% lambda.values$sp)
 ```
 
 Finally, set initial values for $e$ (i.e. competitive effects) and $r$ (i.e competitive responses), as well as their lower and upper bounds. Lower and upper bounds are most likely to be the same for all species, and in that case it is convenient to provide a single value. If we want to specify different values for every species, we can pass vectors of the same length as the $\lambda$, $e$, and $r$ parameters.
 
 ```{r message=F, warning=F}
-r.values <- rep(1,nrow(lambda.values))
-e.values <- rep(1,nrow(lambda.values))
+r.values <- rep(NA,nrow(lambda.values))
+e.values <- rep(NA,nrow(lambda.values))
 
 lower.r <- 0
 upper.r <- 1e2
@@ -169,7 +173,7 @@ lower.sigma <- 0.0000000001
 upper.sigma <- 1
 ```
 
-We can now initialize the results data structure, a list in which each component will consist of the estimates from an optimization method.
+We can now initialize an empty results data structure, a list in which each component will consist of the estimates from an optimization method.
 
 ```{r message=F, warning=F}
 ER.list <- list()
