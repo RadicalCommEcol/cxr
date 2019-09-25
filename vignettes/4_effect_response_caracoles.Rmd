@@ -10,7 +10,7 @@ vignette: >
 
 **Introduction**
 
-In other vignettes we have estimated a series of interactions coefficients between pairs of species. These estimations allow species to be differentiated in their niche and their average fitness (via competitive response differences). However, it is also possible to obtain a metric per species of the average interaction effect to all other species, or their average response when interacting with all other species. This is done by estimating all these coefficients for all species at the same time, and not each species as a time as previous [check]() modelling procedures. With this procedure, we do not allow species to be differentiated in their niche (see *Godoy, Kraft, and Levine. 2014. Ecology Letters 17:836-844* for further details). Again, here we consider the plant species from the associated data. Please note that here per-germinant fecundity estimates ($\lambda$) generated independently are used as fixed parameters.
+In other vignettes we have estimated a series of interactions coefficients between pairs of species. These estimations allow species to be differentiated in their niche and their average fitness (via competitive response differences). However, it is also possible to obtain a metric per species of the average interaction effect to all other species, or their average response when interacting with all other species. This is done by estimating coefficients for all species in parallel. With this procedure, species are not differentiated in their niches (see *Godoy, Kraft, and Levine. 2014. Ecology Letters 17:836-844* for further details). Again, here we consider the plant species from the dataset included with the package. Please note that, for further exemplification of the functionality, per-germinant fecundity estimates ($\lambda$) generated independently are taken as fixed parameters.
 
 **Set up**
 
@@ -20,6 +20,12 @@ library(cxr)
 library(magrittr)
 data(competition, package = "cxr")
 data(param_estimates, package = "cxr")
+```
+
+First, a flag for writing results or not
+
+```{r message=F, warning=F}
+write.results <- FALSE
 ```
 
 As in other vignettes, we need to specify which optimization method are we using, and whether we want to generate standard errors from bootstrapping.
@@ -41,11 +47,31 @@ generate.errors <- FALSE
 bootstrap.samples <- 99 # discarded if false
 ```
 
-Since we have independent estimates for $\lambda$, we are taking it as a fixed parameter that we do not want to fit. This can be passed on to the `ER_optimize` function by choosing the appropriate effect/response model. Note that, if we are not interested in fitting $\lambda$, we can dispense with specifying lower/upper bounds for it.
+The example dataset includes observations from 2016, but here we provide general code for any number of years (or sampling campaigns). We group observations in year x site records, where a site is a subplot within a specific plot (e.g. subplot A1 of plot 1). 
+
+```{r message=F, warning=F}
+# subset and tidy the columns we need
+sp.data <- competition[,c("year","plot","subplot","focal","competitor","seed","number")] 
+names(sp.data)[which(names(sp.data) == "seed")] <- "fitness"
+sp.data$site <- paste(sp.data$year,sp.data$plot,sp.data$subplot,sep="_")
+sp.data <- sp.data[,c("site","focal","fitness","competitor","number")]
+
+# as in other examples, we need to ensure that logarithms can be taken from the fitness metric
+sp.data$fitness[sp.data$fitness == 0] <- 0.001
+```
+
+Remember, when using `ER_optimize` with your own data, that the dataset must be complete, including all combinations of focal and competitor species, by assigning 0 to those combinations not observed, as exemplified in our data:
+
+```{r}
+head(sp.data)
+```
+
+Since we have independent estimates for $\lambda$, we are taking it as a fixed parameter that we do not want to fit. This can be passed on to the `ER_optimize` function by choosing the appropriate effect/response model (function `EffectResponse` fits only competitive effects `e` and competitive responses `r`, whereas `EffectResponse_lambda` fits $\lambda$ as well). Note that, if we are not interested in fitting $\lambda$, we can dispense with specifying lower/upper bounds for it.
 
 ```{r message=F, warning=F}
 optimize.lambda <- FALSE
-# As the model is different for the two cases, we selct the right model in each case.
+
+# select the appropriate model and initial values
 if(optimize.lambda){
   effect.response.model <- EffectResponse_lambda 
   lower.lambda <- 0
@@ -54,116 +80,43 @@ if(optimize.lambda){
   effect.response.model <- EffectResponse
   lower.lambda <- NA
   upper.lambda <- NA
-  #yo daria el valor de lambra init aqui.
+  
+  # get lambda values, and its associated error (sigma)
+  sp.names <- sort(unique(sp.data$focal))
+  lambda.values <- data.frame(sp = sp.names,lambda = 0, sigma = 0)
+  
+  # from which model and optimization method are we taking estimates?
+  estimates.model <- "BH_5" #Beverton-holt model number 5
+  estimates.method <- "optim_L-BFGS-B"
+  
+  # gather lambda from fitted data
+  for(i.sp in 1:length(sp.names)){
+    if(!is.null(param_estimates[[sp.names[i.sp]]])){
+      lambda.values$lambda[lambda.values$sp == sp.names[i.sp]] <- 
+        param_estimates[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$lambda
+      
+      lambda.values$sigma[lambda.values$sp == sp.names[i.sp]] <- 
+        param_estimates[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$sigma
+    }
+  }
+  
+  # initial error estimate, i.e. sigma 
+  sigma <- mean(lambda.values$sigma)
+  
 } 
 ```
 
-Finally, a flag for writing results or not
+The estimates for $\lambda$ are
 
-```{r message=F, warning=F}
-write.results <- FALSE
+```{r}
+lambda.values
 ```
 
-It is possible to estimate, alongside competitive effects and responses, the effect of covariates over these terms. For simplicity, we will assume no effect of covariates in this example, but their addition is similar to the workflow exemplified in the vignette `Multi-species parameter optimization`. The dataset included with the package includes observations from 2016, but here we provide general code for any number of years (or sampling campaigns). We group observations in year x site records, where a site is a subplot within a specific plot (e.g. subplot A1 of plot 1).
+Now, we set initial values for $e$ (competitive effects) and $r$ (competitive responses), as well as their lower and upper bounds. Lower and upper bounds are most likely to be the same for all species, and in that case it is convenient to provide a single value. If we want to specify different values for every species, we can pass vectors of the same length as the $\lambda$, $e$, and $r$ parameters.
 
 ```{r message=F, warning=F}
-sp.data <- competition %>% dplyr::group_by(year,plot,subplot,focal,competitor) %>% dplyr::summarise(seed = sum(seed),number = sum(number)) # As there is only one value per group, the sum returns that seed value.
-names(sp.data)[which(names(sp.data) == "seed")] <- "fitness"
-sp.data$site <- paste(sp.data$year,sp.data$plot,sp.data$subplot,sep="_")
-sp.data <- sp.data[,c("site","focal","fitness","competitor","number")]
-
-# this is the set of species we are fitting
-# only those with proper lambda estimates
-focal.sp <- levels(sp.data$focal)
-sp.with.lambda <- names(param_estimates) #explain why or be more expeditive here. DAVID.
-sp.names <- sort(focal.sp[which(focal.sp %in% sp.with.lambda)])
-```
-
-For the `ER_optimize` function to work properly, the dataset must be complete, with explicit zeros if a combination focal.sp-competitor was not observed in a given record. In case the sp.data dataframe does not include explicit missing competitors, here is a somewhat convoluted way for setting zeros to it so that for each focal sp, all competitor sp are included. 
-
-```{r message=F, warning=F}
-sites <- unique(sp.data$site)
-
-missing.data <- sp.data
-missing.data$site <- "0"
-missing.data$focal <- "0"
-missing.data$fitness <- 0
-missing.data$competitor <- "0"
-missing.data$number <- 0
-# just in case it overflows
-missing.data <- rbind(missing.data,missing.data,missing.data)
-count <- 1
-
-for(i.site in 1:length(sites)){
-  for(i.sp in 1:length(sp.names)){
-    my.competitors <- unique(sp.data$competitor[sp.data$site == sites[i.site] & sp.data$focal == sp.names[i.sp]])
-    if(length(my.competitors) > 0 & length(my.competitors) < length(sp.names)){
-      my.fitness <- sp.data$fitness[sp.data$site == sites[i.site] & sp.data$focal == sp.names[i.sp]][1]
-      
-      missing.competitors <- sp.names[which(!sp.names %in% my.competitors)]
-      for(i.com in 1:length(missing.competitors)){
-        
-        missing.data$site[count] <- sites[i.site]
-        missing.data$focal[count] <- sp.names[i.sp]
-        missing.data$fitness[count] <- my.fitness
-        missing.data$competitor[count] <- missing.competitors[i.com]
-        missing.data$number[count] <- 0
-        
-        count <- count + 1
-      }# for each missing
-    }# if any missing
-  }# for i.sp
-}# for i.site
-
-missing.data <- droplevels(subset(missing.data,competitor != "0"))
-
-sp.data <- rbind(sp.data,missing.data)
-sp.data <- dplyr::arrange(sp.data, focal, site, competitor)
-```
-
-Discard focal species with no seeds
-
-```{r message=F, warning=F}
-#idem as above + 0.01
-sp.data <- droplevels(subset(sp.data, fitness > 0))
-```
-
-Get independent $\lambda$ values and append them to a dataframe
-
-```{r message=F, warning=F}
-#Move above?
-lambda.values <- data.frame(sp = sp.names,lambda = 0, sigma = 0)
-
-# from which model and optimization method are we taking estimates?
-estimates.model <- "BH_5" #Beverton-holt model number 5
-estimates.method <- "optim_L-BFGS-B"
-
-# gather lambda from fitted data
-for(i.sp in 1:length(sp.names)){
-  if(!is.null(param_estimates[[sp.names[i.sp]]])){
-    lambda.values$lambda[lambda.values$sp == sp.names[i.sp]] <- param_estimates[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$lambda
-    lambda.values$sigma[lambda.values$sp == sp.names[i.sp]] <- param_estimates[[sp.names[i.sp]]][[estimates.model]][[estimates.method]]$sigma
-  }
-}
-
-# sanity check
-#lambda.values <- dplyr::arrange(subset(lambda.values, sp %in% sp.data$focal),sp.names)
-# sigma is also a parameter
-sigma <- mean(lambda.values$sigma) #entra solo como valor inicial, no fijo.
-```
-
-Double-check that we only include species that have proper estimates
-
-```{r message=F, warning=F}
-#check first and remove first. Or remove from  data.
-sp.data <- subset(sp.data, focal %in% lambda.values$sp & competitor %in% lambda.values$sp)
-```
-
-Finally, set initial values for $e$ (i.e. competitive effects) and $r$ (i.e competitive responses), as well as their lower and upper bounds. Lower and upper bounds are most likely to be the same for all species, and in that case it is convenient to provide a single value. If we want to specify different values for every species, we can pass vectors of the same length as the $\lambda$, $e$, and $r$ parameters.
-
-```{r message=F, warning=F}
-r.values <- rep(NA,nrow(lambda.values))
-e.values <- rep(NA,nrow(lambda.values))
+r.values <- rep(1,nrow(lambda.values))
+e.values <- rep(1,nrow(lambda.values))
 
 lower.r <- 0
 upper.r <- 1e2
@@ -173,7 +126,7 @@ lower.sigma <- 0.0000000001
 upper.sigma <- 1
 ```
 
-We can now initialize an empty results data structure, a list in which each component will consist of the estimates from an optimization method.
+We can now initialize an empty data structure for the results, a list in which each component will consist of the estimates from an optimization method.
 
 ```{r message=F, warning=F}
 ER.list <- list()
@@ -203,7 +156,7 @@ for(i.method in 1:length(optim.methods)){
 names(ER.list) <- optim.methods
 ```
 
-In the main loop, we 1) call the `ER_optimize` function with each of the selected optimization methods, 2) store the resulting values in the list we just created. Note that, in the function call, we omit the arguments related to the inclusion of covariates, because these have a default `NULL` value. These arguments (e.g. `lambda.cov`, `r.cov`, `e.cov`, and their associated errors) are nevertheless returned as NA from the function, and for completeness we also retrieve them.
+In the main loop, we 1) call the `ER_optimize` function with each of the selected optimization methods, 2) store the resulting values in the list we just created. In the `ER_optimize` function it is possible to estimate, alongside competitive effects and responses, the effect of covariates over these terms (e.g. `effect.cov` and `response.cov`). For simplicity, we will assume no effect of covariates in this example, but their addition is similar to the workflow exemplified in the vignette `Multi-species parameter optimization`. Therefore, in the function call, we omit the arguments related to the inclusion of covariates, because these have a default `NULL` value. These arguments are nevertheless returned as NA from the function call, and for completeness we also retrieve them.
 
 ```{r message=F, warning=F}
 for(i.method in 1:length(optim.methods)){
@@ -229,30 +182,69 @@ for(i.method in 1:length(optim.methods)){
                                bootstrap.samples = bootstrap.samples)
   
   # 2) store results
-  ER.list[[optim.methods[i.method]]]$lambda <- param.results$lambda
-  ER.list[[optim.methods[i.method]]]$lambda.lower.error <- param.results$lambda.lower.error
-  ER.list[[optim.methods[i.method]]]$lambda.upper.error <- param.results$lambda.upper.error
-  ER.list[[optim.methods[i.method]]]$response <- param.results$response
-  ER.list[[optim.methods[i.method]]]$response.lower.error <- param.results$response.lower.error
-  ER.list[[optim.methods[i.method]]]$response.upper.error <- param.results$response.upper.error
-  ER.list[[optim.methods[i.method]]]$effect <- param.results$effect
-  ER.list[[optim.methods[i.method]]]$effect.lower.error <- param.results$effect.lower.error
-  ER.list[[optim.methods[i.method]]]$effect.upper.error <- param.results$effect.upper.error
-  ER.list[[optim.methods[i.method]]]$sigma <- param.results$sigma
-  ER.list[[optim.methods[i.method]]]$lambda.cov <- param.results$lambda.cov
-  ER.list[[optim.methods[i.method]]]$lambda.cov.lower.error <- param.results$lambda.cov.lower.error
-  ER.list[[optim.methods[i.method]]]$lambda.cov.upper.error <- param.results$lambda.cov.upper.error
-  ER.list[[optim.methods[i.method]]]$response.cov <- param.results$response.cov
-  ER.list[[optim.methods[i.method]]]$response.cov.lower.error <- param.results$response.cov.lower.error
-  ER.list[[optim.methods[i.method]]]$response.cov.upper.error <- param.results$response.cov.upper.error
-  ER.list[[optim.methods[i.method]]]$effect.cov <- param.results$effect.cov
-  ER.list[[optim.methods[i.method]]]$effect.cov.lower.error <- param.results$effect.cov.lower.error
-  ER.list[[optim.methods[i.method]]]$effect.cov.upper.error <- param.results$effect.cov.upper.error
-  ER.list[[optim.methods[i.method]]]$log.likelihood <- param.results$log.likelihood
+  ER.list[[optim.methods[i.method]]]$lambda <- 
+    param.results$lambda
+  
+  ER.list[[optim.methods[i.method]]]$lambda.lower.error <- 
+    param.results$lambda.lower.error
+  
+  ER.list[[optim.methods[i.method]]]$lambda.upper.error <- 
+    param.results$lambda.upper.error
+  
+  ER.list[[optim.methods[i.method]]]$response <- 
+    param.results$response
+  
+  ER.list[[optim.methods[i.method]]]$response.lower.error <- 
+    param.results$response.lower.error
+  
+  ER.list[[optim.methods[i.method]]]$response.upper.error <- 
+    param.results$response.upper.error
+  
+  ER.list[[optim.methods[i.method]]]$effect <- 
+    param.results$effect
+  
+  ER.list[[optim.methods[i.method]]]$effect.lower.error <- 
+    param.results$effect.lower.error
+  
+  ER.list[[optim.methods[i.method]]]$effect.upper.error <- 
+    param.results$effect.upper.error
+  
+  ER.list[[optim.methods[i.method]]]$sigma <- 
+    param.results$sigma
+  
+  ER.list[[optim.methods[i.method]]]$lambda.cov <- 
+    param.results$lambda.cov
+  
+  ER.list[[optim.methods[i.method]]]$lambda.cov.lower.error <- 
+    param.results$lambda.cov.lower.error
+  
+  ER.list[[optim.methods[i.method]]]$lambda.cov.upper.error <- 
+    param.results$lambda.cov.upper.error
+  
+  ER.list[[optim.methods[i.method]]]$response.cov <- 
+    param.results$response.cov
+  
+  ER.list[[optim.methods[i.method]]]$response.cov.lower.error <- 
+    param.results$response.cov.lower.error
+  
+  ER.list[[optim.methods[i.method]]]$response.cov.upper.error <- 
+    param.results$response.cov.upper.error
+  
+  ER.list[[optim.methods[i.method]]]$effect.cov <- 
+    param.results$effect.cov
+  
+  ER.list[[optim.methods[i.method]]]$effect.cov.lower.error <- 
+    param.results$effect.cov.lower.error
+  
+  ER.list[[optim.methods[i.method]]]$effect.cov.upper.error <- 
+    param.results$effect.cov.upper.error
+  
+  ER.list[[optim.methods[i.method]]]$log.likelihood <- 
+    param.results$log.likelihood
 }
 
 if(write.results){
-  save(ER.list,file = "./results/effect_response_estimates.Rdata")
+  # save(ER.list,file = "./results/effect_response_estimates.Rdata")
 }
 
 ```
@@ -260,14 +252,22 @@ if(write.results){
 Next, a simple plot showing the variations in competitive effects and responses among species. For that, we have to format the results into a dataframe
 
 ```{r message=F, warning=F}
-er.data <- data.frame(species = sp.names, competitive.effect = ER.list[[1]]$effect, competitive.response = ER.list[[1]]$response)
+er.data <- data.frame(species = sp.names, 
+                      competitive.effect = ER.list[[1]]$effect, 
+                      competitive.response = ER.list[[1]]$response)
 
 er.data.long <- tidyr::gather(er.data,key = "var",value = "value",-species)
 
-er.plot <- ggplot2::ggplot(er.data.long,ggplot2::aes(y = species, x = value, group = var))+
+er.plot <- ggplot2::ggplot(er.data.long,
+                           ggplot2::aes(y = species, x = value, group = var))+
   ggplot2::geom_point()+
   ggplot2::facet_grid(.~var, scales = "free_x")+
+  ggplot2::ggtitle("Competitive effect and response\nof Caracoles plant species")+
   NULL
-er.plot #Add legend.
 ```
+
+```{r message=F, warning=F, fig.width=7.2,fig.height=7}
+er.plot
+```
+
 

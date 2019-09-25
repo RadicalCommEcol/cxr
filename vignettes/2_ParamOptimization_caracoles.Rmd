@@ -12,68 +12,78 @@ editor_options:
 
 **Introduction**
 
-This document explains how to optimize several models that predict species fecundity. This means that models with increasing number is a more complex version of the previous model. This procedure is intended to avoid overfitting problems and promote convergence of the more complex models. Here, we present how to use data obtained from experiments or field observations to predict species fecundity as a function of the intrinsic ability of species to produce offspring ($\lambda$), and interaction coefficients with other species ($\alpha$). The model in its most simpler version takes the following form:
+This document explains how to use data obtained from experiments or field observations to predict species fecundity as a function of the intrinsic ability of species to produce offspring ($\lambda$), and interaction coefficients with other species ($\alpha$). We obtain these parameters from our example dataset by fitting increasingly complex population dynamics models of the following form, which is basically a Beverton-Holt model:
 
 $$F = \frac{\lambda}{1+\alpha}$$
 
-This form is basically a Beverton-Holt model. Following modifications of this model will allow us obtaining the interaction matrices for pairs of species, and the effect of covariables (including biotic and abiotic factors) on both $\lambda$ and $\alpha$ coefficients (see vignette `Data and model formats` for details on the five models implemented). All together this information is key for obtaining information of different drivers determining the outcome of species interaction at local scales, which are widely used in "modern" coexistence studies. Most of this vignette presents data preparation from how is obtained in the field to the appropriate format for the analysis. 
+Increasingly complex modifications of this model allow us to obtain the interaction matrices for pairs of species, and the effect of covariables (including biotic and abiotic factors) on both $\lambda$ and $\alpha$ coefficients (see vignette `Data and model formats` for details on the five models implemented). The general procedure implemented in this vignette is that the outpupt of a given model is taken as the initial values for the next one (e.g. the `lambda` parameter estimated by model 1 will be the input to model 2, etc.). This procedure is intended to avoid overfitting problems and promote convergence of the more complex models.
+
+All together, the parameters obtained with our model fitting are key for obtaining information of different drivers determining the outcome of species interaction at local scales, which are widely used in "modern" coexistence studies. Most of this vignette presents data preparation from how is obtained in the field to the appropriate format for the analysis. 
 
 **Setup**
 
-We start loading the package and the associated dataset (see vignette `Data and model formats` for details on the data). We will use the following data:
+We start loading the package and the associated datasets (see vignette `Data and model formats` for details on the data). We will use the following data:
 - `competition`: measurement of fruit and seed set of plant individuals in presence of competitors of the same or other species.
 - `salinity`: soil salinity for each subplot. This is our abiotic covariate, but any other types of covariates can be included. 
 
 ```{r message=F, warning=F}
 library(cxr)
-data(competition, package = "cxr") #R crashes if I load data twice :() Error in class(obj) <- "rs.scalar" : cannot set attribute on a symbol
+data(competition, package = "cxr")
 
 data(salinity, package = "cxr")
 ```
 
 **Preparing the data**
 
-First we need to format the example dataset for the analysis and add the initial values needed as inputs for model parametrization.
+First we need to format the example dataset for the analysis and add the initial values needed as inputs for model parameterization.
 
 ```{r message=F, warning=F}
 # spread the data from long to wide format
 competition.data <- tidyr::spread(competition,competitor,number,fill = 0)
 # how many focal species
-focal.sp <- unique(competition.data$focal)
+focal.sp <- sort(unique(competition.data$focal))
+# how many competitor species - in our dataset same set as focal species
+competitor.sp <- sort(unique(competition$competitor))
 # obtain the competition matrix
-comp.matrix <- as.matrix(competition.data[,10:ncol(competition.data)]) 
+comp.matrix <- as.matrix(competition.data[,which(names(competition.data) %in% competitor.sp)]) 
 
-# the rows in the covariates datasets (salinity, in our example) must match the observations of the competition dataset.
-# in order to be sure that they match, join them in a single dataset (note that they share a unique identifier, given by plot+subplot+year)
+# the rows in the covariates datasets (salinity, in our example) 
+# must match the observations of the competition dataset.
+# in order to be sure that they match, join them in a single dataset 
+# (note that they share a unique identifier, given by plot+subplot+year)
 full.data <- dplyr::left_join(competition.data,salinity)
 
 ```
 
 Now, we set some general variables regarding the models we want to use, and the parameters we want to estimate.
-Note that if we include more than one model, the optimization procedures proceed sequentially; e.g., if we estimate parameters from models 3, 4, and 5. 
+Remember that if we include more than one model, the optimization procedures proceed sequentially.
 
 ```{r message=F, warning=F}
-models <- 3:5 # Ideally, you should start by model 1, and build from there, here we start at model 3 for demonstration purposes
+models <- 1:5 
 ```
 
-This sequential procedure means tha the output from model 3 will be taken as initial estimates for model 4, and the output from model 4 will be the initial estimates for model 5. Note, as well, that models 4 and 5 differ from model 3 in that they include the effect of covariates on species seed production in the absence of competition and interactions. Therefore, you should only include these models if you have at least one covariate in your data (see *Lanuza, Bartomeus, Godoy. 2018. Ecology Letters 21:865-874*).
+Again, this sequential procedure means tha the output from model 1 will be taken as initial estimates for model 2, the output from model 2 will be the initial estimates for model 3, and so on. Note, as well, that models 4 and 5 differ from model 3 in that they include the effect of covariates on species seed production in the absence of competition and interactions. Therefore, you should only include these models if you have at least one covariate in your data (see *Lanuza, Bartomeus, Godoy. 2018. Ecology Letters 21:865-874*).
 
-We can estimate the whole parameter set for each model, or fix certain parameters, for example, in case there are independent field estimation of some of them. This information is passed to the function in a list, in which each element is a string vector giving the set of parameters that are to be optimized for each model. In our example, we optimize all parameters (note that model 3 has only $\lambda$ and $\alpha$ parameters, whereas models 4 and 5 also include the effect of covariates).
+We can estimate the whole parameter set for each model, or fix certain parameters, for example, in case there are independent field estimation of some of them. This information is passed to the function in a list, in which each element is a string vector giving the set of parameters that are to be optimized for each model. In our example, we optimize all parameters (note that model 1 only fits $\lambda$, models 2 and 3 fit $\lambda$ and $\alpha$, whereas models 4 and 5 also include the effect of covariates).
 
 ```{r message=F, warning=F}
 # which values do we optimize for each model?
-param.list <- list(m3 = c("lambda","alpha"),
+param.list <- list(m1 = c("lambda"),
+                   m2 = c("lambda","alpha"),
+                   m3 = c("lambda","alpha"),
                    m4 = c("lambda","alpha","lambda.cov","alpha.cov"),
                    m5 = c("lambda","alpha","lambda.cov","alpha.cov"))
 ```
 
-In case you had independent estimates of parameters, you would have something along these lines:
+In case you had independent estimates of parameters, e.g. $\lambda$, you would have something along these lines:
 
 ```{r message=F, warning=F}
-#param.list <- list(m3 = c(alpha"),
- #                  m4 = c("alpha","lambda.cov","alpha.cov"),
- #                  m5 = c("alpha","lambda.cov","alpha.cov")) 
-# init.lambda <- rep(10,length(focal.sp)) # As an example, here we force the value of lambda to take the value of 10 for all species.
+#param.list <- list(m2 = c(alpha"),
+#                   m3 = c(alpha"),
+#                   m4 = c("alpha","lambda.cov","alpha.cov"),
+#                   m5 = c("alpha","lambda.cov","alpha.cov")) 
+# init.lambda <- rep(10,length(focal.sp)) 
+# As an example, set the value of lambda to 10 for all species.
 ```
 
 Keep the model definitions in a list, for ease:
@@ -92,7 +102,7 @@ colnames(covariates) <- "sum_salinity"
 # covariates <- 0
 ```
 
-Here we specify which optimization methods to use. You can include more than one (but see below). In this case we only use optim_NM because it is one of the default methods.
+Here we specify which optimization methods to use. You can include more than one (but see below). In this example, we use optim_NM because it is the default method in the base `optim` function in R.
 
 ```{r message=F, warning=F}
 # optimization methods to use
@@ -112,32 +122,31 @@ Since the routine takes the input for a given model from the output of the previ
 ```{r message=F, warning=F}
 # from which method are we taking initial estimates for the next model?
 init.par.method <- optim.methods[1]
-init.method.num <- which(optim.methods == init.par.method)
 ```
 
-We also need to specify the initial values for the first model (model 3, in this example). If you have independent estimates of any parameter, comment out the appropriate lines. Note that some of the optimization methods (e.g. `optim-LFGS-B`) fail for parameter combinations in which the function is undefined. Hence the small, but positive, values.
+We also need to specify the initial values for the first model (model 1, in this example). If you have independent estimates of any parameter, comment out the appropriate lines. The `optim_NM` method used in this example does not account for upper and lower parameter values, but we include them here for completeness.
 
 ```{r message=F, warning=F}
 # values for initial estimates of parameters. 
 # Overwrite if necessary
 # init.lambda is calculated after log.fitness for each focal species
-lower.lambda <- 1 # asumption that at minium it will produce 1 seed. We avoid zero seeds scenario, because it precludes the use of log().
+lower.lambda <- 1 # minimum number of seeds produced in the absence of competition
 upper.lambda <- 1e3
 # sigma
 lower.sigma <- 1e-5
 upper.sigma <- 1
 # alpha
-init.alpha <- 0 # DAVID: As in the first example
-lower.alpha <- 1e-10
-upper.alpha <- 1e5
+init.alpha <- 1e-3
+lower.alpha <- 1e-3
+upper.alpha <- 1e3
 # lambda.cov
-init.lambda.cov <- 1
-lower.lambda.cov <- 1e-10
-upper.lambda.cov <- 1e4
+init.lambda.cov <- 1 # default to effect of covariates equal to the value of the covariate
+lower.lambda.cov <- 1e-10 # allow for very small effects of covariates
+upper.lambda.cov <- 1e3
 # alpha.cov
 init.alpha.cov <- 1
 lower.alpha.cov <- 1e-10
-upper.alpha.cov <- 1e4
+upper.alpha.cov <- 1e3
 ```
 
 Importantly, the package allows computing estimations of standard errors. This error estimation is done via bootstrapping, for two reasons. One is that obtaining estimation of error using Hessian matrices is unstable due to several computational issues, but sencondly and more importantly, error distributions of your variable might not follow a normal distribution, and bootstrapping is a non-parametric method that may recover any error distribution. Please remember that the estimation of errors can be, depending on the model and optimization method, computationally expensive. We recommend 999 runs, yet we provide here a minimal example of it (setting `bootstrap.samples` to only 3 runs).
@@ -147,20 +156,20 @@ generate.errors <- TRUE
 bootstrap.samples <- 3
 ```
 
-And a flag for storing or not the results of the analysis
+And a flag for storing or not the results of the analysis (in this example, actual writing functions are commented out).
 
 ```{r message=F, warning=F}
 # store results?
-write.results <- FALSE
+write.results <- TRUE
 ```
 
 **Initialize results structure** 
 
-We will store the results of our analysis in a nested list, following the nested design of the optimization proccess. For each focal species, we calculate three [check!]() different models (given in `models`), and for each of these models, we obtain the parameterization from a series of optimization methods (given in `optim.methods`). Thus, we create a list, named `param_estimates`, of the form:
+We will store the results of our analysis in a nested list, following the nested design of the optimization proccess. For each focal species, we calculate the five different models (given in `models`), and for each of these models, we obtain the parameterization from a series of optimization methods (given in `optim.methods`). Thus, we create a list, named `param_estimates`, of the form:
 
 `param_estimates[[species]][[model]][[method]]`
 
-We create this outcome empty placeholder with a series of nested loops:
+We create this empty placeholder for the outcome with a series of nested loops:
 
 ```{r}
 param_estimates <- list()
@@ -169,20 +178,20 @@ for(i.sp in 1:length(focal.sp)){
   for(i.model in 1:length(models)){
     param_estimates[[i.sp]][[i.model]] <- list()
     for(i.method in 1:length(optim.methods)){
-      param_estimates[[i.sp]][[i.model]][[i.method]] <- list(lambda = NA, #turn to NA if possible 
-                                                            lambda.lower.error = 0,
-                                                            lambda.upper.error = 0,
-                                                            sigma = 0,
-                                                            alpha = 0,
-                                                            alpha.lower.error = 0,
-                                                            alpha.upper.error = 0,
-                                                            lambda.cov = 0,
-                                                            lambda.cov.lower.error = 0,
-                                                            lambda.cov.upper.error = 0,
-                                                            alpha.cov = 0,
-                                                            alpha.cov.lower.error = 0,
-                                                            alpha.cov.upper.error = 0,
-                                                            log.likelihood = 0)
+      param_estimates[[i.sp]][[i.model]][[i.method]] <- list(lambda = NA, 
+                                                            lambda.lower.error = NA,
+                                                            lambda.upper.error = NA,
+                                                            sigma = NA,
+                                                            alpha = NA,
+                                                            alpha.lower.error = NA,
+                                                            alpha.upper.error = NA,
+                                                            lambda.cov = NA,
+                                                            lambda.cov.lower.error = NA,
+                                                            lambda.cov.upper.error = NA,
+                                                            alpha.cov = NA,
+                                                            alpha.cov.lower.error = NA,
+                                                            alpha.cov.upper.error = NA,
+                                                            log.likelihood = NA)
     }
     names(param_estimates[[i.sp]][[i.model]]) <- optim.methods
   }
@@ -206,10 +215,13 @@ for(i.sp in 1:length(focal.sp)){
   focal.sp.data <- subset(competition.data, focal == focal.sp[i.sp])
   # current focal species
   focal <- unique(focal.sp.data$focal)
-  # fitness metric...
-  # subset >0 records, for calculating logarithms
-  focal.sp.data <- subset(focal.sp.data, seed > 0) #OSCAR, really? Oscar dice que adelante con el +0.01
-  fitness <- focal.sp.data$seed #fitness
+
+  # we may have observations in which the focal individual produced no seeds. 
+  # The optimization methods work with the logarithm of seed number,
+  # so add a small offset to prevent numerical errors.
+  focal.sp.data$seed[focal.sp.data$seed == 0] <- 0.001
+  # our fitness metric is simply number of seeds
+  fitness <- focal.sp.data$seed 
   log.fitness <- log(fitness)
   # competition matrix: number of competitors
   focal.comp.matrix <- comp.matrix[which(competition.data$focal == focal.sp[i.sp]),]
@@ -281,9 +293,7 @@ for(i.sp in 1:length(focal.sp)){
   
   # model to optimize  
   for(i.model in 1:length(models)){
-    print("*********************************") #use message in future.
-    print(paste(date()," - starting focal sp ",focal.sp[i.sp],", model ",models[i.model],sep=""))
-    print("*********************************")
+    
   # 3) compute each method
     
     for(i.method in 1:length(optim.methods)){
@@ -314,23 +324,44 @@ for(i.sp in 1:length(focal.sp)){
       ###############
       # 4) store results
       
-      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda <- temp.results$lambda
-      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda.lower.error <- temp.results$lambda.lower.error
-      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda.upper.error <- temp.results$lambda.upper.error
+      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda <- 
+        temp.results$lambda
       
-      param_estimates[[i.sp]][[i.model]][[i.method]]$sigma <- temp.results$sigma
+      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda.lower.error <- 
+        temp.results$lambda.lower.error
       
-      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha <- temp.results$alpha
-      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha.upper.error <- temp.results$alpha.upper.error
-      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha.lower.error <- temp.results$alpha.lower.error
+      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda.upper.error <- 
+        temp.results$lambda.upper.error
       
-      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda.cov <- temp.results$lambda.cov
-      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda.cov.upper.error <- temp.results$lambda.cov.upper.error
-      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda.cov.lower.error <- temp.results$lambda.cov.lower.error
+      param_estimates[[i.sp]][[i.model]][[i.method]]$sigma <- 
+        temp.results$sigma
       
-      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha.cov <- temp.results$alpha.cov
-      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha.cov.upper.error <- temp.results$alpha.cov.upper.error
-      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha.cov.lower.error <- temp.results$alpha.cov.lower.error
+      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha <- 
+        temp.results$alpha
+      
+      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha.upper.error <- 
+        temp.results$alpha.upper.error
+      
+      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha.lower.error <- 
+        temp.results$alpha.lower.error
+      
+      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda.cov <- 
+        temp.results$lambda.cov
+      
+      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda.cov.upper.error <- 
+        temp.results$lambda.cov.upper.error
+      
+      param_estimates[[i.sp]][[i.model]][[i.method]]$lambda.cov.lower.error <- 
+        temp.results$lambda.cov.lower.error
+      
+      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha.cov <- 
+        temp.results$alpha.cov
+      
+      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha.cov.upper.error <- 
+        temp.results$alpha.cov.upper.error
+      
+      param_estimates[[i.sp]][[i.model]][[i.method]]$alpha.cov.lower.error <- 
+        temp.results$alpha.cov.lower.error
       
       param_estimates[[i.sp]][[i.model]][[i.method]]$log.likelihood <- temp.results$log.likelihood
       
@@ -368,13 +399,15 @@ for(i.sp in 1:length(focal.sp)){
       # lambda.cov
       if("lambda.cov" %in% param.list[[i.model+1]]){
         if(sum(is.na(param_estimates[[i.sp]][[i.model]][[init.par.method]]$lambda.cov)) == 0){
-          current.init.lambda.cov <- param_estimates[[i.sp]][[i.model]][[init.par.method]]$lambda.cov
+          current.init.lambda.cov <- 
+            param_estimates[[i.sp]][[i.model]][[init.par.method]]$lambda.cov
         }
       }
       # alpha.cov
       if("alpha.cov" %in% param.list[[i.model+1]]){
         if(sum(is.na(param_estimates[[i.sp]][[i.model]][[init.par.method]]$alpha.cov)) == 0){
-          current.init.alpha.cov <- param_estimates[[i.sp]][[i.model]][[init.par.method]]$alpha.cov
+          current.init.alpha.cov <- 
+            param_estimates[[i.sp]][[i.model]][[init.par.method]]$alpha.cov
           # is the current estimate of the appropriate length?
           if(models[i.model+1] > 4){
             if(length(current.init.alpha.cov) == num.covariates){
@@ -389,7 +422,7 @@ for(i.sp in 1:length(focal.sp)){
 
 ```
 
-If we set the flag, the nested list will be written to disk as a .RData file. The list structure is very convenient for handling these results in R, as it maintains the nested design of the parameterization (per species, model, and optimization method). However, it may also be necessary to have the results as dataframes and csv files, e.g. for plotting. Here we build four dataframes, in long format, for the different sets of parameters: lambda, alpha, lambda.cov, and alpha.cov. This code assumes that covariates are named, so that vectors returned from the list are also named.
+If we set the `write.results` flag, the nested list will be written to disk as a .RData file. The list structure is very convenient for handling these results in R, as it maintains the nested design of the parameterization (per species, model, and optimization method). However, it may also be necessary to have the results as dataframes and csv files, e.g. for plotting. Here we build four dataframes, in long format, for the different sets of parameters: lambda, alpha, lambda.cov, and alpha.cov. This code assumes that covariates are named, so that vectors returned from the list are also named.
 
 ```{r message=F, warning=F}
 if(write.results){
@@ -397,83 +430,111 @@ if(write.results){
   
   # just in case it is a factor
   focal.sp <- sort(as.character(focal.sp))
-  competitors <- sort(names(param_estimates[[1]][[names(fitness.models)[models[models == max(models)]]]][[1]]$alpha))
+  competitors <- 
+    sort(names(
+      param_estimates[[1]][[names(fitness.models)[models[models == max(models)]]]][[1]]$alpha))
   my.models <- names(fitness.models)[models]
   my.covariates <- c("sum_salinity")
   
   # lambda
   lambda.values <- expand.grid(focal.sp,my.models,optim.methods)
   names(lambda.values) <- c("species","model","method")
-  lambda.values$lambda <- 0
-  lambda.values$lambda.lower <- 0
-  lambda.values$lambda.upper <- 0
+  lambda.values$lambda <- NA
+  lambda.values$lambda.lower <- NA
+  lambda.values$lambda.upper <- NA
   
   # alpha
   alpha.values <- expand.grid(focal.sp,competitors,my.models,optim.methods)
   names(alpha.values) <- c("focal","competitor","model","method")
-  alpha.values$alpha <- 0
-  alpha.values$alpha.lower <- 0
-  alpha.values$alpha.upper <- 0
+  alpha.values$alpha <- NA
+  alpha.values$alpha.lower <- NA
+  alpha.values$alpha.upper <- NA
   
   # lambda.cov
   lambda.cov.values <- expand.grid(focal.sp,my.models,optim.methods,my.covariates)
   names(lambda.cov.values) <- c("species","model","method","covariate")
-  lambda.cov.values$lambda.cov <- 0
-  lambda.cov.values$lambda.cov.lower <- 0
-  lambda.cov.values$lambda.cov.upper <- 0
+  lambda.cov.values$lambda.cov <- NA
+  lambda.cov.values$lambda.cov.lower <- NA
+  lambda.cov.values$lambda.cov.upper <- NA
   
   # alpha.cov
   alpha.cov.values <- expand.grid(focal.sp,competitors,my.models,optim.methods,my.covariates)
   names(alpha.cov.values) <- c("focal","competitor","model","method","covariate")
-  alpha.cov.values$alpha.cov <- 0
-  alpha.cov.values$alpha.cov.lower <- 0
-  alpha.cov.values$alpha.cov.upper <- 0
+  alpha.cov.values$alpha.cov <- NA
+  alpha.cov.values$alpha.cov.lower <- NA
+  alpha.cov.values$alpha.cov.upper <- NA
   
   # fill up the dataframes
   for(i.sp in 1:length(focal.sp)){
     for(i.model in 1:length(my.models)){
       for(i.method in 1:length(optim.methods)){
-
+        
         # lambda
         lambda.pos <- which(lambda.values$species == focal.sp[i.sp] &
                               lambda.values$model == my.models[i.model] &
                               lambda.values$method == optim.methods[i.method])
-        lambda.values$lambda[lambda.pos] <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda
-        lambda.values$lambda.lower[lambda.pos] <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.lower.error
-        lambda.values$lambda.upper[lambda.pos] <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.upper.error
-
+        lambda.values$lambda[lambda.pos] <- 
+          param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda
+        
+        lambda.values$lambda.lower[lambda.pos] <- 
+          param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.lower.error
+        
+        lambda.values$lambda.upper[lambda.pos] <- 
+          param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.upper.error
+        
         # alpha
-        my.alpha.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha
-        my.alpha.lower.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.lower.error
-        my.alpha.upper.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.upper.error
-
-        alpha.pos <- which(alpha.values$focal == focal.sp[i.sp] &
-                                alpha.values$model == my.models[i.model] &
-                                alpha.values$method == optim.methods[i.method] &
-                                alpha.values$competitor %in% names(my.alpha.vector))
-
+        my.alpha.vector <- 
+          param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha
+        
+        my.alpha.lower.vector <- 
+          param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.lower.error
+        
+        my.alpha.upper.vector <- 
+          param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.upper.error
+        
+        if(length(my.alpha.vector)>1){ # model 3 onwards
+          alpha.pos <- which(alpha.values$focal == focal.sp[i.sp] &
+                               alpha.values$model == my.models[i.model] &
+                               alpha.values$method == optim.methods[i.method] &
+                               alpha.values$competitor %in% names(my.alpha.vector))
+        }else{ # model 2, i.e. a single alpha for all competitors
+          alpha.pos <- which(alpha.values$focal == focal.sp[i.sp] &
+                               alpha.values$model == my.models[i.model] &
+                               alpha.values$method == optim.methods[i.method])
+        }
+        
         alpha.values$alpha[alpha.pos] <- my.alpha.vector
         alpha.values$alpha.lower[alpha.pos] <- my.alpha.lower.vector
         alpha.values$alpha.upper[alpha.pos] <- my.alpha.upper.vector
-
+        
         # lambda.cov
-        my.lambda.cov.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov
-        my.lambda.cov.lower.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov.lower.error
-        my.lambda.cov.upper.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov.upper.error
+        my.lambda.cov.vector <- 
+          param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov
+        
+        my.lambda.cov.lower.vector <- 
+          param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov.lower.error
+        
+        my.lambda.cov.upper.vector <- 
+          param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$lambda.cov.upper.error
         
         # all covariates at once, should be ok
         lambda.cov.pos <- which(lambda.cov.values$species == focal.sp[i.sp] &
                                   lambda.cov.values$model == my.models[i.model] &
                                   lambda.cov.values$method == optim.methods[i.method])
-
+        
         lambda.cov.values$lambda.cov[lambda.cov.pos] <- my.lambda.cov.vector
         lambda.cov.values$lambda.cov.lower[lambda.cov.pos] <- my.lambda.cov.lower.vector
         lambda.cov.values$lambda.cov.upper[lambda.cov.pos] <- my.lambda.cov.upper.vector
-
+        
         # alpha.cov
-        my.alpha.cov.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov
-        my.alpha.cov.lower.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov.lower.error
-        my.alpha.cov.upper.vector <- param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov.upper.error
+        my.alpha.cov.vector <- 
+          param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov
+        
+        my.alpha.cov.lower.vector <- 
+          param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov.lower.error
+        
+        my.alpha.cov.upper.vector <- 
+          param_estimates[[focal.sp[i.sp]]][[my.models[i.model]]][[optim.methods[i.method]]]$alpha.cov.upper.error
         
         # differentiate models 4 and 5
         if(!is.null(my.covariates) & !is.na(my.alpha.cov.vector[1])){
@@ -486,9 +547,14 @@ if(write.results){
           }# if-else single alpha.cov
           
           for(i.covariate in 1:length(my.covariates)){
-            my.cov <- my.alpha.cov.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.vector)))]
-            my.lower.cov <- my.alpha.cov.lower.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.lower.vector)))]
-            my.upper.cov <- my.alpha.cov.upper.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.upper.vector)))]
+            my.cov <- 
+              my.alpha.cov.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.vector)))]
+            
+            my.lower.cov <- 
+              my.alpha.cov.lower.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.lower.vector)))]
+            
+            my.upper.cov <- 
+              my.alpha.cov.upper.vector[which(grepl(my.covariates[i.covariate],names(my.alpha.cov.upper.vector)))]
             
             alpha.cov.pos <- which(alpha.cov.values$focal == focal.sp[i.sp] &
                                      alpha.cov.values$model == my.models[i.model] &
@@ -510,13 +576,33 @@ if(write.results){
   # write.csv2(alpha.values,file = "your/path/alpha_values.csv",row.names = F,append = F)
   # write.csv2(lambda.cov.values,file = "your/path/lambda_cov_values.csv",row.names = F,append = F)
   # write.csv2(alpha.cov.values,file = "your/path/alpha_cov_values.csv",row.names = F,append = F)
-  
+
 }
 
-head(lambda.values)
-head(alpha.values)
-head(lambda.cov.values) #NA's (maybe only for model 3?)
-head(alpha.cov.values) #0's (maybe only for model 3?)
-
 ```
+
+Each combination of focal species, model, and optimization method has an estimated $\lambda$
+
+```{r}
+  head(lambda.values)
+```
+
+Likewise for interaction coefficients, $\alpha$
+
+```{r}
+  head(alpha.values[alpha.values$model == "BH_2",]) # first model to fit alpha
+```
+
+And for $\Theta$, or `lambda.cov` in the models, representing the effect of covariates over $\lambda$
+
+```{r}
+  head(lambda.cov.values[lambda.cov.values$model == "BH_4",]) # first model to fit lambda.cov
+```
+
+Lastly, $\phi$ or `alpha.cov` represents the effect of covariates over $\alpha$
+
+```{r}
+  head(alpha.cov.values[alpha.cov.values$model == "BH_4",]) # first model to fit alpha.cov
+```
+
 

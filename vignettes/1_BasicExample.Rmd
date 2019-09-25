@@ -25,37 +25,34 @@ library(cxr)
 data(competition, package = "cxr")
 ```
 
-The `competition` dataset includes observation from *20* different plant species (see vignette `Data_formats` for details on the included datasets). We will subset the information to consider only two of them, *Chamaemelum fuscatum* and *Leontodon maroccanus*.
+The `competition` dataset includes observation from *20* different plant species (see vignette `Data and model formats` for details on the included datasets). We will subset the information to consider only two of them, *Chamaemelum fuscatum* and *Leontodon maroccanus*, which are coded as *CHFU* and *LEMA* respectively.
 
 ```{r message=F, warning=F}
 my.sp <- c("CHFU", "LEMA")
 two.sp.data <- subset(competition, focal %in% my.sp & competitor %in% my.sp)
 ```
 
-In order to estimate the different parameters for both species, we need to store separately the information on their observations as focal species.
+In order to estimate the different parameters for both species, we need to store separately the information on their observations as focal species. For this, we transform the data from long to wide format, and obtain the competition matrices for each focal species (where each row is an observation of a focal individual, and each column one species).
 
 ```{r message=F, warning=F}
-#MAKE MATRIX FIRST!!
-comp.matrix <- as.matrix(two.sp.data[,10:ncol(two.sp.data)])
+# transform from long to wide format
+two.sp.wide <- tidyr::spread(data = two.sp.data,key = competitor, value = number)
+# get competition matrices. First, the complete one
+comp.matrix <- as.matrix(two.sp.wide[,which(names(two.sp.wide) %in% my.sp)])
 
-sp1.comp.matrix <- as.matrix(comp.matrix[which(two.sp.data$focal == my.sp[1]),])
-# optional: name the column with the competitor species
-colnames(sp1.comp.matrix) <- my.sp[2]
-
-sp2.comp.matrix <- as.matrix(comp.matrix[which(two.sp.data$focal == my.sp[2]),])
-# optional: name the column with the competitor species
-colnames(sp2.comp.matrix) <- my.sp[1]
+# then subset for each focal species
+sp1.comp.matrix <- comp.matrix[which(two.sp.wide$focal == my.sp[1]),]
+sp2.comp.matrix <- comp.matrix[which(two.sp.wide$focal == my.sp[2]),]
 
 ```
 
-and also the estimation of fitness assocaited with each observation. In this particular case this is the seed production of focal individuals, for which the number of neighbours (`comp.matrix`) were also taken from field observations. Note that we pass the log of the seed production (fitness metric) for facilitating the optimization procedure.
+We need to retrieve, as well, the estimation of fitness associated with each observation. In our dataset this is the seed production of focal individuals, for which the number of neighbours (`comp.matrix`) were also taken from field observations. Note that we pass the log of the seed production (fitness metric) for facilitating the optimization procedure.
 
 ```{r message=F, warning=F}
-#use wide??
-sp1.fitness <- two.sp.data$seed[which(two.sp.data$focal == my.sp[1])]
+sp1.fitness <- two.sp.wide$seed[which(two.sp.wide$focal == my.sp[1])]
 sp1.log.fitness <- log(sp1.fitness)
 
-sp2.fitness <- two.sp.data$seed[which(two.sp.data$focal == my.sp[2])]
+sp2.fitness <- two.sp.wide$seed[which(two.sp.wide$focal == my.sp[2])]
 sp2.log.fitness <- log(sp2.fitness)
 ```
 
@@ -69,7 +66,7 @@ In `cxr` we have included five different population dynamic models for estimatin
 
 $$F_i = \frac{\lambda_i}{1+\sum \alpha_{ij}N_j}$$
 
-Specifying an optimization method, we can now call the main function with sensible values of upper and lower parameter bounds. We have implemented optimization with eight different optimization methods, that cover a range of methodologies (see e.g. the help of `cxr_optimize` for the available methods, and *Mullen, K.M. 2014. Journal of Statistical Software 60:1–45* for an overview of optimization methods.)
+Specifying an optimization method, we can now call the main function with sensible values of upper and lower parameter bounds. We have implemented optimization with eight different optimization methods, that cover a range of methodologies (see e.g. the help of `cxr_optimize` for the available methods, and *Mullen, K.M. 2014. Journal of Statistical Software 60:1–45* for an overview of optimization methods). Note that not all methods accept lower and upper boundaries, e.g. the standard method `optim_NM` does not, whereas `optim_L-BFGS-B` does accept boundaries. However, `optim_L-BFGS-B` does not allow parameter values for which the optimization function is undefined, and this will return an error. In this simple example, we use this latter method with allowed lower and upper boundaries.  
 
 ```{r message=F, warning=F}
 sp1.par <- cxr_optimize(fitness.model = BH_3,
@@ -77,13 +74,20 @@ sp1.par <- cxr_optimize(fitness.model = BH_3,
                         param.list = c("lambda","alpha"),
                         log.fitness = sp1.log.fitness,
                         init.lambda = init.lambda[1],
-                        lower.lambda = 0, #negative numbers of seed production are not biologically meaningful, hence we fix lambda to a minimum of 0.
+                        # negative numbers of seed production are not 
+                        # biologically meaningful, 
+                        # hence we fix lambda to a minimum of 0.
+                        lower.lambda = 0, 
                         upper.lambda = 1e3,
                         init.sigma = sd(sp1.log.fitness),
                         lower.sigma = 1e-5,
                         upper.sigma = 1,
-                        init.alpha = c(0,0), #initial competition coeficients set to no competition. Postive numbers imply competition, and negative numbers facilitation.
-                        lower.alpha = c(-1e3,-1e3),
+                        # Initial alpha coefficients set to almost no competition. 
+                        # In this example, assume alpha > 0 
+                        # (alpha <= 0 will throw an error when used 
+                        # in combination with optim_L-BFGS-B)
+                        init.alpha = c(1e-3,1e-3),
+                        lower.alpha = c(1e-3,1e-3),
                         upper.alpha = c(1e3,1e3),
                         focal.comp.matrix = sp1.comp.matrix)
 
@@ -95,10 +99,10 @@ sp2.par <- cxr_optimize(fitness.model = BH_3,
                         lower.lambda = 0,
                         upper.lambda = 1e3,
                         init.sigma = sd(sp2.log.fitness),
-                        lower.sigma = 1e-5,
+                        lower.sigma = 1e-3,
                         upper.sigma = 1,
-                        init.alpha = c(1,1),
-                        lower.alpha = c(1e-5,1e-5),
+                        init.alpha = c(1e-3,1e-3),
+                        lower.alpha = c(1e-3,1e-3),
                         upper.alpha = c(1e3,1e3),
                         focal.comp.matrix = sp2.comp.matrix)
 
@@ -113,13 +117,15 @@ sp1.par
 In this basic example, we are only interested in obtaining from the optimization process the seed production in the absence of competition (lambda), and the intra- and interspecific interactions, i.e. the row of the interaction matrix that corresponds to our focal species. Other components are NA either because the third model does not account for them (e.g. `lambda.cov` or `alpha.cov`), or because we are not estimating them (e.g. standard errors). In any case, we can retrieve the estimated 2x2 interaction matrix from the results.
 
 ```{r message=F, warning=F}
-interaction.matrix <- matrix(c(sp1.par$alpha, sp2.par$alpha), nrow = length(my.sp), byrow = TRUE)
+interaction.matrix <- matrix(c(sp1.par$alpha, sp2.par$alpha), 
+                             nrow = length(my.sp), 
+                             byrow = TRUE)
 colnames(interaction.matrix) <- c("CHFU", "LEMA")
 rownames(interaction.matrix) <- c("CHFU", "LEMA")
 interaction.matrix
 ```
 
-and obtain the niche overlap and average fitness ratio between the two species [IB define this metrics, maybe?]
+and obtain the niche overlap and average fitness ratio between the two species. These metrics allow us to understand the expected coexistence between both species given the data (see the help page of the functions for further information and references).
 
 ```{r message=F, warning=F}
 

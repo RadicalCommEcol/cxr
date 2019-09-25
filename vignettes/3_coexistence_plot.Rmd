@@ -96,29 +96,46 @@ the code for the plot itself is
 ```{r message=F, warning=F}
 
 coex.plot <- ggplot2::ggplot() + 
-  ggplot2::geom_line(data = lines, ggplot2::aes(x = x, y = y,linetype = fun,group = fun), col = "black") +
+  ggplot2::geom_line(data = lines, 
+                     ggplot2::aes(x = x, y = y,linetype = fun,group = fun), col = "black") +
   # grid lines
   ggplot2::geom_abline(intercept = 0, slope = 0, lty = 2, col = "darkgrey") +
   ggplot2::geom_vline(xintercept = 0, lty = 2, col = "darkgrey") +
   # points
-  ggplot2::geom_point(data = pairwise.ratios, ggplot2::aes(x = (1 - niche.overlap), y = log(fitness.ratio))) +
-  ggplot2::geom_text(data = pairwise.ratios, ggplot2::aes(x = (1 - niche.overlap), y = log(fitness.ratio), label = pair.ID), hjust = 0, nudge_y = -0.01, nudge_x = 0.01, check_overlap = TRUE, size = 3)+
+  ggplot2::geom_point(data = pairwise.ratios, 
+                      ggplot2::aes(x = (1 - niche.overlap), y = log(fitness.ratio))) +
+  ggplot2::geom_text(data = pairwise.ratios, 
+                     ggplot2::aes(x = (1 - niche.overlap), y = log(fitness.ratio), label = pair.ID), 
+                     hjust = 0, nudge_y = -0.01, nudge_x = 0.01, check_overlap = TRUE, size = 3)+
   # log-scale
   ggplot2::scale_y_log10() +
-  # # trim to desired coords
+  # trim to desired coords
   ggplot2::coord_cartesian(expand = c(0, 0),
-                  xlim = c(-my.lim.x,my.lim.x),
-                  ylim = c(1/my.lim.y, my.lim.y)) +
-    # ggplot2::coord_cartesian(expand = c(0, 0),
-    #               xlim = c(-my.lim.x,my.lim.x)) +
-  # axes, legend, etc
+                           xlim = c(-my.lim.x,my.lim.x),
+                           ylim = c(1/my.lim.y, my.lim.y)) +
+  # axes, title, etc
   ggplot2::xlab(expression(paste("(1 - ", rho, " )", sep = ""))) + 
-  ggplot2::ylab(expression(paste("Fitness ratio ( ", frac(italic(f[2]), italic(f[1])), " )", sep=""))) +
+  ggplot2::ylab(expression(paste("Fitness ratio ( ", frac(italic(k[2]), italic(k[1])), " )", sep=""))) +
+  ggplot2::ggtitle("Regions of coexistence, competitive exclusion, \nand priority effects between species pairs")+
+  
+  # coexistence regions
+  ggplot2::annotate("text", x = -0.35, y = 1.75, color = "darkgrey", label = expression(italic("sp 2 wins")))+
+  ggplot2::annotate("text", x = -0.35, y = 0.6, color = "darkgrey", label = expression(italic("sp 1 wins")))+
+  ggplot2::annotate("text", x = -0.37, y = 1.1, color = "darkgrey", label = expression(italic("priority\neffects")))+
+  ggplot2::annotate("text", x = 0.37, y = 1.1, color = "darkgrey", label = expression(italic("coexistence\nregion")))+
+
+  # theme and legend
+  ggplot2::theme_bw()+
   ggplot2::theme(legend.position = "none", 
-        axis.title.y = ggplot2::element_text(angle = 90), 
-        axis.title = ggplot2::element_text(size = 20)) +
+                 axis.title.y = ggplot2::element_text(angle = 90), 
+                 axis.title = ggplot2::element_text(size = 16)) +
   NULL
-coex.plot #Can we add a legend? Ideally indicate wich one is coexistence and which one is exclusion.
 ```
+ 
+```{r message=F, warning=F, fig.width=7.2,fig.height=7}
+coex.plot
+```
+ 
+ 
  
  
