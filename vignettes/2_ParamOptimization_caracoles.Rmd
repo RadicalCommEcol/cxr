@@ -23,13 +23,14 @@ All together, the parameters obtained with our model fitting are key for obtaini
 **Setup**
 
 We start loading the package and the associated datasets (see vignette `Data and model formats` for details on the data). We will use the following data:
+
 - `competition`: measurement of fruit and seed set of plant individuals in presence of competitors of the same or other species.
+
 - `salinity`: soil salinity for each subplot. This is our abiotic covariate, but any other types of covariates can be included. 
 
 ```{r message=F, warning=F}
 library(cxr)
 data(competition, package = "cxr")
-
 data(salinity, package = "cxr")
 ```
 
@@ -55,19 +56,18 @@ full.data <- dplyr::left_join(competition.data,salinity)
 
 ```
 
-Now, we set some general variables regarding the models we want to use, and the parameters we want to estimate.
-Remember that if we include more than one model, the optimization procedures proceed sequentially.
+Now, we set some general variables regarding the models we want to use, and the parameters we want to estimate. First, the set of models we are using.
 
 ```{r message=F, warning=F}
 models <- 1:5 
 ```
 
-Again, this sequential procedure means tha the output from model 1 will be taken as initial estimates for model 2, the output from model 2 will be the initial estimates for model 3, and so on. Note, as well, that models 4 and 5 differ from model 3 in that they include the effect of covariates on species seed production in the absence of competition and interactions. Therefore, you should only include these models if you have at least one covariate in your data (see *Lanuza, Bartomeus, Godoy. 2018. Ecology Letters 21:865-874*).
+Again, fitting modeles sequentially means that the output from model 1 will be taken as initial estimates for model 2, the output from model 2 will be the initial estimates for model 3, and so on. Note, as well, that models 4 and 5 differ from model 3 in that they include the effect of covariates on species seed production in the absence of competition and interactions. Therefore, you should only include these models if you have at least one covariate in your data (see *Lanuza, Bartomeus, Godoy. 2018. Ecology Letters 21:865-874*).
 
 We can estimate the whole parameter set for each model, or fix certain parameters, for example, in case there are independent field estimation of some of them. This information is passed to the function in a list, in which each element is a string vector giving the set of parameters that are to be optimized for each model. In our example, we optimize all parameters (note that model 1 only fits $\lambda$, models 2 and 3 fit $\lambda$ and $\alpha$, whereas models 4 and 5 also include the effect of covariates).
 
 ```{r message=F, warning=F}
-# which values do we optimize for each model?
+# which parameters do we optimize for each model?
 param.list <- list(m1 = c("lambda"),
                    m2 = c("lambda","alpha"),
                    m3 = c("lambda","alpha"),
@@ -75,15 +75,14 @@ param.list <- list(m1 = c("lambda"),
                    m5 = c("lambda","alpha","lambda.cov","alpha.cov"))
 ```
 
-In case you had independent estimates of parameters, e.g. $\lambda$, you would have something along these lines:
+In case you had independent estimates of parameters, e.g. $\lambda$, you would remove it from this list, something along these lines:
 
 ```{r message=F, warning=F}
 #param.list <- list(m2 = c(alpha"),
 #                   m3 = c(alpha"),
 #                   m4 = c("alpha","lambda.cov","alpha.cov"),
 #                   m5 = c("alpha","lambda.cov","alpha.cov")) 
-# init.lambda <- rep(10,length(focal.sp)) 
-# As an example, set the value of lambda to 10 for all species.
+# init.lambda <- your_lambda_estimates
 ```
 
 Keep the model definitions in a list, for ease:
@@ -201,11 +200,17 @@ names(param_estimates) <- focal.sp
 ```
 
 With this setting, we are now ready to optimize the selected parameters based on our dataset. This is done species by species. As the main function, `cxr_optimize`, accepts the input for a single species, we code a loop for going through all species. Inside this loop, we include the following steps:
-- 1) subset the competition data for the focal species 
-- 2) generate the actual initial values, considering all situations. Remember that, depending on the model, some parameters will have different length. For example, $\alpha$ is a single value in model 2 and a matrix in model 3 onwards. Thus, for species *i*, $alpha_{ij}$ is a vector of length equal to the number of competitor species.
-- 3) the actual call to `cxr_optimize`
-- 4) store the results in the nested list we created above
-- 5) update the initial values to be passed on to the next model
+
+1. subset the competition data for the focal species 
+
+2. generate the actual initial values, considering all situations. Remember that, depending on the model, some parameters will have different length. For example, $\alpha$ is a single value in model 2 and a matrix in model 3 onwards. Thus, for species *i*, $\alpha_{ij}$ is a vector of length equal to the number of competitor species.
+
+3. the actual call to `cxr_optimize`
+
+4. store the results in the nested list we created above
+
+5. update the initial values to be passed on to the next model
+
 
 ```{r message=F, warning=F}
 for(i.sp in 1:length(focal.sp)){
@@ -220,7 +225,7 @@ for(i.sp in 1:length(focal.sp)){
   # The optimization methods work with the logarithm of seed number,
   # so add a small offset to prevent numerical errors.
   focal.sp.data$seed[focal.sp.data$seed == 0] <- 0.001
-  # our fitness metric is simply number of seeds
+  # our fitness metric is simply number of produced seeds
   fitness <- focal.sp.data$seed 
   log.fitness <- log(fitness)
   # competition matrix: number of competitors
@@ -363,7 +368,8 @@ for(i.sp in 1:length(focal.sp)){
       param_estimates[[i.sp]][[i.model]][[i.method]]$alpha.cov.lower.error <- 
         temp.results$alpha.cov.lower.error
       
-      param_estimates[[i.sp]][[i.model]][[i.method]]$log.likelihood <- temp.results$log.likelihood
+      param_estimates[[i.sp]][[i.model]][[i.method]]$log.likelihood <- 
+        temp.results$log.likelihood
       
     }# for i.method
     
@@ -422,7 +428,7 @@ for(i.sp in 1:length(focal.sp)){
 
 ```
 
-If we set the `write.results` flag, the nested list will be written to disk as a .RData file. The list structure is very convenient for handling these results in R, as it maintains the nested design of the parameterization (per species, model, and optimization method). However, it may also be necessary to have the results as dataframes and csv files, e.g. for plotting. Here we build four dataframes, in long format, for the different sets of parameters: lambda, alpha, lambda.cov, and alpha.cov. This code assumes that covariates are named, so that vectors returned from the list are also named.
+If we set the `write.results` flag, the nested list will be written to disk as a .RData file. The list structure is very convenient for handling these results in R, as it maintains the nested design of the parameterization (per species, model, and optimization method). However, it may also be necessary to handle the results as dataframes and csv files, e.g. for plotting. Here we build four dataframes, in long format, for the different sets of parameters: lambda, alpha, lambda.cov, and alpha.cov. This code assumes that covariates are named, so that vectors returned from the list are also named.
 
 ```{r message=F, warning=F}
 if(write.results){
@@ -437,32 +443,36 @@ if(write.results){
   my.covariates <- c("sum_salinity")
   
   # lambda
-  lambda.values <- expand.grid(focal.sp,my.models,optim.methods)
+  lambda.values <- expand.grid(focal.sp,my.models,optim.methods,
+                               stringsAsFactors = F)
   names(lambda.values) <- c("species","model","method")
-  lambda.values$lambda <- NA
-  lambda.values$lambda.lower <- NA
-  lambda.values$lambda.upper <- NA
+  lambda.values$lambda <- NA_real_
+  lambda.values$lambda.lower <- NA_real_
+  lambda.values$lambda.upper <- NA_real_
   
   # alpha
-  alpha.values <- expand.grid(focal.sp,competitors,my.models,optim.methods)
+  alpha.values <- expand.grid(focal.sp,competitors,my.models,optim.methods,
+                              stringsAsFactors = F)
   names(alpha.values) <- c("focal","competitor","model","method")
-  alpha.values$alpha <- NA
-  alpha.values$alpha.lower <- NA
-  alpha.values$alpha.upper <- NA
+  alpha.values$alpha <- NA_real_
+  alpha.values$alpha.lower <- NA_real_
+  alpha.values$alpha.upper <- NA_real_
   
   # lambda.cov
-  lambda.cov.values <- expand.grid(focal.sp,my.models,optim.methods,my.covariates)
+  lambda.cov.values <- expand.grid(focal.sp,my.models,optim.methods,my.covariates,
+                                   stringsAsFactors = F)
   names(lambda.cov.values) <- c("species","model","method","covariate")
-  lambda.cov.values$lambda.cov <- NA
-  lambda.cov.values$lambda.cov.lower <- NA
-  lambda.cov.values$lambda.cov.upper <- NA
+  lambda.cov.values$lambda.cov <- NA_real_
+  lambda.cov.values$lambda.cov.lower <- NA_real_
+  lambda.cov.values$lambda.cov.upper <- NA_real_
   
   # alpha.cov
-  alpha.cov.values <- expand.grid(focal.sp,competitors,my.models,optim.methods,my.covariates)
+  alpha.cov.values <- expand.grid(focal.sp,competitors,my.models,optim.methods,my.covariates,
+                                  stringsAsFactors = F)
   names(alpha.cov.values) <- c("focal","competitor","model","method","covariate")
-  alpha.cov.values$alpha.cov <- NA
-  alpha.cov.values$alpha.cov.lower <- NA
-  alpha.cov.values$alpha.cov.upper <- NA
+  alpha.cov.values$alpha.cov <- NA_real_
+  alpha.cov.values$alpha.cov.lower <- NA_real_
+  alpha.cov.values$alpha.cov.upper <- NA_real_
   
   # fill up the dataframes
   for(i.sp in 1:length(focal.sp)){

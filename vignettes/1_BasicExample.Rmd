@@ -14,7 +14,7 @@ editor_options:
 
 The `cxr` package provides a general interface to parameterize population dynamics models from empirical data, and obtain from the estimations of these parameters (species vital rates and interaction coefficients) a series of metrics associated with modern coexistence theory. These metrics measure species competitive ability, their responses to competition as well as niche and average fitness differences (both demographic and competitive response differences).
 
-Here we demonstrate the basic usage of the package, using the data included in it (see *Lanuza, Bartomeus, Godoy. 2018. Ecology Letters 21:865-874* for a description of the dataset). In particular, with this dataset, we will obtain the values of seed production in the absence of neighbours and the strength of competitive interactions between pairs of species. These values are the basis for estimating the degree of niche overlap and average fitness differences between any pair of species. 
+Here we demonstrate the basic functionality of the package, using the data included in it (see *Lanuza, Bartomeus, Godoy. 2018. Ecology Letters 21:865-874* for a description of the dataset). In particular, with this dataset, we will obtain the values of seed production in the absence of neighbours and the strength of competitive interactions between pairs of species. These values are the basis for estimating the degree of niche overlap and average fitness differences between any pair of species. 
 
 **Set up**
 
@@ -25,14 +25,14 @@ library(cxr)
 data(competition, package = "cxr")
 ```
 
-The `competition` dataset includes observation from *20* different plant species (see vignette `Data and model formats` for details on the included datasets). We will subset the information to consider only two of them, *Chamaemelum fuscatum* and *Leontodon maroccanus*, which are coded as *CHFU* and *LEMA* respectively.
+The `competition` dataset includes observation from *18* different plant species (see vignette `Data and model formats` for details on the included datasets). We will subset the information to consider only two of them, *Chamaemelum fuscatum* and *Leontodon maroccanus*, which are coded as *CHFU* and *LEMA* respectively.
 
 ```{r message=F, warning=F}
 my.sp <- c("CHFU", "LEMA")
 two.sp.data <- subset(competition, focal %in% my.sp & competitor %in% my.sp)
 ```
 
-In order to estimate the different parameters for both species, we need to store separately the information on their observations as focal species. For this, we transform the data from long to wide format, and obtain the competition matrices for each focal species (where each row is an observation of a focal individual, and each column one species).
+In order to estimate the different parameters for both species, we need to store separately the information on their observations as focal species. For this, we transform the data from long to wide format, and obtain the competition matrices for each focal species (where each row is an observation of a focal individual, and each column the abundance of a neighbour species).
 
 ```{r message=F, warning=F}
 # transform from long to wide format
@@ -46,7 +46,7 @@ sp2.comp.matrix <- comp.matrix[which(two.sp.wide$focal == my.sp[2]),]
 
 ```
 
-We need to retrieve, as well, the estimation of fitness associated with each observation. In our dataset this is the seed production of focal individuals, for which the number of neighbours (`comp.matrix`) were also taken from field observations. Note that we pass the log of the seed production (fitness metric) for facilitating the optimization procedure.
+We need to retrieve, as well, the estimation of fitness associated with each observation. In our dataset this is the seed production of focal individuals. Note that we pass the log of the seed production (fitness metric) for facilitating the optimization procedure.
 
 ```{r message=F, warning=F}
 sp1.fitness <- two.sp.wide$seed[which(two.sp.wide$focal == my.sp[1])]
@@ -62,11 +62,11 @@ Finally, as with any optimization procedure, we need to provide initial estimate
 init.lambda <- c(mean(sp1.log.fitness),mean(sp2.log.fitness))
 ```
 
-In `cxr` we have included five different population dynamic models for estimating coexistence parameters. These are increasingly complex variations of a general Beverton-Holt model, and are included in the package as functions `BH_1` to `BH_5` (see vignette `Data and model formats` for further information on these models). We will fit the parameters of model 3. This model differentiates between intra- and inter-specific competition but does not include yet the effects of environmental covariates or other type of trophic interactions besides competition (see *Lanuza et al. 2018*, *Godoy and Levine. 2014. Ecology 95:726-736* for further details).
+In `cxr` we have included five different population dynamic models for estimating coexistence parameters. These are increasingly complex variations of a general Beverton-Holt model, and are included in the package as functions `BH_1` to `BH_5` (see vignette `Data and model formats` for further information on these models). We will fit the parameters of model 3. This model differentiates between intra- and inter-specific competition but does not include the effects of environmental covariates or other type of trophic interactions besides competition (see *Lanuza et al. 2018*, *Godoy and Levine. 2014. Ecology 95:726-736* for further details).
 
 $$F_i = \frac{\lambda_i}{1+\sum \alpha_{ij}N_j}$$
 
-Specifying an optimization method, we can now call the main function with sensible values of upper and lower parameter bounds. We have implemented optimization with eight different optimization methods, that cover a range of methodologies (see e.g. the help of `cxr_optimize` for the available methods, and *Mullen, K.M. 2014. Journal of Statistical Software 60:1–45* for an overview of optimization methods). Note that not all methods accept lower and upper boundaries, e.g. the standard method `optim_NM` does not, whereas `optim_L-BFGS-B` does accept boundaries. However, `optim_L-BFGS-B` does not allow parameter values for which the optimization function is undefined, and this will return an error. In this simple example, we use this latter method with allowed lower and upper boundaries.  
+Specifying an optimization method, we can now call the main function with sensible values of upper and lower parameter bounds. We have implemented optimization with eight different optimization procedures, that cover a range of methodologies (see e.g. the help of `cxr_optimize` for the available methods, and *Mullen, K.M. 2014. Journal of Statistical Software 60:1–45* for an overview of optimization methods). Note that not all methods accept lower and upper boundaries, e.g. the standard method `optim_NM` does not, whereas `optim_L-BFGS-B` does accept boundaries. However, `optim_L-BFGS-B` does not allow parameter values for which the optimization function is undefined, and this will return an error. In this simple example, we use this latter method with allowed lower and upper boundaries.  
 
 ```{r message=F, warning=F}
 sp1.par <- cxr_optimize(fitness.model = BH_3,
