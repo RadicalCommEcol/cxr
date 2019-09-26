@@ -4,8 +4,8 @@
 #' @param num.sp total number of species, including focal ones
 #' @param num.cov number of covariates
 #' @param num.obs number of observations/sites
-#' @param fitness.model model to generate data from, from 1 to 5 in increasing levels of complexity.
-#' The generating models are equivalent to BH_1-BH_5
+#' @param fitness.model scalar representing the model to generate data from, 
+#' from BH1 to BH5 in increasing levels of complexity.
 #' @param focal.lambda 1d vector with lambdas of the focal sp
 #' @param alpha interaction matrix, num.sp x num.sp
 #' @param lambda.cov matrix of num.sp x num.cov

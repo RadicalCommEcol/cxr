@@ -33,7 +33,7 @@ test.data <- GenerateTestData(focal.sp = focal.sp,
 test.focal <- test.data[test.data$focal == 1,]
 
 # function params
-fitness.model <- BH_5
+fitness.model <- model_BH5
 optim.method <- "optim_L-BFGS-B"
 param.list <- c("lambda","alpha","lambda.cov","alpha.cov")
 log.fitness <- log(test.focal$fitness)
@@ -57,29 +57,29 @@ focal.covariates <- as.matrix(test.focal[,7])
 generate.errors <- TRUE
 bootstrap.samples <- 3
 
-results_optimize <- cxr_optimize(fitness.model = fitness.model,
-                                 optim.method = optim.method,
-                                 param.list = param.list,
-                                 log.fitness = log.fitness,
-                                 init.lambda = init.lambda,
-                                 lower.lambda = lower.lambda,
-                                 upper.lambda = upper.lambda,
-                                 init.sigma = init.sigma,
-                                 lower.sigma = lower.sigma,
-                                 upper.sigma = upper.sigma,
-                                 init.alpha = init.alpha,
-                                 lower.alpha = lower.alpha,
-                                 upper.alpha = upper.alpha,
-                                 init.lambda.cov = init.lambda.cov,
-                                 lower.lambda.cov = lower.lambda.cov,
-                                 upper.lambda.cov = upper.lambda.cov,
-                                 init.alpha.cov = init.alpha.cov,
-                                 lower.alpha.cov = lower.alpha.cov,
-                                 upper.alpha.cov = upper.alpha.cov,
-                                 focal.comp.matrix = focal.comp.matrix,
-                                 focal.covariates = focal.covariates,
-                                 generate.errors = generate.errors,
-                                 bootstrap.samples = bootstrap.samples)
+results_optimize <- pm_optim(fitness.model = fitness.model,
+                                           optim.method = optim.method,
+                                           param.list = param.list,
+                                           log.fitness = log.fitness,
+                                           init.lambda = init.lambda,
+                                           lower.lambda = lower.lambda,
+                                           upper.lambda = upper.lambda,
+                                           init.sigma = init.sigma,
+                                           lower.sigma = lower.sigma,
+                                           upper.sigma = upper.sigma,
+                                           init.alpha = init.alpha,
+                                           lower.alpha = lower.alpha,
+                                           upper.alpha = upper.alpha,
+                                           init.lambda.cov = init.lambda.cov,
+                                           lower.lambda.cov = lower.lambda.cov,
+                                           upper.lambda.cov = upper.lambda.cov,
+                                           init.alpha.cov = init.alpha.cov,
+                                           lower.alpha.cov = lower.alpha.cov,
+                                           upper.alpha.cov = upper.alpha.cov,
+                                           focal.comp.matrix = focal.comp.matrix,
+                                           focal.covariates = focal.covariates,
+                                           generate.errors = generate.errors,
+                                           bootstrap.samples = bootstrap.samples)
 
 # test----
 test_that("Expected classes", {
@@ -129,9 +129,9 @@ bootstrap.samples <- 3
 
 # first function
 optimize.lambda <- TRUE
-effect.response.model <- EffectResponse_lambda
+effect.response.model <- model_ER_lambda
 
-results_ER <- ER_optimize(lambda.vector = lambda.vector,
+results_ER <- er_optim(lambda.vector = lambda.vector,
                           e.vector = e.vector,
                           r.vector = r.vector,
                           lambda.cov = lambda.cov,

@@ -4,7 +4,7 @@
 \name{competition}
 \alias{competition}
 \title{Competition measurements}
-\format{A data frame with 57432 rows and 11 variables}
+\format{A data frame with 42948 rows and 11 variables}
 \usage{
 data(competition)
 }

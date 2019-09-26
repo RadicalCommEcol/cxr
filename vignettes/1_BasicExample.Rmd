@@ -62,14 +62,14 @@ Finally, as with any optimization procedure, we need to provide initial estimate
 init.lambda <- c(mean(sp1.log.fitness),mean(sp2.log.fitness))
 ```
 
-In `cxr` we have included five different population dynamic models for estimating coexistence parameters. These are increasingly complex variations of a general Beverton-Holt model, and are included in the package as functions `BH_1` to `BH_5` (see vignette `Data and model formats` for further information on these models). We will fit the parameters of model 3. This model differentiates between intra- and inter-specific competition but does not include the effects of environmental covariates or other type of trophic interactions besides competition (see *Lanuza et al. 2018*, *Godoy and Levine. 2014. Ecology 95:726-736* for further details).
+In `cxr` we have included five different population dynamic models for estimating coexistence parameters. These are increasingly complex variations of a general Beverton-Holt model, and are included in the package as functions `model_BH1` to `model_BH5` (see vignette `Data and model formats` for further information on these models). We will fit the parameters of model 3. This model differentiates between intra- and inter-specific competition but does not include the effects of environmental covariates or other type of trophic interactions besides competition (see *Lanuza et al. 2018*, *Godoy and Levine. 2014. Ecology 95:726-736* for further details).
 
 $$F_i = \frac{\lambda_i}{1+\sum \alpha_{ij}N_j}$$
 
-Specifying an optimization method, we can now call the main function with sensible values of upper and lower parameter bounds. We have implemented optimization with eight different optimization procedures, that cover a range of methodologies (see e.g. the help of `cxr_optimize` for the available methods, and *Mullen, K.M. 2014. Journal of Statistical Software 60:1–45* for an overview of optimization methods). Note that not all methods accept lower and upper boundaries, e.g. the standard method `optim_NM` does not, whereas `optim_L-BFGS-B` does accept boundaries. However, `optim_L-BFGS-B` does not allow parameter values for which the optimization function is undefined, and this will return an error. In this simple example, we use this latter method with allowed lower and upper boundaries.  
+Specifying an optimization method, we can now call the main function with sensible values of upper and lower parameter bounds. We have implemented optimization with eight different optimization procedures, that cover a range of methodologies (see e.g. the help of `pm_optim` for the available methods, and *Mullen, K.M. 2014. Journal of Statistical Software 60:1–45* for an overview of optimization methods). Note that not all methods accept lower and upper boundaries, e.g. the standard method `optim_NM` does not, whereas `optim_L-BFGS-B` does accept boundaries. However, `optim_L-BFGS-B` does not allow parameter values for which the optimization function is undefined, and this will return an error. In this simple example, we use this latter method with allowed lower and upper boundaries.  
 
 ```{r message=F, warning=F}
-sp1.par <- cxr_optimize(fitness.model = BH_3,
+sp1.par <- pm_optim(fitness.model = model_BH3,
                         optim.method = "optim_L-BFGS-B",
                         param.list = c("lambda","alpha"),
                         log.fitness = sp1.log.fitness,
@@ -91,7 +91,7 @@ sp1.par <- cxr_optimize(fitness.model = BH_3,
                         upper.alpha = c(1e3,1e3),
                         focal.comp.matrix = sp1.comp.matrix)
 
-sp2.par <- cxr_optimize(fitness.model = BH_3,
+sp2.par <- pm_optim(fitness.model = model_BH3,
                         optim.method = "optim_L-BFGS-B",
                         param.list = c("lambda","alpha"),
                         log.fitness = sp2.log.fitness,
@@ -108,7 +108,7 @@ sp2.par <- cxr_optimize(fitness.model = BH_3,
 
 ```
 
-The `cxr_optimize` function returns a list with several components 
+The `pm_optim` function returns a list with several components 
 
 ```{r message=F, warning=F}
 sp1.par

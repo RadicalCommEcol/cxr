@@ -60,24 +60,24 @@ sp.data <- sp.data[,c("site","focal","fitness","competitor","number")]
 sp.data$fitness[sp.data$fitness == 0] <- 0.001
 ```
 
-Remember, when using `ER_optimize` with your own data, that the dataset must be complete, including all combinations of focal and competitor species, by assigning 0 to those combinations not observed, as exemplified in our data:
+Remember, when using `er_optim` with your own data, that the dataset must be complete, including all combinations of focal and competitor species, by assigning 0 to those combinations not observed, as exemplified in our data:
 
 ```{r}
 head(sp.data)
 ```
 
-Since we have independent estimates for $\lambda$, we are taking it as a fixed parameter that we do not want to fit. This can be passed on to the `ER_optimize` function by choosing the appropriate effect/response model (function `EffectResponse` fits only competitive effects `e` and competitive responses `r`, whereas `EffectResponse_lambda` fits $\lambda$ as well). Note that, if we are not interested in fitting $\lambda$, we can dispense with specifying lower/upper bounds for it.
+Since we have independent estimates for $\lambda$, we are taking it as a fixed parameter that we do not want to fit. This can be passed on to the `er_optim` function by choosing the appropriate effect/response model (function `model_ER` fits only competitive effects `e` and competitive responses `r`, whereas `model_ER_lambda` fits $\lambda$ as well). Note that, if we are not interested in fitting $\lambda$, we can dispense with specifying lower/upper bounds for it.
 
 ```{r message=F, warning=F}
 optimize.lambda <- FALSE
 
 # select the appropriate model and initial values
 if(optimize.lambda){
-  effect.response.model <- EffectResponse_lambda 
+  effect.response.model <- model_ER_lambda 
   lower.lambda <- 0
   upper.lambda <- 1e3
 }else{
-  effect.response.model <- EffectResponse
+  effect.response.model <- model_ER
   lower.lambda <- NA
   upper.lambda <- NA
   
@@ -86,7 +86,7 @@ if(optimize.lambda){
   lambda.values <- data.frame(sp = sp.names,lambda = 0, sigma = 0)
   
   # from which model and optimization method are we taking estimates?
-  estimates.model <- "BH_5" #Beverton-holt model number 5
+  estimates.model <- "BH5" #Beverton-holt model number 5
   estimates.method <- "optim_L-BFGS-B"
   
   # gather lambda from fitted data
@@ -156,13 +156,13 @@ for(i.method in 1:length(optim.methods)){
 names(ER.list) <- optim.methods
 ```
 
-In the main loop, we 1) call the `ER_optimize` function with each of the selected optimization methods, 2) store the resulting values in the list we just created. In the `ER_optimize` function it is possible to estimate, alongside competitive effects and responses, the effect of covariates over these terms (e.g. `effect.cov` and `response.cov`). For simplicity, we will assume no effect of covariates in this example, but their addition is similar to the workflow exemplified in the vignette `Multi-species parameter optimization`. Therefore, in the function call, we omit the arguments related to the inclusion of covariates, because these have a default `NULL` value. These arguments are nevertheless returned as NA from the function call, and for completeness we also retrieve them.
+In the main loop, we 1) call the `er_optim` function with each of the selected optimization methods, 2) store the resulting values in the list we just created. In the `er_optim` function it is possible to estimate, alongside competitive effects and responses, the effect of covariates over these terms (e.g. `effect.cov` and `response.cov`). For simplicity, we will assume no effect of covariates in this example, but their addition is similar to the workflow exemplified in the vignette `Multi-species parameter optimization`. Therefore, in the function call, we omit the arguments related to the inclusion of covariates, because these have a default `NULL` value. These arguments are nevertheless returned as NA from the function call, and for completeness we also retrieve them.
 
 ```{r message=F, warning=F}
 for(i.method in 1:length(optim.methods)){
   
   # 1) call optimization function
-  param.results <- ER_optimize(lambda.vector = lambda.values$lambda,
+  param.results <- er_optim(lambda.vector = lambda.values$lambda,
                                e.vector = e.values,
                                r.vector = r.values,
                                sigma = sigma,

@@ -17,8 +17,8 @@ GenerateTestData(focal.sp = 1, num.sp = 2, num.cov = 2,
 
 \item{num.obs}{number of observations/sites}
 
-\item{fitness.model}{model to generate data from, from 1 to 5 in increasing levels of complexity.
-The generating models are equivalent to BH_1-BH_5}
+\item{fitness.model}{scalar representing the model to generate data from, 
+from BH1 to BH5 in increasing levels of complexity.}
 
 \item{focal.lambda}{1d vector with lambdas of the focal sp}
 

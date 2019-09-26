@@ -88,7 +88,11 @@ In case you had independent estimates of parameters, e.g. $\lambda$, you would r
 Keep the model definitions in a list, for ease:
 
 ```{r message=F, warning=F}
-fitness.models <- list(BH_1 = BH_1,BH_2 = BH_2,BH_3 = BH_3,BH_4 = BH_4,BH_5 = BH_5)
+fitness.models <- list(BH1 = model_BH1,
+                       BH2 = model_BH2,
+                       BH3 = model_BH3,
+                       BH4 = model_BH4,
+                       BH5 = model_BH5)
 ```
 
 Get back the covariates, after matching with the competition observations. It is important that covariates are passed in a matrix format. If they are named, the output will also include the names.
@@ -199,13 +203,13 @@ for(i.sp in 1:length(focal.sp)){
 names(param_estimates) <- focal.sp
 ```
 
-With this setting, we are now ready to optimize the selected parameters based on our dataset. This is done species by species. As the main function, `cxr_optimize`, accepts the input for a single species, we code a loop for going through all species. Inside this loop, we include the following steps:
+With this setting, we are now ready to optimize the selected parameters based on our dataset. This is done species by species. As the main function, `pm_optim`, accepts the input for a single species, we code a loop for going through all species. Inside this loop, we include the following steps:
 
 1. subset the competition data for the focal species 
 
 2. generate the actual initial values, considering all situations. Remember that, depending on the model, some parameters will have different length. For example, $\alpha$ is a single value in model 2 and a matrix in model 3 onwards. Thus, for species *i*, $\alpha_{ij}$ is a vector of length equal to the number of competitor species.
 
-3. the actual call to `cxr_optimize`
+3. the actual call to `pm_optim`
 
 4. store the results in the nested list we created above
 
@@ -303,7 +307,7 @@ for(i.sp in 1:length(focal.sp)){
     
     for(i.method in 1:length(optim.methods)){
       
-      temp.results <- cxr_optimize(fitness.model = fitness.models[[models[i.model]]],
+      temp.results <- pm_optim(fitness.model = fitness.models[[models[i.model]]],
                                    optim.method = optim.methods[i.method],
                                    param.list = param.list[[i.model]],
                                    log.fitness = log.fitness,
@@ -432,7 +436,7 @@ If we set the `write.results` flag, the nested list will be written to disk as a
 
 ```{r message=F, warning=F}
 if(write.results){
-  # save(param_estimates,file = "./results/param_estimates.Rdata")
+  # save(param_estimates,file = "./results/param_estimates.RData")
   
   # just in case it is a factor
   focal.sp <- sort(as.character(focal.sp))
@@ -600,19 +604,19 @@ Each combination of focal species, model, and optimization method has an estimat
 Likewise for interaction coefficients, $\alpha$
 
 ```{r}
-  head(alpha.values[alpha.values$model == "BH_2",]) # first model to fit alpha
+  head(alpha.values[alpha.values$model == "BH2",]) # first model to fit alpha
 ```
 
 And for $\Theta$, or `lambda.cov` in the models, representing the effect of covariates over $\lambda$
 
 ```{r}
-  head(lambda.cov.values[lambda.cov.values$model == "BH_4",]) # first model to fit lambda.cov
+  head(lambda.cov.values[lambda.cov.values$model == "BH4",]) # first model to fit lambda.cov
 ```
 
 Lastly, $\phi$ or `alpha.cov` represents the effect of covariates over $\alpha$
 
 ```{r}
-  head(alpha.cov.values[alpha.cov.values$model == "BH_4",]) # first model to fit alpha.cov
+  head(alpha.cov.values[alpha.cov.values$model == "BH4",]) # first model to fit alpha.cov
 ```
 
 

@@ -52,25 +52,25 @@ par.3 <- c(my.lambda,my.full.alpha,my.sigma)
 par.4 <- c(my.lambda,my.lambda.cov,my.full.alpha,my.mean.alpha.cov,my.sigma)
 par.5 <- c(my.lambda,my.lambda.cov,my.full.alpha,my.full.alpha.cov,my.sigma)
 
-results_BH_1 <- BH_1(par = par.1,log.fitness = my.log.fitness)
-results_BH_2 <- BH_2(par = par.2,
+results_BH_1 <- model_BH1(par = par.1,log.fitness = my.log.fitness)
+results_BH_2 <- model_BH2(par = par.2,
                      log.fitness = my.log.fitness,
                      param.list = param.list[[1]],
                      focal.comp.matrix = focal.comp.matrix,
                      num.competitors = ncol(focal.comp.matrix))
-results_BH_3 <- BH_3(par = par.3,
+results_BH_3 <- model_BH3(par = par.3,
                      log.fitness = my.log.fitness,
                      param.list = param.list[[2]],
                      focal.comp.matrix = focal.comp.matrix,
                      num.competitors = ncol(focal.comp.matrix))
-results_BH_4 <- BH_4(par = par.4,
+results_BH_4 <- model_BH4(par = par.4,
                      log.fitness = my.log.fitness,
                      param.list = param.list[[3]],
                      focal.comp.matrix = focal.comp.matrix,
                      num.competitors = ncol(focal.comp.matrix),
                      num.covariates = ncol(focal.covariates),
                      focal.covariates = focal.covariates)
-results_BH_5 <- BH_5(par = par.5,
+results_BH_5 <- model_BH5(par = par.5,
                      log.fitness = my.log.fitness,
                      param.list = param.list[[4]],
                      focal.comp.matrix = focal.comp.matrix,
@@ -99,31 +99,31 @@ lambda.cov.sub <- lambda.cov.orig[1:2,]
 alpha.cov.sub <- list(alpha.cov.orig[[1]][1:2,1:2],alpha.cov.orig[[2]][1:2,1:2])
 mean.alpha.cov.sub <- list(mean(alpha.cov.sub[[1]]),mean(alpha.cov.sub[[2]]))
 
-results_abund_1 <- BH_abundance_1(sp.par = sp.par,
+results_abund_1 <- model_abundBH1(sp.par = sp.par,
                                   init.abund = init.abund,
                                   cov.values = cov.values,
                                   alpha.matrix = alpha.matrix.sub,
                                   lambda.cov.matrix = lambda.cov.sub,
                                   alpha.cov.matrix = alpha.cov.sub)
-results_abund_2 <- BH_abundance_2(sp.par = sp.par,
+results_abund_2 <- model_abundBH2(sp.par = sp.par,
                                   init.abund = init.abund,
                                   cov.values = cov.values,
                                   alpha.matrix = mean.alpha.sub,
                                   lambda.cov.matrix = lambda.cov.sub,
                                   alpha.cov.matrix = alpha.cov.sub)
-results_abund_3 <- BH_abundance_3(sp.par = sp.par,
+results_abund_3 <- model_abundBH3(sp.par = sp.par,
                                   init.abund = init.abund,
                                   cov.values = cov.values,
                                   alpha.matrix = alpha.matrix.sub,
                                   lambda.cov.matrix = lambda.cov.sub,
                                   alpha.cov.matrix = alpha.cov.sub)
-results_abund_4 <- BH_abundance_4(sp.par = sp.par,
+results_abund_4 <- model_abundBH4(sp.par = sp.par,
                                   init.abund = init.abund,
                                   cov.values = cov.values,
                                   alpha.matrix = alpha.matrix.sub,
                                   lambda.cov.matrix = lambda.cov.sub,
                                   alpha.cov.matrix = mean.alpha.cov.sub)
-results_abund_5 <- BH_abundance_5(sp.par = sp.par,
+results_abund_5 <- model_abundBH5(sp.par = sp.par,
                                   init.abund = init.abund,
                                   cov.values = cov.values,
                                   alpha.matrix = alpha.matrix.sub,

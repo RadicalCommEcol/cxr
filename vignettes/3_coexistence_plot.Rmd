@@ -16,7 +16,7 @@ data(param_estimates)
 data(species_rates)
 ```
 
-First, compile the parameters from the original results, which are already available in the package as a nested list. We retrieved this estimates from the most complex model (BH_5), and the optimization method *L-BFGS-B* (see the help of `stats::optim` for details on the optimization method).
+First, compile the parameters from the original results, which are already available in the package as a nested list. We retrieved this estimates from the most complex model (BH5), and the optimization method *L-BFGS-B* (see the help of `stats::optim` for details on the optimization method).
 
 ```{r message=F, warning=F}
 #tidy the data
@@ -26,7 +26,7 @@ lambda.values <- numeric(length(sp.names))
 names(lambda.values) <- sp.names
 rownames(alpha.matrix) <- colnames(alpha.matrix) <- sp.names
 # from which model and optimization method are we gathering parameters
-estimates.model <- "BH_5"
+estimates.model <- "BH5"
 estimates.method <- "optim_L-BFGS-B"
 for(i.sp in 1:length(sp.names)){
   lambda.values[i.sp] <- param_estimates[[i.sp]][[estimates.model]][[estimates.method]]$lambda
