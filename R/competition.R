@@ -21,5 +21,5 @@
 #' @keywords datasets
 #' @name competition
 #' @usage data(competition)
-#' @format A data frame with 57432 rows and 11 variables
+#' @format A data frame with 42948 rows and 11 variables
 "competition"
