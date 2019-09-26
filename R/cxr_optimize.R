@@ -477,7 +477,7 @@ cxr_optimize <- function(fitness.model,
                       alpha.cov.upper.error = alpha.cov.upper.error,
                       log.likelihood = log.likelihood)
   
-  return.list[lengths(return.list) == 0] <- NA_character_
+  return.list[lengths(return.list) == 0] <- NA_real_
   
   return.list
 
