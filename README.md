@@ -61,12 +61,3 @@ Another package dealing with ...
 Please note that this project is released with a [Contributor Code of Conduct](CONDUCT.md).
 By participating in this project you agree to abide by its terms.
 
-
-## To Do:  
-
-Vignetes:
-[ ] Estimate parameters  
-[ ] Plot competitive effects (Fitnes, coex plot, coex biplot)  
-[_] Predict  
-
-[ ] Unit testing  

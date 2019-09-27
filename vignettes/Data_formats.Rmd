@@ -12,7 +12,7 @@ editor_options:
 
 **Introduction**
 
-The `cxr` package provides diverse functions to handle empirical datasets, but the data provided needs to be in certain formats for compatibility. We will show the structure of the included dataset, and the specific formats accepted by functions of the package. We also discuss the structure of the population models included in the package and how users can develop their own models. Note that the `cxr` functions have different prefixes depending on their type: `model_` refers to the population dynamic models included (see below), `cxr_` refers to internal functions, and other functions are user-ready.
+The `cxr` package provides diverse functions to handle empirical datasets, but the data provided needs to be in certain formats for compatibility. We will show the structure of the included dataset, and the specific formats accepted by functions of the package. We also discuss the structure of the population models included in the package and how users can develop their own models. 
 
 **The Caracoles dataset**
 
