@@ -122,10 +122,10 @@ par <- list(sp.par = sp.par,
                              lambda.cov.matrix = lambda.cov.orig, 
                              alpha.cov.matrix = alpha.cov.orig))
 
-abundance.model <- BH_abundance_5
+abundance.model <- model_abundBH5
 ```
 
-In this simple set up, we choose to predict the number of seeds, instead of number of individuals. See the help from e.g. `BH_abundance_5` for details.
+In this simple set up, we choose to predict the number of seeds, instead of number of individuals. See the help from e.g. `model_abundBH5` for details.
 
 ```{r}
 predicted.abundances <- PredictAbundances(par = par,
@@ -138,7 +138,7 @@ predicted.abundances <- PredictAbundances(par = par,
 head(predicted.abundances)
 ```
 
-As an example, a very simple plot showing the temporal trend in seed abundances
+As an example, a basic plot showing the temporal trend in seed abundances
 
 ```{r}
 predicted.abundances$timestep <- as.factor(predicted.abundances$timestep)
