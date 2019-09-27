@@ -21,6 +21,6 @@ A dataset containing the integrated salinity over the season for each plant spec
   }
 }
 \note{
-For details, see Lanuza et al. 2017 Ecology Letters.
+For details, see Lanuza et al. 2018 Ecology Letters.
 }
 \keyword{datasets}

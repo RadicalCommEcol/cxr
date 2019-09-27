@@ -10,7 +10,7 @@
 #'   \item sum_salinity: summatory of the salinity values integrated througth the species lifespan. 
 #'   }
 #'   
-#' @note For details, see Lanuza et al. 2017 Ecology Letters. 
+#' @note For details, see Lanuza et al. 2018 Ecology Letters. 
 #' @docType data
 #' @keywords datasets
 #' @name salinity

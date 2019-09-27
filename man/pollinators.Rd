@@ -25,6 +25,6 @@ A dataset containing the overall pollinator visitation over the season for each 
   }
 }
 \note{
-For details, see Lanuza et al. 2017 Ecology Letters.
+For details, see Lanuza et al. 2018 Ecology Letters.
 }
 \keyword{datasets}

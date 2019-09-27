@@ -1,7 +1,7 @@
 #' General optimization for population models
 #' 
-#' Wrapper for optimization procedures. It accepts a model, defined as a function, and a series of parameters, and returns
-#' the optimal value for the parameters given a fitness metric and an optimization method. Optionally, bootstrap confidence intervals
+#' Wrapper for optimization procedures. It accepts a population dynamics model, defined as a function, and a series of parameters. 
+#' It returns the optimal value for the parameters given a fitness metric and an optimization method. Optionally, bootstrap confidence intervals
 #' can also be computed.
 #'
 #' @param fitness.model function giving the population dynamics model. Any functional form is allowed, but the model must be constrained
@@ -9,7 +9,8 @@
 #' \code{lambda.cov} (effect of covariates on lambda), \code{alpha.cov} (effect of covariates on alpha)  
 #' @param optim.method optimization method to use. One of the following: "optim_NM","optim_L-BFGS-B","nloptr_CRS2_LM", 
 #' "nloptr_ISRES","nloptr_DIRECT_L_RAND","GenSA","hydroPSO","DEoptimR". 
-#' @param param.list string vector giving the parameters that are to be optimized for the fitness model.
+#' @param param.list string vector giving the parameters that are to be optimized for the fitness model 
+#' (to choose among "lambda", "alpha", "lambda.cov", and "alpha.cov").
 #' @param log.fitness 1d vector, log of the fitness metric for every observation
 #' @param init.lambda 1d vector, initial value of lambda
 #' @param lower.lambda lower bound for lambda
@@ -372,7 +373,7 @@ pm_optim <- function(fitness.model,
       #suppressWarnings(message(date()," -- pm_optim: generating standard errors for ",length(log.fitness)," observations and ",bootstrap.samples," bootstrap samples"))
     }
     
-    errors <- SEbootstrap(fitness.model = fitness.model,
+    errors <- cxr_pm_bootstrap(fitness.model = fitness.model,
                           optim.method = optim.method,
                           param.list = param.list,
                           fixed.terms = fixed.terms,

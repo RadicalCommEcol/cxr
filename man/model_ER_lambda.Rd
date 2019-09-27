@@ -2,7 +2,7 @@
 % Please edit documentation in R/model_ER_lambda.R
 \name{model_ER_lambda}
 \alias{model_ER_lambda}
-\title{Title ML estimation of competitive effects and responses}
+\title{Estimation of competitive effects and responses}
 \usage{
 model_ER_lambda(init.par, target_all, density_all, log.fitness,
   covariates = NULL)

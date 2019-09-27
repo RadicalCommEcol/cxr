@@ -94,5 +94,5 @@ list with estimated species values for e, r, lambda (optional), and if covariate
 }
 \description{
 This function is similar in spirit to pm_optim, in that it optimizes a set of parameters
-via maximum likelihood.
+via maximum likelihood. See vignette 'Obtain competitive responses and effects' for an example of its use.
 }

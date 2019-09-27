@@ -2,7 +2,7 @@
 % Please edit documentation in R/model_ER.R
 \name{model_ER}
 \alias{model_ER}
-\title{Title ML estimation of competitive effects and responses}
+\title{Estimation of competitive effects and responses}
 \usage{
 model_ER(init.par, lambda, target_all, density_all, log.fitness,
   covariates = NULL)

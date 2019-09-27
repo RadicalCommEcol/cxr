@@ -1,4 +1,4 @@
-#' Title ML estimation of competitive effects and responses
+#' Estimation of competitive effects and responses
 #' 
 #' Calculates the log-likelihood of a Beverton-Holt model parameterized with given values
 #' with respect to a fitness metric. The function for calculating fecundity given 

@@ -22,7 +22,8 @@ to free parameters \code{lambda} (fecundity of each sp in absence of competition
 \item{optim.method}{optimization method to use. One of the following: "optim_NM","optim_L-BFGS-B","nloptr_CRS2_LM", 
 "nloptr_ISRES","nloptr_DIRECT_L_RAND","GenSA","hydroPSO","DEoptimR".}
 
-\item{param.list}{string vector giving the parameters that are to be optimized for the fitness model.}
+\item{param.list}{string vector giving the parameters that are to be optimized for the fitness model 
+(to choose among "lambda", "alpha", "lambda.cov", and "alpha.cov").}
 
 \item{log.fitness}{1d vector, log of the fitness metric for every observation}
 
@@ -74,7 +75,7 @@ list with the fitted parameters, and the loglikelihood of the fit. If a paramete
 the original value given.
 }
 \description{
-Wrapper for optimization procedures. It accepts a model, defined as a function, and a series of parameters, and returns
-the optimal value for the parameters given a fitness metric and an optimization method. Optionally, bootstrap confidence intervals
+Wrapper for optimization procedures. It accepts a population dynamics model, defined as a function, and a series of parameters. 
+It returns the optimal value for the parameters given a fitness metric and an optimization method. Optionally, bootstrap confidence intervals
 can also be computed.
 }

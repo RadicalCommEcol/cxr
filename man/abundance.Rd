@@ -4,18 +4,18 @@
 \name{abundance}
 \alias{abundance}
 \title{Abundance measurements}
-\format{A data frame with 7452 rows and 7 variables}
+\format{A data frame with 5832 rows and 7 variables}
 \usage{
 data(abundance)
 }
 \description{
-A dataset containing abundances for each plant species.
+A dataset containing abundances for each plant species, where each species was sampled at its developmental peak.
 }
 \details{
 \itemize{      
   \item year: year
-  \item month: month
-  \item day: day
+  \item month: month of sampling
+  \item day: day of sampling
   \item plot: plot
   \item subplot: subplot code
   \item species: plant species
@@ -23,6 +23,6 @@ A dataset containing abundances for each plant species.
   }
 }
 \note{
-For details, see Lanuza et al. 2017 Ecology Letters.
+For details, see Lanuza et al. 2018 Ecology Letters.
 }
 \keyword{datasets}

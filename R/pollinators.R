@@ -14,7 +14,7 @@
 #'   \item other: total other visits recieved
 #'   }
 #'   
-#' @note For details, see Lanuza et al. 2017 Ecology Letters. 
+#' @note For details, see Lanuza et al. 2018 Ecology Letters. 
 #' @docType data
 #' @keywords datasets
 #' @name pollinators

@@ -1,11 +1,9 @@
-####
-# standard error estimates from bootstrap samples
 
 #' Standard error estimates for model parameters
 #' 
 #' Computes bootstrap standard errors for a given population dynamics model.
 #'
-#' @param fitness.model function returning a loglikelihood value given a set of parameters and a fitness metric
+#' @param fitness.model function returning a single value to minimize, given a set of parameters and a fitness metric
 #' @param optim.method optimization method to use. One of the following: "optim_NM","optim_L-BFGS-B","nloptr_CRS2_LM", 
 #' "nloptr_ISRES","nloptr_DIRECT_L_RAND","GenSA","hydroPSO","DEoptimR".
 #' @param param.list string vector giving the parameters that are to be optimized for the fitness model.

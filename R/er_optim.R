@@ -2,7 +2,7 @@
 #' Estimate competition effects and responses for a set of species
 #' 
 #' This function is similar in spirit to pm_optim, in that it optimizes a set of parameters
-#' via maximum likelihood.
+#' via maximum likelihood. See vignette 'Obtain competitive responses and effects' for an example of its use.
 #'
 #' @param lambda.vector 1d vector of lambda estimates/initial values (depending on whether lambda values are optimized or not)
 #' @param e.vector 1d vector of competitive effect initial values

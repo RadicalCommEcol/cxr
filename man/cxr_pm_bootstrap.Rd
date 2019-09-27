@@ -9,7 +9,7 @@ cxr_pm_bootstrap(fitness.model, optim.method, param.list, fixed.terms,
   focal.covariates, nsamples)
 }
 \arguments{
-\item{fitness.model}{function returning a loglikelihood value given a set of parameters and a fitness metric}
+\item{fitness.model}{function returning a single value to minimize, given a set of parameters and a fitness metric}
 
 \item{optim.method}{optimization method to use. One of the following: "optim_NM","optim_L-BFGS-B","nloptr_CRS2_LM", 
 "nloptr_ISRES","nloptr_DIRECT_L_RAND","GenSA","hydroPSO","DEoptimR".}
