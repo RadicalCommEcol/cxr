@@ -87,7 +87,7 @@ lines <- data.frame(x = c(x,x),
                     y = c(y1,y2), 
                     fun = c(rep("y1", times = length(seq(1, -1, by=-0.001))), 
                             rep("y2", times = length(seq(1, -1, by=-0.001)))))
-my.lim.x = 0.5
+my.lim.x = 0.8
 my.lim.y = 2
 ```
 
