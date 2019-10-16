@@ -34,7 +34,15 @@ test.focal <- test.data[test.data$focal == 1,]
 
 # function params
 fitness.model <- model_BH5
-optim.method <- "optim_L-BFGS-B"
+optim.method <- c("optim_NM", 
+   "optim_L-BFGS-B",
+  "nloptr_CRS2_LM",
+  "nloptr_ISRES",
+  "nloptr_DIRECT_L_RAND",
+  "GenSA",
+  "hydroPSO",
+  "DEoptimR"
+)
 param.list <- c("lambda","alpha","lambda.cov","alpha.cov")
 log.fitness <- log(test.focal$fitness)
 init.lambda <- focal.lambda[1]
@@ -44,7 +52,7 @@ init.sigma <- sd(log(test.focal$fitness))
 lower.sigma <- 1e-5
 upper.sigma <- 1e2
 init.alpha <- alpha.matrix.orig[1,]
-lower.alpha <- 1e-5
+lower.alpha <- -1e4#1e-5
 upper.alpha <- 1e4
 init.lambda.cov <- lambda.cov.orig[1,]
 lower.lambda.cov <- 1e-5
@@ -57,8 +65,10 @@ focal.covariates <- as.matrix(test.focal[,7])
 generate.errors <- TRUE
 bootstrap.samples <- 3
 
+for(i.method in 1:length(optim.method)){
+
 results_optimize <- pm_optim(fitness.model = fitness.model,
-                                           optim.method = optim.method,
+                                           optim.method = optim.method[i.method],
                                            param.list = param.list,
                                            log.fitness = log.fitness,
                                            init.lambda = init.lambda,
@@ -100,15 +110,21 @@ test_that("Expected classes", {
   expect_equal(class(results_optimize$log.likelihood), "numeric")
 })
 
+}# for i.method
+
 # effect-response function----
 
 lambda.vector <- focal.lambda
 e.vector <- runif(2,1,5)
 r.vector <- runif(2,1,5)
 lambda.cov <- lambda.cov.orig[1:2,]
+lower.lambda.cov <- 1e-5
+upper.lambda.cov <- 1e4
 e.cov <- matrix(runif(2,0.01,0.1),nrow = 2)
 r.cov <- matrix(runif(2,0.01,0.1),nrow = 2)
-sigma <- sd(log(test.focal$fitness))
+init.sigma <- sd(log(test.focal$fitness))
+lower.sigma <- 1e-5
+upper.sigma <- 1e2
 lower.e <- 1e-5
 upper.e <- 1e2
 lower.r <- 1e-5
@@ -117,7 +133,15 @@ lower.e.cov <- 1e-5
 upper.e.cov <- 1e2
 lower.r.cov <- 1e-5
 upper.r.cov <- 1e2
-optim.method <- "optim_L-BFGS-B"
+# optim.method <- c("optim_NM" 
+#                   # "optim_L-BFGS-B",
+#                   # "nloptr_CRS2_LM",
+#                   # "nloptr_ISRES",
+#                   # "nloptr_DIRECT_L_RAND",
+#                   # "GenSA",
+#                   # "hydroPSO",
+#                   # "DEoptimR"
+# )
 sp.data <- test.data
 sp.data$site <- rep((1:num.obs),2)
 # sp.data <- sp.data[,c("site","focal","1","2","fitness")]
@@ -126,6 +150,8 @@ ER.covariates <- as.matrix(sp.data.long[,c("cov1")])
 sp.data.long <- sp.data.long[,c("site","focal","fitness","competitor","number")]
 generate.errors <- TRUE
 bootstrap.samples <- 3
+
+for(i.method in 1:length(optim.method)){
 
 # first function
 optimize.lambda <- TRUE
@@ -153,7 +179,7 @@ results_ER <- er_optim(lambda.vector = lambda.vector,
                           lower.sigma = lower.sigma,
                           upper.sigma = upper.sigma,
                           effect.response.model = effect.response.model,
-                          optim.method = optim.method,
+                          optim.method = optim.method[i.method],
                           sp.data = sp.data.long,
                           covariates = ER.covariates,
                           optimize.lambda = optimize.lambda,
@@ -184,3 +210,63 @@ test_that("Expected classes", {
   expect_equal(class(results_ER$effect.cov.upper.error), "numeric")
   expect_equal(class(results_ER$log.likelihood), "numeric")
 })
+
+# second function
+optimize.lambda <- FALSE
+effect.response.model <- model_ER
+
+results_ER_2 <- er_optim(lambda.vector = lambda.vector,
+                       e.vector = e.vector,
+                       r.vector = r.vector,
+                       lambda.cov = lambda.cov,
+                       e.cov = e.cov,
+                       r.cov = r.cov,
+                       sigma = init.sigma,
+                       # lower.lambda = lower.lambda,
+                       # upper.lambda = upper.lambda,
+                       lower.e = lower.e,
+                       upper.e = upper.e,
+                       lower.r = lower.r,
+                       upper.r = upper.r,
+                       lower.lambda.cov = lower.lambda.cov,
+                       upper.lambda.cov = upper.lambda.cov,
+                       lower.e.cov = lower.e.cov,
+                       upper.e.cov = upper.e.cov,
+                       lower.r.cov = lower.r.cov,
+                       upper.r.cov = upper.r.cov,
+                       lower.sigma = lower.sigma,
+                       upper.sigma = upper.sigma,
+                       effect.response.model = effect.response.model,
+                       optim.method = optim.method[i.method],
+                       sp.data = sp.data.long,
+                       covariates = ER.covariates,
+                       optimize.lambda = optimize.lambda,
+                       generate.errors = generate.errors,
+                       bootstrap.samples = bootstrap.samples)
+
+# test----
+test_that("Expected classes", {
+  expect_equal(class(results_ER_2), "list")
+  expect_equal(class(results_ER_2$lambda), "numeric")
+  expect_equal(class(results_ER_2$lambda.lower.error), "numeric")
+  expect_equal(class(results_ER_2$lambda.upper.error), "numeric")
+  expect_equal(class(results_ER_2$response), "numeric")
+  expect_equal(class(results_ER_2$response.lower.error), "numeric")
+  expect_equal(class(results_ER_2$response.upper.error), "numeric")
+  expect_equal(class(results_ER_2$effect), "numeric")
+  expect_equal(class(results_ER_2$effect.lower.error), "numeric")
+  expect_equal(class(results_ER_2$effect.upper.error), "numeric")
+  expect_equal(class(results_ER_2$sigma), "numeric")
+  expect_equal(class(results_ER_2$lambda.cov), "numeric")
+  expect_equal(class(results_ER_2$lambda.cov.lower.error), "numeric")
+  expect_equal(class(results_ER_2$lambda.cov.upper.error), "numeric")
+  expect_equal(class(results_ER_2$response.cov), "numeric")
+  expect_equal(class(results_ER_2$response.cov.lower.error), "numeric")
+  expect_equal(class(results_ER_2$response.cov.upper.error), "numeric")
+  expect_equal(class(results_ER_2$effect.cov), "numeric")
+  expect_equal(class(results_ER_2$effect.cov.lower.error), "numeric")
+  expect_equal(class(results_ER_2$effect.cov.upper.error), "numeric")
+  expect_equal(class(results_ER_2$log.likelihood), "numeric")
+})
+
+}
