@@ -57,7 +57,7 @@ The package also includes data on floral visitors (`pollinators`), but this data
 
 **CXR functionality**
 
-In the package there are, broadly speaking, two types of functions. The first set (optimization functions) includes `pm_optim`, which fits the species interaction models to empirical data, and `er_optim`, which fits overall response and effect parameters per focal species to empirical data. Both `pm_optim` and `er_optim` accept field data and numerically estimate parameters of a model provided by the user. The second set (coexistence functions, including `AvgFitnessRatio`, `NicheOverlap`, and `CompetitiveAbility`) take these estimates and return coexistence metrics for a single species or pairs of them.
+In the package there are, broadly speaking, two types of functions. The first set (optimization functions) includes `pm_optim`, which fits the species interaction models to empirical data, and `er_optim`, which fits overall response and effect parameters per focal species to empirical data. Both `pm_optim` and `er_optim` accept field data and numerically estimate parameters of a model provided by the user. The second set (coexistence functions, including `AvgFitnessRatio`, `NicheOverlap`, and `SpeciesFitness`) take these estimates and return coexistence metrics for a single species or pairs of them.
 
 **Data for optimization functions**
 
