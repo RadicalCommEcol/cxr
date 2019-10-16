@@ -75,7 +75,7 @@ The data for `er_optim` is slightly different, since in this function, an indete
 
 **Data for coexistence functions**
 
-The coexistence functions `AvgFitnessRatio`, `NicheOverlap`, and `CompetitiveAbility` accept, simply, pairwise interaction coefficients, and eventually, other parameters such as per capita fecundities in the absence of competition ($\lambda$), or competitive responses $r$. These metrics can be obtained with the output from `pm_optim` or `er_optim` or, in turn, with independent estimates.
+The coexistence functions `AvgFitnessRatio`, `NicheOverlap`, and `SpeciesFitness` accept, simply, pairwise interaction coefficients, and eventually, other parameters such as per capita fecundities in the absence of competition ($\lambda$), or competitive responses $r$. These metrics can be obtained with the output from `pm_optim` or `er_optim` or, in turn, with independent estimates.
 
 **Population dynamics models**
 
