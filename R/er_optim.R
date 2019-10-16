@@ -203,44 +203,44 @@ er_optim <- function(lambda.vector,
     }# if-else covariates
   }# if-else optimize lambda
   
-  optim.par <- list(par = rep(NA,length(init.par)), value = NA)
+  optim.par <- list(par = rep(NA_real_,length(init.par)), value = NA_real_)
   
   #############
   # initialize result vectors with proper names
-  fit.lambda <- rep(NA, num.sp)
-  fit.response <- rep(NA, num.sp)
-  fit.effect <- rep(NA, num.sp)
+  fit.lambda <- rep(NA_real_, num.sp)
+  fit.response <- rep(NA_real_, num.sp)
+  fit.effect <- rep(NA_real_, num.sp)
   
-  fit.sigma <- NA
-  fit.log.likelihood <- NA
+  fit.sigma <- NA_real_
+  fit.log.likelihood <- NA_real_
   
-  fit.lambda.lower.error <- rep(NA, num.sp)
-  fit.lambda.upper.error <- rep(NA, num.sp)
-  fit.response.lower.error <- rep(NA, num.sp)
-  fit.response.upper.error <- rep(NA, num.sp)
-  fit.effect.lower.error <- rep(NA, num.sp)
-  fit.effect.upper.error <- rep(NA, num.sp)
+  fit.lambda.lower.error <- rep(NA_real_, num.sp)
+  fit.lambda.upper.error <- rep(NA_real_, num.sp)
+  fit.response.lower.error <- rep(NA_real_, num.sp)
+  fit.response.upper.error <- rep(NA_real_, num.sp)
+  fit.effect.lower.error <- rep(NA_real_, num.sp)
+  fit.effect.upper.error <- rep(NA_real_, num.sp)
   
   if(!is.null(covariates)){
-    fit.lambda.cov <- rep(NA, num.sp*ncol(covariates))
-    fit.r.cov <- rep(NA, num.sp*ncol(covariates))
-    fit.e.cov <- rep(NA, num.sp*ncol(covariates))
-    fit.lambda.cov.lower.error <- rep(NA, num.sp*ncol(covariates))
-    fit.lambda.cov.upper.error <- rep(NA, num.sp*ncol(covariates))
-    fit.r.cov.lower.error <- rep(NA, num.sp*ncol(covariates))
-    fit.r.cov.upper.error <- rep(NA, num.sp*ncol(covariates))
-    fit.e.cov.lower.error <- rep(NA, num.sp*ncol(covariates))
-    fit.e.cov.upper.error <- rep(NA, num.sp*ncol(covariates))
+    fit.lambda.cov <- rep(NA_real_, num.sp*ncol(covariates))
+    fit.r.cov <- rep(NA_real_, num.sp*ncol(covariates))
+    fit.e.cov <- rep(NA_real_, num.sp*ncol(covariates))
+    fit.lambda.cov.lower.error <- rep(NA_real_, num.sp*ncol(covariates))
+    fit.lambda.cov.upper.error <- rep(NA_real_, num.sp*ncol(covariates))
+    fit.r.cov.lower.error <- rep(NA_real_, num.sp*ncol(covariates))
+    fit.r.cov.upper.error <- rep(NA_real_, num.sp*ncol(covariates))
+    fit.e.cov.lower.error <- rep(NA_real_, num.sp*ncol(covariates))
+    fit.e.cov.upper.error <- rep(NA_real_, num.sp*ncol(covariates))
   }else{
-    fit.lambda.cov <- NA
-    fit.r.cov <- NA
-    fit.e.cov <- NA
-    fit.lambda.cov.lower.error <- NA
-    fit.lambda.cov.upper.error <- NA
-    fit.r.cov.lower.error <- NA
-    fit.r.cov.upper.error <- NA
-    fit.e.cov.lower.error <- NA
-    fit.e.cov.upper.error <- NA
+    fit.lambda.cov <- NA_real_
+    fit.r.cov <- NA_real_
+    fit.e.cov <- NA_real_
+    fit.lambda.cov.lower.error <- NA_real_
+    fit.lambda.cov.upper.error <- NA_real_
+    fit.r.cov.lower.error <- NA_real_
+    fit.r.cov.upper.error <- NA_real_
+    fit.e.cov.lower.error <- NA_real_
+    fit.e.cov.upper.error <- NA_real_
   }
   
   # optimization methods
@@ -574,7 +574,7 @@ er_optim <- function(lambda.vector,
                              nsamples = bootstrap.samples)
 
   }else{
-    errors <- NA
+    errors <- NA_real_
   }
   
   if(sum(is.na(errors)) == 0){
@@ -682,7 +682,7 @@ er_optim <- function(lambda.vector,
                       effect.cov.upper.error = fit.e.cov.upper.error,
                       log.likelihood = fit.log.likelihood)
   
-  return.list[lengths(return.list) == 0] <- NA_character_
+  return.list[lengths(return.list) == 0] <- NA_real_
   
   return.list
   

@@ -329,13 +329,13 @@ pm_optim <- function(fitness.model,
     log.likelihood <- optim.result$value
     
     }else{
-      optim.params <- cxr_retrieve_params(optim.params = rep(NA,length(init.par$init.par)),
+      optim.params <- cxr_retrieve_params(optim.params = rep(NA_real_,length(init.par$init.par)),
                                      param.list = param.list,
                                      alpha.length = length(init.alpha),
                                      alpha.cov.length = length(init.alpha.cov),
                                      num.competitors = num.competitors,
                                      num.covariates = num.covariates)
-      log.likelihood <- NA
+      log.likelihood <- NA_real_
     }
     
   }else{ # methods with different nomenclature
@@ -355,13 +355,13 @@ pm_optim <- function(fitness.model,
     log.likelihood <- optim.result$objective
     
     }else{
-      optim.params <- cxr_retrieve_params(optim.params = rep(NA,length(init.par$init.par)),
+      optim.params <- cxr_retrieve_params(optim.params = rep(NA_real_,length(init.par$init.par)),
                                      param.list = param.list,
                                      alpha.length = length(init.alpha),
                                      alpha.cov.length = length(init.alpha.cov),
                                      num.competitors = num.competitors,
                                      num.covariates = num.covariates)
-      log.likelihood <- NA
+      log.likelihood <- NA_real_
     }
   }  
   
@@ -385,7 +385,7 @@ pm_optim <- function(fitness.model,
                           focal.covariates = focal.covariates,
                           nsamples = bootstrap.samples)
   }else{
-    errors <- rep(NA,length(init.par))
+    errors <- rep(NA_real_,length(init.par))
   }
   
   if(verbose){
