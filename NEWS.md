@@ -1,7 +1,10 @@
-# cxr 0.0.1
+# NEWS
 
-### NB: this was the first release :one:
+### cxr 0.1.0 (comming soon)
 
-### Features :art:
+- Package fully fuinctional, stable and documented. 
 
-- Package to estimate species coexistance. In development.
+
+### cxr 0.0.1
+
+- Alpha version of the functional package. Unestable.

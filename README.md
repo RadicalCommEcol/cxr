@@ -7,7 +7,7 @@
 [![DOI](https://zenodo.org/badge/115796966.svg)](https://zenodo.org/badge/latestdoi/115796966)
 
 
-# cxr
+# cxr 0.1.0
 
 CXR provides a complete toolbox for modelling competitive effects between species, calculate fitness and niche differences, and calculate and predict coexistence regions. The functions are flexible and can include covariates, use different optimization algorithms, or accept user defined mathematical population models as starting points. 
 
@@ -29,34 +29,42 @@ library("cxr")
 
 ### Setup requirements and use
 
-
-Additional information about specific use examples are provided for ...
-
+The best way to start is to follow our [vignettes](https://github.com/ibartomeus/cxr/tree/master/vignettes).
 
 ### Key features
 
-The package has X key features:
+The package has sevral key functions:
 
-- `function()`: [description]() 
+- `pm_optim()`
+- `er_optim()`
+- `NicheOverlap()` 
+- `SpeciesFitness()`
+- `AvgFitnessRatio()` 
+- `PredictAbundances()` 
+- `GenerateTestData()`
+
+And a set of internal functions, data and models.
 
 ### Prefix information
 
 The package functions have three different prefixes:
 
+- `model_`: Population models.
+- `pm_`: Population model parametrization.
+- `er_`: Effect-Response model parametrization.
+- `cxr_`: Internal functions.
+
+Other functions have no prefix.
+
 ### Citation information
 
-When citing, please refer to both the [package citation]() and the [release paper]().
+When citing, please refer to both the [package citation](https://github.com/ibartomeus/cxr/blob/master/inst/CITATION) and the [release paper (in prep)]().  
 
-## Contributors
+## Bug reports and contributions.  
 
-- [Main contributors]()
+We expect to update the package with new developments. We welcome contributions (e.g. via pull reuqest) and [bug reports](https://github.com/ibartomeus/cxr/issues).
 
-## Resources
-
-Another package dealing with ... 
-
-
-## Code of Conduct
+## Code of Conduct  
 
 Please note that this project is released with a [Contributor Code of Conduct](CONDUCT.md).
 By participating in this project you agree to abide by its terms.

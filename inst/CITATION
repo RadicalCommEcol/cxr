@@ -9,6 +9,6 @@ bibentry(bibtype = "Manual",
                     person("Ignasi", "Bartomeus"),
                     person("Oscar", "Godoy")
                     ),
-         year = year,
+         year = 2019,
          note = note,
          url = "")
