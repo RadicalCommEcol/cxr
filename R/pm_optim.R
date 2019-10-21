@@ -403,7 +403,11 @@ pm_optim <- function(fitness.model,
   lambda.lower.error <- optim.params[["lambda"]]-1.96*error.params[["lambda"]]
   lambda.upper.error <- optim.params[["lambda"]]+1.96*error.params[["lambda"]]
   
-  sigma <- ifelse(optim.params[["sigma"]] > 0, optim.params[["sigma"]], 1e-10)
+  if(!is.na(optim.params[["sigma"]])){
+    sigma <- ifelse(optim.params[["sigma"]] > 0, optim.params[["sigma"]], 1e-10)
+  }else{
+    sigma <- NA_real_
+  }
   
   alpha <- optim.params[["alpha"]]
   alpha.lower.error <- optim.params[["alpha"]]-1.96*error.params[["alpha"]]

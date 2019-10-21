@@ -3,11 +3,25 @@ Type: Package
 Title: A toolbox for modelling species coexistence in R
 Version: 0.1
 Date: 2017-12-30
-Authors@R: c(person("David", "Garcia-Callejas", role = c("aut", "cre"), email = "david.garcia.callejas@gmail.com", comment = c(ORCID = "0000-0001-6982-476X")),
-  person("Ignasi", "Bartomeus", role = c("aut"), email = "nacho.bartomeus@gmail.com", comment = c(ORCID = "0000-0001-7893-4389")),
-  person("Oscar", "Godoy", role = c("aut"), email = "ogodoy.re@gmail.com", comment = c(ORCID = "0000-0003-4988-6626")),
-  person("Maxime", "Lancelot", role = c("ctb")))
-Description: Recent developments in modern coexistence theory has advanced our understanding on how species are able to persist and co-occur with other species at varying abundances. However, applying this mathematical framework to empirical data is still challenging, precluding a larger adoption of the theoretical tools developed by empiricists. This package provides a complete toolbox for modelling competitive effects between species, calculate fitness and niche differences, and calculate coexistence regions. The functions are flexible and can include covariates and different fitting algorithms can be used. 
+Authors@R: c(person("David", "Garcia-Callejas", role = c("aut", "cre"), 
+    email = "david.garcia.callejas@gmail.com", 
+    comment = c(ORCID = "0000-0001-6982-476X")),
+    person("Ignasi", "Bartomeus", role = c("aut"), 
+    email = "nacho.bartomeus@gmail.com", 
+    comment = c(ORCID = "0000-0001-7893-4389")),
+    person("Oscar", "Godoy", role = c("aut"), email = "ogodoy.re@gmail.com", 
+    comment = c(ORCID = "0000-0003-4988-6626")),
+    person("Maxime", "Lancelot", role = c("ctb")))
+Description: Recent developments in modern coexistence theory has advanced 
+    our understanding on how species are able to persist and co-occur 
+    with other species at varying abundances. However, applying this 
+    mathematical framework to empirical data is still challenging, 
+    precluding a larger adoption of the theoretical tools developed 
+    by empiricists. This package provides a complete toolbox for modelling 
+    competitive effects between species, calculate fitness and 
+    niche differences, and calculate coexistence regions. 
+    The functions are flexible and can include covariates 
+    and different fitting algorithms can be used. 
 License: MIT + file LICENCE
 Depends:
   R (>= 3.5)

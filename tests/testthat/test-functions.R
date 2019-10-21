@@ -1,7 +1,5 @@
 context("functions")
 
-skip_on_cran()
-
 # test optimizer functions----
 
 # set params, models, methods...
@@ -43,6 +41,16 @@ optim.method <- c("optim_NM",
   "hydroPSO",
   "DEoptimR"
 )
+# which methods take a long time to test?
+# these should be skipped in CRAN
+long.time.methods <- c("GenSA","hydroPSO","DEoptimR")
+# helper function
+long.method <- function(x,long.time.methods){
+  if(x %in% long.time.methods){
+    skip("takes too long...")
+  }
+}
+
 param.list <- c("lambda","alpha","lambda.cov","alpha.cov")
 log.fitness <- log(test.focal$fitness)
 init.lambda <- focal.lambda[1]
@@ -66,50 +74,51 @@ generate.errors <- TRUE
 bootstrap.samples <- 3
 
 for(i.method in 1:length(optim.method)){
-
-results_optimize <- pm_optim(fitness.model = fitness.model,
-                                           optim.method = optim.method[i.method],
-                                           param.list = param.list,
-                                           log.fitness = log.fitness,
-                                           init.lambda = init.lambda,
-                                           lower.lambda = lower.lambda,
-                                           upper.lambda = upper.lambda,
-                                           init.sigma = init.sigma,
-                                           lower.sigma = lower.sigma,
-                                           upper.sigma = upper.sigma,
-                                           init.alpha = init.alpha,
-                                           lower.alpha = lower.alpha,
-                                           upper.alpha = upper.alpha,
-                                           init.lambda.cov = init.lambda.cov,
-                                           lower.lambda.cov = lower.lambda.cov,
-                                           upper.lambda.cov = upper.lambda.cov,
-                                           init.alpha.cov = init.alpha.cov,
-                                           lower.alpha.cov = lower.alpha.cov,
-                                           upper.alpha.cov = upper.alpha.cov,
-                                           focal.comp.matrix = focal.comp.matrix,
-                                           focal.covariates = focal.covariates,
-                                           generate.errors = generate.errors,
-                                           bootstrap.samples = bootstrap.samples)
-
-# test----
-test_that("Expected classes", {
-  expect_equal(class(results_optimize), "list")
-  expect_equal(class(results_optimize$lambda), "numeric")
-  expect_equal(class(results_optimize$lambda.lower.error), "numeric")
-  expect_equal(class(results_optimize$lambda.upper.error), "numeric")
-  expect_equal(class(results_optimize$sigma), "numeric")
-  expect_equal(class(results_optimize$alpha), "numeric")
-  expect_equal(class(results_optimize$alpha.lower.error), "numeric")
-  expect_equal(class(results_optimize$alpha.upper.error), "numeric")
-  expect_equal(class(results_optimize$lambda.cov), "numeric")
-  expect_equal(class(results_optimize$lambda.cov.lower.error), "numeric")
-  expect_equal(class(results_optimize$lambda.cov.upper.error), "numeric")
-  expect_equal(class(results_optimize$alpha.cov), "numeric")
-  expect_equal(class(results_optimize$alpha.cov.lower.error), "numeric")
-  expect_equal(class(results_optimize$alpha.cov.upper.error), "numeric")
-  expect_equal(class(results_optimize$log.likelihood), "numeric")
-})
-
+  
+  # test----
+  test_that("Expected classes", {
+    long.method(optim.method[i.method],long.time.methods)
+    results_optimize <- pm_optim(fitness.model = fitness.model,
+                                 optim.method = optim.method[i.method],
+                                 param.list = param.list,
+                                 log.fitness = log.fitness,
+                                 init.lambda = init.lambda,
+                                 lower.lambda = lower.lambda,
+                                 upper.lambda = upper.lambda,
+                                 init.sigma = init.sigma,
+                                 lower.sigma = lower.sigma,
+                                 upper.sigma = upper.sigma,
+                                 init.alpha = init.alpha,
+                                 lower.alpha = lower.alpha,
+                                 upper.alpha = upper.alpha,
+                                 init.lambda.cov = init.lambda.cov,
+                                 lower.lambda.cov = lower.lambda.cov,
+                                 upper.lambda.cov = upper.lambda.cov,
+                                 init.alpha.cov = init.alpha.cov,
+                                 lower.alpha.cov = lower.alpha.cov,
+                                 upper.alpha.cov = upper.alpha.cov,
+                                 focal.comp.matrix = focal.comp.matrix,
+                                 focal.covariates = focal.covariates,
+                                 generate.errors = generate.errors,
+                                 bootstrap.samples = bootstrap.samples)
+    
+    expect_equal(class(results_optimize), "list")
+    expect_equal(class(results_optimize$lambda), "numeric")
+    expect_equal(class(results_optimize$lambda.lower.error), "numeric")
+    expect_equal(class(results_optimize$lambda.upper.error), "numeric")
+    expect_equal(class(results_optimize$sigma), "numeric")
+    expect_equal(class(results_optimize$alpha), "numeric")
+    expect_equal(class(results_optimize$alpha.lower.error), "numeric")
+    expect_equal(class(results_optimize$alpha.upper.error), "numeric")
+    expect_equal(class(results_optimize$lambda.cov), "numeric")
+    expect_equal(class(results_optimize$lambda.cov.lower.error), "numeric")
+    expect_equal(class(results_optimize$lambda.cov.upper.error), "numeric")
+    expect_equal(class(results_optimize$alpha.cov), "numeric")
+    expect_equal(class(results_optimize$alpha.cov.lower.error), "numeric")
+    expect_equal(class(results_optimize$alpha.cov.upper.error), "numeric")
+    expect_equal(class(results_optimize$log.likelihood), "numeric")
+  })
+  
 }# for i.method
 
 # effect-response function----
@@ -133,18 +142,8 @@ lower.e.cov <- 1e-5
 upper.e.cov <- 1e2
 lower.r.cov <- 1e-5
 upper.r.cov <- 1e2
-# optim.method <- c("optim_NM" 
-#                   # "optim_L-BFGS-B",
-#                   # "nloptr_CRS2_LM",
-#                   # "nloptr_ISRES",
-#                   # "nloptr_DIRECT_L_RAND",
-#                   # "GenSA",
-#                   # "hydroPSO",
-#                   # "DEoptimR"
-# )
 sp.data <- test.data
 sp.data$site <- rep((1:num.obs),2)
-# sp.data <- sp.data[,c("site","focal","1","2","fitness")]
 sp.data.long <- tidyr::gather(sp.data,key ="competitor",value = "number","1","2")
 ER.covariates <- as.matrix(sp.data.long[,c("cov1")])
 sp.data.long <- sp.data.long[,c("site","focal","fitness","competitor","number")]
@@ -157,37 +156,40 @@ for(i.method in 1:length(optim.method)){
 optimize.lambda <- TRUE
 effect.response.model <- model_ER_lambda
 
-results_ER <- er_optim(lambda.vector = lambda.vector,
-                          e.vector = e.vector,
-                          r.vector = r.vector,
-                          lambda.cov = lambda.cov,
-                          e.cov = e.cov,
-                          r.cov = r.cov,
-                          sigma = init.sigma,
-                          lower.lambda = lower.lambda,
-                          upper.lambda = upper.lambda,
-                          lower.e = lower.e,
-                          upper.e = upper.e,
-                          lower.r = lower.r,
-                          upper.r = upper.r,
-                          lower.lambda.cov = lower.lambda.cov,
-                          upper.lambda.cov = upper.lambda.cov,
-                          lower.e.cov = lower.e.cov,
-                          upper.e.cov = upper.e.cov,
-                          lower.r.cov = lower.r.cov,
-                          upper.r.cov = upper.r.cov,
-                          lower.sigma = lower.sigma,
-                          upper.sigma = upper.sigma,
-                          effect.response.model = effect.response.model,
-                          optim.method = optim.method[i.method],
-                          sp.data = sp.data.long,
-                          covariates = ER.covariates,
-                          optimize.lambda = optimize.lambda,
-                          generate.errors = generate.errors,
-                          bootstrap.samples = bootstrap.samples)
 
 # test----
 test_that("Expected classes", {
+  
+  long.method(optim.method[i.method],long.time.methods)
+  results_ER <- er_optim(lambda.vector = lambda.vector,
+                         e.vector = e.vector,
+                         r.vector = r.vector,
+                         lambda.cov = lambda.cov,
+                         e.cov = e.cov,
+                         r.cov = r.cov,
+                         sigma = init.sigma,
+                         lower.lambda = lower.lambda,
+                         upper.lambda = upper.lambda,
+                         lower.e = lower.e,
+                         upper.e = upper.e,
+                         lower.r = lower.r,
+                         upper.r = upper.r,
+                         lower.lambda.cov = lower.lambda.cov,
+                         upper.lambda.cov = upper.lambda.cov,
+                         lower.e.cov = lower.e.cov,
+                         upper.e.cov = upper.e.cov,
+                         lower.r.cov = lower.r.cov,
+                         upper.r.cov = upper.r.cov,
+                         lower.sigma = lower.sigma,
+                         upper.sigma = upper.sigma,
+                         effect.response.model = effect.response.model,
+                         optim.method = optim.method[i.method],
+                         sp.data = sp.data.long,
+                         covariates = ER.covariates,
+                         optimize.lambda = optimize.lambda,
+                         generate.errors = generate.errors,
+                         bootstrap.samples = bootstrap.samples)
+  
   expect_equal(class(results_ER), "list")
   expect_equal(class(results_ER$lambda), "numeric")
   expect_equal(class(results_ER$lambda.lower.error), "numeric")
@@ -215,37 +217,39 @@ test_that("Expected classes", {
 optimize.lambda <- FALSE
 effect.response.model <- model_ER
 
-results_ER_2 <- er_optim(lambda.vector = lambda.vector,
-                       e.vector = e.vector,
-                       r.vector = r.vector,
-                       lambda.cov = lambda.cov,
-                       e.cov = e.cov,
-                       r.cov = r.cov,
-                       sigma = init.sigma,
-                       # lower.lambda = lower.lambda,
-                       # upper.lambda = upper.lambda,
-                       lower.e = lower.e,
-                       upper.e = upper.e,
-                       lower.r = lower.r,
-                       upper.r = upper.r,
-                       lower.lambda.cov = lower.lambda.cov,
-                       upper.lambda.cov = upper.lambda.cov,
-                       lower.e.cov = lower.e.cov,
-                       upper.e.cov = upper.e.cov,
-                       lower.r.cov = lower.r.cov,
-                       upper.r.cov = upper.r.cov,
-                       lower.sigma = lower.sigma,
-                       upper.sigma = upper.sigma,
-                       effect.response.model = effect.response.model,
-                       optim.method = optim.method[i.method],
-                       sp.data = sp.data.long,
-                       covariates = ER.covariates,
-                       optimize.lambda = optimize.lambda,
-                       generate.errors = generate.errors,
-                       bootstrap.samples = bootstrap.samples)
-
 # test----
 test_that("Expected classes", {
+  long.method(optim.method[i.method],long.time.methods)
+  
+  results_ER_2 <- er_optim(lambda.vector = lambda.vector,
+                           e.vector = e.vector,
+                           r.vector = r.vector,
+                           lambda.cov = lambda.cov,
+                           e.cov = e.cov,
+                           r.cov = r.cov,
+                           sigma = init.sigma,
+                           # lower.lambda = lower.lambda,
+                           # upper.lambda = upper.lambda,
+                           lower.e = lower.e,
+                           upper.e = upper.e,
+                           lower.r = lower.r,
+                           upper.r = upper.r,
+                           lower.lambda.cov = lower.lambda.cov,
+                           upper.lambda.cov = upper.lambda.cov,
+                           lower.e.cov = lower.e.cov,
+                           upper.e.cov = upper.e.cov,
+                           lower.r.cov = lower.r.cov,
+                           upper.r.cov = upper.r.cov,
+                           lower.sigma = lower.sigma,
+                           upper.sigma = upper.sigma,
+                           effect.response.model = effect.response.model,
+                           optim.method = optim.method[i.method],
+                           sp.data = sp.data.long,
+                           covariates = ER.covariates,
+                           optimize.lambda = optimize.lambda,
+                           generate.errors = generate.errors,
+                           bootstrap.samples = bootstrap.samples)
+  
   expect_equal(class(results_ER_2), "list")
   expect_equal(class(results_ER_2$lambda), "numeric")
   expect_equal(class(results_ER_2$lambda.lower.error), "numeric")
