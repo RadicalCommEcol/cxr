@@ -9,7 +9,7 @@
 
 # cxr 0.1.0
 
-CXR provides a complete toolbox for modelling competitive effects between species, calculate fitness and niche differences, and calculate and predict coexistence regions. The functions are flexible and can include covariates, use different optimization algorithms, or accept user defined mathematical population models as starting points. 
+CXR provides a complete toolbox for modelling competitive effects between species, calculate fitness and niche differences, and calculate and predict coexistence regions. The functions are flexible and can include covariates, use different optimization algorithms, or accept user-defined mathematical population models as starting points. 
 
 ### Installation
 
@@ -33,7 +33,7 @@ The best way to start is to follow our [vignettes](https://github.com/ibartomeus
 
 ### Key features
 
-The package has sevral key functions:
+The package has several key functions:
 
 - `pm_optim()`
 - `er_optim()`
@@ -62,7 +62,7 @@ When citing, please refer to both the [package citation](https://github.com/ibar
 
 ## Bug reports and contributions.  
 
-We expect to update the package with new developments. We welcome contributions (e.g. via pull reuqest) and [bug reports](https://github.com/ibartomeus/cxr/issues).
+We expect to update the package with new developments. We welcome contributions (e.g. via pull request) and [bug reports](https://github.com/ibartomeus/cxr/issues).
 
 ## Code of Conduct  
 

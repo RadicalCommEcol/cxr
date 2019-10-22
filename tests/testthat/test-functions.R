@@ -60,7 +60,7 @@ init.sigma <- sd(log(test.focal$fitness))
 lower.sigma <- 1e-5
 upper.sigma <- 1e2
 init.alpha <- alpha.matrix.orig[1,]
-lower.alpha <- -1e4#1e-5
+lower.alpha <- 1e-5
 upper.alpha <- 1e4
 init.lambda.cov <- lambda.cov.orig[1,]
 lower.lambda.cov <- 1e-5
