@@ -30,6 +30,11 @@ library("cxr")
 ### Setup requirements and use
 
 The best way to start is to follow our [vignettes](https://github.com/ibartomeus/cxr/tree/master/vignettes).
+Note that for installing the vignettes alongside the package, you may use following options at install:
+
+```R
+devtools::install_github("ibartomeus/cxr", build_opts = c("--no-resave-data", "--no-manual"))
+```
 
 ### Key features
 
