@@ -10,5 +10,5 @@ addons:
     - tcl8.6-dev
     - tk8.6-dev
 
-  
+install: skip
   
