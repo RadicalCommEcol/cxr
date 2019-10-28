@@ -21,3 +21,4 @@ r_binary_packages:
   - DEoptimR
   - nloptr
   - sm
+  - vioplot
