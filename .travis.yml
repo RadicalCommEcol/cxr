@@ -10,5 +10,15 @@ addons:
     - tcl8.6-dev
     - tk8.6-dev
 
-install: skip
+r_binary_packages:
+  - ggplot2
+  - tidyr
+  - dplyr
+  - magrittr
+  - knitr
+  - stringr
+  - rmarkdown
+  - testthat
+  - DEoptimR
+  - nloptr
   
