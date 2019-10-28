@@ -16,7 +16,6 @@ r_binary_packages:
   - dplyr
   - magrittr
   - knitr
-  - stringr
   - rmarkdown
   - testthat
   - DEoptimR
