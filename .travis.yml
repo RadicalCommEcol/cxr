@@ -1,13 +1,7 @@
-language: r
-sudo: required
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
-r_github_packages:
-  - jimhester/covr
-
-r_binary_packages:
-  - testthat
-
-after_success:
-  - Rscript -e 'covr::codecov()'
-
-warnings_are_errors: false
+language: R
+cache: packages
+os:
+  - linux
+  - osx
