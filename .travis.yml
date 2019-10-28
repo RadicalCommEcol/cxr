@@ -20,4 +20,4 @@ r_binary_packages:
   - testthat
   - DEoptimR
   - nloptr
-  
+  - sm
