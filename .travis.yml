@@ -4,6 +4,12 @@ language: R
 
 cache: packages
 
+jobs:
+  include:
+    - stage: prepare cache
+      script: true
+    - stage: test
+    
 addons:
   apt:
     packages:
@@ -22,3 +28,6 @@ r_binary_packages:
   - nloptr
   - sm
   - vioplot
+  
+r_build_args: --resave-data
+  
