@@ -1,7 +1,7 @@
 
 ### Current Status
 
-[![Build status](https://travis-ci.org/ibartomeus/cxr.svg?branch=master)](https://travis-ci.org/ibartomeus/cxr)
+[![build status](https://travis-ci.org/ibartomeus/cxr.svg?branch=master)](https://travis-ci.org/ibartomeus/cxr)
 [![CRAN status](https://www.r-pkg.org/badges/version/cxr)](https://www.r-pkg.org/badges/version/cxr)
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/cxr)](https://cran.r-project.org/package=cxr)
 [![DOI](https://zenodo.org/badge/115796966.svg)](https://zenodo.org/badge/latestdoi/115796966)
@@ -30,6 +30,11 @@ library("cxr")
 ### Setup requirements and use
 
 The best way to start is to follow our [vignettes](https://github.com/ibartomeus/cxr/tree/master/vignettes).
+Note that for installing the vignettes alongside the package, you may use following options at install:
+
+```R
+devtools::install_github("ibartomeus/cxr", build_opts = c("--no-resave-data", "--no-manual"))
+```
 
 ### Key features
 
@@ -58,7 +63,7 @@ Other functions have no prefix.
 
 ### Citation information
 
-When citing, please refer to both the [package citation](https://github.com/ibartomeus/cxr/blob/master/inst/CITATION) and the [release paper (in prep)]().  
+When citing, please refer to both the [package citation](https://github.com/ibartomeus/cxr/blob/master/inst/CITATION) and the release paper (in prep).  
 
 ## Bug reports and contributions.  
 
@@ -66,6 +71,6 @@ We expect to update the package with new developments. We welcome contributions 
 
 ## Code of Conduct  
 
-Please note that this project is released with a [Contributor Code of Conduct](CONDUCT.md).
+Please note that this project is released with a [Contributor Code of Conduct](https://github.com/ibartomeus/cxr/blob/master/CONDUCT.md).
 By participating in this project you agree to abide by its terms.
 

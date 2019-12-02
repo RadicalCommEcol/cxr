@@ -2,6 +2,6 @@
 ^\.Rproj\.user$
 ^CONDUCT\.md$
 /cuts
-.travis.yml
 ^doc$
 ^Meta$
+^\.travis\.yml$

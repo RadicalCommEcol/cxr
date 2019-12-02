@@ -2,7 +2,7 @@ Package: cxr
 Type: Package
 Title: A Toolbox for Modelling Species Coexistence in R
 Version: 0.1
-Date: 2017-12-30
+Date: 2019-10-28
 Authors@R: c(person("David", "Garcia-Callejas", role = c("aut", "cre"), 
     email = "david.garcia.callejas@gmail.com", 
     comment = c(ORCID = "0000-0001-6982-476X")),

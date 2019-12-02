@@ -1,4 +1,4 @@
-citHeader("To cite rcites use:")
+citHeader("To cite cxr use:")
 
 year <- sub("-.*", "", meta$Date)
 note <- sprintf("R package version %s", meta$Version)

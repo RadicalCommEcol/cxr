@@ -1,13 +1,33 @@
-language: r
-sudo: required
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
-r_github_packages:
-  - jimhester/covr
+language: R
+
+cache: packages
+
+jobs:
+  include:
+    - stage: prepare cache
+      script: true
+    - stage: test
+    
+addons:
+  apt:
+    packages:
+    - tcl8.6-dev
+    - tk8.6-dev
 
 r_binary_packages:
+  - ggplot2
+  - tidyr
+  - dplyr
+  - magrittr
+  - knitr
+  - rmarkdown
   - testthat
-
-after_success:
-  - Rscript -e 'covr::codecov()'
-
-warnings_are_errors: false
+  - DEoptimR
+  - nloptr
+  - sm
+  - vioplot
+  
+r_build_args: --resave-data
+  
