@@ -98,6 +98,25 @@ cxr_pm_bootstrap <- function(fitness.model,
                            fixed.terms = fixed.terms)
       my.boot.par <- my.boot.par$par
       }, error=function(e){cat("cxr_pm_bootstrap ERROR :",conditionMessage(e), "\n")})
+    }else if(optim.method == "bobyqa"){
+      tryCatch({
+        my.boot.par <- optimx::optimr(init.par, 
+                             fitness.model, 
+                             gr = NULL, 
+                             method = "bobyqa", 
+                             lower = lower.bounds, 
+                             upper = upper.bounds,
+                             control = list(parscale = abs(init.par)), 
+                             hessian = F,
+                             param.list = param.list,
+                             log.fitness = boot.fitness, 
+                             focal.comp.matrix = boot.comp.matrix,
+                             num.covariates = num.covariates, 
+                             num.competitors = num.competitors, 
+                             focal.covariates = boot.covariates,
+                             fixed.terms = fixed.terms)
+        my.boot.par <- my.boot.par[,1:length(init.par)]
+      }, error=function(e){cat("cxr_pm_bootstrap ERROR :",conditionMessage(e), "\n")})
     }else if(optim.method == "nloptr_CRS2_LM"){
       tryCatch({
       my.boot.par <- nloptr::nloptr(x0 = init.par,eval_f = fitness.model,opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e3),

@@ -38,6 +38,7 @@ Suggests:
     stringr,
     rmarkdown,
     testthat (>= 0.8.0),
+    optimx,
     hydroPSO,
     GenSA,
     DEoptimR,

@@ -216,6 +216,25 @@ pm_optim <- function(fitness.model,
                           focal.covariates = focal.covariates,
                           fixed.terms = fixed.terms)
     }, error=function(e){cat("pm_optim ERROR :",conditionMessage(e), "\n")})
+  }else if(optim.method == "bobyqa"){
+    
+    tryCatch({
+      optim.result <- optimx::optimx(par = init.par$init.par, 
+                                     fn =  fitness.model, 
+                                     gr = NULL, 
+                                     method = "bobyqa", 
+                                     lower = init.par$lower.bounds, 
+                                     upper = init.par$upper.bounds,
+                                     control = list(parscale = abs(init.par$init.par)), 
+                                     hessian = F,
+                                     param.list = param.list,
+                                     log.fitness = log.fitness, 
+                                     focal.comp.matrix = focal.comp.matrix,
+                                     num.covariates = num.covariates, 
+                                     num.competitors = num.competitors, 
+                                     focal.covariates = focal.covariates,
+                                     fixed.terms = fixed.terms)
+    }, error=function(e){cat("pm_optim ERROR :",conditionMessage(e), "\n")})
   }else if(optim.method == "nloptr_CRS2_LM"){
     tryCatch({
     optim.result <- nloptr::nloptr(x0 = init.par$init.par,
@@ -310,7 +329,28 @@ pm_optim <- function(fitness.model,
   ##################################
   # gather the output from the method
   # if-else the method outputs optim-like values
-  
+  if(optim.method %in% c("bobyqa")){
+    if(!is.null(optim.result)){
+      par.pos <- which(!names(optim.result) %in% c("value","fevals","gevals","niter","convcode","kkt1","kkt2","xtime"))
+      optim.params <- cxr_retrieve_params(optim.params = optim.result[,par.pos],
+                                          param.list = param.list,
+                                          alpha.length = length(init.alpha),
+                                          alpha.cov.length = length(init.alpha.cov),
+                                          num.competitors = num.competitors,
+                                          num.covariates = num.covariates)
+      
+      log.likelihood <- optim.result$value
+      
+    }else{
+      optim.params <- cxr_retrieve_params(optim.params = rep(NA_real_,length(init.par$init.par)),
+                                          param.list = param.list,
+                                          alpha.length = length(init.alpha),
+                                          alpha.cov.length = length(init.alpha.cov),
+                                          num.competitors = num.competitors,
+                                          num.covariates = num.covariates)
+      log.likelihood <- NA_real_
+    }
+  }else
   if(optim.method %in% c("optim_NM","optim_L-BFGS-B","DEoptimR","hydroPSO","GenSA")){
     
     if(verbose){
