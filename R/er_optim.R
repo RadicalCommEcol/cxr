@@ -35,8 +35,7 @@
 #' @param lower.sigma lower bound for sigma. Length 1.
 #' @param upper.sigma upper bound for sigma. Length 1.
 #' @param effect.response.model function returning a value to optimize over, e.g. maximum likelihood
-#' @param optim.method optimization method to use. One of the following: "optim_NM","optim_L-BFGS-B","nloptr_CRS2_LM", 
-#' "nloptr_ISRES","nloptr_DIRECT_L_RAND","GenSA","hydroPSO","DEoptimR".
+#' @param optim.method optimization method to use. See vignette "Data and Model formats" for a list of available methods.
 #' @param sp.data dataframe with all the necessary information in long format. It should have the following columns:
 #' - site: character ID
 #' - focal: character ID of the focal species. Any number of focal species is allowed, but the number of focal species
@@ -244,14 +243,15 @@ er_optim <- function(lambda.vector,
   }
   
   # optimization methods
-  if(optim.method == "optim_NM"){
+  if(optim.method %in% c("BFGS", "CG", "Nelder-Mead", "lbfgsb3", "Rtnmin", "snewton",
+                         "snewtonm", "ucminf", "newuoa", "hjn", "lbfgs", "subplex")){
     
     if(optimize.lambda){
       tryCatch({
       optim.par <- optim(init.par, 
                          effect.response.model, 
                          gr = NULL, 
-                         method = "Nelder-Mead", 
+                         method = optim.method, 
                          # lower = lower.bounds,
                          # upper = upper.bounds,
                          control = list(), 
@@ -266,7 +266,7 @@ er_optim <- function(lambda.vector,
       optim.par <- optim(init.par, 
                          effect.response.model, 
                          gr = NULL, 
-                         method = "Nelder-Mead", 
+                         method = optim.method, 
                          # lower = lower.bounds,
                          # upper = upper.bounds,
                          control = list(), 
@@ -279,14 +279,16 @@ er_optim <- function(lambda.vector,
       }, error=function(e){cat("er_optim ERROR :",conditionMessage(e), "\n")})
     }
     
-  }else if(optim.method == "optim_L-BFGS-B"){
+  }else if(optim.method %in% c("L-BFGS-B", "nlm", "nlminb", 
+                               "Rcgmin", "Rvmmin", "spg", 
+                               "bobyqa", "nmkb", "hjkb")){
     
     if(optimize.lambda){
       tryCatch({
       optim.par <- optim(init.par, 
                          effect.response.model, 
                          gr = NULL, 
-                         method = "L-BFGS-B", 
+                         method = optim.method, 
                          lower = lower.bounds,
                          upper = upper.bounds,
                          control = list(), 
@@ -301,7 +303,7 @@ er_optim <- function(lambda.vector,
       optim.par <- optim(init.par, 
                          effect.response.model, 
                          gr = NULL, 
-                         method = "L-BFGS-B", 
+                         method = optim.method, 
                          lower = lower.bounds,
                          upper = upper.bounds,
                          control = list(), 
@@ -492,6 +494,7 @@ er_optim <- function(lambda.vector,
   ##################################
   # tidy the output from the method
   # if-else the method outputs optim-like values
+  # TODO update for optimx methods
   if(optim.method %in% c("optim_NM","optim_L-BFGS-B","DEoptimR","hydroPSO","GenSA")){
     
     #print(paste("Effect-Response:",optim.method," finished with convergence status ",optim.par$convergence,sep=""))

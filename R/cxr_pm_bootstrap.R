@@ -60,12 +60,13 @@ cxr_pm_bootstrap <- function(fitness.model,
     }
     my.boot.par <- NULL
     ############
-    if(optim.method == "optim_NM"){
+    if(optim.method %in% c("BFGS", "CG", "Nelder-Mead", "lbfgsb3", "Rtnmin", "snewton",
+                           "snewtonm", "ucminf", "newuoa", "hjn", "lbfgs", "subplex")){
       tryCatch({
-      my.boot.par <- optim(init.par, 
+      my.boot.par <- optimx::optimx(init.par, 
                            fitness.model, 
                            gr = NULL, 
-                           method = "Nelder-Mead", 
+                           method = optim.method, 
                            # lower = lower.bounds,
                            # upper = upper.bounds,
                            control = list(), 
@@ -77,14 +78,18 @@ cxr_pm_bootstrap <- function(fitness.model,
                            num.competitors = num.competitors, 
                            focal.covariates = boot.covariates,
                            fixed.terms = fixed.terms)
-      my.boot.par <- my.boot.par$par
+      par.pos <- which(!names(my.boot.par) %in% c("value","fevals","gevals","niter","convcode","kkt1","kkt2","xtime"))
+      my.boot.par <- as.numeric(my.boot.par[,par.pos])
+      row.names(my.boot.par) <- NULL
       }, error=function(e){cat("cxr_pm_bootstrap ERROR :",conditionMessage(e), "\n")})
-    }else if(optim.method == "optim_L-BFGS-B"){
+    }else if(optim.method %in% c("L-BFGS-B", "nlm", "nlminb", 
+                                 "Rcgmin", "Rvmmin", "spg", 
+                                 "bobyqa", "nmkb", "hjkb")){
       tryCatch({
-      my.boot.par <- optim(init.par, 
+      my.boot.par <-  optimx::optimx(init.par, 
                            fitness.model, 
                            gr = NULL, 
-                           method = "L-BFGS-B", 
+                           method = optim.method, 
                            lower = lower.bounds, 
                            upper = upper.bounds,
                            control = list(), 
@@ -96,26 +101,9 @@ cxr_pm_bootstrap <- function(fitness.model,
                            num.competitors = num.competitors, 
                            focal.covariates = boot.covariates,
                            fixed.terms = fixed.terms)
-      my.boot.par <- my.boot.par$par
-      }, error=function(e){cat("cxr_pm_bootstrap ERROR :",conditionMessage(e), "\n")})
-    }else if(optim.method == "bobyqa"){
-      tryCatch({
-        my.boot.par <- optimx::optimr(init.par, 
-                             fitness.model, 
-                             gr = NULL, 
-                             method = "bobyqa", 
-                             lower = lower.bounds, 
-                             upper = upper.bounds,
-                             control = list(parscale = abs(init.par)), 
-                             hessian = F,
-                             param.list = param.list,
-                             log.fitness = boot.fitness, 
-                             focal.comp.matrix = boot.comp.matrix,
-                             num.covariates = num.covariates, 
-                             num.competitors = num.competitors, 
-                             focal.covariates = boot.covariates,
-                             fixed.terms = fixed.terms)
-        my.boot.par <- my.boot.par[,1:length(init.par)]
+      par.pos <- which(!names(my.boot.par) %in% c("value","fevals","gevals","niter","convcode","kkt1","kkt2","xtime"))
+      my.boot.par <- as.numeric(my.boot.par[,par.pos])
+      row.names(my.boot.par) <- NULL
       }, error=function(e){cat("cxr_pm_bootstrap ERROR :",conditionMessage(e), "\n")})
     }else if(optim.method == "nloptr_CRS2_LM"){
       tryCatch({
@@ -209,12 +197,19 @@ cxr_pm_bootstrap <- function(fitness.model,
     }
     
     if(!is.null(my.boot.par)){
-      boot.results[i.sample,] <- my.boot.par
+      if(sum(is.na(my.boot.par)) == 0){
+        boot.results[i.sample,] <- my.boot.par
+      }
     }
-    
+
   }  
   
-  boot.se <- apply(boot.results,2,sd)
+  boot.results <- boot.results[which(!is.na(rowSums(boot.results))),]
+  if(nrow(boot.results)>2){
+    boot.se <- apply(boot.results,2,sd)
+  }else{
+    boot.se <- boot.results[1,]
+  }
   boot.se
 }
 

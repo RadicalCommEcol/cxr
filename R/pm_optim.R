@@ -7,8 +7,7 @@
 #' @param fitness.model function giving the population dynamics model. Any functional form is allowed, but the model must be constrained
 #' to free parameters \code{lambda} (fecundity of each sp in absence of competition), \code{alpha} (interaction coefficients),
 #' \code{lambda.cov} (effect of covariates on lambda), \code{alpha.cov} (effect of covariates on alpha)  
-#' @param optim.method optimization method to use. One of the following: "optim_NM","optim_L-BFGS-B","nloptr_CRS2_LM", 
-#' "nloptr_ISRES","nloptr_DIRECT_L_RAND","GenSA","hydroPSO","DEoptimR". 
+#' @param optim.method optimization method to use. See vignette "Data and Model formats" for a list of available methods. 
 #' @param param.list string vector giving the parameters that are to be optimized for the fitness model 
 #' (to choose among "lambda", "alpha", "lambda.cov", and "alpha.cov").
 #' @param log.fitness 1d vector, log of the fitness metric for every observation
@@ -65,6 +64,26 @@ pm_optim <- function(fitness.model,
                          bootstrap.samples = 0,
                          verbose = FALSE){
   # some sanity checks
+  # first, discard if method selected is not robust in optimx,
+  # or if needs a gradient function
+  if(optim.method %in% c("lbfgsb3","Rtnmin","snewton","snewtonm","hjn",
+                         "lbfgs","newuoa","subplex")){
+    stop(paste("pm_optim ERROR: Method ",optim.method," is not currently supported.",sep=""),
+         call. = FALSE)
+  }
+  # also, throw an error if any extra package is needed
+  if (optim.method == "spg" & !requireNamespace("BB", quietly = TRUE)) {
+    stop("pm_optim ERROR: Package \"BB\" needed for the method selected to work.",
+         call. = FALSE)
+  }
+  if (optim.method == "ucminf" & !requireNamespace("ucminf", quietly = TRUE)) {
+    stop("pm_optim ERROR: Package \"ucminf\" needed for the method selected to work.",
+         call. = FALSE)
+  }
+  if (optim.method %in% c("nmkb","hjkb") & !requireNamespace("dfoptim", quietly = TRUE)) {
+    stop("pm_optim ERROR: Package \"dfoptim\" needed for the method selected to work.",
+         call. = FALSE)
+  }
   if (optim.method %in% c("nloptr_CRS2_LM","nloptr_ISRES","nloptr_DIRECT_L_RAND") & !requireNamespace("nloptr", quietly = TRUE)) {
     stop("pm_optim ERROR: Package \"nloptr\" needed for the method selected to work.",
          call. = FALSE)
@@ -113,14 +132,14 @@ pm_optim <- function(fitness.model,
   # otherwise, get their values and put them in the "fixed.term" list
   # lambda
   if("lambda" %in% param.list){
-    my.init.lambda <- init.lambda
+    my.init.lambda <- c(lambda = init.lambda)
   }else{
     fixed.terms[["lambda"]] <- init.lambda
   }
   
   # sigma. This one is always present
   if(is.null(init.sigma)){
-    my.init.sigma <- sd(log.fitness)
+    my.init.sigma <- c(sigma = sd(log.fitness))
     # double check
     if(my.init.sigma > upper.sigma){
       my.init.sigma <- upper.sigma
@@ -128,7 +147,7 @@ pm_optim <- function(fitness.model,
       my.init.sigma <- lower.sigma
     }
   }else{
-    my.init.sigma <- init.sigma
+    my.init.sigma <- c(sigma = init.sigma)
     # double check
     if(my.init.sigma > upper.sigma){
       my.init.sigma <- upper.sigma
@@ -140,13 +159,18 @@ pm_optim <- function(fitness.model,
   # alpha, single value or matrix
   if("alpha" %in% param.list){
     my.init.alpha <- init.alpha
+    if(length(my.init.alpha) == 1){
+      names(my.init.alpha) <- "alpha"
+    }else{
+      names(my.init.alpha) <- name.competitors
+    }
   }else{
     fixed.terms[["alpha"]] <- init.alpha
   }
   
   # lambda covariates
   if("lambda.cov" %in% param.list){
-    my.init.lambda.cov <- init.lambda.cov
+    my.init.lambda.cov <- setNames(init.lambda.cov,name.covariates)
   }else{
     fixed.terms[["lambda.cov"]] <- init.lambda.cov
   }
@@ -154,11 +178,18 @@ pm_optim <- function(fitness.model,
   # alpha covariates, single value or matrix
   if("alpha.cov" %in% param.list){
     my.init.alpha.cov <- init.alpha.cov
+    if(length(my.init.alpha.cov) == num.covariates){
+      names(my.init.alpha.cov) <- name.covariates
+    }else{
+      names(my.init.alpha.cov) <- paste(rep(name.covariates,each = num.competitors),
+                                        rep(name.competitors,num.covariates),sep="_")
+    }
   }else{
     fixed.terms[["alpha.cov"]] <- init.alpha.cov
   }
   
-  # put them all together in a single vector, also lower and upper bounds
+  # put them all together in a single vector, 
+  # also returning lower and upper bounds
   init.par <- cxr_init_params(init.lambda = my.init.lambda,
                          init.sigma = my.init.sigma,
                          init.alpha = my.init.alpha,
@@ -180,52 +211,35 @@ pm_optim <- function(fitness.model,
   # in case of error
   optim.result <- NULL
   # optim functions
-  if(optim.method == "optim_NM"){
-    tryCatch({
-    optim.result <- optim(init.par$init.par, 
-                          fitness.model, 
-                          gr = NULL, 
-                          method = "Nelder-Mead", 
-                          # lower = lower.bounds,
-                          # upper = upper.bounds,
-                          control = list(), 
-                          hessian = F,
-                          param.list = param.list,
-                          log.fitness = log.fitness, 
-                          focal.comp.matrix = focal.comp.matrix,
-                          num.covariates = num.covariates, 
-                          num.competitors = num.competitors, 
-                          focal.covariates = focal.covariates,
-                          fixed.terms = fixed.terms)
-  }, error=function(e){cat("pm_optim ERROR :",conditionMessage(e), "\n")})
-  }else if(optim.method == "optim_L-BFGS-B"){
-    tryCatch({
-    optim.result <- optim(init.par$init.par, 
-                          fitness.model, 
-                          gr = NULL, 
-                          method = "L-BFGS-B", 
-                          lower = init.par$lower.bounds, 
-                          upper = init.par$upper.bounds,
-                          control = list(), 
-                          hessian = F,
-                          param.list = param.list,
-                          log.fitness = log.fitness, 
-                          focal.comp.matrix = focal.comp.matrix,
-                          num.covariates = num.covariates, 
-                          num.competitors = num.competitors, 
-                          focal.covariates = focal.covariates,
-                          fixed.terms = fixed.terms)
-    }, error=function(e){cat("pm_optim ERROR :",conditionMessage(e), "\n")})
-  }else if(optim.method == "bobyqa"){
-    
+  if(optim.method %in% c("BFGS", "CG", "Nelder-Mead", "ucminf")){
     tryCatch({
       optim.result <- optimx::optimx(par = init.par$init.par, 
-                                     fn =  fitness.model, 
+                     fn = fitness.model, 
+                     gr = NULL, 
+                     method = optim.method,
+                     # lower = init.par$lower.bounds,
+                     # upper = init.par$upper.bounds,
+                     control = list(), 
+                     hessian = F,
+                     param.list = param.list,
+                     log.fitness = log.fitness, 
+                     focal.comp.matrix = focal.comp.matrix,
+                     num.covariates = num.covariates, 
+                     num.competitors = num.competitors, 
+                     focal.covariates = focal.covariates,
+                     fixed.terms = fixed.terms)
+    }, error=function(e){cat("pm_optim ERROR :",conditionMessage(e), "\n")})
+  }else if(optim.method %in% c("L-BFGS-B", "nlm", "nlminb", 
+                               "Rcgmin", "Rvmmin", "spg", 
+                               "bobyqa", "nmkb", "hjkb")){
+    tryCatch({
+      optim.result <- optimx::optimx(init.par$init.par, 
+                                     fitness.model, 
                                      gr = NULL, 
-                                     method = "bobyqa", 
-                                     lower = init.par$lower.bounds, 
+                                     method = optim.method, 
+                                     lower = init.par$lower.bounds,
                                      upper = init.par$upper.bounds,
-                                     control = list(parscale = abs(init.par$init.par)), 
+                                     control = list(), 
                                      hessian = F,
                                      param.list = param.list,
                                      log.fitness = log.fitness, 
@@ -329,8 +343,12 @@ pm_optim <- function(fitness.model,
   ##################################
   # gather the output from the method
   # if-else the method outputs optim-like values
-  if(optim.method %in% c("bobyqa")){
+  if(optim.method %in% c("BFGS", "CG", "Nelder-Mead", "L-BFGS-B", "nlm", 
+                         "nlminb", "lbfgsb3", "Rcgmin", "Rtnmin", "Rvmmin", "snewton", 
+                         "snewtonm", "spg", "ucminf", "newuoa", "bobyqa", "nmkb", 
+                         "hjkb", "hjn", "lbfgs", "subplex")){
     if(!is.null(optim.result)){
+      row.names(optim.result) <- NULL
       par.pos <- which(!names(optim.result) %in% c("value","fevals","gevals","niter","convcode","kkt1","kkt2","xtime"))
       optim.params <- cxr_retrieve_params(optim.params = optim.result[,par.pos],
                                           param.list = param.list,
@@ -351,7 +369,7 @@ pm_optim <- function(fitness.model,
       log.likelihood <- NA_real_
     }
   }else
-  if(optim.method %in% c("optim_NM","optim_L-BFGS-B","DEoptimR","hydroPSO","GenSA")){
+  if(optim.method %in% c("DEoptimR","hydroPSO","GenSA")){
     
     if(verbose){
       #suppressWarnings(message(date()," -- pm_optim: method ",optim.method," completed with convergence status ",optim.result$convergence))
@@ -493,7 +511,8 @@ pm_optim <- function(fitness.model,
     if(length(alpha.cov) == num.covariates){
       name.alpha.cov <- name.covariates
     }else{
-      name.alpha.cov <- paste(rep(name.covariates,each = num.competitors),rep(name.competitors,num.covariates),sep="_")
+      name.alpha.cov <- paste(rep(name.covariates,each = num.competitors),
+                              rep(name.competitors,num.covariates),sep="_")
     }
     # double-check
     if(length(alpha.cov) == length(name.alpha.cov)){
@@ -527,4 +546,11 @@ pm_optim <- function(fitness.model,
   return.list
 
 }
+
+# character vector with all methods available, just for reference
+all.methods <- c("BFGS","CG","Nelder-Mead","L-BFGS-B","nlm","nlminb","Rcgmin",
+                 "Rvmmin","spg","ucminf","bobyqa","nmkb","hjkb",
+                 "nloptr_CRS2_LM","nloptr_ISRES","nloptr_DIRECT_L_RAND",
+                 "GenSA", "hydroPSO","DEoptimR")
+
 

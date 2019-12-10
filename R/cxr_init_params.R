@@ -3,8 +3,7 @@
 #' 
 #' Generate a 1d vector from a series of parameters in a certain order. It also returns the same vector
 #' for lower and upper bounds. This function is intended to work with
-#' parameters for a single species (i.e. a single lambda value, etc). Note that lambda.cov and alpha.cov must be consistent
-#' with num.covariates.
+#' parameters for a single species (i.e. a single lambda value, etc). It keeps the names of the parameters.
 #'
 #' @param init.lambda numeric, lambda
 #' @param init.sigma numeric, sigma
@@ -21,8 +20,8 @@
 #' @param upper.lambda.cov upper bound for lambda.cov
 #' @param lower.alpha.cov lower bound for alpha.cov
 #' @param upper.alpha.cov upper bound for alpha.cov
-#' @param num.competitors number of competitors
-#' @param num.covariates number of covariates
+# #' @param competitors character vector of competitors
+# #' @param covariates character vector of covariates
 #'
 #' @return list with three 1d vectors, ready for passing to the optim methods, consistent with the functions model_BH1-5 
 #' @export
@@ -41,8 +40,8 @@ cxr_init_params <- function(init.lambda = NULL,
                        upper.lambda.cov = 1e5,
                        lower.alpha.cov = 1e-5,
                        upper.alpha.cov = 1e5,
-                       num.competitors,
-                       num.covariates
+                       # competitors,
+                       # covariates
 ){
   init.par <- NULL
   lower.bounds <- NULL
@@ -50,7 +49,7 @@ cxr_init_params <- function(init.lambda = NULL,
   
   # if lambda is not null, it goes first
   if(!is.null(init.lambda)){
-    init.par <- init.lambda
+    init.par <- c(lambda = init.lambda)
     lower.bounds <- rep(lower.lambda,length(init.lambda))
     upper.bounds <- rep(upper.lambda,length(init.lambda))
   }

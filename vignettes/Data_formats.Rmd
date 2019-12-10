@@ -73,6 +73,16 @@ The data to provide to `pm_optim` is the fitness metric (log-transformed) of eac
 
 The data for `er_optim` is slightly different, since in this function, an indeterminate number of species are fit at once. Aside from the initial values of the different parameters and their bounds, the main argument is `sp.data`. This should be a dataframe with columns: `site`, `focal`, `fitness`, `competitor`, `number`. This format is mostly equivalent to the one of our competition dataset, but be aware of two particularities: 1) in this function (unlike in `pm_optim`) the set of focal species must equal the set of competitor species. 2) missing focal-competitor pairs must be explicitly set to zero in the dataset. These constraints are due to the parallel nature of the parameter estimation.
 
+**Optimization algorithms**
+
+Both `pm_optim` and `er_optim` are built on top of numerical optimization procedures The methods available come, mainly, from the `optimx` package, which is a general, more robust replacement for the base `optim`. Other methods, stemming from the analyses in *Mullen, K.M. 2014. Journal of Statistical Software 60:1–45*, were included specifically. The methods available are:
+
+```{r}
+cxr::all.methods
+```
+
+Some of these methods need additional packages to be installed; `pm_optim` will throw an informative error in these cases. Furthermore, methods differ on whether they optimize parameters with or without so-called box-constraints, i.e. lower and upper parameter bounds. Specifying these bounds for a boundary-free method will discard them, whereas if bounds are not specified for boxed methods, the default boundaries of `pm_optim` and `er_optim` will be used.
+
 **Data for coexistence functions**
 
 The coexistence functions `AvgFitnessRatio`, `NicheOverlap`, and `SpeciesFitness` accept, simply, pairwise interaction coefficients, and eventually, other parameters such as per capita fecundities in the absence of competition ($\lambda$), or competitive responses $r$. These metrics can be obtained with the output from `pm_optim` or `er_optim` or, in turn, with independent estimates.
