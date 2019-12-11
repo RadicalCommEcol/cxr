@@ -1,0 +1,141 @@
+---
+title: "Plot pairwise species coexistence"
+output: rmarkdown::html_vignette
+author: cxr team
+vignette: >
+  %\VignetteIndexEntry{Coexistence plot}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+In this vignette, we draw the coexistence region of the plant community dataset included with the package, and locate every pair of species in this region according to two orthogonal axes: average fitness differences (y-axis) and niche differences (x-axis). For that, we use the parameters previously calculated for each species (see vignette `Multi-species parameter optimization`), and the germination and seed soil bank survival rates, which are both stored with the package. Please note that germination and seed survival rates are a particular feature of the annual plant model (see *Godoy and Levine. 2014. Ecology 95: 726-736* for details), but other models might be adapted to other species particularities. 
+
+```{r message=F, warning=F}
+library(cxr)
+data(param_estimates) 
+data(species_rates)
+```
+
+First, compile the parameters from the original results, which are already available in the package as a nested list. We retrieved this estimates from the most complex model (BH5), and the optimization method *L-BFGS-B* (see the help of `stats::optim` for details on the optimization method).
+
+```{r message=F, warning=F}
+#tidy the data
+sp.names <- sort(unique(names(param_estimates)))
+alpha.matrix <- matrix(0,nrow = length(sp.names),ncol = length(sp.names))
+lambda.values <- numeric(length(sp.names))
+names(lambda.values) <- sp.names
+rownames(alpha.matrix) <- colnames(alpha.matrix) <- sp.names
+# from which model and optimization method are we gathering parameters
+estimates.model <- "BH5"
+estimates.method <- "optim_L-BFGS-B"
+for(i.sp in 1:length(sp.names)){
+  lambda.values[i.sp] <- param_estimates[[i.sp]][[estimates.model]][[estimates.method]]$lambda
+  alpha.matrix[i.sp,] <- param_estimates[[i.sp]][[estimates.model]][[estimates.method]]$alpha[sp.names]
+}
+```
+
+Now, we build a dataframe with all unique pairwise combinations of species
+
+```{r message=F, warning=F}
+# function from https://stackoverflow.com/questions/17171148/non-redundant-version-of-expand-grid
+expand.grid.unique <- function(x, y, include.equals=FALSE)
+{
+  x <- unique(x)
+  y <- unique(y)
+  g <- function(i){
+    z <- setdiff(y, x[seq_len(i-include.equals)])
+    if(length(z)) cbind(x[i], z, deparse.level=0)
+  }
+  do.call(rbind, lapply(seq_along(x), g))
+}
+
+pairwise.ratios <- as.data.frame(expand.grid.unique(sp.names,sp.names,include.equals = FALSE),stringsAsFactors = FALSE)
+names(pairwise.ratios) <- c("sp1","sp2")
+pairwise.ratios$fitness.ratio <- NA
+pairwise.ratios$niche.overlap <- NA
+```
+
+and compute the average fitness ratio and niche overlap between pairs. Note that the `AvgFitnessRatio` function may calculate this quantity for the annual plant model, by providing `germ.rate` and `survival.rate`, or the general version, by only providing `lambda`.
+
+```{r message=F, warning=F}
+# gather fitness ratio/niche overlap between each pair
+for(i.pair in 1:nrow(pairwise.ratios)){
+  my.sp <- c(pairwise.ratios$sp1[i.pair],pairwise.ratios$sp2[i.pair])
+  my.matrix <- alpha.matrix[my.sp,my.sp]
+  
+  pairwise.ratios$fitness.ratio[i.pair] <- AvgFitnessRatio(lambda = lambda.values[my.sp],
+                                                           germ.rate = species_rates$germination[species_rates$code %in% my.sp],
+                                                           survival.rate = species_rates$`seed survival`[species_rates$code %in% my.sp],
+                                                           pair.matrix = my.matrix)[[3]]
+  pairwise.ratios$niche.overlap[i.pair] <- NicheOverlap(pair.matrix = my.matrix)
+}
+
+pairwise.ratios$pair.ID <- paste(pairwise.ratios$sp1,"_",pairwise.ratios$sp2,sep="")
+head(pairwise.ratios)
+```
+
+For drawing the plot, we adapt, simplified, the great example from *Ke and Letten, 2018, Nature Ecology and Evolution 2:1691*, in which they show the regions leading to coexistence, exclusion, and priority effects between species pairs.
+
+First, generate a dataframe for the limits of the different regions, and specify the axes limits. In this example, we focus on species pairs that are close to the region of coexistence. Many species pairs, not shown in the plot, display wide average fitness ratios, falling clearly on the exclusion areas.
+
+```{r message=F, warning=F}
+x <- seq(1,-1,by=-0.001)
+y1 <- 1/(1-x)
+y2 <- 1-x
+
+lines <- data.frame(x = c(x,x), 
+                    y = c(y1,y2), 
+                    fun = c(rep("y1", times = length(seq(1, -1, by=-0.001))), 
+                            rep("y2", times = length(seq(1, -1, by=-0.001)))))
+my.lim.x = 0.8
+my.lim.y = 2
+```
+
+the code for the plot itself is
+
+```{r message=F, warning=F}
+
+coex.plot <- ggplot2::ggplot() + 
+  ggplot2::geom_line(data = lines, 
+                     ggplot2::aes(x = x, y = y,linetype = fun,group = fun), col = "black") +
+  # grid lines
+  ggplot2::geom_abline(intercept = 0, slope = 0, lty = 2, col = "darkgrey") +
+  ggplot2::geom_vline(xintercept = 0, lty = 2, col = "darkgrey") +
+  # points
+  ggplot2::geom_point(data = pairwise.ratios, 
+                      ggplot2::aes(x = (1 - niche.overlap), y = log(fitness.ratio))) +
+  ggplot2::geom_text(data = pairwise.ratios, 
+                     ggplot2::aes(x = (1 - niche.overlap), y = log(fitness.ratio), label = pair.ID), 
+                     hjust = 0, nudge_y = -0.01, nudge_x = 0.01, check_overlap = TRUE, size = 3)+
+  # log-scale
+  ggplot2::scale_y_log10() +
+  # trim to desired coords
+  ggplot2::coord_cartesian(expand = c(0, 0),
+                           xlim = c(-my.lim.x,my.lim.x),
+                           ylim = c(1/my.lim.y, my.lim.y)) +
+  # axes, title, etc
+  ggplot2::xlab(expression(paste("(1 - ", rho, " )", sep = ""))) + 
+  ggplot2::ylab(expression(paste("Fitness ratio ( ", frac(italic(k[2]), italic(k[1])), " )", sep=""))) +
+  ggplot2::ggtitle("Regions of coexistence, competitive exclusion, \nand priority effects between species pairs")+
+  
+  # coexistence regions
+  ggplot2::annotate("text", x = -0.35, y = 1.75, color = "darkgrey", label = expression(italic("sp 2 wins")))+
+  ggplot2::annotate("text", x = -0.35, y = 0.6, color = "darkgrey", label = expression(italic("sp 1 wins")))+
+  ggplot2::annotate("text", x = -0.37, y = 1.1, color = "darkgrey", label = expression(italic("priority\neffects")))+
+  ggplot2::annotate("text", x = 0.37, y = 1.1, color = "darkgrey", label = expression(italic("coexistence\nregion")))+
+
+  # theme and legend
+  ggplot2::theme_bw()+
+  ggplot2::theme(legend.position = "none", 
+                 axis.title.y = ggplot2::element_text(angle = 90), 
+                 axis.title = ggplot2::element_text(size = 16)) +
+  NULL
+```
+ 
+```{r message=F, warning=F, fig.width=7.2,fig.height=7}
+coex.plot
+```
+ 
+ 
+ 
+ 

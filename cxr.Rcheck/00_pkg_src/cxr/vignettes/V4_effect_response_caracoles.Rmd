@@ -31,7 +31,7 @@ write.results <- FALSE
 As in other vignettes, we need to specify which optimization method are we using, and whether we want to generate standard errors from bootstrapping.
 
 ```{r message=F, warning=F}
-optim.methods <- c(#"Nelder-Mead"
+optim.methods <- c(#"optim_NM"
                    "optim_L-BFGS-B"
                    # "nloptr_CRS2_LM", 
                    # "nloptr_ISRES", 

@@ -1,0 +1,14 @@
+citHeader("To cite cxr use:")
+
+year <- sub("-.*", "", meta$Date)
+note <- sprintf("R package version %s", meta$Version)
+
+bibentry(bibtype = "Manual",
+         title = "{cxr}: A toolbox for modelling species coexistence.",
+         author = c(person("David", "Garcia-Callejas"),
+                    person("Ignasi", "Bartomeus"),
+                    person("Oscar", "Godoy")
+                    ),
+         year = 2019,
+         note = note,
+         url = "")

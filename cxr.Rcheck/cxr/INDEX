@@ -1,0 +1,40 @@
+AvgFitnessRatio         Average fitness differences between a pair of
+                        species
+GenerateTestData        Generate simulated competition data
+NicheOverlap            Niche overlap between two species
+PredictAbundances       Project abundances according to specified
+                        models and parameters
+SpeciesFitness          Fitness of a species
+abundance               Abundance measurements
+competition             Competition measurements
+cxr                     cxr
+cxr_er_bootstrap        standard error estimates for effect and
+                        response parameters
+cxr_init_params         Join parameters in a 1d vector
+cxr_pm_bootstrap        Standard error estimates for model parameters
+cxr_retrieve_params     Retrieve parameters from the vector returned by
+                        the optimization procedures
+er_optim                Estimate competition effects and responses for
+                        a set of species
+model_BH1               Title Beverton-Holt fecundity, first model
+model_BH2               Title Beverton-Holt fecundity, second model
+model_BH3               Title Beverton-Holt fecundity, third model
+model_BH4               Title Beverton-Holt fecundity, fourth model
+model_BH5               Title Beverton-Holt fecundity, fifth model
+model_ER                Estimation of competitive effects and responses
+model_ER_lambda         Estimation of competitive effects and responses
+model_abundBH1          Project abundance of individuals according to
+                        the Beverton-Holt fist model
+model_abundBH2          Project abundance of individuals according to
+                        the Beverton-Holt second model
+model_abundBH3          Project abundance of individuals according to
+                        the Beverton-Holt third model
+model_abundBH4          Project abundance of individuals according to
+                        the Beverton-Holt fourth model
+model_abundBH5          Project abundance of individuals according to
+                        the Beverton-Holt fifth model
+param_estimates         Population model parameters
+pm_optim                General optimization for population models
+pollinators             Pollinators measurments
+salinity                Salinity measurements
+species_rates           Species germination and survival rates

@@ -23,27 +23,17 @@ Description: Recent developments in modern coexistence theory has advanced
     The functions are flexible and can include covariates 
     and different fitting algorithms can be used. 
 License: MIT + file LICENCE
-Depends:
-  R (>= 3.5)
-Imports:
-  optimx,
-  stats,
-  nlme
+Depends: R (>= 3.5)
+Imports: stats, nlme
 RoxygenNote: 6.1.1
-Suggests: 
-    ggplot2,
-    tidyr,
-    dplyr,
-    magrittr,
-    knitr,
-    stringr,
-    rmarkdown,
-    testthat (>= 0.8.0),
-    BB,
-    ucminf,
-    dfoptim,
-    hydroPSO,
-    GenSA,
-    DEoptimR,
-    nloptr
+Suggests: ggplot2, tidyr, dplyr, magrittr, knitr, stringr, rmarkdown,
+        testthat (>= 0.8.0), hydroPSO, GenSA, DEoptimR, nloptr
 VignetteBuilder: knitr
+NeedsCompilation: no
+Packaged: 2019-10-28 16:32:08 UTC; david
+Author: David Garcia-Callejas [aut, cre]
+    (<https://orcid.org/0000-0001-6982-476X>),
+  Ignasi Bartomeus [aut] (<https://orcid.org/0000-0001-7893-4389>),
+  Oscar Godoy [aut] (<https://orcid.org/0000-0003-4988-6626>),
+  Maxime Lancelot [ctb]
+Maintainer: David Garcia-Callejas <david.garcia.callejas@gmail.com>

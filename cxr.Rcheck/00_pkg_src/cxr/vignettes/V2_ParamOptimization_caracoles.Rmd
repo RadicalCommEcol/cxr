@@ -105,11 +105,11 @@ colnames(covariates) <- "sum_salinity"
 # covariates <- 0
 ```
 
-Here we specify which optimization methods to use. You can include more than one (but see below). In this example, we use the Nelder-Mead algorithm because it is the default method in the `optim` and `optimx` packages.
+Here we specify which optimization methods to use. You can include more than one (but see below). In this example, we use optim_NM because it is the default method in the base `optim` function in R.
 
 ```{r message=F, warning=F}
 # optimization methods to use
-optim.methods <- c("Nelder-Mead" 
+optim.methods <- c("optim_NM" 
                    # "optim_L-BFGS-B"
                   # "nloptr_CRS2_LM"
                    # "nloptr_ISRES"
@@ -127,7 +127,7 @@ Since the routine takes the input for a given model from the output of the previ
 init.par.method <- optim.methods[1]
 ```
 
-We also need to specify the initial values for the first model (model 1, in this example). If you have independent estimates of any parameter, comment out the appropriate lines. The `Nelder-Mead` method used in this example does not account for upper and lower parameter values, but we include them here for completeness.
+We also need to specify the initial values for the first model (model 1, in this example). If you have independent estimates of any parameter, comment out the appropriate lines. The `optim_NM` method used in this example does not account for upper and lower parameter values, but we include them here for completeness.
 
 ```{r message=F, warning=F}
 # values for initial estimates of parameters. 

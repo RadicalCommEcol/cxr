@@ -35,7 +35,8 @@
 #' @param lower.sigma lower bound for sigma. Length 1.
 #' @param upper.sigma upper bound for sigma. Length 1.
 #' @param effect.response.model function returning a value to optimize over, e.g. maximum likelihood
-#' @param optim.method optimization method to use. See vignette "Data and Model formats" for a list of available methods.
+#' @param optim.method optimization method to use. One of the following: "optim_NM","optim_L-BFGS-B","nloptr_CRS2_LM", 
+#' "nloptr_ISRES","nloptr_DIRECT_L_RAND","GenSA","hydroPSO","DEoptimR".
 #' @param sp.data dataframe with all the necessary information in long format. It should have the following columns:
 #' - site: character ID
 #' - focal: character ID of the focal species. Any number of focal species is allowed, but the number of focal species
@@ -91,24 +92,6 @@ er_optim <- function(lambda.vector,
     }
   }
   
-  if(optim.method %in% c("lbfgsb3","Rtnmin","snewton","snewtonm","hjn",
-                         "lbfgs","newuoa","subplex")){
-    stop(paste("pm_optim ERROR: Method ",optim.method," is not currently supported.",sep=""),
-         call. = FALSE)
-  }
-  # also, throw an error if any extra package is needed
-  if (optim.method == "spg" & !requireNamespace("BB", quietly = TRUE)) {
-    stop("pm_optim ERROR: Package \"BB\" needed for the method selected to work.",
-         call. = FALSE)
-  }
-  if (optim.method == "ucminf" & !requireNamespace("ucminf", quietly = TRUE)) {
-    stop("pm_optim ERROR: Package \"ucminf\" needed for the method selected to work.",
-         call. = FALSE)
-  }
-  if (optim.method %in% c("nmkb","hjkb") & !requireNamespace("dfoptim", quietly = TRUE)) {
-    stop("pm_optim ERROR: Package \"dfoptim\" needed for the method selected to work.",
-         call. = FALSE)
-  }
   if (optim.method %in% c("nloptr_CRS2_LM","nloptr_ISRES","nloptr_DIRECT_L_RAND") & !requireNamespace("nloptr", quietly = TRUE)) {
     stop("er_optim ERROR: Package \"nloptr\" needed for the method selected to work.",
          call. = FALSE)
@@ -261,14 +244,14 @@ er_optim <- function(lambda.vector,
   }
   
   # optimization methods
-  if(optim.method %in% c("BFGS", "CG", "Nelder-Mead", "ucminf")){
+  if(optim.method == "optim_NM"){
     
     if(optimize.lambda){
       tryCatch({
-      optim.par <- optimx::optimx(init.par, 
+      optim.par <- optim(init.par, 
                          effect.response.model, 
                          gr = NULL, 
-                         method = optim.method, 
+                         method = "Nelder-Mead", 
                          # lower = lower.bounds,
                          # upper = upper.bounds,
                          control = list(), 
@@ -280,10 +263,10 @@ er_optim <- function(lambda.vector,
       }, error=function(e){cat("er_optim ERROR :",conditionMessage(e), "\n")})
     }else{
       tryCatch({
-      optim.par <- optimx::optimx(init.par, 
+      optim.par <- optim(init.par, 
                          effect.response.model, 
                          gr = NULL, 
-                         method = optim.method, 
+                         method = "Nelder-Mead", 
                          # lower = lower.bounds,
                          # upper = upper.bounds,
                          control = list(), 
@@ -296,16 +279,14 @@ er_optim <- function(lambda.vector,
       }, error=function(e){cat("er_optim ERROR :",conditionMessage(e), "\n")})
     }
     
-  }else if(optim.method %in% c("L-BFGS-B", "nlm", "nlminb", 
-                               "Rcgmin", "Rvmmin", "spg", 
-                               "bobyqa", "nmkb", "hjkb")){
+  }else if(optim.method == "optim_L-BFGS-B"){
     
     if(optimize.lambda){
       tryCatch({
-      optim.par <- optimx::optimx(init.par, 
+      optim.par <- optim(init.par, 
                          effect.response.model, 
                          gr = NULL, 
-                         method = optim.method, 
+                         method = "L-BFGS-B", 
                          lower = lower.bounds,
                          upper = upper.bounds,
                          control = list(), 
@@ -317,10 +298,10 @@ er_optim <- function(lambda.vector,
       }, error=function(e){cat("er_optim ERROR :",conditionMessage(e), "\n")})
     }else{
       tryCatch({
-      optim.par <- optimx::optimx(init.par, 
+      optim.par <- optim(init.par, 
                          effect.response.model, 
                          gr = NULL, 
-                         method = optim.method, 
+                         method = "L-BFGS-B", 
                          lower = lower.bounds,
                          upper = upper.bounds,
                          control = list(), 
@@ -511,48 +492,10 @@ er_optim <- function(lambda.vector,
   ##################################
   # tidy the output from the method
   # if-else the method outputs optim-like values
-  # TODO update for optimx methods
-  if(optim.method %in% c("BFGS", "CG", "Nelder-Mead", "L-BFGS-B", "nlm", 
-                         "nlminb", "Rcgmin", "Rvmmin", "spg", "ucminf", 
-                         "bobyqa", "nmkb", "hjkb")){
+  if(optim.method %in% c("optim_NM","optim_L-BFGS-B","DEoptimR","hydroPSO","GenSA")){
     
-    par.pos <- which(!names(optim.par) %in% c("value","fevals","gevals","niter","convcode","kkt1","kkt2","xtime"))
-    fit.param <- as.numeric(optim.par[,par.pos])
+    #print(paste("Effect-Response:",optim.method," finished with convergence status ",optim.par$convergence,sep=""))
     
-    if(optimize.lambda){
-      
-      fit.lambda <- fit.param[1:num.sp]
-      fit.response <- fit.param[(num.sp+1):(num.sp+num.sp)]
-      
-      if(!is.null(covariates)){
-        fit.effect <- fit.param[(num.sp+1+num.sp):(num.sp+num.sp+num.sp)]
-        fit.lambda.cov <- fit.param[(num.sp + num.sp + num.sp + 1):(num.sp + num.sp + num.sp + (num.sp*ncol(covariates)))]
-        fit.r.cov <- fit.param[(num.sp + num.sp + num.sp + (num.sp*ncol(covariates)) + 1):(num.sp + num.sp + num.sp + (num.sp*ncol(covariates)) + (num.sp*ncol(covariates)))]
-        fit.e.cov <- fit.param[(num.sp + num.sp + num.sp + (num.sp*ncol(covariates)) + (num.sp*ncol(covariates)) + 1):(num.sp + num.sp + num.sp + (num.sp*ncol(covariates)) + (num.sp*ncol(covariates)) + (num.sp*ncol(covariates)))]
-      }else{
-        fit.effect <- fit.param[(num.sp+1+num.sp):(length(fit.param)-1)]
-      }
-      
-    }else{
-      
-      fit.lambda <- lambda.vector
-      fit.response <- fit.param[1:num.sp]
-      
-      if(!is.null(covariates)){
-        fit.effect <- fit.param[(num.sp+1):num.sp+num.sp]
-        fit.lambda.cov <- fit.param[(num.sp + num.sp + 1):(num.sp + num.sp + (num.sp*ncol(covariates)))]
-        fit.r.cov <- fit.param[(num.sp + num.sp + (num.sp*ncol(covariates)) + 1):(num.sp + num.sp + (num.sp*ncol(covariates)) + (num.sp*ncol(covariates)))]
-        fit.e.cov <- fit.param[(num.sp + num.sp + (num.sp*ncol(covariates)) + (num.sp*ncol(covariates)) + 1):(num.sp + num.sp + (num.sp*ncol(covariates)) + (num.sp*ncol(covariates)) + (num.sp*ncol(covariates)))]
-      }else{
-        fit.effect <- fit.param[(num.sp+1):(length(fit.param)-1)]
-      }
-      
-    }
-    
-    fit.sigma <- fit.param[length(fit.param)]
-    fit.log.likelihood <- optim.par$value
-    
-  }else if(optim.method %in% c("DEoptimR","hydroPSO","GenSA")){
     if(optimize.lambda){
       fit.lambda <- optim.par$par[1:num.sp]
       fit.response <- optim.par$par[(num.sp+1):(num.sp+num.sp)]
@@ -581,7 +524,11 @@ er_optim <- function(lambda.vector,
     
     fit.sigma <- optim.par$par[length(optim.par$par)]
     fit.log.likelihood <- optim.par$value
-  }else{
+    
+  }else{ # methods with different nomenclature
+    
+    #print(paste("Effect-Response:",optim.method," finished with convergence status ",optim.par$status,sep=""))
+    
     if(optimize.lambda){
       fit.lambda <- optim.par$solution[1:num.sp]
       fit.response <- optim.par$solution[(num.sp+1):(num.sp+num.sp)]
@@ -610,8 +557,8 @@ er_optim <- function(lambda.vector,
     
     fit.sigma <- optim.par$solution[length(optim.par$solution)]
     fit.log.likelihood <- optim.par$objective
-  }
-    
+  }  
+  
   #####################
   # standard errors via bootstrapping
   if(generate.errors){

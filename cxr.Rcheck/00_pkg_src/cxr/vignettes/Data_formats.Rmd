@@ -1,0 +1,108 @@
+---
+title: "Data and model formats"
+output: rmarkdown::html_vignette
+author: cxr team
+vignette: >
+  %\VignetteIndexEntry{Data and model formats}
+  \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+**Introduction**
+
+The `cxr` package provides diverse functions to handle empirical datasets, but the data provided needs to be in certain formats for compatibility. We will show the structure of the included dataset, and the specific formats accepted by functions of the package. We also discuss the structure of the population models included in the package and how users can develop their own models. 
+
+**The Caracoles dataset**
+
+We include a dataset of plant annual species, for which their per capita fecundity was obtained in the field, with individuals being subject to competition from intra- or inter-specific neighbours. Also in the dataset are values of abundance of each plant species in each sampling unit. The sampling design is explained in *Lanuza, Bartomeus, Godoy, 2018, Ecology Letters 21:865-874*.
+
+The table for competition is
+
+```{r}
+library(cxr)
+data("competition", package = "cxr")
+```
+
+its structure is as follows: for each observation of a focal individual, the sampling date is recorded, alongside the plot and subplot where the observation was made. Finally, we include the number of fruits and seeds of that particular individual, a unique identifier for each individual, and how many neighbours (competitors) of each species were in its surroundings (taken as a circunference of radius 7.5 cm). Note that this dataset is stored in a long format, so that each row corresponds to a combination of focal individual and competitor species. The dataset also explicitly accounts for unobserved focal-competitor pairs, such that competitor species not present in the neighbourhood of a given focal individual are included with `number` = 0. 
+
+```{r}
+?competition
+head(competition)
+```
+
+The abundance table is also stored in a long format, in which we give, for each plot and subplot, the number of individuals of each species at their developmental peak:
+
+```{r}
+data("abundance", package = "cxr")
+head(abundance)
+```
+
+We also provide seed survival and germination rates for each species, obtained independently. This file also includes the complete scientific name and abbreviation of each species. In subsequent analyses and vignettes we use the abbreviation as species identifier.
+
+```{r}
+data("species_rates", package = "cxr")
+species_rates
+```
+
+Lastly, we provide the values of an environmental covariate, salinity, for each sampling unit:
+
+```{r}
+data("salinity", package = "cxr")
+head(salinity)
+```
+
+The package also includes data on floral visitors (`pollinators`), but this data is not used in the vignettes.
+
+**CXR functionality**
+
+In the package there are, broadly speaking, two types of functions. The first set (optimization functions) includes `pm_optim`, which fits the species interaction models to empirical data, and `er_optim`, which fits overall response and effect parameters per focal species to empirical data. Both `pm_optim` and `er_optim` accept field data and numerically estimate parameters of a model provided by the user. The second set (coexistence functions, including `AvgFitnessRatio`, `NicheOverlap`, and `SpeciesFitness`) take these estimates and return coexistence metrics for a single species or pairs of them.
+
+**Data for optimization functions**
+
+```{r}
+?pm_optim
+```
+
+The data to provide to `pm_optim` is the fitness metric (log-transformed) of each observation, and the number of competitors of each species (in matrix format) for each observation. Thus, the length of `log.fitness` and the number of rows of `focal.comp.matrix` must match. Likewise, if covariates are provided, the number of rows of that covariates matrix/dataframe must also match the number of observations. This requires some data formating to create the `focal.comp.matrix`.
+
+```{r}
+?er_optim
+```
+
+The data for `er_optim` is slightly different, since in this function, an indeterminate number of species are fit at once. Aside from the initial values of the different parameters and their bounds, the main argument is `sp.data`. This should be a dataframe with columns: `site`, `focal`, `fitness`, `competitor`, `number`. This format is mostly equivalent to the one of our competition dataset, but be aware of two particularities: 1) in this function (unlike in `pm_optim`) the set of focal species must equal the set of competitor species. 2) missing focal-competitor pairs must be explicitly set to zero in the dataset. These constraints are due to the parallel nature of the parameter estimation.
+
+**Data for coexistence functions**
+
+The coexistence functions `AvgFitnessRatio`, `NicheOverlap`, and `SpeciesFitness` accept, simply, pairwise interaction coefficients, and eventually, other parameters such as per capita fecundities in the absence of competition ($\lambda$), or competitive responses $r$. These metrics can be obtained with the output from `pm_optim` or `er_optim` or, in turn, with independent estimates.
+
+**Population dynamics models**
+
+The `cxr` package provides users with a flexible interface to fit their own models and data, and at the same time incorporates state-of-the-art dynamic models for annual plant populations. The five models included in the package (functions `model_BH1` to `model_BH5`) estimate the per-germinant fecundity $F_i$ of a plant individual, in the context of an annual plant model with seed bank:
+
+$$N_{i,t+1}^s/N_{i,t}^s = (1-g_{i})s_i + g_iF_i$$
+
+In this general formulation, $N^s_{i,t}$ is the number of seeds in the soil for species i prior to germination (in the fall or winter). The superscript s refers to seeds, when we refer to adult individuals we will use the notation $N^a$. The per capita growth rate for the population (left side of the above equation) is a weighted average of two different growth rates: $s_i$, the annual survival of ungerminated seed in the soil, and $F_i$, the viable seeds produced per germinated individual.
+
+Per-germinant fecundity is a composite term potentially dependant on intrinsic species fecundity, pairwise interactions, and the effect of other covariates. We included all these potentialities in the five models coded for $F_i$, which follow a general Beverton-Holt functional form. In particular, models 1-3 only include the effects of intrinsic fecundity ($\lambda$) and pairwise interactions ($\alpha$), whereas the effect of covariates over lambda ($\Theta$) and over alpha ($\phi$) is included in models 4-5:
+
+| cxr function | Formula |
+| -----------  | ----------- |
+| model_BH1    | $F_i = \lambda_i$ |
+| model_BH2    | $F_i = \frac{\lambda_i}{1+\alpha N*}$ |
+| model_BH3    | $F_i = \frac{\lambda_i}{1+ (\sum_{j=1}^n \alpha_{ij} N_j})$ |
+| model_BH4    | $F_i = \frac{\lambda_i (1+ \sum_{k = 1}^c \Theta_{ik}C_k)}{1+ (\sum_{j=1}^n (\alpha_{ij} + \sum_{k=1}^c \phi_{ik}C_k) N_j)}$ |
+| model_BH5    | $F_i = \frac{\lambda_i (1+ \sum_{k = 1}^c \Theta_{ik}C_k)}{1+ (\sum_{j=1}^n (\alpha_{ij} + \sum_{k=1}^c \phi_{ijk}C_k) N_j)}$ |
+
+Users can estimate model parameters using the provided formulations or develop their own, bearing in mind two constraints. First, the provided models need to comply with the set of parameters of the general formulation, i.e.: 
+
+$$F_i= f(\lambda_i,\alpha,\Theta,\phi)$$
+
+which are coded in the package functions as `lambda`, `alpha`, `lambda.cov`, and `alpha.cov`, respectively. Note that $F_i$ need not refer exclusively to plant fecundity, but can be thought as any fitness property of an individual, thus expanding the applicability of the package to any taxa in which species compete for a set of resources. In order to obtain the optimal parameter values given a model and dataset, we use numerical optimization procedures. These work by finding the minimum of an objective function within a parameter space, and thus, our second constraint is that the function to minimize must return a single numeric value. In our formulation, our models return the associated log-likelihood of the data and parameters fitted.
+
+A complementary set of two models is also provided, that estimate competitive effects and responses for every species. These models follow the same equation (Appendix S4 in *Godoy, et al. 2014. Ecology Letters, 17:836–844*): 
+
+$$F_i = \frac{\lambda_i}{1+r_i \sum_j^n e_j N_j^a}$$
+
+where $r_i$ is the species’ competitive response and $e_i$ is the species’ competitive effect; our models only differ on whether $\lambda$ is taken as a fixed parameter (function `model_ER.R`) or is optimized as well in the routine (function `model_ER_lambda.R`).
