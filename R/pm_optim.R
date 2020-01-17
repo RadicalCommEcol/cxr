@@ -332,7 +332,8 @@ pm_optim <- function(fitness.model,
   if(optim.method %in% c("bobyqa")){
     if(!is.null(optim.result)){
       par.pos <- which(!names(optim.result) %in% c("value","fevals","gevals","niter","convcode","kkt1","kkt2","xtime"))
-      optim.params <- cxr_retrieve_params(optim.params = optim.result[,par.pos],
+      # rownames(optim.result) <- NULL
+      optim.params <- cxr_retrieve_params(optim.params = as.numeric(optim.result[,par.pos]),
                                           param.list = param.list,
                                           alpha.length = length(init.alpha),
                                           alpha.cov.length = length(init.alpha.cov),
@@ -438,6 +439,7 @@ pm_optim <- function(fitness.model,
                                  alpha.cov.length = length(init.alpha.cov),
                                  num.competitors = num.competitors,
                                  num.covariates = num.covariates)
+  
   # return list of results
   lambda <- optim.params[["lambda"]]
   lambda.lower.error <- optim.params[["lambda"]]-1.96*error.params[["lambda"]]
