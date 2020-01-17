@@ -6,7 +6,7 @@
 # 
 # # spread the data from long to wide format
 # competition.data <- tidyr::spread(competition,competitor,number,fill = 0)
-# 
+# focal.sp <- unique(competition$focal)
 # mindata <- subset(competition.data,focal == "CHFU")
 # mindata$fitness <- log(mindata$seed)
 # mindata <- mindata[,c("fitness",focal.sp)]
@@ -26,7 +26,7 @@
 # lambda_cov_form <- "none"
 # alpha_cov_form <- "none"
 # fixed_terms <- NULL
-# bootstrap_samples <- 0
+# bootstrap_samples <- 3
 
 # NOTE single species 
 # TODO write a wrapper for several sp?
@@ -264,13 +264,41 @@ cxr_pm_fit <- function(data,
                                    num.competitors = num_neigh, 
                                    focal.covariates = covariates,
                                    # change to fixed_parameters
-                                   fixed.terms = fixed_terms)
+                                   fixed.terms = fixed_parameters)
   }, error=function(e){cat("pm_optim ERROR :",conditionMessage(e), "\n")})
+
+# gather output -----------------------------------------------------------
+
+  #cxr_retrieve_params
 
 # calculate errors --------------------------------------------------------
 
+  if(bootstrap_samples > 0){
+    # TODO check when updated
+    errors <- cxr_pm_bootstrap(fitness.model = fitness.model,
+                               optim.method = optim.method,
+                               param.list = param.list,
+                               fixed.terms = fixed.terms,
+                               log.fitness = log.fitness,
+                               init.par = init.par$init.par,
+                               lower.bounds = init.par$lower.bounds,
+                               upper.bounds = init.par$upper.bounds,
+                               focal.comp.matrix = focal.comp.matrix,
+                               focal.covariates = focal.covariates,
+                               nsamples = bootstrap.samples)
+  }else{
+    errors <- rep(NA_real_,length(init_par[[1]]))
+  }
 
-# return cxr_fit object ---------------------------------------------------
+  error_params <- cxr_retrieve_params(optim.params = errors,
+                                      # param.list = param.list,
+                                      alpha.length = length(init.alpha),
+                                      alpha.cov.length = length(init.alpha.cov),
+                                      num.competitors = num.competitors,
+                                      num.covariates = num.covariates)
+  
+  
+# return cxr object ---------------------------------------------------
 fit <- list()
   fit$model <- fitness_model
   fit$data <- data
