@@ -21,8 +21,6 @@
 #' @param upper_lambda_cov upper bound for lambda_cov
 #' @param lower_alpha_cov lower bound for alpha_cov
 #' @param upper_alpha_cov upper bound for alpha_cov
-#' @param num_neigh number of competitors
-#' @param num_covariates number of covariates
 #'
 #' @return list with three 1d vectors, ready for passing to the optim methods, consistent with the functions model_BH1-5 
 #' @export
@@ -40,9 +38,7 @@ cxr_init_params <- function(init_lambda = NULL,
                        lower_lambda_cov = 1e-5,
                        upper_lambda_cov = 1e5,
                        lower_alpha_cov = 1e-5,
-                       upper_alpha_cov = 1e5,
-                       num_neigh,
-                       num_covariates
+                       upper_alpha_cov = 1e5
 ){
   init_par <- NULL
   lower_bounds <- NULL

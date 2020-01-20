@@ -47,7 +47,7 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
   
   
   # retrieve parameters -----------------------------------------------------
-  # parameters to fit are aLL in the "par" vector,
+  # parameters to fit are all in the "par" vector,
   # so we need to retrieve them one by one
   # order is {lambda,lambda_cov,alpha,alpha_cov,sigma}
   
