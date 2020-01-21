@@ -1,10 +1,15 @@
 # 
 # 
 # # load test data
-# library(cxr)
-# data("competition")
-# 
-# # spread the data from long to wide format
+library(cxr)
+data("competition")
+
+# TEMP
+source("R/cxr_return_init_length.R")
+source("R/cxr_init_params.R")
+source("R/cxr_retrieve_params.R")
+
+# spread the data from long to wide format
 # competition.data <- tidyr::spread(competition,competitor,number,fill = 0)
 # focal.sp <- unique(competition$focal)
 # mindata <- subset(competition.data,focal == "CHFU")
@@ -18,7 +23,7 @@
 # 
 # # covariates: rows are observations, columns are different covariates
 # # either matrix or dataframe, will be transformed to matrix in the function
-covariates <- data.frame(c1 = rnorm(nrow(mindata),0,1))
+# covariates <- data.frame(c1 = rnorm(nrow(mindata),0,1))
 # 
 # model_family <- "BH"
 # optimization_method <- "bobyqa"
@@ -109,6 +114,17 @@ cxr_pm_fit <- function(data,
   if(is.null(covariates) & (alpha_cov_form != "none" | lambda_cov_form != "none")){
     stop("cxr_pm_fit ERROR: need to specify covariates if lambda_cov and/or alpha_cov are to be fit")
   }
+  
+  # retrieve model ----------------------------------------------------------
+  # character giving the name of the model
+  model_name <- paste("pm_",model_family,"_alpha_",alpha_form,"_lambdacov_",lambda_cov_form,"_alphacov_",alpha_cov_form,sep="")
+  
+  # try to retrieve the function from its name
+  tryCatch({
+    fitness_model <- get(model_name)
+  }, error=function(e){cat("cxr_pm_fit ERROR : model '",model_name,"' 
+  could not be retrieved. Make sure it is defined and available in the cxr package 
+                           or in the global environment")})
   
   # prepare data ------------------------------------------------------------
   # neighbour matrix
@@ -232,14 +248,6 @@ cxr_pm_fit <- function(data,
     upper_alpha_cov <- upper_bounds$alpha_cov
   }
   
-  # retrieve model ----------------------------------------------------------
-  model_name <- paste("pm_",model_family,"_alpha_",alpha_form,"_lambdacov_",lambda_cov_form,"_alphacov_",alpha_cov_form,sep="")
-  
-  # TODO this is temporary, while I rename models
-  # TODO be sure to include checks for the existence of the model
-  # and do it at the beginning of the function
-  fitness_model <- model_BH3
-  
   # sort parameters for optim routine ---------------------------------------
   init_par <- cxr_init_params(init_lambda = init_lambda,
                               init_sigma = init_sigma,
@@ -258,66 +266,167 @@ cxr_pm_fit <- function(data,
                               upper_alpha_cov = upper_alpha_cov)
   
   # fit parameters ----------------------------------------------------------
-  # TODO copy from EBD computer and, in general, rename
-  tryCatch({
-    optim.result <- optimx::optimx(par = init_par$init_par, 
-                                   fn =  fitness_model, 
-                                   gr = NULL, 
-                                   method = "bobyqa", 
-                                   lower = init_par$lower_bounds, 
-                                   upper = init_par$upper_bounds,
-                                   control = list(parscale = abs(init_par$init_par)), 
-                                   hessian = F,
-                                   # this will be dropped
-                                   param.list = c("lambda","alpha"),#param.list,
-                                   # change to "fitness"
-                                   log.fitness = data$fitness, 
-                                   focal.comp.matrix = neigh_matrix,
-                                   # TODO check covariates
-                                   num.covariates = ncol(covariates), 
-                                   num.competitors = num_neigh, 
-                                   focal.covariates = covariates,
-                                   # change to fixed_parameters
-                                   fixed.terms = fixed_parameters)
-  }, error=function(e){cat("pm_optim ERROR :",conditionMessage(e), "\n")})
+
+  optim_result <- NULL
+  # optim functions
+  if(optimization_method %in% c("BFGS", "CG", "Nelder-Mead", "ucminf")){
+    tryCatch({
+      optim_result <- optimx::optimx(par = init_par$init_par, 
+                                     fn = fitness_model, 
+                                     gr = NULL, 
+                                     method = optimization_method,
+                                     # lower = init_par$lower_bounds,
+                                     # upper = init_par$upper_bounds,
+                                     control = list(), 
+                                     hessian = F,
+                                     fitness = log(data$fitness), 
+                                     neigh_matrix = neigh_matrix,
+                                     covariates = covariates, 
+                                     fixed_parameters = fixed_parameters)
+    }, error=function(e){cat("pm_optim ERROR :",conditionMessage(e), "\n")})
+  }else if(optimization_method %in% c("L-BFGS-B", "nlm", "nlminb", 
+                               "Rcgmin", "Rvmmin", "spg", 
+                               "bobyqa", "nmkb", "hjkb")){
+    tryCatch({
+      optim_result <- optimx::optimx(par = init_par$init_par, 
+                                     fn = fitness_model, 
+                                     gr = NULL, 
+                                     method = optimization_method,
+                                     lower = init_par$lower_bounds,
+                                     upper = init_par$upper_bounds,
+                                     control = list(), 
+                                     hessian = F,
+                                     fitness = data$fitness, 
+                                     neigh_matrix = neigh_matrix,
+                                     covariates = covariates, 
+                                     fixed_parameters = fixed_parameters)
+    }, error=function(e){cat("pm_optim ERROR :",conditionMessage(e), "\n")})
+  }else if(optimization_method == "nloptr_CRS2_LM"){
+    tryCatch({
+      optim_result <- nloptr::nloptr(x0 = init_par$init_par,
+                                     eval_f = fitness_model,
+                                     opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e4),
+                                     lb = init_par$lower_bounds,
+                                     ub = init_par$upper_bounds,
+                                     fitness = data$fitness, 
+                                     neigh_matrix = neigh_matrix,
+                                     covariates = covariates, 
+                                     fixed_parameters = fixed_parameters)
+    }, error=function(e){cat("pm_optim ERROR :",conditionMessage(e), "\n")})
+  }else if(optimization_method == "nloptr_ISRES"){
+    tryCatch({
+      optim_result <- nloptr::nloptr(x0 = init_par$init_par,
+                                     eval_f = fitness_model,
+                                     opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e4),
+                                     lb = init_par$lower_bounds,
+                                     ub = init_par$upper_bounds,
+                                     fitness = data$fitness, 
+                                     neigh_matrix = neigh_matrix,
+                                     covariates = covariates, 
+                                     fixed_parameters = fixed_parameters)
+    }, error=function(e){cat("pm_optim ERROR :",conditionMessage(e), "\n")})
+  }else if(optimization_method == "nloptr_DIRECT_L_RAND"){
+    tryCatch({
+      optim_result <- nloptr::nloptr(x0 = init_par$init_par,
+                                     eval_f = fitness_model,
+                                     opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e4),
+                                     lb = init_par$lower_bounds,
+                                     ub = init_par$upper_bounds,
+                                     fitness = data$fitness, 
+                                     neigh_matrix = neigh_matrix,
+                                     covariates = covariates, 
+                                     fixed_parameters = fixed_parameters)
+    }, error=function(e){cat("pm_optim ERROR :",conditionMessage(e), "\n")})
+  }else if(optimization_method == "GenSA"){
+    tryCatch({
+      optim_result <- GenSA::GenSA(par = init_par$init_par,
+                                   fn = fitness_model,
+                                   lower = init_par$lower_bounds,
+                                   upper = init_par$upper_bounds, 
+                                   control = list(maxit = 1e3), 
+                                   fitness = data$fitness, 
+                                   neigh_matrix = neigh_matrix,
+                                   covariates = covariates, 
+                                   fixed_parameters = fixed_parameters)
+    }, error=function(e){cat("pm_optim ERROR :",conditionMessage(e), "\n")})
+  }else if(optimization_method == "hydroPSO"){
+    tryCatch({
+      # suppress annoying output??
+      # sink("/dev/null")
+      optim_result <- hydroPSO::hydroPSO(par = init_par$init_par,
+                                         fn = fitness_model,
+                                         lower = init_par$lower_bounds,
+                                         upper = init_par$upper_bounds, 
+                                         control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
+                                         fitness = data$fitness, 
+                                         neigh_matrix = neigh_matrix,
+                                         covariates = covariates, 
+                                         fixed_parameters = fixed_parameters)
+    }, error=function(e){cat("pm_optim ERROR :",conditionMessage(e), "\n")})
+    
+  }else if(optimization_method == "DEoptimR"){
+    tryCatch({
+      optim_result <- DEoptimR::JDEoptim(lower = init_par$lower_bounds,
+                                         upper = init_par$upper_bounds,
+                                         fn = fitness_model,
+                                         fitness = log(data$fitness), 
+                                         neigh_matrix = neigh_matrix,
+                                         covariates = covariates, 
+                                         fixed_parameters = fixed_parameters)
+    }, error=function(e){cat("pm_optim ERROR :",conditionMessage(e), "\n")})
+  }
   
   # gather output -----------------------------------------------------------
   
-  if(!is.null(optim.result)){
-    par.pos <- which(!names(optim.result) %in% c("value","fevals","gevals","niter","convcode","kkt1","kkt2","xtime"))
-    outnames <- names(optim.result[,par.pos])
-    outpar <- as.numeric(optim.result[,par.pos])
-    names(outpar) <- outnames
-    # rownames(optim.result) <- NULL
+  # this is cumbersome and boring because different methods 
+  # have different output types
+  
+  if(is.null(optim_result)){
+    optim_params <- cxr_retrieve_params(optim.params = rep(NA_real_,length(init_par$init_par)),
+                                        lambda_length = length(init_lambda),
+                                        alpha_length = length(init_alpha),
+                                        lambda_cov_length = length(init_lambda_cov),
+                                        alpha_cov_length = length(init_alpha_cov))
+    llik <- NA_real_
+  }else{
+    if(optim.method %in% c("BFGS", "CG", "Nelder-Mead", "L-BFGS-B", "nlm", 
+                           "nlminb", "Rcgmin", "Rvmmin", "spg", "ucminf", 
+                           "bobyqa", "nmkb", "hjkb")){
+      par.pos <- which(!names(optim_result) %in% c("value","fevals","gevals","niter","convcode","kkt1","kkt2","xtime"))
+      outnames <- names(optim_result[,par.pos])
+      outpar <- as.numeric(optim_result[,par.pos])
+      names(outpar) <- outnames
+      llik <- optim_result$value
+    }else if(optim.method %in% c("DEoptimR","hydroPSO","GenSA")){
+      outpar <- optim_result$par
+      names(outpar)
+      log.likelihood <- optim_result$value
+    }else{
+      outpar <- optim_result$solution
+      names(outpar)
+      log.likelihood <- optim_result$objective
+    }# if-else method
+    
     optim_params <- cxr_retrieve_params(optim_params = outpar,
                                         lambda_length = length(init_lambda),
                                         alpha_length = length(init_alpha),
                                         lambda_cov_length = length(init_lambda_cov),
                                         alpha_cov_length = length(init_alpha_cov))
     
-    llik <- optim.result$value
-    
-  }else{
-    optim_params <- cxr_retrieve_params(optim.params = rep(NA_real_,length(init.par$init.par)),
-                                        lambda_length = length(init_lambda),
-                                        alpha_length = length(init_alpha),
-                                        lambda_cov_length = length(init_lambda_cov),
-                                        alpha_cov_length = length(init_alpha_cov))
-    llik <- NA_real_
-  }
+  }# if not null
   
   # calculate errors --------------------------------------------------------
   
   if(bootstrap_samples > 0){
     # TODO check when updated
-    errors <- cxr_pm_bootstrap(fitness.model = fitness.model,
-                               optim.method = optim.method,
+    errors <- cxr_pm_bootstrap(fitness_model = fitness_model,
+                               optimization_method = optimization_method,
                                param.list = param.list,
                                fixed.terms = fixed.terms,
                                log.fitness = log.fitness,
-                               init.par = init.par$init.par,
-                               lower.bounds = init.par$lower.bounds,
-                               upper.bounds = init.par$upper.bounds,
+                               init_par = init_par$init_par,
+                               lower_bounds = init_par$lower_bounds,
+                               upper_bounds = init_par$upper_bounds,
                                focal.comp.matrix = focal.comp.matrix,
                                focal.covariates = focal.covariates,
                                nsamples = bootstrap.samples)
@@ -332,9 +441,6 @@ cxr_pm_fit <- function(data,
                          lambda_cov = NULL,
                          alpha_cov = NULL)
   }
-  
-  
-  
   
   # return cxr object ---------------------------------------------------
   
@@ -404,7 +510,8 @@ summary.cxr_pm_fit <- function(x){
       "\nfocal lambda:",x$lambda,
       "\nmean alpha:",ifelse(is.null(x$alpha)," - not fit - ",mean(x$alpha)),
       "\nmean lambda_cov:",ifelse(is.null(x$lambda_cov)," - not fit - ",mean(x$lambda_cov)),
-      "\nmean alpha_cov:",ifelse(is.null(x$alpha_cov)," - not fit - ",mean(x$alpha_cov)),sep="")
+      "\nmean alpha_cov:",ifelse(is.null(x$alpha_cov)," - not fit - ",mean(x$alpha_cov)),
+      "\nlog-likelihood of the fit:",x$log_likelihood,sep="")
   
 }
 
