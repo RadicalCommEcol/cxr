@@ -41,20 +41,21 @@
 # 5 - adding your model to cxr
 # document your model, file a pull_request etc
 
-#' Beverton-Holt model with pairwise alphas and no covariate effects
+#' Beverton-Holt model with pairwise alphas and global covariate effects on lambda and alpha
 #'
-#' @param par 1d vector of initial parameters: lambda, alpha, and sigma
+#' @param par 1d vector of initial parameters: lambda, lambda_cov, alpha, alpha_cov, and sigma
 #' @param fitness 1d vector of fitness observations, in log scale
 #' @param neigh_matrix matrix with number of neighbours (each neighbour a column) for each observation (in rows)
-#' @param covariates included for compatibility, not used in this model
+#' @param covariates optional matrix with observations in rows and covariates in columns. Each cell is the value of a covariate
+#' in a given observation
 #' @param fixed_parameters optional list specifying values of fixed parameters, 
-#' with components "lambda","alpha".
+#' with components "lambda","alpha","lambda_cov","alpha_cov".
 #'
 #' @return log-likelihood value
 #' @export
 #'
 #' @examples
-pm_BH_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
+pm_BH_alpha_pairwise_lambdacov_global_alphacov_global <- function(par,
                                                               fitness,
                                                               neigh_matrix,
                                                               covariates,
@@ -79,12 +80,12 @@ pm_BH_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
     lambda <- fixed_parameters[["lambda"]]
   }
   
-  # if(is.null(fixed_parameters$lambda_cov)){
-  #   lambda_cov <- par[pos:(pos+ncol(covariates)-1)]
-  #   pos <- pos + ncol(covariates)
-  # }else{
-  #   lambda_cov <- fixed_parameters[["lambda_cov"]]
-  # }
+  if(is.null(fixed_parameters$lambda_cov)){
+    lambda_cov <- par[pos:(pos+ncol(covariates)-1)]
+    pos <- pos + ncol(covariates)
+  }else{
+    lambda_cov <- fixed_parameters[["lambda_cov"]]
+  }
   
   if(is.null(fixed_parameters$alpha)){
     alpha <- par[pos:(pos+ncol(neigh_matrix)-1)]
@@ -93,12 +94,12 @@ pm_BH_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
     alpha <- fixed_parameters[["alpha"]]
   }
   
-  # if(is.null(fixed_parameters$alpha_cov)){
-  #   alpha.cov <- par[pos:(pos+(ncol(covariates)*ncol(neigh_matrix))-1)]
-  #   pos <- pos + (ncol(covariates)*ncol(neigh_matrix))
-  # }else{
-  #   alpha.cov <- fixed_parameters[["alpha.cov"]]
-  # }
+  if(is.null(fixed_parameters$alpha_cov)){
+    alpha.cov <- par[pos:(pos+(ncol(covariates)*ncol(neigh_matrix))-1)]
+    pos <- pos + (ncol(covariates)*ncol(neigh_matrix))
+  }else{
+    alpha.cov <- fixed_parameters[["alpha.cov"]]
+  }
   
   sigma <- par[length(par)]
   
@@ -107,11 +108,20 @@ pm_BH_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
   
   # MODEL CODE HERE ---------------------------------------------------------
   
-  term = 1 #create the denominator term for the model
-  for(z in 1:ncol(neigh_matrix)){
-    term <- term + alpha[z]*neigh_matrix[,z] 
+  num = 1
+  focal.cov.matrix <- as.matrix(covariates)
+  for(z in 1:ncol(focal.cov.matrix)){
+    num <- num + lambda_cov[z]*focal.cov.matrix[,z]
   }
-  pred <- lambda/ term
+  cov_term <- 0 
+  for(v in 1:ncol(focal.cov.matrix)){
+    cov_term <- cov_term + alpha_cov[v] * focal.cov.matrix[,v]
+  }
+  term <- 1 #create the denominator term for the model
+  for(z in 1:ncol(neigh_matrix)){
+    term <- term + (alpha[z] + cov_term) * neigh_matrix[,z] 
+  }
+  pred <- lambda * (num) / term 
   
   # MODEL CODE ENDS HERE ----------------------------------------------------
   

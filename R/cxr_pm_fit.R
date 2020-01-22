@@ -1,15 +1,17 @@
 # 
 # 
 # # load test data
-library(cxr)
-data("competition")
-
-# TEMP
-source("R/cxr_return_init_length.R")
-source("R/cxr_init_params.R")
-source("R/cxr_retrieve_params.R")
-
-# spread the data from long to wide format
+# library(cxr)
+# data("competition")
+# 
+# # TEMP
+# source("R/cxr_return_init_length.R")
+# source("R/cxr_init_params.R")
+# source("R/cxr_retrieve_params.R")
+# source("R/pm_BH_alpha_pairwise_lambdacov_none_alphacov_none.R")
+# source("R/cxr_pm_bootstrap.R")
+# 
+# # spread the data from long to wide format
 # competition.data <- tidyr::spread(competition,competitor,number,fill = 0)
 # focal.sp <- unique(competition$focal)
 # mindata <- subset(competition.data,focal == "CHFU")
@@ -18,7 +20,7 @@ source("R/cxr_retrieve_params.R")
 # data <- mindata
 # 
 # initial_values <- list(lambda = 1,alpha = 0,lambda_cov = 0, alpha_cov = 0)
-# lower_bounds <- list(lambda = 0,alpha = -1,lambda_cov = 0, alpha_cov = 0)
+# lower_bounds <- list(lambda = 0,alpha = 0,lambda_cov = 0, alpha_cov = 0)
 # upper_bounds <- list(lambda = 10,alpha = 1,lambda_cov = 1, alpha_cov = 1)
 # 
 # # covariates: rows are observations, columns are different covariates
@@ -26,7 +28,7 @@ source("R/cxr_retrieve_params.R")
 # covariates <- data.frame(c1 = rnorm(nrow(mindata),0,1))
 # 
 # model_family <- "BH"
-# optimization_method <- "bobyqa"
+# optimization_method <- "DEoptimR"
 # alpha_form <- "pairwise"
 # lambda_cov_form <- "none"
 # alpha_cov_form <- "none"
@@ -296,7 +298,7 @@ cxr_pm_fit <- function(data,
                                      upper = init_par$upper_bounds,
                                      control = list(), 
                                      hessian = F,
-                                     fitness = data$fitness, 
+                                     fitness = log(data$fitness), 
                                      neigh_matrix = neigh_matrix,
                                      covariates = covariates, 
                                      fixed_parameters = fixed_parameters)
@@ -308,7 +310,7 @@ cxr_pm_fit <- function(data,
                                      opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e4),
                                      lb = init_par$lower_bounds,
                                      ub = init_par$upper_bounds,
-                                     fitness = data$fitness, 
+                                     fitness = log(data$fitness), 
                                      neigh_matrix = neigh_matrix,
                                      covariates = covariates, 
                                      fixed_parameters = fixed_parameters)
@@ -320,7 +322,7 @@ cxr_pm_fit <- function(data,
                                      opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e4),
                                      lb = init_par$lower_bounds,
                                      ub = init_par$upper_bounds,
-                                     fitness = data$fitness, 
+                                     fitness = log(data$fitness), 
                                      neigh_matrix = neigh_matrix,
                                      covariates = covariates, 
                                      fixed_parameters = fixed_parameters)
@@ -332,7 +334,7 @@ cxr_pm_fit <- function(data,
                                      opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e4),
                                      lb = init_par$lower_bounds,
                                      ub = init_par$upper_bounds,
-                                     fitness = data$fitness, 
+                                     fitness = log(data$fitness), 
                                      neigh_matrix = neigh_matrix,
                                      covariates = covariates, 
                                      fixed_parameters = fixed_parameters)
@@ -344,7 +346,7 @@ cxr_pm_fit <- function(data,
                                    lower = init_par$lower_bounds,
                                    upper = init_par$upper_bounds, 
                                    control = list(maxit = 1e3), 
-                                   fitness = data$fitness, 
+                                   fitness = log(data$fitness), 
                                    neigh_matrix = neigh_matrix,
                                    covariates = covariates, 
                                    fixed_parameters = fixed_parameters)
@@ -358,10 +360,11 @@ cxr_pm_fit <- function(data,
                                          lower = init_par$lower_bounds,
                                          upper = init_par$upper_bounds, 
                                          control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
-                                         fitness = data$fitness, 
+                                         fitness = log(data$fitness), 
                                          neigh_matrix = neigh_matrix,
                                          covariates = covariates, 
                                          fixed_parameters = fixed_parameters)
+
     }, error=function(e){cat("pm_optim ERROR :",conditionMessage(e), "\n")})
     
   }else if(optimization_method == "DEoptimR"){
@@ -389,7 +392,7 @@ cxr_pm_fit <- function(data,
                                         alpha_cov_length = length(init_alpha_cov))
     llik <- NA_real_
   }else{
-    if(optim.method %in% c("BFGS", "CG", "Nelder-Mead", "L-BFGS-B", "nlm", 
+    if(optimization_method %in% c("BFGS", "CG", "Nelder-Mead", "L-BFGS-B", "nlm", 
                            "nlminb", "Rcgmin", "Rvmmin", "spg", "ucminf", 
                            "bobyqa", "nmkb", "hjkb")){
       par.pos <- which(!names(optim_result) %in% c("value","fevals","gevals","niter","convcode","kkt1","kkt2","xtime"))
@@ -397,13 +400,13 @@ cxr_pm_fit <- function(data,
       outpar <- as.numeric(optim_result[,par.pos])
       names(outpar) <- outnames
       llik <- optim_result$value
-    }else if(optim.method %in% c("DEoptimR","hydroPSO","GenSA")){
+    }else if(optimization_method %in% c("DEoptimR","hydroPSO","GenSA")){
       outpar <- optim_result$par
-      names(outpar)
+      names(outpar) <- names(init_par$init_par)
       log.likelihood <- optim_result$value
     }else{
       outpar <- optim_result$solution
-      names(outpar)
+      names(outpar) <- names(init_par$init_par)
       log.likelihood <- optim_result$objective
     }# if-else method
     
@@ -417,19 +420,23 @@ cxr_pm_fit <- function(data,
   
   # calculate errors --------------------------------------------------------
   
+  # TEST
+  # lower_bounds <- init_par$lower_bounds
+  # upper_bounds <- init_par$upper_bounds
+  # init_par <- init_par$init_par
+  
   if(bootstrap_samples > 0){
-    # TODO check when updated
+
     errors <- cxr_pm_bootstrap(fitness_model = fitness_model,
                                optimization_method = optimization_method,
-                               param.list = param.list,
-                               fixed.terms = fixed.terms,
-                               log.fitness = log.fitness,
+                               data = data,
+                               covariates = covariates,
                                init_par = init_par$init_par,
                                lower_bounds = init_par$lower_bounds,
                                upper_bounds = init_par$upper_bounds,
-                               focal.comp.matrix = focal.comp.matrix,
-                               focal.covariates = focal.covariates,
-                               nsamples = bootstrap.samples)
+                               fixed_parameters = fixed_parameters,
+                               bootstrap_samples = bootstrap_samples)
+    
     error_params <- cxr_retrieve_params(optim_params = errors,
                                         lambda_length = length(init_lambda),
                                         alpha_length = length(init_alpha),
@@ -504,14 +511,17 @@ cxr_pm_fit <- function(data,
 }
 
 
+# summary method ----------------------------------------------------------
+
 summary.cxr_pm_fit <- function(x){
   cat("model '",x$model_name,"' fitted with ",nrow(x$data)," observations, ",length(names(x$data[which(!names(x$data) == "fitness")])), 
       " neighbour sp., and ",ifelse(is.null(x$covariates),0,ncol(x$covariates))," covariates",
-      "\nfocal lambda:",x$lambda,
-      "\nmean alpha:",ifelse(is.null(x$alpha)," - not fit - ",mean(x$alpha)),
-      "\nmean lambda_cov:",ifelse(is.null(x$lambda_cov)," - not fit - ",mean(x$lambda_cov)),
-      "\nmean alpha_cov:",ifelse(is.null(x$alpha_cov)," - not fit - ",mean(x$alpha_cov)),
-      "\nlog-likelihood of the fit:",x$log_likelihood,sep="")
+      "\nusing optimization method '",x$optimization_method,"'",
+      "\n* focal lambda: ",x$lambda,
+      "\n* mean alpha: ",ifelse(is.null(x$alpha)," - not fit - ",mean(x$alpha)),
+      "\n* mean lambda_cov: ",ifelse(is.null(x$lambda_cov),"- not fit - ",mean(x$lambda_cov)),
+      "\n* mean alpha_cov: ",ifelse(is.null(x$alpha_cov),"- not fit - ",mean(x$alpha_cov)),
+      "\n* log-likelihood of the fit: ",x$log_likelihood,sep="")
   
 }
 

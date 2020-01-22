@@ -41,20 +41,19 @@
 # 5 - adding your model to cxr
 # document your model, file a pull_request etc
 
-#' Beverton-Holt model with pairwise alphas and no covariate effects
+#' Beverton-Holt model with no alphas and no covariate effects
 #'
-#' @param par 1d vector of initial parameters: lambda, alpha, and sigma
+#' @param par 1d vector of initial parameters: lambda and sigma
 #' @param fitness 1d vector of fitness observations, in log scale
-#' @param neigh_matrix matrix with number of neighbours (each neighbour a column) for each observation (in rows)
+#' @param neigh_matrix included for compatibility, not used in this model
 #' @param covariates included for compatibility, not used in this model
-#' @param fixed_parameters optional list specifying values of fixed parameters, 
-#' with components "lambda","alpha".
+#' @param fixed_parameters included for compatibility, not used in this model
 #'
 #' @return log-likelihood value
 #' @export
 #'
 #' @examples
-pm_BH_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
+pm_BH_alpha_none_lambdacov_none_alphacov_none <- function(par,
                                                               fitness,
                                                               neigh_matrix,
                                                               covariates,
@@ -86,12 +85,12 @@ pm_BH_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
   #   lambda_cov <- fixed_parameters[["lambda_cov"]]
   # }
   
-  if(is.null(fixed_parameters$alpha)){
-    alpha <- par[pos:(pos+ncol(neigh_matrix)-1)]
-    pos <- pos + ncol(neigh_matrix)
-  }else{
-    alpha <- fixed_parameters[["alpha"]]
-  }
+  # if(is.null(fixed_parameters$alpha)){
+  #   alpha <- par[pos:(pos+ncol(neigh_matrix)-1)]
+  #   pos <- pos + ncol(neigh_matrix)
+  # }else{
+  #   alpha <- fixed_parameters[["alpha"]]
+  # }
   
   # if(is.null(fixed_parameters$alpha_cov)){
   #   alpha.cov <- par[pos:(pos+(ncol(covariates)*ncol(neigh_matrix))-1)]
@@ -107,11 +106,7 @@ pm_BH_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
   
   # MODEL CODE HERE ---------------------------------------------------------
   
-  term = 1 #create the denominator term for the model
-  for(z in 1:ncol(neigh_matrix)){
-    term <- term + alpha[z]*neigh_matrix[,z] 
-  }
-  pred <- lambda/ term
+  pred <- rep(lambda, times=length(fitness)) 
   
   # MODEL CODE ENDS HERE ----------------------------------------------------
   

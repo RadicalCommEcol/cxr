@@ -41,7 +41,7 @@
 # 5 - adding your model to cxr
 # document your model, file a pull_request etc
 
-#' Beverton-Holt model with pairwise alphas and no covariate effects
+#' Beverton-Holt model with a global alpha and no covariate effects
 #'
 #' @param par 1d vector of initial parameters: lambda, alpha, and sigma
 #' @param fitness 1d vector of fitness observations, in log scale
@@ -54,7 +54,7 @@
 #' @export
 #'
 #' @examples
-pm_BH_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
+pm_BH_alpha_global_lambdacov_none_alphacov_none <- function(par,
                                                               fitness,
                                                               neigh_matrix,
                                                               covariates,
@@ -87,8 +87,8 @@ pm_BH_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
   # }
   
   if(is.null(fixed_parameters$alpha)){
-    alpha <- par[pos:(pos+ncol(neigh_matrix)-1)]
-    pos <- pos + ncol(neigh_matrix)
+    alpha <- par[pos]
+    pos <- pos + 1
   }else{
     alpha <- fixed_parameters[["alpha"]]
   }
@@ -107,11 +107,8 @@ pm_BH_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
   
   # MODEL CODE HERE ---------------------------------------------------------
   
-  term = 1 #create the denominator term for the model
-  for(z in 1:ncol(neigh_matrix)){
-    term <- term + alpha[z]*neigh_matrix[,z] 
-  }
-  pred <- lambda/ term
+  background <- rowSums(neigh_matrix)
+  pred <- lambda/(1+alpha*(background))  
   
   # MODEL CODE ENDS HERE ----------------------------------------------------
   
