@@ -7,6 +7,7 @@ source("R/cxr_return_init_length.R")
 source("R/cxr_init_params.R")
 source("R/cxr_retrieve_params.R")
 source("R/pm_BH_alpha_pairwise_lambdacov_none_alphacov_none.R")
+source("R/pm_BH_alpha_pairwise_lambdacov_global_alphacov_global.R")
 source("R/cxr_pm_bootstrap.R")
 source("R/cxr_pm_fit.R")
 
@@ -29,8 +30,9 @@ upper_bounds <- list(lambda = 10,alpha = 1,lambda_cov = 1, alpha_cov = 1)
 
 # covariates: rows are observations, columns are different covariates
 # either matrix or dataframe, will be transformed to matrix in the function
-cov <- data.frame(c1 = rnorm(nrow(mindata),0,1))
-covariates <- list(c1 = cov, c2 = cov)
+c1 <- data.frame(c1 = rnorm(nrow(mindata),1,.1))
+c2 <- data.frame(c2 = rnorm(nrow(mind2),1,.1))
+covariates <- list(c1 = c1, c2 = c2)
 
 model_family <- "BH"
 optimization_method <- "bobyqa"
@@ -111,12 +113,12 @@ for(i.sp in 1:length(spnames)){
   # lambda_cov
   if(!is.null(spfits[[i.sp]]$lambda_cov)){
     mylambda_cov <- spfits[[i.sp]]$lambda_cov
-    names(mylambda_cov) <- paste(spnames[i.sp],"_",names(spfits[[i.sp]]$lambda_cov))
+    names(mylambda_cov) <- paste(spnames[i.sp],"_",names(spfits[[i.sp]]$lambda_cov),sep="")
     splambda_cov <- c(splambda_cov,mylambda_cov)
   }
   if(!is.null(spfits[[i.sp]]$alpha_cov)){
     myalpha_cov <- spfits[[i.sp]]$alpha_cov
-    names(myalpha_cov) <- paste(spnames[i.sp],"_",names(spfits[[i.sp]]$alpha_cov))
+    names(myalpha_cov) <- paste(spnames[i.sp],"_",names(spfits[[i.sp]]$alpha_cov),sep="")
     spalpha_cov <- c(spalpha_cov,myalpha_cov)
   }
   
@@ -137,12 +139,12 @@ for(i.sp in 1:length(spnames)){
   # lambda_cov
   if(!is.null(spfits[[i.sp]]$lambda_cov_standard_error)){
     erlambda_cov <- spfits[[i.sp]]$lambda_cov_standard_error
-    names(erlambda_cov) <- paste(spnames[i.sp],"_",names(spfits[[i.sp]]$lambda_cov_standard_error))
+    names(erlambda_cov) <- paste(spnames[i.sp],"_",names(spfits[[i.sp]]$lambda_cov_standard_error),sep="")
     er_splambda_cov <- c(er_splambda_cov,erlambda_cov)
   }
   if(!is.null(spfits[[i.sp]]$alpha_cov_standard_error)){
     eralpha_cov <- spfits[[i.sp]]$alpha_cov_standard_error
-    names(eralpha_cov) <- paste(spnames[i.sp],"_",names(spfits[[i.sp]]$alpha_cov_standard_error))
+    names(eralpha_cov) <- paste(spnames[i.sp],"_",names(spfits[[i.sp]]$alpha_cov_standard_error),sep="")
     er_spalpha_cov <- c(er_spalpha_cov,eralpha_cov)
   }
   
