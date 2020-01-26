@@ -187,7 +187,7 @@ cxr_pm_bootstrap <- function(fitness_model,
       }
     }
     
-  }  
+  }# for i.sample  
   
   bootres <- bootres[which(!is.na(rowSums(bootres))),]
   if(nrow(bootres)>2){
@@ -195,7 +195,12 @@ cxr_pm_bootstrap <- function(fitness_model,
   }else{
     boot.se <- bootres[1,]
   }
+  
+  if(!is.null(names(init_par))){
+    names(boot.se) <- paste(names(init_par),"_se",sep="")
+  }
   boot.se
+
 }
 
 

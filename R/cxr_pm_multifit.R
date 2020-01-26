@@ -21,7 +21,6 @@ mind2 <- subset(competition.data,focal == "HOMA")
 mind2$fitness <- log(mind2$seed)
 mind2 <- mind2[,c("fitness",focal.sp)]
 
-
 data <- list(s1 = mindata,s2 = mind2)
 
 initial_values <- list(lambda = 1,alpha = 0.1,lambda_cov = 0.1, alpha_cov = 0.1)
@@ -127,7 +126,11 @@ for(i.sp in 1:length(spnames)){
   # lambda
   if(!is.null(spfits[[i.sp]]$lambda_standard_error)){
     erlambda <- spfits[[i.sp]]$lambda_standard_error
-    names(erlambda) <- spnames[i.sp]
+    if(!is.null(names(erlambda))){
+      names(erlambda) <- paste(spnames[i.sp],"_",names(erlambda),sep="")
+    }else{
+      names(erlambda) <- paste(spnames[i.sp],"_lambda_se",sep="")
+    }
     er_splambda <- c(er_splambda,erlambda)
   }
   # alpha
