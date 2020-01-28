@@ -72,7 +72,7 @@ pm_BH_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
   
   # if a parameter is passed within the "par" vector,
   # it should be NULL in the "fixed_parameters" list
-  if(is.null(fixed_parameters$lambda)){
+  if(is.null(fixed_parameters[["lambda"]])){
     lambda <- par[pos]
     pos <- pos + 1
   }else{
@@ -86,7 +86,7 @@ pm_BH_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
   #   lambda_cov <- fixed_parameters[["lambda_cov"]]
   # }
   
-  if(is.null(fixed_parameters$alpha)){
+  if(is.null(fixed_parameters[["alpha"]])){
     alpha <- par[pos:(pos+ncol(neigh_matrix)-1)]
     pos <- pos + ncol(neigh_matrix)
   }else{

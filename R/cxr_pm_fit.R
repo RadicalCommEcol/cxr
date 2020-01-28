@@ -48,7 +48,8 @@ cxr_pm_fit <- function(data,
   
   # TODO add cxr:: to the internal functions once they are added
   
-  # match arguments ---------------------------------------------------------
+  # argument checks ---------------------------------------------------------
+  
   optimization_method <- match.arg(optimization_method)
   alpha_form <- match.arg(alpha_form)
   lambda_cov_form <- match.arg(lambda_cov_form)
@@ -72,6 +73,16 @@ cxr_pm_fit <- function(data,
   if (optimization_method == "DEoptimR" & !requireNamespace("DEoptimR", quietly = TRUE)) {
     stop("cxr_pm_fit ERROR: Package \"DEoptimR\" needed for the method selected to work.",
          call. = FALSE)
+  }
+  
+  # check input data
+  data.ok <- cxr_check_input_data(data,covariates)
+  if(!data.ok){
+    stop("cxr_pm_fit ERROR: check the consistency of your input data: 
+    1) No NAs; 
+    2) first column in 'data' is named 'fitness'; 
+    3) abundances of at least one neighbour species in 'data';
+    4) data and covariates (if present) have the same number of observations")
   }
   
   # check covariates if alpha_cov or lambda_cov are to be fit
@@ -99,12 +110,13 @@ cxr_pm_fit <- function(data,
   # neighbour species?
   neigh <- colnames(neigh_matrix)
   
-  # how many covariates?
-  name_covariates <- ifelse(is.null(covariates),
-                            0,
-                            ifelse(is.null(colnames(covariates)),
-                                   paste("c",1:ncol(covariates),sep=""),
-                                   colnames(covariates)))
+  # are covariates named?
+  if(!is.null(covariates)){
+    if(is.null(names(covariates))){
+      names(covariates) <- paste("cov",1:ncol(covariates),sep="")
+    }
+  }
+
   # initial parameters
   # check wheter each model parameter is to be fitted or is fixed
   # note how initial_values also function as values 
@@ -211,7 +223,7 @@ cxr_pm_fit <- function(data,
   
   if(!is.null(lower_bounds$alpha_cov) &
      !is.null(upper_bounds$alpha_cov) &
-     !"alpha" %in% fixed_terms){
+     !"alpha_cov" %in% fixed_terms){
     lower_alpha_cov <- lower_bounds$alpha_cov
     upper_alpha_cov <- upper_bounds$alpha_cov
   }
@@ -478,7 +490,7 @@ summary.cxr_pm_fit <- function(x){
   cat("model '",x$model_name,"' fitted with ",nrow(x$data)," observations, ",length(names(x$data[which(!names(x$data) == "fitness")])), 
       " neighbour sp., and ",ifelse(is.null(x$covariates),0,ncol(x$covariates))," covariates",
       "\nusing optimization method '",x$optimization_method,"'",
-      "\n* focal lambda: ",x$lambda,
+      "\n* focal lambda: ",ifelse(is.null(x$lambda)," - not fit - ",x$lambda),
       "\n* mean alpha: ",ifelse(is.null(x$alpha)," - not fit - ",mean(x$alpha)),
       "\n* mean lambda_cov: ",ifelse(is.null(x$lambda_cov),"- not fit - ",mean(x$lambda_cov)),
       "\n* mean alpha_cov: ",ifelse(is.null(x$alpha_cov),"- not fit - ",mean(x$alpha_cov)),

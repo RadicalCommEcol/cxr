@@ -10,6 +10,7 @@ source("R/pm_BH_alpha_pairwise_lambdacov_none_alphacov_none.R")
 source("R/pm_BH_alpha_pairwise_lambdacov_global_alphacov_global.R")
 source("R/cxr_pm_bootstrap.R")
 source("R/cxr_pm_fit.R")
+source("R/cxr_check_input_data.R")
 
 # spread the data from long to wide format
 competition.data <- tidyr::spread(competition,competitor,number,fill = 0)
@@ -74,7 +75,8 @@ for(i.sp in 1:length(data)){
                                lower_bounds = lower_bounds,
                                upper_bounds = upper_bounds,
                                fixed_terms = fixed_terms,
-                               bootstrap_samples = bootstrap_samples)
+                               bootstrap_samples = bootstrap_samples
+                               )
 }
 
 # output ------------------------------------------------------------------
