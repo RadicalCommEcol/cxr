@@ -16,10 +16,10 @@ competition.data <- tidyr::spread(competition,competitor,number,fill = 0)
 focal.sp <- unique(competition$focal)
 mindata <- subset(competition.data,focal == "LEMA")
 mindata$fitness <- log(mindata$seed)
-mindata <- mindata[,c("fitness",focal.sp)]
+mindata <- mindata[,c("fitness",as.character(focal.sp))] #changes as.character,
 mind2 <- subset(competition.data,focal == "HOMA")
 mind2$fitness <- log(mind2$seed)
-mind2 <- mind2[,c("fitness",focal.sp)]
+mind2 <- mind2[,c("fitness", as.character(focal.sp))] #idem
 
 data <- list(s1 = mindata,s2 = mind2)
 
