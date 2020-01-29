@@ -1,4 +1,10 @@
 
+source("R/cxr_check_input_er.R")
+source("R/cxr_init_er_params.R")
+source("R/cxr_retrieve_er_params.R")
+source("R/cxr_return_init_length.R")
+source('R/er_BH_lambdacov_none_effectcov_none_responsecov_none.R')
+
 spdata <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)))
 spdata2 <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)))
 
@@ -246,7 +252,7 @@ cxr_er_fit <- function(data,
     if("lambda_cov" %in% fixed_terms){
       fixed_parameters[["lambda_cov"]] <- cxr_return_init_length(lambda_cov_form,initial_values$lambda_cov,names(covdf))
     }else{
-      init_lambda_cov <- cxr_return_init_length(lambda_cov_form,initial_values$lambda_cov,names(covariates))
+      init_lambda_cov <- cxr_return_init_length(lambda_cov_form,initial_values$lambda_cov,num.sp*names(covdf))
       names(init_lambda_cov) <- paste("lambda_cov_",names(covariates),sep="")
     }
   }
@@ -255,7 +261,7 @@ cxr_er_fit <- function(data,
     if("effect_cov" %in% fixed_terms){
       fixed_parameters[["effect_cov"]] <- cxr_return_init_length(effect_cov_form,initial_values$effect_cov,names(covdf))
     }else{
-      init_effect_cov <- cxr_return_init_length(effect_cov_form,initial_values$effect_cov,names(covariates))
+      init_effect_cov <- cxr_return_init_length(effect_cov_form,initial_values$effect_cov,names(covdf))
       names(init_effect_cov) <- paste("effect_cov_",names(covariates),sep="")
     }
   }
@@ -541,7 +547,7 @@ cxr_er_fit <- function(data,
     #                            fixed_parameters = fixed_parameters,
     #                            bootstrap_samples = bootstrap_samples)
     
-    error_params <- cxr_retrieve_params(optim_params = errors,
+    error_params <- cxr_retrieve_er_params(optim_params = errors,
                                         lambda_length = length(init_lambda),
                                         alpha_length = length(init_alpha),
                                         lambda_cov_length = length(init_lambda_cov),
