@@ -4,27 +4,32 @@ source("R/cxr_init_er_params.R")
 source("R/cxr_retrieve_er_params.R")
 source("R/cxr_return_init_length.R")
 source('R/er_BH_lambdacov_none_effectcov_none_responsecov_none.R')
+source('R/er_BH_lambdacov_global_effectcov_global_responsecov_global.R')
 source('R/cxr_er_bootstrap.R')
 
-spdata <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)))
-spdata2 <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)))
+spdata <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)), f3 = round(runif(10,1,5)))
+spdata2 <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)), f3 = round(runif(10,1,5)))
+spdata3 <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)), f3 = round(runif(10,1,5)))
 
 spdata$focal <- "f1"
 spdata2$focal <- "f2"
+spdata3$focal <- "f3"
 
-splist <- list(f1 = spdata,f2 = spdata2)
-spdf <- rbind(spdata,spdata2)
+splist <- list(f1 = spdata,f2 = spdata2)#,f3 = spdata3)
+spdf <- rbind(spdata,spdata2)#,spdata3)
 
-c1 <- data.frame(c1 = rnorm(10,1,.1))
-# c2 <- data.frame(c2 = rnorm(10,1,.1))
-clist <- list(f1 = c1, f2 = c1*2)
-cdf <- rbind(c1,c1*2)
+# c1 <- data.frame(c1 = rnorm(10,1,.1))
+# # c2 <- data.frame(c2 = rnorm(10,1,.1))
+# clist <- list(f1 = c1, f2 = c1*2)
+# cdf <- rbind(c1,c1*2)
+cdf <- data.frame(c1 = rnorm(nrow(spdf),1,.1),c2 = rnorm(nrow(spdf),2,.2))
+clist <- list(f1 = data.frame(c1 = rnorm(nrow(spdata),1,.1)),f2 = data.frame(c1 = rnorm(nrow(spdata),2,.2)))
 
 optimization_method <- "bobyqa"
 model_family <- "BH"
-data <- spdf
-covariates <- NULL
-lambda_cov_form <- effect_cov_form <- response_cov_form <- "none"
+data <- splist#spdf
+covariates <- clist#cdf
+lambda_cov_form <- effect_cov_form <- response_cov_form <- "global"
 initial_values = list(lambda = 1, 
                       effect = 0.1, 
                       response = 0.1, 
@@ -76,6 +81,8 @@ cxr_er_fit <- function(data,
                        # errors
                        bootstrap_samples = 0
 ){
+  
+  message("cxr_er_fit: note that computation time grows exponentially with number of species and covariates")
   
   # TODO add cxr:: to the internal functions once they are added
   
@@ -257,31 +264,47 @@ cxr_er_fit <- function(data,
   # return_init_length is an auxiliary function
   # in case initial values are not of the same length of the expected parameters
 
-  # TODO appropriate length is num.sp * num.cov
   if(lambda_cov_form != "none" & !is.null(covdf)){
+    
+    lc_names <- as.vector(t(outer("lambda_cov", sp.list, paste, sep="_"))) 
+    lc_names <- as.vector(t(outer(lc_names, names(covdf), paste, sep="_"))) 
+
     if("lambda_cov" %in% fixed_terms){
-      fixed_parameters[["lambda_cov"]] <- cxr_return_init_length(lambda_cov_form,initial_values$lambda_cov,names(covdf))
+      fixed_parameters[["lambda_cov"]] <- cxr_return_init_length(lambda_cov_form,
+                                                                 initial_values$lambda_cov,
+                                                                 lc_names,"er")
     }else{
-      init_lambda_cov <- cxr_return_init_length(lambda_cov_form,initial_values$lambda_cov,num.sp*names(covdf))
-      names(init_lambda_cov) <- paste("lambda_cov_",names(covariates),sep="")
+      init_lambda_cov <- cxr_return_init_length(lambda_cov_form,
+                                                initial_values$lambda_cov,
+                                                lc_names,"er")
     }
   }
 
   if(effect_cov_form != "none" & !is.null(covdf)){
+    ec_names <- as.vector(t(outer("effect_cov", sp.list, paste, sep="_"))) 
+    ec_names <- as.vector(t(outer(ec_names, names(covdf), paste, sep="_"))) 
     if("effect_cov" %in% fixed_terms){
-      fixed_parameters[["effect_cov"]] <- cxr_return_init_length(effect_cov_form,initial_values$effect_cov,names(covdf))
+      fixed_parameters[["effect_cov"]] <- cxr_return_init_length(effect_cov_form,
+                                                                 initial_values$effect_cov,
+                                                                 ec_names,"er")
     }else{
-      init_effect_cov <- cxr_return_init_length(effect_cov_form,initial_values$effect_cov,names(covdf))
-      names(init_effect_cov) <- paste("effect_cov_",names(covariates),sep="")
+      init_effect_cov <- cxr_return_init_length(effect_cov_form,
+                                                initial_values$effect_cov,
+                                                ec_names,"er")
     }
   }
   
   if(response_cov_form != "none" & !is.null(covdf)){
+    rc_names <- as.vector(t(outer("response_cov", sp.list, paste, sep="_"))) 
+    rc_names <- as.vector(t(outer(rc_names, names(covdf), paste, sep="_"))) 
     if("response_cov" %in% fixed_terms){
-      fixed_parameters[["response_cov"]] <- cxr_return_init_length(response_cov_form,initial_values$response_cov,names(covdf))
+      fixed_parameters[["response_cov"]] <- cxr_return_init_length(response_cov_form,
+                                                                   initial_values$response_cov,
+                                                                   rc_names,"er")
     }else{
-      init_response_cov <- cxr_return_init_length(response_cov_form,initial_values$response_cov,names(covariates))
-      names(init_response_cov) <- paste("response_cov_",names(covariates),sep="")
+      init_response_cov <- cxr_return_init_length(response_cov_form,
+                                                  initial_values$response_cov,
+                                                  rc_names,"er")
     }
   }
   
@@ -354,7 +377,8 @@ cxr_er_fit <- function(data,
   
   # sort parameters for optim routine ---------------------------------------
   
-  # TODO cxr_init_er_params
+  # TODO beware in previous versions order was lambda-e-r-lcov-ecov-rcov
+  # it is apparently all good now, but it may pop up somewhere?
   
   init_par <- cxr_init_er_params(init_lambda = init_lambda,
                                  init_sigma = init_sigma,
@@ -554,8 +578,8 @@ cxr_er_fit <- function(data,
 
     errors <- cxr_er_bootstrap(fitness_model = fitness_model,
                                optimization_method = optimization_method,
-                               data = data,
-                               covariates = covariates,
+                               data = spdf,
+                               covariates = covdf,
                                init_par = init_par$init_par,
                                lower_bounds = init_par$lower_bounds,
                                upper_bounds = init_par$upper_bounds,
@@ -638,22 +662,22 @@ cxr_er_fit <- function(data,
     fit$response_cov <- optim_params$response_cov
   }
   if(!is.null(error_params$lambda)){
-    fit$lambda <- error_params$lambda
+    fit$lambda_standard_error <- error_params$lambda
   }
   if(!is.null(error_params$effect)){
-    fit$effect <- error_params$effect
+    fit$effect_standard_error <- error_params$effect
   }
   if(!is.null(error_params$response)){
-    fit$response <- error_params$response
+    fit$response_standard_error <- error_params$response
   }
   if(!is.null(error_params$lambda_cov)){
-    fit$lambda_cov <- error_params$lambda_cov
+    fit$lambda_cov_standard_error <- error_params$lambda_cov
   }
   if(!is.null(error_params$effect_cov)){
-    fit$effect_cov <- error_params$effect_cov
+    fit$effect_cov_standard_error <- error_params$effect_cov
   }
   if(!is.null(error_params$response_cov)){
-    fit$response_cov <- error_params$response_cov
+    fit$response_cov_standard_error <- error_params$response_cov
   }
   
   fit$log_likelihood <- llik

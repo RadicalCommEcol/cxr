@@ -1,4 +1,4 @@
-er_BH_lambdacov_none_effectcov_none_responsecov_none <- function(par,
+er_BH_lambdacov_global_effectcov_global_responsecov_global <- function(par,
                                                                  fitness,
                                                                  target,
                                                                  density,
@@ -24,12 +24,16 @@ er_BH_lambdacov_none_effectcov_none_responsecov_none <- function(par,
     lambda <- fixed_parameters[["lambda"]]
   }
   
-  # if(is.null(fixed_parameters$lambda_cov)){
-  #   lambda_cov <- par[pos:(pos+ncol(covariates)-1)]
-  #   pos <- pos + ncol(covariates)
-  # }else{
-  #   lambda_cov <- fixed_parameters[["lambda_cov"]]
-  # }
+  # the covariate effects are more efficient in a matrix form
+  # with species in rows (hence byrow = T, because by default
+  # the vector is sorted first by covariates)
+  
+  if(is.null(fixed_parameters$lambda_cov)){
+    lambda_cov <- matrix(par[pos:(pos+(ncol(covariates)*num.sp)-1)],nrow = num.sp,byrow = TRUE)
+    pos <- pos + ncol(covariates)*num.sp
+  }else{
+    lambda_cov <- fixed_parameters[["lambda_cov"]]
+  }
   
   if(is.null(fixed_parameters[["effect"]])){
     effect <- par[pos:(pos + num.sp - 1)]
@@ -38,12 +42,12 @@ er_BH_lambdacov_none_effectcov_none_responsecov_none <- function(par,
     effect <- fixed_parameters[["effect"]]
   }
   
-  # if(is.null(fixed_parameters[["effect_cov"]])){
-  #   effect_cov <- par[pos]
-  #   pos <- pos + num.sp - 1
-  # }else{
-  #   effect_cov <- fixed_parameters[["effect_cov"]]
-  # }
+  if(is.null(fixed_parameters$effect_cov)){
+    effect_cov <- matrix(par[pos:(pos+(ncol(covariates)*num.sp)-1)],nrow = num.sp,byrow = TRUE)
+    pos <- pos + ncol(covariates)*num.sp
+  }else{
+    effect_cov <- fixed_parameters[["effect_cov"]]
+  }
   
   if(is.null(fixed_parameters[["response"]])){
     response <- par[pos:(pos + num.sp - 1)]
@@ -52,12 +56,12 @@ er_BH_lambdacov_none_effectcov_none_responsecov_none <- function(par,
     response <- fixed_parameters[["response"]]
   }
   
-  # if(is.null(fixed_parameters[["response_cov"]])){
-  #   response_cov <- par[pos]
-  #   pos <- pos + num.sp - 1
-  # }else{
-  #   response_cov <- fixed_parameters[["response_cov"]]
-  # }
+  if(is.null(fixed_parameters[["response_cov"]])){
+    response_cov <- matrix(par[pos:(pos+(ncol(covariates)*num.sp)-1)],nrow = num.sp,byrow = TRUE)
+    pos <- pos + ncol(covariates)*num.sp
+  }else{
+    response_cov <- fixed_parameters[["response_cov"]]
+  }
   
   sigma <- par[length(par)]
   
@@ -66,9 +70,21 @@ er_BH_lambdacov_none_effectcov_none_responsecov_none <- function(par,
   
   # MODEL CODE HERE ---------------------------------------------------------
   
-  lambda.part <- colSums(lambda*target)
-  r.part <- colSums(response*target)
-  e.part <- colSums(effect*density)
+  lambda_cov_all <- matrix(0,nrow = num.sp,ncol = length(fitness))
+  response_cov_all <- matrix(0,nrow = num.sp,ncol = length(fitness))
+  effect_cov_all <- matrix(0,nrow = num.sp,ncol = length(fitness))
+  for(i.sp in 1:num.sp){
+    for(i.obs in 1:length(fitness)){
+      lambda_cov_all[i.sp,i.obs] <- sum(lambda_cov[i.sp,]*covariates[i.obs,])
+      response_cov_all[i.sp,i.obs] <- sum(response_cov[i.sp,]*covariates[i.obs,])
+      effect_cov_all[i.sp,i.obs] <- sum(effect_cov[i.sp,]*covariates[i.obs,])
+      
+    }# for i_cov
+  }# for i.sp
+  
+  lambda.part <- colSums(lambda*(1+lambda_cov_all)*target)
+  r.part <- colSums(response*(1+response_cov_all)*target)
+  e.part <- colSums(effect*(1+effect_cov_all)*density)
   
   pred <- lambda.part/ (1+ e.part*r.part )
   
