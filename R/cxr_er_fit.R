@@ -4,6 +4,7 @@ source("R/cxr_init_er_params.R")
 source("R/cxr_retrieve_er_params.R")
 source("R/cxr_return_init_length.R")
 source('R/er_BH_lambdacov_none_effectcov_none_responsecov_none.R')
+source('R/cxr_er_bootstrap.R')
 
 spdata <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)))
 spdata2 <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)))
@@ -45,7 +46,7 @@ upper_bounds <- list(lambda = 10,
                      effect_cov = 1, 
                      response_cov = 1,
                      sigma = 1)
-bootstrap_samples <- 0
+bootstrap_samples <- 3
 fixed_terms <- NULL
 
 
@@ -162,9 +163,6 @@ cxr_er_fit <- function(data,
   # num.sp x num.observations. density of each species in each observation
   density_all <- NULL
   
-  # fitness metric of the focal sp at each observation
-  # log.fitness <- log(spdf$fitness)
-  
   # species names and number
   sp.list <- as.character(unique(spdf$focal))
   num.sp <- length(sp.list)
@@ -205,7 +203,11 @@ cxr_er_fit <- function(data,
   init_response_cov <- NULL
   
   if("lambda" %in% fixed_terms){
-    fixed_parameters[["lambda"]] <- initial_values$lambda
+    if(length(initial_values$lambda) == 1){
+      fixed_parameters[["lambda"]] <- rep(initial_values$lambda,num.sp)
+    }else{
+      fixed_parameters[["lambda"]] <- initial_values$lambda
+    }
   }else{
     if(length(initial_values$lambda) == 1){
       init_lambda <- rep(initial_values$lambda,num.sp)
@@ -223,7 +225,11 @@ cxr_er_fit <- function(data,
   names(init_sigma) <- "sigma"
   
   if("effect" %in% fixed_terms){
-    fixed_parameters[["effect"]] <- initial_values$effect
+    if(length(initial_values$effect) == 1){
+      fixed_parameters[["effect"]] <- rep(initial_values$effect,num.sp)
+    }else{
+      fixed_parameters[["effect"]] <- initial_values$effect
+    }
   }else{
     if(length(initial_values$effect) == 1){
       init_effect <- rep(initial_values$effect,num.sp)
@@ -234,7 +240,11 @@ cxr_er_fit <- function(data,
   }
   
   if("response" %in% fixed_terms){
-    fixed_parameters[["response"]] <- initial_values$response
+    if(length(initial_values$response) == 1){
+      fixed_parameters[["response"]] <- rep(initial_values$response,num.sp)
+    }else{
+      fixed_parameters[["response"]] <- initial_values$response
+    }
   }else{
     if(length(initial_values$response) == 1){
       init_response <- rep(initial_values$response,num.sp)
@@ -534,24 +544,31 @@ cxr_er_fit <- function(data,
   # calculate errors --------------------------------------------------------
   
   # TODO: well...
-
+  # TEST
+  # lower_bounds <- init_par$lower_bounds
+  # upper_bounds <- init_par$upper_bounds
+  # init_par <- init_par$init_par
+  # covariates <- covdf
+  
   if(bootstrap_samples > 0){
 
-    # errors <- cxr_pm_bootstrap(fitness_model = fitness_model,
-    #                            optimization_method = optimization_method,
-    #                            data = data,
-    #                            covariates = covariates,
-    #                            init_par = init_par$init_par,
-    #                            lower_bounds = init_par$lower_bounds,
-    #                            upper_bounds = init_par$upper_bounds,
-    #                            fixed_parameters = fixed_parameters,
-    #                            bootstrap_samples = bootstrap_samples)
+    errors <- cxr_er_bootstrap(fitness_model = fitness_model,
+                               optimization_method = optimization_method,
+                               data = data,
+                               covariates = covariates,
+                               init_par = init_par$init_par,
+                               lower_bounds = init_par$lower_bounds,
+                               upper_bounds = init_par$upper_bounds,
+                               fixed_parameters = fixed_parameters,
+                               bootstrap_samples = bootstrap_samples)
     
     error_params <- cxr_retrieve_er_params(optim_params = errors,
-                                        lambda_length = length(init_lambda),
-                                        alpha_length = length(init_alpha),
-                                        lambda_cov_length = length(init_lambda_cov),
-                                        alpha_cov_length = length(init_alpha_cov))
+                                           lambda_length = length(init_lambda),
+                                           effect_length = length(init_effect),
+                                           response_length = length(init_response),
+                                           lambda_cov_length = length(init_lambda_cov),
+                                           effect_cov_length = length(init_effect_cov),
+                                           response_cov_length = length(init_response_cov))
   }else{
     error_params <- list(lambda = NULL,
                          effect = NULL,
