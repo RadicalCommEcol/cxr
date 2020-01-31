@@ -110,8 +110,6 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
   
   # MODEL CODE HERE ---------------------------------------------------------
   
-  
-  
   # the model should return a "pred" value
   pred <- 0# a function of lambda, alpha, lambda_cov, alpha_cov 
   
