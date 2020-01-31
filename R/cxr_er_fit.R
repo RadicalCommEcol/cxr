@@ -1,58 +1,58 @@
 
-source("R/cxr_check_input_er.R")
-source("R/cxr_init_er_params.R")
-source("R/cxr_retrieve_er_params.R")
-source("R/cxr_return_init_length.R")
-source('R/er_BH_lambdacov_none_effectcov_none_responsecov_none.R')
-source('R/er_BH_lambdacov_global_effectcov_global_responsecov_global.R')
-source('R/cxr_er_bootstrap.R')
-
-spdata <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)), f3 = round(runif(10,1,5)))
-spdata2 <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)), f3 = round(runif(10,1,5)))
-spdata3 <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)), f3 = round(runif(10,1,5)))
-
-spdata$focal <- "f1"
-spdata2$focal <- "f2"
-spdata3$focal <- "f3"
-
-splist <- list(f1 = spdata,f2 = spdata2)#,f3 = spdata3)
-spdf <- rbind(spdata,spdata2)#,spdata3)
-
-# c1 <- data.frame(c1 = rnorm(10,1,.1))
-# # c2 <- data.frame(c2 = rnorm(10,1,.1))
-# clist <- list(f1 = c1, f2 = c1*2)
-# cdf <- rbind(c1,c1*2)
-cdf <- data.frame(c1 = rnorm(nrow(spdf),1,.1),c2 = rnorm(nrow(spdf),2,.2))
-clist <- list(f1 = data.frame(c1 = rnorm(nrow(spdata),1,.1)),f2 = data.frame(c1 = rnorm(nrow(spdata),2,.2)))
-
-optimization_method <- "bobyqa"
-model_family <- "BH"
-data <- splist#spdf
-covariates <- clist#cdf
-lambda_cov_form <- effect_cov_form <- response_cov_form <- "global"
-initial_values = list(lambda = 1, 
-                      effect = 0.1, 
-                      response = 0.1, 
-                      lambda_cov = 0.1, 
-                      effect_cov = 0.1, 
-                      response_cov = 0.1,
-                      sigma = 0.1)
-lower_bounds <- list(lambda = 0, 
-                     effect = 0, 
-                     response = 0, 
-                     lambda_cov = 0, 
-                     effect_cov = 0, 
-                     response_cov = 0,
-                     sigma = 0)
-upper_bounds <- list(lambda = 10, 
-                     effect = 1, 
-                     response = 1, 
-                     lambda_cov = 1, 
-                     effect_cov = 1, 
-                     response_cov = 1,
-                     sigma = 1)
-bootstrap_samples <- 3
-fixed_terms <- NULL
+# source("R/cxr_check_input_er.R")
+# source("R/cxr_init_er_params.R")
+# source("R/cxr_retrieve_er_params.R")
+# source("R/cxr_return_init_length.R")
+# source('R/er_BH_lambdacov_none_effectcov_none_responsecov_none.R')
+# source('R/er_BH_lambdacov_global_effectcov_global_responsecov_global.R')
+# source('R/cxr_er_bootstrap.R')
+# 
+# spdata <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)), f3 = round(runif(10,1,5)))
+# spdata2 <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)), f3 = round(runif(10,1,5)))
+# spdata3 <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)), f3 = round(runif(10,1,5)))
+# 
+# spdata$focal <- "f1"
+# spdata2$focal <- "f2"
+# spdata3$focal <- "f3"
+# 
+# splist <- list(f1 = spdata,f2 = spdata2)#,f3 = spdata3)
+# spdf <- rbind(spdata,spdata2)#,spdata3)
+# 
+# # c1 <- data.frame(c1 = rnorm(10,1,.1))
+# # # c2 <- data.frame(c2 = rnorm(10,1,.1))
+# # clist <- list(f1 = c1, f2 = c1*2)
+# # cdf <- rbind(c1,c1*2)
+# cdf <- data.frame(c1 = rnorm(nrow(spdf),1,.1),c2 = rnorm(nrow(spdf),2,.2))
+# clist <- list(f1 = data.frame(c1 = rnorm(nrow(spdata),1,.1)),f2 = data.frame(c1 = rnorm(nrow(spdata),2,.2)))
+# 
+# optimization_method <- "bobyqa"
+# model_family <- "BH"
+# data <- splist#spdf
+# covariates <- clist#cdf
+# lambda_cov_form <- effect_cov_form <- response_cov_form <- "global"
+# initial_values = list(lambda = 1, 
+#                       effect = 0.1, 
+#                       response = 0.1, 
+#                       lambda_cov = 0.1, 
+#                       effect_cov = 0.1, 
+#                       response_cov = 0.1,
+#                       sigma = 0.1)
+# lower_bounds <- list(lambda = 0, 
+#                      effect = 0, 
+#                      response = 0, 
+#                      lambda_cov = 0, 
+#                      effect_cov = 0, 
+#                      response_cov = 0,
+#                      sigma = 0)
+# upper_bounds <- list(lambda = 10, 
+#                      effect = 1, 
+#                      response = 1, 
+#                      lambda_cov = 1, 
+#                      effect_cov = 1, 
+#                      response_cov = 1,
+#                      sigma = 1)
+# bootstrap_samples <- 3
+# fixed_terms <- "response"
 
 
 cxr_er_fit <- function(data, 
@@ -566,13 +566,6 @@ cxr_er_fit <- function(data,
   }# if not null
   
   # calculate errors --------------------------------------------------------
-  
-  # TODO: well...
-  # TEST
-  # lower_bounds <- init_par$lower_bounds
-  # upper_bounds <- init_par$upper_bounds
-  # init_par <- init_par$init_par
-  # covariates <- covdf
   
   if(bootstrap_samples > 0){
 
