@@ -118,7 +118,9 @@ pm_BH_alpha_pairwise_lambdacov_global_alphacov_global <- function(par,
   for(v in 1:ncol(covariates)){
     cov_temp <- focal.cov.matrix[,v]
     for(z in 1:ncol(neigh_matrix)){
-      cov_term_x[[z+(ncol(neigh_matrix)*(v-1))]] <- alpha.cov[z+(ncol(neigh_matrix)*(v-1))] * cov_temp  #create  alpha.cov_i*cov_i vector
+      #create  alpha.cov_i*cov_i vector
+      cov_term_x[[z+(ncol(neigh_matrix)*(v-1))]] <- 
+        alpha.cov[z+(ncol(neigh_matrix)*(v-1))] * cov_temp  
     }
   }
   cov_term <- list()
@@ -126,7 +128,8 @@ pm_BH_alpha_pairwise_lambdacov_global_alphacov_global <- function(par,
     cov_term_x_sum <- cov_term_x[[z+1]]
     if(ncol(covariates) > 1){
       for(v in 2:ncol(covariates)){
-        cov_term_x_sum <- cov_term_x_sum + cov_term_x[[v + ncol(neigh_matrix)]]
+        cov_term_x_sum <- cov_term_x_sum + 
+          cov_term_x[[v + ncol(neigh_matrix)]]
       } 
     }
     cov_term[[z+1]] <- cov_term_x_sum

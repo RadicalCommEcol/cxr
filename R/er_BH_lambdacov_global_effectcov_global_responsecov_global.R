@@ -1,3 +1,25 @@
+#' Effect response model with covariate effects on lambda, effect, and response
+#'
+#' The function for calculating fecundity given 
+#' effect and response values is taken from Godoy et al. (2014). 
+#' Note that, as e and r are not pair-specific, all species parameters are fit in the same function.
+#'
+#' @param par 1d vector with initial parameters in the order: 
+#' lambda,lambda_cov,effect,effect_cov,response,response_cov,sigma
+#' @param fitness 1d vector with fitness observations
+#' @param target 
+#' @param density 
+#' @param covariates numeric dataframe or matrix with observations 
+#' in rows and covariates in columns. Each cell is the value of a covariate
+#' in a given observation
+#' @param fixed_parameters optional list specifying values of fixed parameters, 
+#' with components "lambda","lambda_cov","effect","effect_cov",
+#' "response","response_cov".
+#'
+#' @return log-likelihood value
+#' @export
+#'
+#' @examples
 er_BH_lambdacov_global_effectcov_global_responsecov_global <- function(par,
                                                                  fitness,
                                                                  target,
@@ -17,6 +39,8 @@ er_BH_lambdacov_global_effectcov_global_responsecov_global <- function(par,
   
   # if a parameter is passed within the "par" vector,
   # it should be NULL in the "fixed_parameters" list
+  
+  # lambda
   if(is.null(fixed_parameters[["lambda"]])){
     lambda <- par[pos:(pos + num.sp - 1)]
     pos <- pos + num.sp
@@ -24,17 +48,18 @@ er_BH_lambdacov_global_effectcov_global_responsecov_global <- function(par,
     lambda <- fixed_parameters[["lambda"]]
   }
   
-  # the covariate effects are more efficient in a matrix form
-  # with species in rows (hence byrow = T, because by default
-  # the vector is sorted first by covariates)
-  
+  # lambda_cov
   if(is.null(fixed_parameters$lambda_cov)){
+    # the covariate effects are more efficient in a matrix form
+    # with species in rows (hence byrow = T, because by default
+    # the vector is sorted first by covariates)
     lambda_cov <- matrix(par[pos:(pos+(ncol(covariates)*num.sp)-1)],nrow = num.sp,byrow = TRUE)
     pos <- pos + ncol(covariates)*num.sp
   }else{
     lambda_cov <- fixed_parameters[["lambda_cov"]]
   }
   
+  # effect
   if(is.null(fixed_parameters[["effect"]])){
     effect <- par[pos:(pos + num.sp - 1)]
     pos <- pos + num.sp
@@ -42,6 +67,7 @@ er_BH_lambdacov_global_effectcov_global_responsecov_global <- function(par,
     effect <- fixed_parameters[["effect"]]
   }
   
+  # effect_cov
   if(is.null(fixed_parameters$effect_cov)){
     effect_cov <- matrix(par[pos:(pos+(ncol(covariates)*num.sp)-1)],nrow = num.sp,byrow = TRUE)
     pos <- pos + ncol(covariates)*num.sp
@@ -49,6 +75,7 @@ er_BH_lambdacov_global_effectcov_global_responsecov_global <- function(par,
     effect_cov <- fixed_parameters[["effect_cov"]]
   }
   
+  # response
   if(is.null(fixed_parameters[["response"]])){
     response <- par[pos:(pos + num.sp - 1)]
     pos <- pos + num.sp
@@ -56,6 +83,7 @@ er_BH_lambdacov_global_effectcov_global_responsecov_global <- function(par,
     response <- fixed_parameters[["response"]]
   }
   
+  # response_cov
   if(is.null(fixed_parameters[["response_cov"]])){
     response_cov <- matrix(par[pos:(pos+(ncol(covariates)*num.sp)-1)],nrow = num.sp,byrow = TRUE)
     pos <- pos + ncol(covariates)*num.sp

@@ -88,7 +88,6 @@ pm_BH_alpha_pairwise_lambdacov_global_alphacov_global <- function(par,
   }
   
   if(is.null(fixed_parameters[["alpha"]])){
-    # is alpha global or pairwise?
     alpha <- par[pos:(pos+ncol(neigh_matrix)-1)]
     pos <- pos + ncol(neigh_matrix)
   }else{
@@ -96,9 +95,8 @@ pm_BH_alpha_pairwise_lambdacov_global_alphacov_global <- function(par,
   }
   
   if(is.null(fixed_parameters[["alpha_cov"]])){
-    # is alpha_cov global or pairwise?
     alpha_cov <- par[pos:(pos+ncol(covariates)-1)]
-    pos <- pos + (ncol(covariates)*ncol(neigh_matrix))
+    pos <- pos + ncol(covariates)
   }else{
     alpha_cov <- fixed_parameters[["alpha_cov"]]
   }
