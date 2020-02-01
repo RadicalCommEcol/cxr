@@ -32,9 +32,10 @@ upper_bounds <- list(lambda = 10,alpha = 1,lambda_cov = 1, alpha_cov = 1)
 
 # covariates: rows are observations, columns are different covariates
 # either matrix or dataframe, will be transformed to matrix in the function
-c1 <- data.frame(c1 = rnorm(nrow(mindata),1,.1))
-c2 <- data.frame(c2 = rnorm(nrow(mind2),1,.1))
-covariates <- list(c1 = c1, c2 = c2)
+c1 <- data.frame(c1 = rnorm(nrow(data[[1]]),1,.1))
+c2 <- data.frame(c2 = rnorm(nrow(data[[2]]),1,.1))
+c3 <- data.frame(c2 = rnorm(nrow(data[[3]]),1,.1))
+covariates <- list(c1 = c1, c2 = c2, c3 = c3)
 
 model_family <- "BH"
 optimization_method <- "bobyqa"
