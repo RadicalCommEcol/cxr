@@ -2,6 +2,7 @@
 # 1 - MODEL FAMILY
 # Model names are of the form shown below. "family" is the acronym of general family of your model,
 # as e.g. BH for Beverton-Holt, LW for Law-Wilkinson, etc.
+# these acronyms may also be useful to name non-linear versions of the models, e.g. "BH-NL"
 
 # 2 - PARAMETER FORMS
 # every model has, at least, a lambda parameter. Other potential parameters are 
@@ -35,9 +36,11 @@
 # or the fixed value of the parameter in question.
 
 # 4 - Saving your model
-# name the R file with the same name as your model
+# name the R file with the same name as your model, and for using it within cxr, 
+# make it available in the global environment. This is as simple as sourcing the file.
 
-#TODO where to save the file, etc
+# 5 - adding your model to cxr
+# document your model, file a pull_request etc
 
 pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
                                                               fitness,
@@ -51,11 +54,18 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
   # so we need to retrieve them one by one
   # order is {lambda,lambda_cov,alpha,alpha_cov,sigma}
   
-  # YOU SHOULD NOT NEED TO CHANGE THIS SECTION
+  # comment or uncomment sections for the different parameters
+  # depending on whether your model includes them
+  # note that the section on alpha_cov includes two
+  # possibilities, depending on whether alpha_cov is 
+  # modelled as "global" or "pairwise"
+  # both are commented, you need to uncomment the one to be modelled
   pos <- 1
   
   # if a parameter is passed within the "par" vector,
   # it should be NULL in the "fixed_parameters" list
+  
+  # lambda
   if(is.null(fixed_parameters$lambda)){
     lambda <- par[pos]
     pos <- pos + 1
@@ -63,6 +73,7 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
     lambda <- fixed_parameters[["lambda"]]
   }
   
+  # lambda_cov
   if(is.null(fixed_parameters$lambda_cov)){
     lambda_cov <- par[pos:(pos+ncol(covariates)-1)]
     pos <- pos + ncol(covariates)
@@ -70,6 +81,7 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
     lambda_cov <- fixed_parameters[["lambda_cov"]]
   }
   
+  # alpha
   if(is.null(fixed_parameters$alpha)){
     alpha <- par[pos:(pos+ncol(neigh_matrix)-1)]
     pos <- pos + ncol(neigh_matrix)
@@ -77,13 +89,20 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
     alpha <- fixed_parameters[["alpha"]]
   }
   
+  # alpha_cov
   if(is.null(fixed_parameters$alpha_cov)){
-    alpha.cov <- par[pos:(pos+(ncol(covariates)*ncol(neigh_matrix))-1)]
-    pos <- pos + (ncol(covariates)*ncol(neigh_matrix))
+    # uncomment for alpha_cov_global
+    # alpha_cov <- par[pos:(pos+ncol(covariates)-1)]
+    # pos <- pos + ncol(covariates)
+    
+    # uncomment for alpha_cov_pairwise
+    # alpha.cov <- par[pos:(pos+(ncol(covariates)*ncol(neigh_matrix))-1)]
+    # pos <- pos + (ncol(covariates)*ncol(neigh_matrix))
   }else{
     alpha.cov <- fixed_parameters[["alpha.cov"]]
   }
   
+  # sigma - this is always necessary
   sigma <- par[length(par)]
   
   # now, parameters have appropriate values (or NULL)

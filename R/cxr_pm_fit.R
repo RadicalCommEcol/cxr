@@ -151,17 +151,25 @@ cxr_pm_fit <- function(data,
   
   if(alpha_form != "none"){
     if("alpha" %in% fixed_terms){
-      fixed_parameters[["alpha"]] <- cxr_return_init_length(alpha_form,initial_values$alpha,neigh)
+      fixed_parameters[["alpha"]] <- cxr_return_init_length(alpha_form,
+                                                            initial_values$alpha,
+                                                            neigh,"pm")
     }else{
-      init_alpha <- cxr_return_init_length(alpha_form,initial_values$alpha,neigh)
+      init_alpha <- cxr_return_init_length(alpha_form,
+                                           initial_values$alpha,
+                                           neigh,"pm")
     }
   }
   
   if(lambda_cov_form != "none" & !is.null(covariates)){
     if("lambda_cov" %in% fixed_terms){
-      fixed_parameters[["lambda_cov"]] <- cxr_return_init_length(lambda_cov_form,initial_values$lambda_cov,names(covariates))
+      fixed_parameters[["lambda_cov"]] <- cxr_return_init_length(lambda_cov_form,
+                                                                 initial_values$lambda_cov,
+                                                                 names(covariates),"pm")
     }else{
-      init_lambda_cov <- cxr_return_init_length(lambda_cov_form,initial_values$lambda_cov,names(covariates))
+      init_lambda_cov <- cxr_return_init_length(lambda_cov_form,
+                                                initial_values$lambda_cov,
+                                                names(covariates),"pm")
       names(init_lambda_cov) <- paste("lambda_cov_",names(covariates),sep="")
     }
   }
@@ -173,9 +181,13 @@ cxr_pm_fit <- function(data,
       name.alpha.cov <- paste("alpha_cov",rep(names(covariates),each = length(neigh)),rep(neigh,ncol(covariates)),sep="_")
     }
     if("alpha_cov" %in% fixed_terms){
-      fixed_parameters[["alpha_cov"]] <- cxr_return_init_length(alpha_cov_form,initial_values$alpha_cov,name.alpha.cov)
+      fixed_parameters[["alpha_cov"]] <- cxr_return_init_length(alpha_cov_form,
+                                                                initial_values$alpha_cov,
+                                                                name.alpha.cov,"pm")
     }else{
-      init_alpha_cov <- cxr_return_init_length(alpha_cov_form,initial_values$alpha_cov,name.alpha.cov)
+      init_alpha_cov <- cxr_return_init_length(alpha_cov_form,
+                                               initial_values$alpha_cov,
+                                               name.alpha.cov,"pm")
     }
   }
   

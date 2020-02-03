@@ -1,6 +1,6 @@
 # load test data
 library(cxr)
-data("competition")
+# data("competition")
 
 # TEMP
 source("R/cxr_return_init_length.R")
@@ -13,16 +13,18 @@ source("R/cxr_pm_fit.R")
 source("R/cxr_check_input_data.R")
 
 # spread the data from long to wide format
-competition.data <- tidyr::spread(competition,competitor,number,fill = 0)
-focal.sp <- unique(competition$focal)
-mindata <- subset(competition.data,focal == "LEMA")
-mindata$fitness <- log(mindata$seed)
-mindata <- mindata[,c("fitness",as.character(focal.sp))] #changes as.character,
-mind2 <- subset(competition.data,focal == "HOMA")
-mind2$fitness <- log(mind2$seed)
-mind2 <- mind2[,c("fitness", as.character(focal.sp))] #idem
+# competition.data <- tidyr::spread(competition,competitor,number,fill = 0)
+# focal.sp <- unique(competition$focal)
+# mindata <- subset(competition.data,focal == "LEMA")
+# mindata$fitness <- log(mindata$seed)
+# mindata <- mindata[,c("fitness",as.character(focal.sp))] #changes as.character,
+# mind2 <- subset(competition.data,focal == "HOMA")
+# mind2$fitness <- log(mind2$seed)
+# mind2 <- mind2[,c("fitness", as.character(focal.sp))] #idem
 
-data <- list(s1 = mindata,s2 = mind2)
+# test the new competition data, sorted in a list
+load("../Caracoles/data/competition.RData")
+data <- neigh_list[1:3]
 
 initial_values <- list(lambda = 1,alpha = 0.1,lambda_cov = 0.1, alpha_cov = 0.1)
 lower_bounds <- list(lambda = 0.01,alpha = 0.01,lambda_cov = 0.01, alpha_cov = 0.01)
@@ -30,9 +32,10 @@ upper_bounds <- list(lambda = 10,alpha = 1,lambda_cov = 1, alpha_cov = 1)
 
 # covariates: rows are observations, columns are different covariates
 # either matrix or dataframe, will be transformed to matrix in the function
-c1 <- data.frame(c1 = rnorm(nrow(mindata),1,.1))
-c2 <- data.frame(c2 = rnorm(nrow(mind2),1,.1))
-covariates <- list(c1 = c1, c2 = c2)
+c1 <- data.frame(c1 = rnorm(nrow(data[[1]]),1,.1))
+c2 <- data.frame(c2 = rnorm(nrow(data[[2]]),1,.1))
+c3 <- data.frame(c2 = rnorm(nrow(data[[3]]),1,.1))
+covariates <- list(c1 = c1, c2 = c2, c3 = c3)
 
 model_family <- "BH"
 optimization_method <- "bobyqa"

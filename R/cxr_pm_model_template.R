@@ -2,6 +2,7 @@
 # 1 - MODEL FAMILY
 # Model names are of the form shown below. "family" is the acronym of general family of your model,
 # as e.g. BH for Beverton-Holt, LW for Law-Wilkinson, etc.
+# these acronyms may also be useful to name non-linear versions of the models, e.g. "BH-NL"
 
 # 2 - PARAMETER FORMS
 # every model has, at least, a lambda parameter. Other potential parameters are 
@@ -35,27 +36,13 @@
 # or the fixed value of the parameter in question.
 
 # 4 - Saving your model
-# name the R file with the same name as your model
-# for making the model accesible to cxr, it should be loaded into the global R environment.
+# name the R file with the same name as your model, and for using it within cxr, 
+# make it available in the global environment. This is as simple as sourcing the file.
 
 # 5 - adding your model to cxr
 # document your model, file a pull_request etc
 
-#' Beverton-Holt model with pairwise alphas and global covariate effects on lambda and alpha
-#'
-#' @param par 1d vector of initial parameters: lambda, lambda_cov, alpha, alpha_cov, and sigma
-#' @param fitness 1d vector of fitness observations, in log scale
-#' @param neigh_matrix matrix with number of neighbours (each neighbour a column) for each observation (in rows)
-#' @param covariates optional matrix with observations in rows and covariates in columns. Each cell is the value of a covariate
-#' in a given observation
-#' @param fixed_parameters optional list specifying values of fixed parameters, 
-#' with components "lambda","alpha","lambda_cov","alpha_cov".
-#'
-#' @return log-likelihood value
-#' @export
-#'
-#' @examples
-pm_BH_alpha_pairwise_lambdacov_global_alphacov_global <- function(par,
+pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
                                                               fitness,
                                                               neigh_matrix,
                                                               covariates,
@@ -69,38 +56,53 @@ pm_BH_alpha_pairwise_lambdacov_global_alphacov_global <- function(par,
   
   # comment or uncomment sections for the different parameters
   # depending on whether your model includes them
+  # note that the section on alpha_cov includes two
+  # possibilities, depending on whether alpha_cov is 
+  # modelled as "global" or "pairwise"
+  # both are commented, you need to uncomment the one to be modelled
   pos <- 1
   
   # if a parameter is passed within the "par" vector,
   # it should be NULL in the "fixed_parameters" list
-  if(is.null(fixed_parameters[["lambda"]])){
+  
+  # lambda
+  if(is.null(fixed_parameters$lambda)){
     lambda <- par[pos]
     pos <- pos + 1
   }else{
     lambda <- fixed_parameters[["lambda"]]
   }
   
-  if(is.null(fixed_parameters[["lambda_cov"]])){
+  # lambda_cov
+  if(is.null(fixed_parameters$lambda_cov)){
     lambda_cov <- par[pos:(pos+ncol(covariates)-1)]
     pos <- pos + ncol(covariates)
   }else{
     lambda_cov <- fixed_parameters[["lambda_cov"]]
   }
   
-  if(is.null(fixed_parameters[["alpha"]])){
+  # alpha
+  if(is.null(fixed_parameters$alpha)){
     alpha <- par[pos:(pos+ncol(neigh_matrix)-1)]
     pos <- pos + ncol(neigh_matrix)
   }else{
     alpha <- fixed_parameters[["alpha"]]
   }
   
-  if(is.null(fixed_parameters[["alpha_cov"]])){
-    alpha_cov <- par[pos:(pos+ncol(covariates)-1)]
-    pos <- pos + ncol(covariates)
+  # alpha_cov
+  if(is.null(fixed_parameters$alpha_cov)){
+    # uncomment for alpha_cov_global
+    # alpha_cov <- par[pos:(pos+ncol(covariates)-1)]
+    # pos <- pos + ncol(covariates)
+    
+    # uncomment for alpha_cov_pairwise
+    # alpha.cov <- par[pos:(pos+(ncol(covariates)*ncol(neigh_matrix))-1)]
+    # pos <- pos + (ncol(covariates)*ncol(neigh_matrix))
   }else{
-    alpha_cov <- fixed_parameters[["alpha_cov"]]
+    alpha.cov <- fixed_parameters[["alpha.cov"]]
   }
   
+  # sigma - this is always necessary
   sigma <- par[length(par)]
   
   # now, parameters have appropriate values (or NULL)
@@ -108,25 +110,13 @@ pm_BH_alpha_pairwise_lambdacov_global_alphacov_global <- function(par,
   
   # MODEL CODE HERE ---------------------------------------------------------
   
-  num = 1
-  focal.cov.matrix <- as.matrix(covariates)
-  for(z in 1:ncol(focal.cov.matrix)){
-    num <- num + lambda_cov[z]*focal.cov.matrix[,z]
-  }
-  cov_term <- 0 
-  for(v in 1:ncol(focal.cov.matrix)){
-    cov_term <- cov_term + alpha_cov[v] * focal.cov.matrix[,v]
-  }
-  term <- 1 #create the denominator term for the model
-  for(z in 1:ncol(neigh_matrix)){
-    term <- term + (alpha[z] + cov_term) * neigh_matrix[,z] 
-  }
-  pred <- lambda * (num) / term 
+  # the model should return a "pred" value
+  pred <- 0# a function of lambda, alpha, lambda_cov, alpha_cov 
   
   # MODEL CODE ENDS HERE ----------------------------------------------------
   
   # the routine returns the sum of log-likelihoods of the data and model:
   # DO NOT CHANGE THIS
-  llik <- dnorm(fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
+  llik <- dnorm(log.fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
   return(sum(-1*llik))
 }
