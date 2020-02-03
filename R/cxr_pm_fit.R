@@ -499,14 +499,20 @@ cxr_pm_fit <- function(data,
 # summary method ----------------------------------------------------------
 
 summary.cxr_pm_fit <- function(x){
-  cat("model '",x$model_name,"' fitted with ",nrow(x$data)," observations, ",length(names(x$data[which(!names(x$data) == "fitness")])), 
-      " neighbour sp., and ",ifelse(is.null(x$covariates),0,ncol(x$covariates))," covariates",
-      "\nusing optimization method '",x$optimization_method,"'",
-      "\n* focal lambda: ",ifelse(is.null(x$lambda)," - not fit - ",x$lambda),
-      "\n* mean alpha: ",ifelse(is.null(x$alpha)," - not fit - ",mean(x$alpha)),
-      "\n* mean lambda_cov: ",ifelse(is.null(x$lambda_cov),"- not fit - ",mean(x$lambda_cov)),
-      "\n* mean alpha_cov: ",ifelse(is.null(x$alpha_cov),"- not fit - ",mean(x$alpha_cov)),
-      "\n* log-likelihood of the fit: ",x$log_likelihood,sep="")
-  
+  cat(
+    "\nmodel: '",x$model_name,"'",
+    "\noptimization method: '",x$optimization_method,"'",
+    "\n----------",
+    "\nobservations: ",nrow(x$data),
+    "\nneighbours: ",length(x$data)-1,
+    "\ncovariates: ",ifelse(is.null(x$covariates),0,ncol(x$covariates)),
+    "\n----------",
+    "\nfocal lambda: ",ifelse(is.null(x$lambda)," - not fit - ",x$lambda),
+    "\nmean alpha: ",ifelse(is.null(x$alpha)," - not fit - ",mean(x$alpha)),
+    "\nmean lambda_cov: ",ifelse(is.null(x$lambda_cov),"- not fit - ",mean(x$lambda_cov)),
+    "\nmean alpha_cov: ",ifelse(is.null(x$alpha_cov),"- not fit - ",mean(x$alpha_cov)),
+    "\nlog-likelihood of the fit: ",x$log_likelihood,
+    "\n----------",
+    sep="")
 }
-
+summary(tt)

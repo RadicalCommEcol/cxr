@@ -23,19 +23,35 @@ source("R/cxr_check_input_data.R")
 # mind2 <- mind2[,c("fitness", as.character(focal.sp))] #idem
 
 # test the new competition data, sorted in a list
-load("../Caracoles/data/competition.RData")
+load("data/neigh_list.RData")
 data <- neigh_list[1:3]
+
+# keep only fitness and neighbours columns
+for(i in 1:length(data)){
+  data[[i]] <- data[[i]][,2:length(data[[i]])]
+}
 
 initial_values <- list(lambda = 1,alpha = 0.1,lambda_cov = 0.1, alpha_cov = 0.1)
 lower_bounds <- list(lambda = 0.01,alpha = 0.01,lambda_cov = 0.01, alpha_cov = 0.01)
 upper_bounds <- list(lambda = 10,alpha = 1,lambda_cov = 1, alpha_cov = 1)
 
+# covariates: salinity
+load("data/salinity_list.RData")
+salinity <- salinity_list[1:3]
+
+# keep only salinity column
+for(i in 1:length(salinity)){
+  salinity[[i]] <- salinity[[i]][,2:length(salinity[[i]])]
+}
+
+covariates <- salinity
+
 # covariates: rows are observations, columns are different covariates
 # either matrix or dataframe, will be transformed to matrix in the function
-c1 <- data.frame(c1 = rnorm(nrow(data[[1]]),1,.1))
-c2 <- data.frame(c2 = rnorm(nrow(data[[2]]),1,.1))
-c3 <- data.frame(c2 = rnorm(nrow(data[[3]]),1,.1))
-covariates <- list(c1 = c1, c2 = c2, c3 = c3)
+# c1 <- data.frame(c1 = rnorm(nrow(data[[1]]),1,.1))
+# c2 <- data.frame(c2 = rnorm(nrow(data[[2]]),1,.1))
+# c3 <- data.frame(c2 = rnorm(nrow(data[[3]]),1,.1))
+# covariates <- list(c1 = c1, c2 = c2, c3 = c3)
 
 model_family <- "BH"
 optimization_method <- "bobyqa"
@@ -67,7 +83,7 @@ spnames <- names(data)
 # fit every sp ------------------------------------------------------------
 spfits <- list()
 for(i.sp in 1:length(data)){
-  spfits[[i.sp]] <- cxr_pm_fit(data = data[[i.sp]],
+  spfits[[i.sp]] <- try(cxr_pm_fit(data = data[[i.sp]],
                                model_family = model_family,
                                covariates = covariates[[i.sp]],
                                optimization_method = optimization_method,
@@ -79,7 +95,7 @@ for(i.sp in 1:length(data)){
                                upper_bounds = upper_bounds,
                                fixed_terms = fixed_terms,
                                bootstrap_samples = bootstrap_samples
-                               )
+                               ))
 }
 
 # output ------------------------------------------------------------------
@@ -220,4 +236,49 @@ class(fit) <- "cxr_pm_multifit"
 fit
 
 }
+
+summary.cxr_pm_multifit <- function(x){
+  cat("model: '",x$model_name,"'",
+      "\noptimization method: '",x$optimization_method,"'",
+      "\n----------",sep="")
+  
+  summary_table <- data.frame(sp = names(x$data),
+                              observations = unlist(lapply(x$data, nrow)),
+                              neighbours = unlist(lapply(x$data,length))-1,
+                              covariates = ifelse(is.null(x$covariates[[1]]),0,
+                                                  ncol(x$covariates[[1]])),
+                              lambda = ifelse(is.null(x$lambda),
+                                              "- not fit -",
+                                              x$lambda),
+                              mean_alpha = ifelse(is.null(x$alpha),
+                                                  "- not fit -",
+                                                  mean(x$lambda)),
+                              mean_lambda_cov = ifelse(is.null(x$lambda_cov),
+                                                       "- not fit - ",
+                                                       mean(x$lambda_cov)),
+                              mean_alpha_cov = ifelse(is.null(x$alpha_cov),
+                                                      "- not fit - ",
+                                                      mean(x$alpha_cov)),
+                              row.names = NULL)
+  cat("\n")
+  summary_table
+  # for(i.sp in 1:length(x$data)){
+  #   cat("\n",names(x$data)[i.sp],":",
+  #       "\nobservations: ",nrow(x$data[[i.sp]]),
+  #       "\nneighbours: ",length(x$data[[i.sp]])-1,
+  #       "\ncovariates: ",ifelse(is.null(x$covariates[[i.sp]]),0,
+  #                               ncol(x$covariates[[i.sp]])),
+  #       "\n----------",
+  #       "\nfocal lambda: ",ifelse(is.null(x$lambda)," - not fit - ",x$lambda[i.sp]),
+  #       "\nmean alpha: ",ifelse(is.null(x$alpha)," - not fit - ",mean(x$alpha[i.sp])),
+  #       "\nmean lambda_cov: ",ifelse(is.null(x$lambda_cov),"- not fit - ",mean(x$lambda_cov[i.sp])),
+  #       "\nmean alpha_cov: ",ifelse(is.null(x$alpha_cov),"- not fit - ",mean(x$alpha_cov[i.sp])),
+  #       "\nlog-likelihood of the fit: ",x$log_likelihood[i.sp],
+  #       "\n",
+  #       # "\n------------------------",
+  #       sep="")
+  # }
+}
+summary(fit)
+
 
