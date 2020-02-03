@@ -4,7 +4,7 @@
 #'
 #' @param data dataframe with observations in rows and two sets of columns:
 #' * fitness: fitness metric for the focal individual
-#' * neighbours: columns with user-defined names with number of neighbours for each group
+#' * neighbours: columns with user-defined names, giving number of neighbours for each group
 #' @param model_family family of model to use. Available families are BH (Beverton-Holt) as default.
 #' Users may define their own families and models (see vignette XXXXX).
 #' @param covariates optional named matrix or dataframe with observations (rows) of any number of environmental covariates (columns)
