@@ -20,11 +20,40 @@
 #' @param upper_bounds optional list with single values for "lambda","alpha","lambda_cov", "alpha_cov".
 #' @param fixed_terms optional list specifying which model parameters are fixed, among "lambda","alpha","lambda_cov", and "alpha_cov".
 #' @param bootstrap_samples number of bootstrap samples for error calculation. Defaults to 0, i.e. no error is calculated.
-#'
-#' @return
+#' @return an object of type 'cxr_pm_fit' which is a list with the following components:
+#' * model_name: string with the name of the fitness model
+#' * model: model function
+#' * data: data supplied 
+#' * covariates: covariate data supplied
+#' * optimization_method: optimization method used
+#' * initial_values: list with initial values
+#' * fixed_terms: list with fixed terms
+#' * lambda: fitted value for lambda, or NULL if fixed
+#' * alpha: fitted value(s) for alpha, or NULL if fixed
+#' * lambda_cov: fitted value(s) for lambda_cov, or NULL if fixed
+#' * alpha_cov: fitted value(s) for alpha_cov, or NULL if fixed
+#' * lambda_standard_error: standard error for lambda, if computed
+#' * alpha_standard_error: standard error for alpha, if computed
+#' * lambda_cov_standard_error: standard error for lambda_cov, if computed
+#' * alpha_cov_standard_error: standard error for alpha_cov, if computed
+#' * log_likelihood: log-likelihood of the fit
 #' @export
 #' @md
 #' @examples
+#' data("neigh_list")
+#' # data for a single species, keep only fitness and neighbours columns
+#' sp_data <- neigh_list[[1]][2:ncol(neigh_list[[1]])]
+#' \dontrun{
+#'   sp_fit <- cxr_pm_fit(data = sp_data,optimization_method = "bobyqa",
+#'                        alpha_form = "pairwise",
+#'                        lambda_cov_form = "none",
+#'                        alpha_cov_form = "none",
+#'                        initial_values = list(lambda = 1,alpha = 0.1),
+#'                        lower_bounds = list(lambda = 0,alpha = 0),
+#'                        upper_bounds = list(lambda = 100,alpha = 1),
+#'                        bootstrap_samples = 3)
+#'   summary(sp_fit)
+#' }
 cxr_pm_fit <- function(data, 
                        model_family = c("BH"),
                        covariates = NULL, 
@@ -439,7 +468,6 @@ cxr_pm_fit <- function(data,
   list_names <- c("model_name",
                   "model",
                   "data",
-                  "model_family",
                   "covariates",
                   "optimization_method",
                   "initial_values",
@@ -454,7 +482,6 @@ cxr_pm_fit <- function(data,
   fit$model_name <- model_name
   fit$model <- fitness_model
   fit$data <- data
-  fit$model_family <- model_family
   fit$covariates <- covariates
   fit$optimization_method <- optimization_method
   fit$initial_values <- initial_values
@@ -515,4 +542,4 @@ summary.cxr_pm_fit <- function(x){
     "\n----------",
     sep="")
 }
-summary(tt)
+

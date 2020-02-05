@@ -22,44 +22,36 @@ source("R/cxr_check_input_data.R")
 # mind2$fitness <- log(mind2$seed)
 # mind2 <- mind2[,c("fitness", as.character(focal.sp))] #idem
 
-# test the new competition data, sorted in a list
-load("data/neigh_list.RData")
+# fit three species at once
+data("neigh_list")
 data <- neigh_list[1:3]
-
 # keep only fitness and neighbours columns
 for(i in 1:length(data)){
   data[[i]] <- data[[i]][,2:length(data[[i]])]
 }
-
-initial_values <- list(lambda = 1,alpha = 0.1,lambda_cov = 0.1, alpha_cov = 0.1)
-lower_bounds <- list(lambda = 0.01,alpha = 0.01,lambda_cov = 0.01, alpha_cov = 0.01)
-upper_bounds <- list(lambda = 10,alpha = 1,lambda_cov = 1, alpha_cov = 1)
-
 # covariates: salinity
-load("data/salinity_list.RData")
+data("salinity_list")
 salinity <- salinity_list[1:3]
-
 # keep only salinity column
 for(i in 1:length(salinity)){
   salinity[[i]] <- salinity[[i]][,2:length(salinity[[i]])]
 }
-
-covariates <- salinity
-
-# covariates: rows are observations, columns are different covariates
-# either matrix or dataframe, will be transformed to matrix in the function
-# c1 <- data.frame(c1 = rnorm(nrow(data[[1]]),1,.1))
-# c2 <- data.frame(c2 = rnorm(nrow(data[[2]]),1,.1))
-# c3 <- data.frame(c2 = rnorm(nrow(data[[3]]),1,.1))
-# covariates <- list(c1 = c1, c2 = c2, c3 = c3)
-
-model_family <- "BH"
-optimization_method <- "bobyqa"
-alpha_form <- "pairwise"
-lambda_cov_form <- "global"
-alpha_cov_form <- "global"
-fixed_terms <- NULL
-bootstrap_samples <- 3
+\dontrun{
+fit_3sp <- cxr_pm_multifit(data = data,
+                           optimization_method = "bobyqa",
+                           covariates = salinity,
+                           alpha_form = "pairwise",
+                           lambda_cov_form = "global",
+                           alpha_cov_form = "global",
+                           initial_values = list(lambda = 1,alpha = 0.1,lambda_cov = 0.1, alpha_cov = 0.1),
+                           lower_bounds = list(lambda = 0.01,alpha = 0,lambda_cov = 0, alpha_cov = 0),
+                           upper_bounds = list(lambda = 100,alpha = 1,lambda_cov = 1, alpha_cov = 1),
+                           bootstrap_samples = 3)
+# brief summary
+summary(fit_3sp)
+# interaction matrix
+fit_3sp$alpha
+}
 
 cxr_pm_multifit <- function(data, 
                             model_family = c("BH"),
@@ -241,24 +233,42 @@ summary.cxr_pm_multifit <- function(x){
   cat("model: '",x$model_name,"'",
       "\noptimization method: '",x$optimization_method,"'",
       "\n----------",sep="")
-  
+  # for printing null or valid values
+  # ifelse returns single values over single conditions
+  if(is.null(x$lambda)){
+    sl <- rep("- not fit -",nrow(x$data))
+  }else{
+    sl <- x$lambda
+  }
+  if(is.null(x$alpha)){
+    sa <- rep("- not fit -",nrow(x$data))
+  }else{
+    sa <- rowMeans(x$alpha)
+  }
+  if(is.null(x$lambda_cov)){
+    slc <- rep("- not fit -",nrow(x$data))
+  }else{
+    slc <- x$lambda_cov
+  }
+  if(is.null(x$alpha_cov)){
+    sac <- rep("- not fit -",nrow(x$data))
+  }else{
+    sac <- x$alpha_cov
+  }
   summary_table <- data.frame(sp = names(x$data),
                               observations = unlist(lapply(x$data, nrow)),
                               neighbours = unlist(lapply(x$data,length))-1,
                               covariates = ifelse(is.null(x$covariates[[1]]),0,
                                                   ncol(x$covariates[[1]])),
-                              lambda = ifelse(is.null(x$lambda),
-                                              "- not fit -",
-                                              x$lambda),
-                              mean_alpha = ifelse(is.null(x$alpha),
-                                                  "- not fit -",
-                                                  mean(x$lambda)),
-                              mean_lambda_cov = ifelse(is.null(x$lambda_cov),
-                                                       "- not fit - ",
-                                                       mean(x$lambda_cov)),
-                              mean_alpha_cov = ifelse(is.null(x$alpha_cov),
-                                                      "- not fit - ",
-                                                      mean(x$alpha_cov)),
+                              # lambda = NULL,
+                              lambda = sl,
+                              mean_alpha = sa,
+                              # mean_lambda_cov = ifelse(is.null(x$lambda_cov),
+                              #                          "- not fit - ",
+                              #                          mean(x$lambda_cov)),
+                              # mean_alpha_cov = ifelse(is.null(x$alpha_cov),
+                              #                         "- not fit - ",
+                              #                         mean(x$alpha_cov)),
                               row.names = NULL)
   cat("\n")
   summary_table
@@ -279,6 +289,5 @@ summary.cxr_pm_multifit <- function(x){
   #       sep="")
   # }
 }
-summary(fit)
-
+summary(fit_3sp)
 
