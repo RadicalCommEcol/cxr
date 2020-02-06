@@ -1,11 +1,5 @@
 
-# source("R/cxr_check_input_er.R")
-# source("R/cxr_init_er_params.R")
-# source("R/cxr_retrieve_er_params.R")
-# source("R/cxr_return_init_length.R")
-# source('R/er_BH_lambdacov_none_effectcov_none_responsecov_none.R')
-# source('R/er_BH_lambdacov_global_effectcov_global_responsecov_global.R')
-# source('R/cxr_er_bootstrap.R')
+
 # 
 # spdata <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)), f3 = round(runif(10,1,5)))
 # spdata2 <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)), f3 = round(runif(10,1,5)))
@@ -54,7 +48,56 @@
 # bootstrap_samples <- 3
 # fixed_terms <- "response"
 
+source("R/cxr_check_input_er.R")
+source("R/cxr_init_er_params.R")
+source("R/cxr_retrieve_er_params.R")
+source("R/cxr_return_init_length.R")
+source('R/er_BH_lambdacov_none_effectcov_none_responsecov_none.R')
+source('R/er_BH_lambdacov_global_effectcov_global_responsecov_global.R')
+source('R/cxr_er_bootstrap.R')
 
+# fit three species at once
+data("neigh_list")
+# these species all have >250 observations
+example_sp <- c(1,4,5)
+n.obs <- 250
+data <- neigh_list[example_sp]
+ # keep only fitness and neighbours columns
+ for(i in 1:length(data)){
+   data[[i]] <- data[[i]][1:n.obs,c(2,example_sp+2)]#2:length(data[[i]])]
+ }
+ # covariates: salinity
+ data("salinity_list")
+ salinity <- salinity_list[example_sp]
+ # keep only salinity column
+ for(i in 1:length(salinity)){
+   salinity[[i]] <- salinity[[i]][1:n.obs,2:length(salinity[[i]])]
+ }
+
+ er_3sp <- cxr_er_fit(data = data,
+                      model_family = "BH",
+                      # covariates = salinity,
+                      optimization_method = "bobyqa",
+                      lambda_cov_form = "none",
+                      effect_cov_form = "none",
+                      response_cov_form = "none",
+                      lower_bounds = list(lambda = 0, 
+                                          effect = 0, 
+                                          response = 0, 
+                                          lambda_cov = 0, 
+                                          effect_cov = 0, 
+                                          response_cov = 0,
+                                          sigma = 0),
+                      upper_bounds = list(lambda = 100, 
+                                          effect = 10, 
+                                          response = 10, 
+                                          lambda_cov = 1, 
+                                          effect_cov = 1, 
+                                          response_cov = 1,
+                                          sigma = 1e5),
+                      bootstrap_samples = 3)
+ 
+ 
 cxr_er_fit <- function(data, 
                        model_family = c("BH"),
                        covariates = NULL, 
@@ -156,6 +199,7 @@ cxr_er_fit <- function(data,
   covdf <- NULL
   if(class(data) == "list"){
     spdf <- do.call(rbind,data)
+    spdf$focal <- rep(names(data),each = nrow(data[[1]]))
     if(!is.null(covariates)){
       covdf <- do.call(rbind,covariates)
     }
