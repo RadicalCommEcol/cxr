@@ -44,7 +44,8 @@
 #' # data for a single species, keep only fitness and neighbours columns
 #' sp_data <- neigh_list[[1]][2:ncol(neigh_list[[1]])]
 #' \dontrun{
-#'   sp_fit <- cxr_pm_fit(data = sp_data,optimization_method = "bobyqa",
+#'   sp_fit <- cxr_pm_fit(data = sp_data,
+#'                        optimization_method = "bobyqa",
 #'                        alpha_form = "pairwise",
 #'                        lambda_cov_form = "none",
 #'                        alpha_cov_form = "none",
