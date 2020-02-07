@@ -4,13 +4,13 @@
 \name{species_rates}
 \alias{species_rates}
 \title{Species germination and survival rates}
-\format{A data frame with 20 rows and 4 variables}
+\format{A data frame with 16 rows and 4 variables}
 \usage{
 data(species_rates)
 }
 \description{
-A dataset containing germination and survival rates for each plant species. 
-It also includes a column with the scientific names, and their associated codes.
+A dataset containing germination and survival rates for 16 plant species. 
+It includes columns with the scientific names and their associated codes.
 }
 \details{
 \itemize{      
