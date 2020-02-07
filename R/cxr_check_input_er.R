@@ -1,16 +1,37 @@
+#' Check the input data for cxr_er_fit
+#'
+#' Several requirements:
+#' 1-equal nrows for all focal sp
+#' 2-same for covariates
+#' 3-all dataframes same columns, all numeric
+#' 4-same set of focals and neighbour sp
+#'
+#' @param data as in cxr_er_fit
+#' @param covariates as in cxr_er_fit
+#'
+#' @return logical, whether conditions are met
+#'
+#' @noRd
 cxr_check_input_er <- function(data,covariates = NULL){
   data.ok <- TRUE
-  if(class(data) == "list"){
+  if("list" %in% class(data)){
     # check nrow
     nrows <- unlist(lapply(data,nrow))
     nna <- sum(unlist(lapply(data,function(x){sum(is.na(x))})))
+    for(i.sp in 1:length(data)){
+      classes <- sapply(data[[i.sp]],class)
+      if(any(!classes %in% c("integer","numeric"))){
+        data.ok <- FALSE
+      }
+    }    
     if(nna > 0 | length(unique(nrows))>1){
       data.ok <- FALSE
     }else{
       # check cols
       mynames <- names(data[[1]])
       namesok <- all(unlist(lapply(data,function(x){identical(names(x),mynames)})))
-      if(!namesok | length(mynames)<3){
+      focalneigh <- identical(names(nrows),mynames[which(mynames != "fitness")])
+      if(!namesok | length(mynames)<3 | !focalneigh){
         data.ok <- FALSE
       }else{
         if(!is.null(covariates)){
@@ -29,6 +50,10 @@ cxr_check_input_er <- function(data,covariates = NULL){
     if(sum(is.na(data))>0){
       data.ok <- FALSE
     }
+    classes <- sapply(data,class)
+    if(any(!classes %in% c("integer","numeric"))){
+      data.ok <- FALSE
+    }
     if(!c("focal") %in% names(data) | !c("fitness") %in% names(data)){
       data.ok <- FALSE
     }else{
@@ -36,7 +61,8 @@ cxr_check_input_er <- function(data,covariates = NULL){
       if(length(unique(obsp))>1){
         data.ok <- FALSE
       }else{
-        if(ncol(data)<3){
+        focalneigh <- identical(unique(data$focal),names(data)[which(!names(data) %in% c("fitness","focal"))])
+        if(ncol(data)<3 | !focalneigh){
           data.ok <- FALSE
         }else{
           if(!is.null(covariates)){

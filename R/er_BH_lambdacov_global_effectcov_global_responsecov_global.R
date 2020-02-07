@@ -18,8 +18,6 @@
 #'
 #' @return log-likelihood value
 #' @export
-#'
-#' @examples
 er_BH_lambdacov_global_effectcov_global_responsecov_global <- function(par,
                                                                  fitness,
                                                                  target,

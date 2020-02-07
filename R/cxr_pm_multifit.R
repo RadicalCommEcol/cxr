@@ -1,17 +1,3 @@
-# load test data
-# library(cxr)
-# data("competition")
-
-# TEMP
-# source("R/cxr_return_init_length.R")
-# source("R/cxr_init_params.R")
-# source("R/cxr_retrieve_params.R")
-# source("R/pm_BH_alpha_pairwise_lambdacov_none_alphacov_none.R")
-# source("R/pm_BH_alpha_pairwise_lambdacov_global_alphacov_global.R")
-# source("R/cxr_pm_bootstrap.R")
-# source("R/cxr_pm_fit.R")
-# source("R/cxr_check_input_data.R")
-
 #' Multi-species parameter optimization
 #' 
 #' This function is a wrapper for estimating parameters for several
@@ -52,7 +38,7 @@
 #' * alpha_cov_standard_error: standard errors for alpha_cov, if computed
 #' * log_likelihood: log-likelihood of the fits
 #' @export
-#'
+#' @md
 #' @examples
 #' # fit three species at once
 #' data("neigh_list")
@@ -87,7 +73,13 @@
 cxr_pm_multifit <- function(data, 
                             model_family = c("BH"),
                             covariates = NULL, 
-                            optimization_method = c(), 
+                            optimization_method = c("BFGS", "CG", "Nelder-Mead", 
+                                                    "ucminf","L-BFGS-B", "nlm", "nlminb", 
+                                                    "Rcgmin", "Rvmmin", "spg", 
+                                                    "bobyqa", "nmkb", "hjkb",
+                                                    "nloptr_CRS2_LM","nloptr_ISRES",
+                                                    "nloptr_DIRECT_L_RAND","DEoptimR",
+                                                    "hydroPSO","GenSA"), 
                             alpha_form = c("none","global","pairwise"), 
                             lambda_cov_form = c("none","global"),
                             alpha_cov_form = c("none","global","pairwise"),
@@ -99,7 +91,85 @@ cxr_pm_multifit <- function(data,
                             bootstrap_samples = 0
 ){
   
-
+  # argument checks ---------------------------------------------------------
+  
+  optimization_method <- match.arg(optimization_method)
+  alpha_form <- match.arg(alpha_form)
+  lambda_cov_form <- match.arg(lambda_cov_form)
+  alpha_cov_form <- match.arg(alpha_cov_form)
+  
+  # TODO fixed terms?
+  
+  # check installed packages for optimization method
+  if (optimization_method %in% c("nloptr_CRS2_LM","nloptr_ISRES","nloptr_DIRECT_L_RAND") & !requireNamespace("nloptr", quietly = TRUE)) {
+    stop("cxr_pm_fit ERROR: Package \"nloptr\" needed for the method selected to work.",
+         call. = FALSE)
+  }
+  if (optimization_method == "GenSA" & !requireNamespace("GenSA", quietly = TRUE)) {
+    stop("cxr_pm_fit ERROR: Package \"GenSA\" needed for the method selected to work.",
+         call. = FALSE)
+  }
+  if (optimization_method == "hydroPSO" & !requireNamespace("hydroPSO", quietly = TRUE)) {
+    stop("cxr_pm_fit ERROR: Package \"hydroPSO\" needed for the method selected to work.",
+         call. = FALSE)
+  }
+  if (optimization_method == "DEoptimR" & !requireNamespace("DEoptimR", quietly = TRUE)) {
+    stop("cxr_pm_fit ERROR: Package \"DEoptimR\" needed for the method selected to work.",
+         call. = FALSE)
+  }
+  
+  # check input data
+  if(class(data) != "list"){
+    data.ok <- FALSE  
+  }else{
+    data.ok <- logical(length = length(data))
+    for(i.sp in 1:length(data)){
+      data.ok[i.sp] <- cxr_check_input_data(data[[i.sp]],covariates[[i.sp]])
+    }
+    data.ok <- all(data.ok)
+  }
+  if(!data.ok){
+    stop("cxr_pm_fit ERROR: check the consistency of your input data: 
+    1) data is a named list containing dataframes with observations for each focal species;
+    2) No NAs; 
+    3) first column in 'data' is named 'fitness'; 
+    4) abundances of at least one neighbour species in 'data';
+    5) data and covariates (if present) have the same number of observations")  }
+  
+  # check covariates if alpha_cov or lambda_cov are to be fit
+  if(is.null(covariates) & (alpha_cov_form != "none" | lambda_cov_form != "none")){
+    stop("cxr_pm_fit ERROR: need to specify covariates if lambda_cov and/or alpha_cov are to be fit")
+  }
+  
+  # retrieve model ----------------------------------------------------------
+  # character string giving the name of the model
+  model_name <- paste("pm_",model_family,"_alpha_",alpha_form,"_lambdacov_",lambda_cov_form,"_alphacov_",alpha_cov_form,sep="")
+  
+  # try to retrieve the function from its name
+  # using function "get"
+  fitness_model <- try(get(model_name),silent = TRUE)
+  if(class(fitness_model) == "try-error"){
+    stop(paste("cxr_pm_fit ERROR: model '",model_name,"' could not be retrieved. 
+  Make sure it is defined and available in the cxr package or in the global environment.\n",sep=""))
+  }
+  
+  # check that lower/upper bounds are provided if the method requires it
+  bound.ok <- cxr_check_method_boundaries(optimization_method,lower_bounds,upper_bounds, type = "pm")
+  if(!bound.ok){
+    stop("cxr_pm_fit ERROR: check the optimization method selected and lower/upper bounds.
+         The following methods require explicit lower and upper parameter boundaries to be set:
+         L-BFGS-B, nlm, nlminb, Rcgmin, Rvmmin, spg, bobyqa, nmkb, hjkb, nloptr_CRS2_LM,
+         nloptr_ISRES, nloptr_DIRECT_L_RAND, GenSA, hydroPSO, DEoptimR.")
+  }
+  
+  # warning if initial values are not set
+  if(identical(initial_values,list(lambda = 0, alpha = 0, lambda_cov = 0, alpha_cov = 0))){
+    message("cxr_pm_fit: Using default initial values. Note that these may not be appropriate for your data/model, or
+    for the optimization method selected.")
+  }
+  
+  
+  
 # prepare multisp data ----------------------------------------------------
 spnames <- names(data)
 

@@ -52,8 +52,6 @@
 #'
 #' @return log-likelihood value
 #' @export
-#'
-#' @examples
 pm_BH_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
                                                               fitness,
                                                               neigh_matrix,

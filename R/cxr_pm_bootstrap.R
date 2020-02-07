@@ -1,4 +1,3 @@
-
 #' Standard error estimates for model parameters
 #' 
 #' Computes bootstrap standard errors for a given population dynamics model.

@@ -14,7 +14,7 @@
 #' @param lambda_cov_form form of the covariate effects on lambda. Either "none" (no covariate effects) or "global" (one estimate per covariate)
 #' @param alpha_cov_form form of the covariate effects on alpha. One of "none" (no covariate effects), "global" (one estimate per covariate on every alpha),
 #' or "pairwise" (one estimate per covariate and pairwise alpha)
-#' @param initial_values list with components "lambda","alpha","lambda_cov", "alpha_cov", and "sigma", specifying the initial values
+#' @param initial_values list with components "lambda","alpha","lambda_cov", "alpha_cov", specifying the initial values
 #' for numerical optimization. Single values are allowed.
 #' @param lower_bounds optional list with single values for "lambda","alpha","lambda_cov", "alpha_cov".
 #' @param upper_bounds optional list with single values for "lambda","alpha","lambda_cov", "alpha_cov".
@@ -68,7 +68,7 @@ cxr_pm_fit <- function(data,
                        alpha_form = c("none","global","pairwise"), 
                        lambda_cov_form = c("none","global"),
                        alpha_cov_form = c("none","global","pairwise"),
-                       initial_values = list(lambda = 0, alpha = 0, lambda_cov = 0, alpha_cov = 0, sigma = 0),
+                       initial_values = list(lambda = 0, alpha = 0, lambda_cov = 0, alpha_cov = 0),
                        lower_bounds = NULL,
                        upper_bounds = NULL,
                        fixed_terms = NULL,
@@ -109,7 +109,7 @@ cxr_pm_fit <- function(data,
   data.ok <- cxr_check_input_data(data,covariates)
   if(!data.ok){
     stop("cxr_pm_fit ERROR: check the consistency of your input data: 
-    1) No NAs; 
+    1) All variables are integer/numeric, with no NAs; 
     2) first column in 'data' is named 'fitness'; 
     3) abundances of at least one neighbour species in 'data';
     4) data and covariates (if present) have the same number of observations")
@@ -126,11 +126,26 @@ cxr_pm_fit <- function(data,
   
   # try to retrieve the function from its name
   # using function "get"
-  tryCatch({
-    fitness_model <- get(model_name)
-  }, error=function(e){cat("cxr_pm_fit ERROR : model '",model_name,"' 
-  could not be retrieved. Make sure it is defined and available in the cxr package 
-                           or in the global environment")})
+  fitness_model <- try(get(model_name),silent = TRUE)
+  if(class(fitness_model) == "try-error"){
+    stop(paste("cxr_pm_fit ERROR: model '",model_name,"' could not be retrieved. 
+  Make sure it is defined and available in the cxr package or in the global environment.\n",sep=""))
+  }
+  
+  # check that lower/upper bounds are provided if the method requires it
+  bound.ok <- cxr_check_method_boundaries(optimization_method,lower_bounds,upper_bounds, type = "pm")
+  if(!bound.ok){
+    stop("cxr_pm_fit ERROR: check the optimization method selected and lower/upper bounds.
+         The following methods require explicit lower and upper parameter boundaries to be set:
+         L-BFGS-B, nlm, nlminb, Rcgmin, Rvmmin, spg, bobyqa, nmkb, hjkb, nloptr_CRS2_LM,
+         nloptr_ISRES, nloptr_DIRECT_L_RAND, GenSA, hydroPSO, DEoptimR.")
+  }
+  
+  # warning if initial values are not set
+  if(identical(initial_values,list(lambda = 0, alpha = 0, lambda_cov = 0, alpha_cov = 0))){
+    message("cxr_pm_fit: Using default initial values. Note that these may not be appropriate for your data/model, or
+    for the optimization method selected.")
+  }
   
   # prepare data ------------------------------------------------------------
   # neighbour matrix
@@ -245,8 +260,8 @@ cxr_pm_fit <- function(data,
   # only set if there are bounds for other params
   if(!is.null(lower_bounds) & 
      !is.null(upper_bounds)){
-    lower_sigma <- 1e-10
-    upper_sigma <- 1
+    lower_sigma <- 1e-5
+    upper_sigma <- 1e5
   }
   
   if(!is.null(lower_bounds$alpha) & 
@@ -520,6 +535,35 @@ cxr_pm_fit <- function(data,
   # define two classes, cxr_pm_fit/cxr_er_fit
   
   class(fit) <- "cxr_pm_fit"
+  
+  if(!is.null(fit$lambda) & !is.null(lower_lambda) & !is.null(upper_lambda)){
+    if(fit$lambda == lower_lambda | fit$lambda == upper_lambda){
+      message("cxr_pm_fit: A fitted lambda is equal to lower or upper bounds. Consider refitting
+              with different boundaries.")
+    }
+  }
+  
+  if(!is.null(fit$alpha) & !is.null(lower_alpha) & !is.null(upper_alpha)){
+    if(any(fit$alpha == lower_alpha) | any(fit$alpha == upper_alpha)){
+      message("cxr_pm_fit: One or more fitted alphas are equal to lower or upper bounds. 
+      Consider refitting with different boundaries.")
+    }
+  }
+  
+  if(!is.null(fit$lambda_cov) & !is.null(lower_lambda_cov) & !is.null(upper_lambda_cov)){
+    if(any(fit$lambda_cov == lower_lambda_cov) | any(fit$lambda_cov == upper_lambda_cov)){
+      message("cxr_pm_fit: A fitted lambda_cov is equal to lower or upper bounds. 
+      Consider refitting with different boundaries.")
+    }
+  }
+  
+  if(!is.null(fit$alpha_cov) & !is.null(lower_alpha_cov) & !is.null(upper_alpha_cov)){
+    if(any(fit$alpha_cov == lower_alpha_cov) | any(fit$alpha_cov == upper_alpha_cov)){
+      message("cxr_pm_fit: One or more fitted alpha_covs are equal to lower or upper bounds. 
+      Consider refitting with different boundaries.")
+    }
+  }  
+  
   fit
 }
 

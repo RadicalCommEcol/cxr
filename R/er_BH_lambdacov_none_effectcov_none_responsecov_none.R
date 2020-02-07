@@ -15,8 +15,6 @@
 #'
 #' @return log-likelihood value
 #' @export
-#'
-#' @examples
 er_BH_lambdacov_none_effectcov_none_responsecov_none <- function(par,
                                                                  fitness,
                                                                  target,

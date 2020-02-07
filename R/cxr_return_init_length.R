@@ -1,4 +1,19 @@
-cxr_return_init_length <- function(par_type, par_value, par_names, fit_type = c("er","pm")){
+#' internal, return a parameter with its appropriate length
+#'
+#' @param par_type global or pairwise
+#' @param par_value numeric value
+#' @param par_names character vector with the names of the parameter
+#' @param fit_type "global" params have different lengths in
+#' er and pm fits 
+#'
+#' @return
+#' @noRd
+#'
+#' @examples
+cxr_return_init_length <- function(par_type, 
+                                   par_value, 
+                                   par_names, 
+                                   fit_type = c("er","pm")){
   
   fit_type <- match.arg(fit_type)
   

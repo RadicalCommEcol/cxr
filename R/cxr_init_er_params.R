@@ -1,15 +1,13 @@
 
-#' Join parameters in a 1d vector
+#' Internal, join parameters in a 1d vector
 #' 
 #' Generate a 1d vector from a series of parameters in a certain order. It also returns the same vector
-#' for lower and upper bounds. This function is intended to work with
-#' parameters for a single species (i.e. a single lambda value, etc). Note that lambda_cov and alpha_cov must be consistent
-#' with num_covariates.
+#' for lower and upper bounds. 
 #'
 #' @param init_lambda numeric, lambda
 #' @param init_sigma numeric, sigma
-#' @param init_effect 1d vector, 
-#' @param init_response 1d vector, 
+#' @param init_effect 1d vector 
+#' @param init_response 1d vector 
 
 #' @param init_lambda_cov 1d vector, initial values for lambda_cov
 #' @param init_effect_cov 1d vector
@@ -19,19 +17,19 @@
 #' @param upper_lambda upper bound for lambda
 #' @param lower_sigma lower bound for sigma
 #' @param upper_sigma upper bound for sigma
-#' @param lower_effect 
-#' @param upper_effect 
-#' @param lower_response 
-#' @param upper_response
+#' @param lower_effect .
+#' @param upper_effect .
+#' @param lower_response . 
+#' @param upper_response .
 #' @param lower_lambda_cov lower bound for lambda_cov
 #' @param upper_lambda_cov upper bound for lambda_cov
-#' @param lower_effect_cov 
-#' @param upper_effect_cov 
-#' @param lower_response_cov 
-#' @param upper_response_cov
+#' @param lower_effect_cov .
+#' @param upper_effect_cov .
+#' @param lower_response_cov .
+#' @param upper_response_cov .
 #'
-#' @return list with three 1d vectors, ready for passing to the optim methods, consistent with the functions model_BH1-5 
-#' @export
+#' @return list with three 1d vectors, ready for passing to the optim methods
+#' @noRd
 cxr_init_er_params <- function(init_lambda = NULL,
                        init_sigma = 0,
                        init_effect = NULL,

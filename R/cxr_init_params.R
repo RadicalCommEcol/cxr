@@ -1,5 +1,5 @@
 
-#' Join parameters in a 1d vector
+#' internal, join parameters in a 1d vector
 #' 
 #' Generate a 1d vector from a series of parameters in a certain order. It also returns the same vector
 #' for lower and upper bounds. This function is intended to work with
@@ -22,8 +22,8 @@
 #' @param lower_alpha_cov lower bound for alpha_cov
 #' @param upper_alpha_cov upper bound for alpha_cov
 #'
-#' @return list with three 1d vectors, ready for passing to the optim methods, consistent with the functions model_BH1-5 
-#' @export
+#' @return list with three 1d vectors, ready for passing to the optim methods
+#' @noRd
 cxr_init_params <- function(init_lambda = NULL,
                        init_sigma = 0,
                        init_alpha = NULL,
