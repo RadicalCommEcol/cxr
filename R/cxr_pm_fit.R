@@ -149,8 +149,12 @@ cxr_pm_fit <- function(data,
   
   # prepare data ------------------------------------------------------------
   # neighbour matrix
-  neigh_matrix <- subset(data, select = -c(fitness))
-  neigh_matrix <- as.matrix(neigh_matrix)
+  
+  # just to avoid a note in R CMD CHECK
+  dropname <- "fitness"
+  neigh_matrix <- as.matrix(data[ , !(names(data) %in% dropname)])
+  # neigh_matrix <- subset(data, select = -c(fitness))
+  # neigh_matrix <- as.matrix(neigh_matrix)
   
   # neighbour species?
   neigh <- colnames(neigh_matrix)
@@ -420,7 +424,7 @@ cxr_pm_fit <- function(data,
   # have different output types
   
   if(is.null(optim_result)){
-    optim_params <- cxr_retrieve_params(optim_params = rep(NA_real_,length(init_par$init_par)),
+    optim_params <- cxr_retrieve_params(optim_par = rep(NA_real_,length(init_par$init_par)),
                                         lambda_length = length(init_lambda),
                                         alpha_length = length(init_alpha),
                                         lambda_cov_length = length(init_lambda_cov),
@@ -445,7 +449,7 @@ cxr_pm_fit <- function(data,
       log.likelihood <- optim_result$objective
     }# if-else method
     
-    optim_params <- cxr_retrieve_params(optim_params = outpar,
+    optim_params <- cxr_retrieve_params(optim_par = outpar,
                                         lambda_length = length(init_lambda),
                                         alpha_length = length(init_alpha),
                                         lambda_cov_length = length(init_lambda_cov),
@@ -467,7 +471,7 @@ cxr_pm_fit <- function(data,
                                fixed_parameters = fixed_parameters,
                                bootstrap_samples = bootstrap_samples)
     
-    error_params <- cxr_retrieve_params(optim_params = errors,
+    error_params <- cxr_retrieve_params(optim_par = errors,
                                         lambda_length = length(init_lambda),
                                         alpha_length = length(init_alpha),
                                         lambda_cov_length = length(init_lambda_cov),

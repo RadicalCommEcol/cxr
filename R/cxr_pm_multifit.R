@@ -5,20 +5,11 @@
 #'
 #' @param data named list in which each component is 
 #' a dataframe with a fitness column and a number of columns representing neigbhours
-#' @inheritParams model_family cxr_pm_fit
+#' @inheritParams cxr_pm_fit
 #' @param covariates optional named list in which each component is
 #' a dataframe with values of each covariate for each observation. The ith component
 #' of \code{covariates} are the covariate values that correspond to 
 #' the ith component of \code{data}, so they must have the same number of observations.
-#' @inheritParams optimization_method cxr_pm_fit
-#' @inheritParams alpha_form cxr_pm_fit
-#' @inheritParams lambda_cov_form cxr_pm_fit
-#' @inheritParams alpha_cov_form cxr_pm_fit
-#' @inheritParams initial_values cxr_pm_fit
-#' @inheritParams lower_bounds cxr_pm_fit
-#' @inheritParams upper_bounds cxr_pm_fit
-#' @inheritParams fixed_terms cxr_pm_fit
-#' @inheritParams bootstrap_samples cxr_pm_fit
 #'
 #' @return an object of type 'cxr_pm_multifit' which is a list with the following components:
 #' * model_name: string with the name of the fitness model
@@ -61,9 +52,18 @@
 #'                              alpha_form = "pairwise",
 #'                              lambda_cov_form = "global",
 #'                              alpha_cov_form = "global",
-#'                              initial_values = list(lambda = 1,alpha = 0.1,lambda_cov = 0.1, alpha_cov = 0.1),
-#'                              lower_bounds = list(lambda = 0.01,alpha = 0,lambda_cov = 0, alpha_cov = 0),
-#'                              upper_bounds = list(lambda = 100,alpha = 1,lambda_cov = 1, alpha_cov = 1),
+#'                              initial_values = list(lambda = 1,
+#'                                                    alpha = 0.1,
+#'                                                    lambda_cov = 0.1, 
+#'                                                    alpha_cov = 0.1),
+#'                              lower_bounds = list(lambda = 0.01,
+#'                                                  alpha = 0,
+#'                                                  lambda_cov = 0, 
+#'                                                  alpha_cov = 0),
+#'                              upper_bounds = list(lambda = 100,
+#'                                                  alpha = 1,
+#'                                                  lambda_cov = 1, 
+#'                                                  alpha_cov = 1),
 #'                              bootstrap_samples = 3)
 #'   # brief summary
 #'   summary(fit_3sp)

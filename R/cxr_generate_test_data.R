@@ -35,6 +35,8 @@
 #' with min_alpha_cov and max_alpha_cov as minimum and maximum values.
 #' @param max_alpha_cov if no focal_alpha_cov is provided, alpha_covs are taken from a uniform distribution
 #' with min_alpha and max_alpha as minimum and maximum values.
+#' @param min_cov minimum value for covariates
+#' @param max_cov maximum value for covariates
 #' @return list with two components: 'observations' is a list with as many components as focal species. 
 #' Each component of 'observations' is a dataframe with stochastic number of neighbours and associated fitness.
 #' The second component, 'covariates', is again a list with one component per focal species. 
@@ -42,7 +44,7 @@
 #' @import stats
 #' @export
 #' 
-#' @example 
+#' @examples
 #' example_obs <- cxr_generate_test_data(focal_sp = 2,
 #'                                       neigh_sp = 2,
 #'                                       alpha_form = "pairwise",

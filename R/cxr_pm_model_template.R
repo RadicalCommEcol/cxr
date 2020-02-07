@@ -117,6 +117,6 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
   
   # the routine returns the sum of log-likelihoods of the data and model:
   # DO NOT CHANGE THIS
-  llik <- dnorm(log.fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
+  llik <- dnorm(fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
   return(sum(-1*llik))
 }

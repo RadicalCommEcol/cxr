@@ -4,35 +4,33 @@
 \alias{cxr_pm_bootstrap}
 \title{Standard error estimates for model parameters}
 \usage{
-cxr_pm_bootstrap(fitness.model, optim.method, param.list, fixed.terms,
-  log.fitness, init.par, lower.bounds, upper.bounds, focal.comp.matrix,
-  focal.covariates, nsamples)
+cxr_pm_bootstrap(fitness_model, optimization_method, data, covariates,
+  init_par, lower_bounds, upper_bounds, fixed_parameters,
+  bootstrap_samples)
 }
 \arguments{
-\item{fitness.model}{function returning a single value to minimize, given a set of parameters and a fitness metric}
+\item{fitness_model}{function returning a single value to minimize, given a set of parameters and a fitness metric}
 
-\item{optim.method}{optimization method to use. One of the following: "optim_NM","optim_L-BFGS-B","nloptr_CRS2_LM", 
-"nloptr_ISRES","nloptr_DIRECT_L_RAND","GenSA","hydroPSO","DEoptimR".}
+\item{optimization_method}{numerical optimization method}
 
-\item{param.list}{string vector giving the parameters that are to be optimized for the fitness model.}
+\item{data}{dataframe with observations in rows and two sets of columns:
+\itemize{
+\item fitness: fitness metric for the focal individual
+\item neighbours: columns with user-defined names with number of neighbours for each group
+}}
 
-\item{fixed.terms}{string vector giving the parameters that are NOT optimized for the fitness model.}
-
-\item{log.fitness}{1d vector, log of the fitness metric for every observation}
-
-\item{init.par}{1d vector of initial parameters}
-
-\item{lower.bounds}{1d vector of lower bounds}
-
-\item{upper.bounds}{1d vector of upper bounds}
-
-\item{focal.comp.matrix}{matrix with observations in rows and neighbours in columns. Each cell is the number of neighbours
-of a given species in a given observation.}
-
-\item{focal.covariates}{optional matrix with observations in rows and covariates in columns. Each cell is the value of a covariate
+\item{covariates}{optional matrix with observations in rows and covariates in columns. Each cell is the value of a covariate
 in a given observation.}
 
-\item{nsamples}{how many bootstrap samples to compute.}
+\item{init_par}{1d vector of initial parameters}
+
+\item{lower_bounds}{1d vector of lower bounds}
+
+\item{upper_bounds}{1d vector of upper bounds}
+
+\item{fixed_parameters}{optional list specifying values of fixed parameters, with components "lambda","alpha","lambda_cov", and "alpha_cov".}
+
+\item{bootstrap_samples}{how many bootstrap samples to compute.}
 }
 \value{
 1d vector, the standard error of each parameter in init.par

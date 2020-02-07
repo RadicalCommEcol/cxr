@@ -6,10 +6,9 @@
 #' @param fit_type "global" params have different lengths in
 #' er and pm fits 
 #'
-#' @return
+#' @return numeric vector of appropriate length
 #' @noRd
 #'
-#' @examples
 cxr_return_init_length <- function(par_type, 
                                    par_value, 
                                    par_names, 

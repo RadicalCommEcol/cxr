@@ -1,4 +1,3 @@
-
 #' Internal, retrieve parameters from the vector returned by the optimization procedures
 #'
 #' @param optim_params 1d vector, the result of an optimization method

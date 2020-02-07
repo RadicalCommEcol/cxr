@@ -7,8 +7,10 @@
 #' @param par 1d vector with initial parameters in the order: 
 #' lambda,lambda_cov,effect,effect_cov,response,response_cov,sigma
 #' @param fitness 1d vector with fitness observations
-#' @param target 
-#' @param density 
+#' @param target matrix with species in rows, observations in columns. Value is 1 if
+#' a species is focal for a given observation, 0 otherwise.
+#' @param density matrix with species in rows, observations in columns. Value is 
+#' density of each sp as neighbour for each observation.
 #' @param covariates numeric dataframe or matrix with observations 
 #' in rows and covariates in columns. Each cell is the value of a covariate
 #' in a given observation

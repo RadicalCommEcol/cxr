@@ -7,7 +7,7 @@
 #' \itemize{          
 #'   \item obs_ID: unique identifier of each observation
 #'   \item salinity: salinity measurement for that observation,
-#'   in accumulated microsiemens/m²
+#'   in accumulated microsiemens/m2
 #'   }
 #'   
 #' @note For details, see Lanuza et al. 2018 Ecology Letters. 

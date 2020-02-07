@@ -2,16 +2,11 @@
 #' 
 #' Computes bootstrap standard errors for a given effect/response function
 #'
-#' @inheritParams fitness_model cxr_er_fit 
-#' @inheritParams optimization_method cxr_er_fit
-#' @inheritParams data cxr_er_fit
-#' @inheritParams covariates cxr_er_fit
-#' @inheritParams init_par cxr_er_fit
-#' @inheritParams lower_bounds cxr_er_fit
-#' @inheritParams upper_bounds cxr_er_fit
-#' @inheritParams fixed_parameters cxr_er_fit
-#' @inheritParams bootstrap_samples cxr_er_fit
-#' 
+#' @param fitness_model effect/response function, see \code{cxr_er_fit}
+#' @param init_par initial values for parameters
+#' @param fixed_parameters list with values for fixed parameters, or NULL.
+#' @inheritParams cxr_er_fit
+#' @export
 cxr_er_bootstrap <- function(fitness_model,
                              optimization_method,
                              data,
@@ -90,7 +85,7 @@ cxr_er_bootstrap <- function(fitness_model,
                                        fitness = log(bdata$fitness), 
                                        target = btarget_all,
                                        density = bdensity_all,
-                                       covariates = covdf,  
+                                       covariates = covariates,  
                                        fixed_parameters = fixed_parameters)
         par.pos <- which(!names(bpar) %in% c("value","fevals","gevals","niter","convcode","kkt1","kkt2","xtime"))
         bpar <- as.numeric(bpar[,par.pos])
@@ -112,7 +107,7 @@ cxr_er_bootstrap <- function(fitness_model,
                                        fitness = log(bdata$fitness), 
                                        target = btarget_all,
                                        density = bdensity_all,
-                                       covariates = covdf, 
+                                       covariates = covariates, 
                                        fixed_parameters = fixed_parameters)
         par.pos <- which(!names(bpar) %in% c("value","fevals","gevals","niter","convcode","kkt1","kkt2","xtime"))
         bpar <- as.numeric(bpar[,par.pos])
@@ -128,7 +123,7 @@ cxr_er_bootstrap <- function(fitness_model,
                                        fitness = log(bdata$fitness), 
                                        target = btarget_all,
                                        density = bdensity_all,
-                                       covariates = covdf,  
+                                       covariates = covariates,  
                                        fixed_parameters = fixed_parameters)
         bpar <- bpar$solution
       }, error=function(e){cat("cxr_er_bootstrap optimization ERROR :",conditionMessage(e), "\n")})
@@ -142,7 +137,7 @@ cxr_er_bootstrap <- function(fitness_model,
                                        fitness = log(bdata$fitness), 
                                        target = btarget_all,
                                        density = bdensity_all,
-                                       covariates = covdf, 
+                                       covariates = covariates, 
                                        fixed_parameters = fixed_parameters)
         bpar <- bpar$solution
       }, error=function(e){cat("cxr_er_bootstrap optimization ERROR :",conditionMessage(e), "\n")})
@@ -156,7 +151,7 @@ cxr_er_bootstrap <- function(fitness_model,
                                        fitness = log(bdata$fitness), 
                                        target = btarget_all,
                                        density = bdensity_all,
-                                       covariates = covdf, 
+                                       covariates = covariates, 
                                        fixed_parameters = fixed_parameters)
         bpar <- bpar$solution
       }, error=function(e){cat("cxr_er_bootstrap optimization ERROR :",conditionMessage(e), "\n")})
@@ -170,7 +165,7 @@ cxr_er_bootstrap <- function(fitness_model,
                                      fitness = log(bdata$fitness), 
                                      target = btarget_all,
                                      density = bdensity_all,
-                                     covariates = covdf, 
+                                     covariates = covariates, 
                                      fixed_parameters = fixed_parameters)
         bpar <- bpar$par
       }, error=function(e){cat("cxr_er_bootstrap optimization ERROR :",conditionMessage(e), "\n")})
@@ -186,7 +181,7 @@ cxr_er_bootstrap <- function(fitness_model,
                                            fitness = log(bdata$fitness), 
                                            target = btarget_all,
                                            density = bdensity_all,
-                                           covariates = covdf, 
+                                           covariates = covariates, 
                                            fixed_parameters = fixed_parameters)
         bpar <- bpar$par
       }, error=function(e){cat("cxr_er_bootstrap optimization ERROR :",conditionMessage(e), "\n")})
@@ -199,7 +194,7 @@ cxr_er_bootstrap <- function(fitness_model,
                                            fitness = log(bdata$fitness), 
                                            target = btarget_all,
                                            density = bdensity_all,
-                                           covariates = covdf,  
+                                           covariates = covariates,  
                                            fixed_parameters = fixed_parameters)
         bpar <- bpar$par
       }, error=function(e){cat("cxr_er_bootstrap optimization ERROR :",conditionMessage(e), "\n")})

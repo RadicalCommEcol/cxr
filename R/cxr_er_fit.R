@@ -1,15 +1,3 @@
-# 
-source("R/cxr_check_input_er.R")
-source("R/cxr_init_er_params.R")
-source("R/cxr_retrieve_er_params.R")
-source("R/cxr_return_init_length.R")
-source('R/er_BH_lambdacov_none_effectcov_none_responsecov_none.R')
-source('R/er_BH_lambdacov_global_effectcov_global_responsecov_global.R')
-source('R/cxr_er_bootstrap.R')
-source("R/cxr_check_method_boundaries.R")
-
-# fit three species at once
-
 #' General optimization for effect-response models
 #' 
 #' Estimates parameters of user-specified models of competitive effects and responses.
@@ -18,15 +6,14 @@ source("R/cxr_check_method_boundaries.R")
 #' * fitness: fitness metric for each observation
 #' * neighbours: named columns giving the number of neighbours of each column
 #' the names of the list elements are taken to be the names of the focal species. 
+#' 
+#' 
 #' If 'data' is a dataframe, it also needs a 'focal' column.
 #' Regardless of the data structure, all focal species need to have the same number of observations (i.e. same number of rows),
 #' and the set of neighbour species needs to be the same as the set of focal species, so that
 #' the neighbours columns correspond to the names of the list elements or, if 'data' is a dataframe, 
 #' to the values of the 'focal' column. Future versions will relax this requirement.
-#' @inheritParams model_family cxr_pm_fit
 #' @param covariates a data structure equivalent to 'data', in which each column are the values of a covariate.
-#' @inheritParams optimization_method cxr_pm_fit
-#' @inheritParams lambda_cov_form cxr_pm_fit
 #' @param effect_cov_form form of the covariate effects on competitive effects. 
 #' Either "none" (no covariate effects) or "global" (one estimate per covariate)
 #' @param response_cov_form form of the covariate effects on competitive responses. 
@@ -39,8 +26,8 @@ source("R/cxr_check_method_boundaries.R")
 #' @param upper_bounds optional list with single values for "lambda", "effect","response", 
 #' and optionally "lambda_cov", "effect_cov", "response_cov".
 #' @param fixed_terms optional list specifying which model parameters are fixed.
-#' @inheritParams bootstrap_samples cxr_pm_fit
-#'
+#' @inheritParams cxr_pm_fit
+#' @md
 #' @return an object of type 'cxr_er_fit' which is a list with the following components:
 #' * model_name: string with the name of the fitness model
 #' * model: model function

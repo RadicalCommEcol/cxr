@@ -8,7 +8,6 @@
 #'
 #' @return boolean value, whether input data are valid or not
 #'
-#' @examples
 #' @noRd
 cxr_check_input_data <- function(data,covariates = NULL){
   data.ok <- TRUE
