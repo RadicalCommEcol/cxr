@@ -29,8 +29,8 @@ data("neigh_list", package = "cxr")
 
 ```{r}
 my.sp <- "HOMA"
-# get data from the list with all species
-obs_homa <- neigh_list[["HOMA"]]
+# get data from the list 
+obs_homa <- neigh_list[[my.sp]]
 # no need for ID column
 obs_homa <- subset(obs_homa,select = -c(obs_ID))
 ```
