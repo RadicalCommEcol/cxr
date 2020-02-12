@@ -1,60 +1,118 @@
-
-# source("R/cxr_check_input_er.R")
-# source("R/cxr_init_er_params.R")
-# source("R/cxr_retrieve_er_params.R")
-# source("R/cxr_return_init_length.R")
-# source('R/er_BH_lambdacov_none_effectcov_none_responsecov_none.R')
-# source('R/er_BH_lambdacov_global_effectcov_global_responsecov_global.R')
-# source('R/cxr_er_bootstrap.R')
-# 
-# spdata <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)), f3 = round(runif(10,1,5)))
-# spdata2 <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)), f3 = round(runif(10,1,5)))
-# spdata3 <- data.frame(fitness = runif(10,0,1),f1 = round(runif(10,1,10)), f2 = round(runif(10,1,5)), f3 = round(runif(10,1,5)))
-# 
-# spdata$focal <- "f1"
-# spdata2$focal <- "f2"
-# spdata3$focal <- "f3"
-# 
-# splist <- list(f1 = spdata,f2 = spdata2)#,f3 = spdata3)
-# spdf <- rbind(spdata,spdata2)#,spdata3)
-# 
-# # c1 <- data.frame(c1 = rnorm(10,1,.1))
-# # # c2 <- data.frame(c2 = rnorm(10,1,.1))
-# # clist <- list(f1 = c1, f2 = c1*2)
-# # cdf <- rbind(c1,c1*2)
-# cdf <- data.frame(c1 = rnorm(nrow(spdf),1,.1),c2 = rnorm(nrow(spdf),2,.2))
-# clist <- list(f1 = data.frame(c1 = rnorm(nrow(spdata),1,.1)),f2 = data.frame(c1 = rnorm(nrow(spdata),2,.2)))
-# 
-# optimization_method <- "bobyqa"
-# model_family <- "BH"
-# data <- splist#spdf
-# covariates <- clist#cdf
-# lambda_cov_form <- effect_cov_form <- response_cov_form <- "global"
-# initial_values = list(lambda = 1, 
-#                       effect = 0.1, 
-#                       response = 0.1, 
-#                       lambda_cov = 0.1, 
-#                       effect_cov = 0.1, 
-#                       response_cov = 0.1,
-#                       sigma = 0.1)
-# lower_bounds <- list(lambda = 0, 
-#                      effect = 0, 
-#                      response = 0, 
-#                      lambda_cov = 0, 
-#                      effect_cov = 0, 
-#                      response_cov = 0,
-#                      sigma = 0)
-# upper_bounds <- list(lambda = 10, 
-#                      effect = 1, 
-#                      response = 1, 
-#                      lambda_cov = 1, 
-#                      effect_cov = 1, 
-#                      response_cov = 1,
-#                      sigma = 1)
-# bootstrap_samples <- 3
-# fixed_terms <- "response"
-
-
+#' General optimization for effect-response models
+#' 
+#' Estimates parameters of user-specified models of competitive effects and responses.
+#'
+#' @param data either a list of dataframes or a single dataframe. if 'data' is a list, each element is a dataframe with the following columns:
+#' * fitness: fitness metric for each observation
+#' * neighbours: named columns giving the number of neighbours of each column
+#' the names of the list elements are taken to be the names of the focal species. 
+#' 
+#' 
+#' If 'data' is a dataframe, it also needs a 'focal' column.
+#' Regardless of the data structure, all focal species need to have the same number of observations (i.e. same number of rows),
+#' and the set of neighbour species needs to be the same as the set of focal species, so that
+#' the neighbours columns correspond to the names of the list elements or, if 'data' is a dataframe, 
+#' to the values of the 'focal' column. Future versions will relax this requirement.
+#' @param covariates a data structure equivalent to 'data', in which each column are the values of a covariate.
+#' @param effect_cov_form form of the covariate effects on competitive effects. 
+#' Either "none" (no covariate effects) or "global" (one estimate per covariate)
+#' @param response_cov_form form of the covariate effects on competitive responses. 
+#' Either "none" (no covariate effects) or "global" (one estimate per covariate)
+#' @param initial_values list with components "lambda","effect","response", and optionally
+#' "lambda_cov", "effect_cov", "response_cov", specifying the initial values
+#' for numerical optimization. Single values are allowed.
+#' @param lower_bounds optional list with single values for "lambda", "effect","response", 
+#' and optionally "lambda_cov", "effect_cov", "response_cov".
+#' @param upper_bounds optional list with single values for "lambda", "effect","response", 
+#' and optionally "lambda_cov", "effect_cov", "response_cov".
+#' @param fixed_terms optional list specifying which model parameters are fixed.
+#' @inheritParams cxr_pm_fit
+#' @md
+#' @return an object of type 'cxr_er_fit' which is a list with the following components:
+#' * model_name: string with the name of the fitness model
+#' * model: model function
+#' * data: data supplied
+#' * sp: names of the species fitted 
+#' * covariates: covariate data supplied
+#' * optimization_method: optimization method used
+#' * initial_values: list with initial values
+#' * fixed_terms: list with fixed terms
+#' * lambda: fitted values for lambdas, or NULL if fixed
+#' * effect: fitted values for competitive effects, or NULL if fixed
+#' * response: fitted values for competitive responses, or NULL if fixed
+#' * lambda_cov: fitted values for effect of covariates on lambdas, or NULL if fixed
+#' * effect_cov: fitted values for effect of covariates on competitive effects, or NULL if fixed
+#' * response_cov: fitted values for effect of covariates on competitive responses, or NULL if fixed
+#' * lambda_standard_error: standard errors for lambdas, if calculated
+#' * effect_standard_error: standard errors for competitive effects, if calculated
+#' * response_standard_error: standard errors for competitive responses, if calculated
+#' * lambda_cov_standard_error: standard errors for effect of covariates on lambdas, if calculated
+#' * effect_cov_standard_error: standard errors for effect of covariates on competitive effects, if calculated
+#' * response_cov_standard_error: standard errors for effect of covariates on competitive responses, if calculated
+#' * log_likelihood: log-likelihood of the fits
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # fit three species at once
+#' data("neigh_list")
+#' # these species all have >250 observations
+#' example_sp <- c(1,4,5)
+#' n.obs <- 250
+#' data <- neigh_list[example_sp]
+#' # keep only fitness and neighbours columns
+#' for(i in 1:length(data)){
+#'   data[[i]] <- data[[i]][1:n.obs,c(2,example_sp+2)]#2:length(data[[i]])]
+#' }
+#' 
+#' # covariates: salinity
+#' data("salinity_list")
+#' salinity <- salinity_list[example_sp]
+#' # keep only salinity column
+#' for(i in 1:length(salinity)){
+#'   salinity[[i]] <- salinity[[i]][1:n.obs,2:length(salinity[[i]])]
+#' }
+#' 
+#' initial_values = list(lambda = 1, 
+#'                      effect = 1, 
+#'                      response = 1
+#'                      # lambda_cov = 0, 
+#'                      # effect_cov = 0, 
+#'                      # response_cov = 0
+#')
+#'lower_bounds = list(lambda = 0, 
+#'                    effect = 0, 
+#'                    response = 0
+#'                    # lambda_cov = 0, 
+#'                    # effect_cov = 0, 
+#'                    # response_cov = 0
+#')
+#'upper_bounds = list(lambda = 100, 
+#'                     effect = 10, 
+#'                     response = 10
+#'                    # lambda_cov = 0, 
+#'                    # effect_cov = 0, 
+#'                    # response_cov = 0
+#' )
+#' 
+#' er_3sp <- cxr_er_fit(data = data,
+#'                      model_family = "BH",
+#'                      # fit without covariates, 
+#'                      # as it may be very computationally expensive
+#'                      # covariates = salinity,
+#'                      optimization_method = "bobyqa",
+#'                      lambda_cov_form = "none",
+#'                      effect_cov_form = "none",
+#'                      response_cov_form = "none",
+#'                      initial_values = initial_values,
+#'                      lower_bounds = lower_bounds,
+#'                      upper_bounds = upper_bounds,
+#'                      # syntaxis for fixed values
+#'                      # fixed_terms = list("response"),
+#'                      bootstrap_samples = 3)
+#' # brief summary
+#' summary(er_3sp)
+#' }
 cxr_er_fit <- function(data, 
                        model_family = c("BH"),
                        covariates = NULL, 
@@ -68,21 +126,18 @@ cxr_er_fit <- function(data,
                        lambda_cov_form = c("none","global"),
                        effect_cov_form = c("none","global"),
                        response_cov_form = c("none","global"),
-                       initial_values = list(lambda = 0, 
-                                             effect = 0, 
-                                             response = 0, 
+                       initial_values = list(lambda = 1, 
+                                             effect = 1, 
+                                             response = 1, 
                                              lambda_cov = 0, 
                                              effect_cov = 0, 
-                                             response_cov = 0,
-                                             sigma = 0),
+                                             response_cov = 0),
                        lower_bounds = NULL,
                        upper_bounds = NULL,
                        fixed_terms = NULL,
                        # errors
                        bootstrap_samples = 0
 ){
-  
-  message("cxr_er_fit: note that computation time grows exponentially with number of species and covariates")
   
   # TODO add cxr:: to the internal functions once they are added
   
@@ -116,18 +171,20 @@ cxr_er_fit <- function(data,
   # check input data is a single dataframe with all sp
   # or a list with single-sp data
   # check input data
-  # TODO focal = neighbours?
   data.ok <- cxr_check_input_er(data,covariates)
   if(!data.ok){
     stop("cxr_er_fit ERROR: check the consistency of your input data: 
-    1) 'data' is either a list of dataframes or a single dataframe
+    1) 'data' is either a list of dataframes or a single dataframe.
     2) if 'data' is a list, each component is a dataframe; all
-    dataframes have the same number of observations and same columns
+    dataframes have the same number of observations and same columns.
     3) if 'data' is a dataframe, it has a 'focal' column, and all 
-    focal species have the same number of observations
+    focal species have the same number of observations.
+    4) The set of focal species is given by the names of the list elements
+    or by the 'focal' column. These species need to be the same as the
+    ones in the neighbour columns, and in the same order.
     4) 'data' and 'covariates' (if present) are of the same class and
-    have the same number of observations
-    5) no NAs are allowed either in 'data' or 'covariates'")
+    have the same number of observations.
+    5) All variables are integer/numeric, with no NAs.")
   }
   
   # check covariates if alpha_cov or lambda_cov are to be fit
@@ -142,13 +199,33 @@ cxr_er_fit <- function(data,
   # character string giving the name of the model
   model_name <- paste("er_",model_family,"_lambdacov_",lambda_cov_form,"_effectcov_",effect_cov_form,"_responsecov_",response_cov_form,sep="")
   
-  # try to retrieve the function from its name
-  # using function "get"
-  tryCatch({
-    fitness_model <- get(model_name)
-  }, error=function(e){cat("cxr_er_fit ERROR : model '",model_name,"' 
-  could not be retrieved. Make sure it is defined and available in the cxr package 
-                           or in the global environment")})
+  fitness_model <- try(get(model_name),silent = TRUE)
+  if(class(fitness_model) == "try-error"){
+    stop(paste("cxr_er_fit ERROR: model '",model_name,"' could not be retrieved. 
+  Make sure it is defined and available in the cxr package or in the global environment.\n",sep=""))
+  }
+  
+  # check that lower/upper bounds are provided if the method requires it
+  bound.ok <- cxr_check_method_boundaries(optimization_method,lower_bounds,upper_bounds, type = "er")
+  if(!bound.ok){
+    stop("cxr_er_fit ERROR: check the optimization method selected and lower/upper bounds.
+         The following methods require explicit lower and upper parameter boundaries to be set:
+         L-BFGS-B, nlm, nlminb, Rcgmin, Rvmmin, spg, bobyqa, nmkb, hjkb, nloptr_CRS2_LM,
+         nloptr_ISRES, nloptr_DIRECT_L_RAND, GenSA, hydroPSO, DEoptimR.")
+  }
+  
+  # warning if initial values are default ones
+  if(identical(initial_values,list(lambda = 1, 
+                                   effect = 1, 
+                                   response = 1, 
+                                   lambda_cov = 0, 
+                                   effect_cov = 0, 
+                                   response_cov = 0))){
+    message("cxr_er_fit: Using default initial values. Note that these may not be appropriate for your data/model, or
+    for the optimization method selected.")
+  }
+  
+  message("cxr_er_fit: note that computation time grows exponentially with number of species and covariates.")
   
   # prepare data ------------------------------------------------------------
   
@@ -156,6 +233,7 @@ cxr_er_fit <- function(data,
   covdf <- NULL
   if(class(data) == "list"){
     spdf <- do.call(rbind,data)
+    spdf$focal <- rep(names(data),each = nrow(data[[1]]))
     if(!is.null(covariates)){
       covdf <- do.call(rbind,covariates)
     }
@@ -178,7 +256,7 @@ cxr_er_fit <- function(data,
     
     target.my.sp <- integer(nrow(spdf))
     target.my.sp <- ifelse(spdf$focal == sp.list[i.sp],1,0)
-    density.my.sp <- spdf[,sp.list[i.sp]]
+    density.my.sp <- spdf[[sp.list[i.sp]]]
     
     target_all <- rbind(target_all,target.my.sp)
     density_all <- rbind(density_all,density.my.sp)
@@ -192,7 +270,7 @@ cxr_er_fit <- function(data,
       names(covdf) <- paste("cov",1:ncol(covdf),sep="")
     }
   }
-
+  
   # initial parameters
   # check wheter each model parameter is to be fitted or is fixed
   # note how initial_values also function as values 
@@ -263,12 +341,12 @@ cxr_er_fit <- function(data,
   
   # return_init_length is an auxiliary function
   # in case initial values are not of the same length of the expected parameters
-
+  
   if(lambda_cov_form != "none" & !is.null(covdf)){
     
     lc_names <- as.vector(t(outer("lambda_cov", sp.list, paste, sep="_"))) 
     lc_names <- as.vector(t(outer(lc_names, names(covdf), paste, sep="_"))) 
-
+    
     if("lambda_cov" %in% fixed_terms){
       fixed_parameters[["lambda_cov"]] <- cxr_return_init_length(lambda_cov_form,
                                                                  initial_values$lambda_cov,
@@ -279,7 +357,7 @@ cxr_er_fit <- function(data,
                                                 lc_names,"er")
     }
   }
-
+  
   if(effect_cov_form != "none" & !is.null(covdf)){
     ec_names <- as.vector(t(outer("effect_cov", sp.list, paste, sep="_"))) 
     ec_names <- as.vector(t(outer(ec_names, names(covdf), paste, sep="_"))) 
@@ -336,8 +414,8 @@ cxr_er_fit <- function(data,
   # only set if there are bounds for other params
   if(!is.null(lower_bounds) & 
      !is.null(upper_bounds)){
-    lower_sigma <- 1e-10
-    upper_sigma <- 1
+    lower_sigma <- 1e-5
+    upper_sigma <- 1e5
   }
   
   if(!is.null(lower_bounds$effect) & 
@@ -403,9 +481,9 @@ cxr_er_fit <- function(data,
                                  upper_response_cov = upper_response_cov)
   
   # fit parameters ----------------------------------------------------------
-
+  
   optim_result <- NULL
-
+  
   if(optimization_method %in% c("BFGS", "CG", "Nelder-Mead", "ucminf")){
     tryCatch({
       optim_result <- optimx::optimx(par = init_par$init_par, 
@@ -421,10 +499,10 @@ cxr_er_fit <- function(data,
                                      density = density_all,
                                      covariates = covdf,  
                                      fixed_parameters = fixed_parameters)
-    }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
+    }, error=function(e){cat("cxr_er_fit optimization ERROR :",conditionMessage(e), "\n")})
   }else if(optimization_method %in% c("L-BFGS-B", "nlm", "nlminb", 
-                               "Rcgmin", "Rvmmin", "spg", 
-                               "bobyqa", "nmkb", "hjkb")){
+                                      "Rcgmin", "Rvmmin", "spg", 
+                                      "bobyqa", "nmkb", "hjkb")){
     tryCatch({
       optim_result <- optimx::optimx(par = init_par$init_par, 
                                      fn = fitness_model, 
@@ -439,7 +517,7 @@ cxr_er_fit <- function(data,
                                      density = density_all,
                                      covariates = covdf, 
                                      fixed_parameters = fixed_parameters)
-    }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
+    }, error=function(e){cat("cxr_er_fit optimization ERROR :",conditionMessage(e), "\n")})
   }else if(optimization_method == "nloptr_CRS2_LM"){
     tryCatch({
       optim_result <- nloptr::nloptr(x0 = init_par$init_par,
@@ -452,7 +530,7 @@ cxr_er_fit <- function(data,
                                      density = density_all,
                                      covariates = covdf,  
                                      fixed_parameters = fixed_parameters)
-    }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
+    }, error=function(e){cat("cxr_er_fit optimization ERROR :",conditionMessage(e), "\n")})
   }else if(optimization_method == "nloptr_ISRES"){
     tryCatch({
       optim_result <- nloptr::nloptr(x0 = init_par$init_par,
@@ -465,7 +543,7 @@ cxr_er_fit <- function(data,
                                      density = density_all,
                                      covariates = covdf, 
                                      fixed_parameters = fixed_parameters)
-    }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
+    }, error=function(e){cat("cxr_er_fit optimization ERROR :",conditionMessage(e), "\n")})
   }else if(optimization_method == "nloptr_DIRECT_L_RAND"){
     tryCatch({
       optim_result <- nloptr::nloptr(x0 = init_par$init_par,
@@ -478,7 +556,7 @@ cxr_er_fit <- function(data,
                                      density = density_all,
                                      covariates = covdf, 
                                      fixed_parameters = fixed_parameters)
-    }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
+    }, error=function(e){cat("cxr_er_fit optimization ERROR :",conditionMessage(e), "\n")})
   }else if(optimization_method == "GenSA"){
     tryCatch({
       optim_result <- GenSA::GenSA(par = init_par$init_par,
@@ -491,7 +569,7 @@ cxr_er_fit <- function(data,
                                    density = density_all,
                                    covariates = covdf, 
                                    fixed_parameters = fixed_parameters)
-    }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
+    }, error=function(e){cat("cxr_er_fit optimization ERROR :",conditionMessage(e), "\n")})
   }else if(optimization_method == "hydroPSO"){
     tryCatch({
       # suppress annoying output??
@@ -506,8 +584,8 @@ cxr_er_fit <- function(data,
                                          density = density_all,
                                          covariates = covdf, 
                                          fixed_parameters = fixed_parameters)
-
-    }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
+      
+    }, error=function(e){cat("cxr_er_fit optimization ERROR :",conditionMessage(e), "\n")})
     
   }else if(optimization_method == "DEoptimR"){
     tryCatch({
@@ -519,7 +597,7 @@ cxr_er_fit <- function(data,
                                          density = density_all,
                                          covariates = covdf,  
                                          fixed_parameters = fixed_parameters)
-    }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
+    }, error=function(e){cat("cxr_er_fit optimization ERROR :",conditionMessage(e), "\n")})
   }
   
   # gather output -----------------------------------------------------------
@@ -538,8 +616,8 @@ cxr_er_fit <- function(data,
     llik <- NA_real_
   }else{
     if(optimization_method %in% c("BFGS", "CG", "Nelder-Mead", "L-BFGS-B", "nlm", 
-                           "nlminb", "Rcgmin", "Rvmmin", "spg", "ucminf", 
-                           "bobyqa", "nmkb", "hjkb")){
+                                  "nlminb", "Rcgmin", "Rvmmin", "spg", "ucminf", 
+                                  "bobyqa", "nmkb", "hjkb")){
       par.pos <- which(!names(optim_result) %in% c("value","fevals","gevals","niter","convcode","kkt1","kkt2","xtime"))
       outnames <- names(optim_result[,par.pos])
       outpar <- as.numeric(optim_result[,par.pos])
@@ -568,7 +646,7 @@ cxr_er_fit <- function(data,
   # calculate errors --------------------------------------------------------
   
   if(bootstrap_samples > 0){
-
+    
     errors <- cxr_er_bootstrap(fitness_model = fitness_model,
                                optimization_method = optimization_method,
                                data = spdf,
@@ -593,7 +671,7 @@ cxr_er_fit <- function(data,
                          lambda_cov = NULL,
                          effect_cov = NULL,
                          response_cov = NULL
-                         )
+    )
   }
   
   # return cxr object ---------------------------------------------------
@@ -674,24 +752,116 @@ cxr_er_fit <- function(data,
   }
   
   fit$log_likelihood <- llik
-  # define two classes, cxr_pm_fit/cxr_er_fit
   
   class(fit) <- "cxr_er_fit"
+  
+  if(!is.null(fit$lambda) & !is.null(lower_lambda) & !is.null(upper_lambda)){
+    if(any(fit$lambda == lower_lambda) | any(fit$lambda == upper_lambda)){
+      message("cxr_pm_fit: A fitted lambda is equal to lower or upper bounds. Consider refitting
+              with different boundaries.")
+    }
+  }
+  
+  if(!is.null(fit$response) & !is.null(lower_response) & !is.null(upper_response)){
+    if(any(fit$response == lower_response) | any(fit$response == upper_response)){
+      message("cxr_pm_fit: One or more fitted responses are equal to lower or upper bounds. 
+      Consider refitting with different boundaries.")
+    }
+  }
+  
+  if(!is.null(fit$effect) & !is.null(lower_effect) & !is.null(upper_effect)){
+    if(any(fit$effect == lower_effect) | any(fit$effect == upper_effect)){
+      message("cxr_pm_fit: One or more fitted effects are equal to lower or upper bounds. 
+      Consider refitting with different boundaries.")
+    }
+  }
+  
+  if(!is.null(fit$lambda_cov) & !is.null(lower_lambda_cov) & !is.null(upper_lambda_cov)){
+    if(any(fit$lambda_cov == lower_lambda_cov) | any(fit$lambda_cov == upper_lambda_cov)){
+      message("cxr_pm_fit: A fitted lambda_cov is equal to lower or upper bounds. 
+      Consider refitting with different boundaries.")
+    }
+  }
+  
+  if(!is.null(fit$response_cov) & !is.null(lower_response_cov) & !is.null(upper_response_cov)){
+    if(any(fit$response_cov == lower_response_cov) | any(fit$response_cov == upper_response_cov)){
+      message("cxr_pm_fit: One or more fitted response_covs are equal to lower or upper bounds. 
+      Consider refitting with different boundaries.")
+    }
+  }
+  
+  if(!is.null(fit$effect_cov) & !is.null(lower_effect_cov) & !is.null(upper_effect_cov)){
+    if(any(fit$effect_cov == lower_effect_cov) | any(fit$effect_cov == upper_effect_cov)){
+      message("cxr_pm_fit: One or more fitted effects are equal to lower or upper bounds. 
+      Consider refitting with different boundaries.")
+    }
+  }
+  
   fit
 }
 
-
 # summary method ----------------------------------------------------------
 
-summary.cxr_er_fit <- function(x){
-  cat("Effect/Response model '",x$model_name,"' fitted for ",length(x$sp)," species, with ",nrow(x$data)/length(x$sp)," observations per species,", 
-      "\nand ",ifelse(is.null(x$covariates),0,ncol(x$covariates))," covariates",
-      ", using optimization method '",x$optimization_method,"'",
-      # "\n* focal lambda: ",ifelse(is.null(x$lambda)," - not fit - ",x$lambda),
-      # # "\n* mean alpha: ",ifelse(is.null(x$alpha)," - not fit - ",mean(x$alpha)),
-      # "\n* mean lambda_cov: ",ifelse(is.null(x$lambda_cov),"- not fit - ",mean(x$lambda_cov)),
-      # "\n* mean alpha_cov: ",ifelse(is.null(x$alpha_cov),"- not fit - ",mean(x$alpha_cov)),
-      "\n* log-likelihood of the fit: ",x$log_likelihood,sep="")
-  
-}
-
+# summary.cxr_er_fit <- function(x){
+#   covar <- 0
+#   if("list" %in% class(x$data)){
+#     obs <- nrow(x$data[[1]])
+#     if(!is.null(x$covariates)){
+#       covar <- length(x$covariates)
+#     }
+#   }else{
+#     obs <- unique(table(x$data$focal))
+#     if(!is.null(x$covariates)){
+#       covar <- ncol(x$covariates)
+#     }
+#   }
+#   
+#   cat("model:",x$model_name,"",
+#       "\noptimization method:",x$optimization_method,"",
+#       "\nspecies:", x$sp,
+#       "\ncovariates:", covar,
+#       "\nobservations:", obs,
+#       "\n----------",sep=" ")
+#   
+#   # for printing null or valid values
+#   # ifelse returns single values over single conditions
+#   if(is.null(x$lambda)){
+#     sl <- rep("-not fit-",length(x$sp))
+#   }else{
+#     sl <- x$lambda
+#   }
+#   if(is.null(x$effect)){
+#     se <- rep("-not fit-",length(x$sp))
+#   }else{
+#     se <- x$effect
+#   }
+#   if(is.null(x$response)){
+#     sr <- rep("-not fit-",length(x$sp))
+#   }else{
+#     sr <- x$response
+#   }
+#   if(is.null(x$lambda_cov)){
+#     slc <- rep("-not fit-",length(x$sp))
+#   }else{
+#     slc <- x$lambda_cov
+#   }
+#   if(is.null(x$effect_cov)){
+#     sec <- rep("-not fit-",length(x$sp))
+#   }else{
+#     sec <- x$effect_cov
+#   }
+#   if(is.null(x$response_cov)){
+#     src <- rep("-not fit-",length(x$sp))
+#   }else{
+#     src <- x$response_cov
+#   }
+#   summary_table <- data.frame(lambda = sl,
+#                               effect = se,
+#                               response = sr,
+#                               lambda_cov = slc,
+#                               effect_cov = sec,
+#                               response_cov = src,
+#                               row.names = x$sp)
+#   cat("\n")
+#   summary_table
+# }

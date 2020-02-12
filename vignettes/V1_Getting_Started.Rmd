@@ -1,0 +1,115 @@
+---
+title: "Getting started with cxr"
+output: rmarkdown::html_vignette
+author: cxr team
+vignette: >
+  %\VignetteIndexEntry{Getting started}
+  \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+**Introduction**
+
+The `cxr` package provides a general interface to parameterize population dynamics models from empirical data, and obtain from the estimations of these parameters (species vital rates and interaction coefficients) a series of metrics associated with modern coexistence theory. These metrics measure species competitive ability, their responses to competition as well as niche and average fitness differences (both demographic and competitive response differences).
+
+Here we demonstrate the basic functionality of the package, using the data included in it (see *Lanuza, Bartomeus, Godoy. 2018. Ecology Letters 21:865-874* for a description of the dataset). In particular, with this dataset, we will obtain the values of seed production in the absence of neighbours and the strength of direct interactions between pairs of species. These values are the basis for estimating the degree of niche overlap and average fitness differences between any pair of species. 
+
+**Set up**
+
+First, we load the package and the associated data
+
+```{r}
+library(cxr)
+data("neigh_list", package = "cxr")
+```
+
+1 - single species fit
+
+```{r}
+my.sp <- "HOMA"
+# get data from the list 
+obs_homa <- neigh_list[[my.sp]]
+# no need for ID column
+obs_homa <- subset(obs_homa,select = -c(obs_ID))
+```
+
+```{r warning=FALSE,message=FALSE}
+fit_homa <- cxr_pm_fit(data = obs_homa,
+                       model_family = "BH",
+                       covariates = NULL,
+                       optimization_method = "bobyqa",
+                       alpha_form = "pairwise",
+                       lambda_cov_form = "none",
+                       alpha_cov_form = "none",
+                       initial_values = list(lambda = 1,alpha = 1),
+                       lower_bounds = list(lambda = 0,alpha = 0),
+                       upper_bounds = list(lambda = 100,alpha = 10),
+                       fixed_terms = NULL,
+                       bootstrap_samples = 3)
+```
+
+```{r}
+summary(fit_homa)
+```
+
+we can access the elements of the returned object as usual
+
+```{r}
+fit_homa$alpha
+```
+
+2 - multispecies fit including the effect of a covariate over lambda and alpha parameters
+
+```{r}
+my.sp <- c("BEMA","MEEL","PUPA")
+obs_3sp <- data <- neigh_list[my.sp]
+# discard ID column
+for(i in 1:length(data)){
+   obs_3sp[[i]] <- obs_3sp[[i]][,2:length(data[[i]])]
+}
+# covariates: salinity
+data("salinity_list")
+salinity <- salinity_list[my.sp]
+# keep only salinity column
+for(i in 1:length(salinity)){
+  salinity[[i]] <- salinity[[i]][,2:length(salinity[[i]])]
+}
+```
+
+```{r warning=FALSE,message=FALSE}
+fit_3sp <- cxr_pm_multifit(data = obs_3sp,
+                              optimization_method = "bobyqa",
+                              covariates = salinity,
+                              alpha_form = "pairwise",
+                              lambda_cov_form = "global",
+                              alpha_cov_form = "global",
+                              initial_values = list(lambda = 1,
+                                                    alpha = 1,
+                                                    lambda_cov = 0.1, 
+                                                    alpha_cov = 0.1),
+                              lower_bounds = list(lambda = 0,
+                                                  alpha = 0,
+                                                  lambda_cov = 0, 
+                                                  alpha_cov = 0),
+                              upper_bounds = list(lambda = 100,
+                                                  alpha = 10,
+                                                  lambda_cov = 1, 
+                                                  alpha_cov = 1),
+                              bootstrap_samples = 3)
+```
+
+```{r}
+summary(fit_3sp)
+fit_3sp$alpha
+```
+
+
+
+
+
+
+
+
+

@@ -2,28 +2,10 @@
 #' 
 #' Computes bootstrap standard errors for a given effect/response function
 #'
-#' @param effect.response.model effect/response function
-#' @param optim.method optimization method to use. One of the following: "optim_NM","optim_L-BFGS-B","nloptr_CRS2_LM", 
-#' "nloptr_ISRES","nloptr_DIRECT_L_RAND","GenSA","hydroPSO","DEoptimR". 
-#' @param sp.data dataframe with all the necessary information in long format. It should have the following columns:
-#' - site: character ID
-#' - focal: character ID of the focal species. Any number of focal species is allowed, but the number of focal species
-#' must match the number of initial parameters (one lambda, e, and r per species).
-#' - fitness: numeric, a fitness metric
-#' - competitor: character, ID of a competitor for that observation. The set of competitors must be, for now, the same
-#' as the set of focal species.
-#' - number: number of neighbouring/competitor individuals from the associated species. Observations without competitors of a given species
-#' must be explicit, i.e. setting number to zero.
-#' @param init_par 1d vector of initial parameters
-#' @param lower.bounds 1d vector of lower bounds
-#' @param upper.bounds 1d vector of upper bounds
-#' @param covariates dataframe/matrix with observations in rows and covariates in columns. Each cell is the value of a covariate
-#' from an observation.
-#' @param optimize.lambda boolean, whether to optimize the values of lambda or not.
-#' @param lambda.vector in case lambda is not to be optimized, fixed values for it.
-#' @param bootstrap_samples how many bootstrap samples to compute.
-#'
-#' @return 1d vector, the standard error of each parameter in init_par
+#' @param fitness_model effect/response function, see \code{cxr_er_fit}
+#' @param init_par initial values for parameters
+#' @param fixed_parameters list with values for fixed parameters, or NULL.
+#' @inheritParams cxr_er_fit
 #' @export
 cxr_er_bootstrap <- function(fitness_model,
                              optimization_method,
@@ -78,7 +60,7 @@ cxr_er_bootstrap <- function(fitness_model,
       
       target.my.sp <- integer(nrow(bdata))
       target.my.sp <- ifelse(bdata$focal == sp.list[i.sp],1,0)
-      density.my.sp <- bdata[,sp.list[i.sp]]
+      density.my.sp <- bdata[[sp.list[i.sp]]]
       
       btarget_all <- rbind(btarget_all,target.my.sp)
       bdensity_all <- rbind(bdensity_all,density.my.sp)
@@ -103,13 +85,13 @@ cxr_er_bootstrap <- function(fitness_model,
                                        fitness = log(bdata$fitness), 
                                        target = btarget_all,
                                        density = bdensity_all,
-                                       covariates = covdf,  
+                                       covariates = covariates,  
                                        fixed_parameters = fixed_parameters)
         par.pos <- which(!names(bpar) %in% c("value","fevals","gevals","niter","convcode","kkt1","kkt2","xtime"))
         bpar <- as.numeric(bpar[,par.pos])
         row.names(bpar) <- NULL
         
-      }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
+      }, error=function(e){cat("cxr_er_bootstrap optimization ERROR :",conditionMessage(e), "\n")})
     }else if(optimization_method %in% c("L-BFGS-B", "nlm", "nlminb", 
                                         "Rcgmin", "Rvmmin", "spg", 
                                         "bobyqa", "nmkb", "hjkb")){
@@ -125,12 +107,12 @@ cxr_er_bootstrap <- function(fitness_model,
                                        fitness = log(bdata$fitness), 
                                        target = btarget_all,
                                        density = bdensity_all,
-                                       covariates = covdf, 
+                                       covariates = covariates, 
                                        fixed_parameters = fixed_parameters)
         par.pos <- which(!names(bpar) %in% c("value","fevals","gevals","niter","convcode","kkt1","kkt2","xtime"))
         bpar <- as.numeric(bpar[,par.pos])
         row.names(bpar) <- NULL
-      }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
+      }, error=function(e){cat("cxr_er_bootstrap optimization ERROR :",conditionMessage(e), "\n")})
     }else if(optimization_method == "nloptr_CRS2_LM"){
       tryCatch({
         bpar <- nloptr::nloptr(x0 = init_par,
@@ -141,10 +123,10 @@ cxr_er_bootstrap <- function(fitness_model,
                                        fitness = log(bdata$fitness), 
                                        target = btarget_all,
                                        density = bdensity_all,
-                                       covariates = covdf,  
+                                       covariates = covariates,  
                                        fixed_parameters = fixed_parameters)
         bpar <- bpar$solution
-      }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
+      }, error=function(e){cat("cxr_er_bootstrap optimization ERROR :",conditionMessage(e), "\n")})
     }else if(optimization_method == "nloptr_ISRES"){
       tryCatch({
         bpar <- nloptr::nloptr(x0 = init_par,
@@ -155,10 +137,10 @@ cxr_er_bootstrap <- function(fitness_model,
                                        fitness = log(bdata$fitness), 
                                        target = btarget_all,
                                        density = bdensity_all,
-                                       covariates = covdf, 
+                                       covariates = covariates, 
                                        fixed_parameters = fixed_parameters)
         bpar <- bpar$solution
-      }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
+      }, error=function(e){cat("cxr_er_bootstrap optimization ERROR :",conditionMessage(e), "\n")})
     }else if(optimization_method == "nloptr_DIRECT_L_RAND"){
       tryCatch({
         bpar <- nloptr::nloptr(x0 = init_par,
@@ -169,10 +151,10 @@ cxr_er_bootstrap <- function(fitness_model,
                                        fitness = log(bdata$fitness), 
                                        target = btarget_all,
                                        density = bdensity_all,
-                                       covariates = covdf, 
+                                       covariates = covariates, 
                                        fixed_parameters = fixed_parameters)
         bpar <- bpar$solution
-      }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
+      }, error=function(e){cat("cxr_er_bootstrap optimization ERROR :",conditionMessage(e), "\n")})
     }else if(optimization_method == "GenSA"){
       tryCatch({
         bpar <- GenSA::GenSA(par = init_par,
@@ -183,10 +165,10 @@ cxr_er_bootstrap <- function(fitness_model,
                                      fitness = log(bdata$fitness), 
                                      target = btarget_all,
                                      density = bdensity_all,
-                                     covariates = covdf, 
+                                     covariates = covariates, 
                                      fixed_parameters = fixed_parameters)
         bpar <- bpar$par
-      }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
+      }, error=function(e){cat("cxr_er_bootstrap optimization ERROR :",conditionMessage(e), "\n")})
     }else if(optimization_method == "hydroPSO"){
       tryCatch({
         # suppress annoying output??
@@ -199,10 +181,10 @@ cxr_er_bootstrap <- function(fitness_model,
                                            fitness = log(bdata$fitness), 
                                            target = btarget_all,
                                            density = bdensity_all,
-                                           covariates = covdf, 
+                                           covariates = covariates, 
                                            fixed_parameters = fixed_parameters)
         bpar <- bpar$par
-      }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
+      }, error=function(e){cat("cxr_er_bootstrap optimization ERROR :",conditionMessage(e), "\n")})
       
     }else if(optimization_method == "DEoptimR"){
       tryCatch({
@@ -212,10 +194,10 @@ cxr_er_bootstrap <- function(fitness_model,
                                            fitness = log(bdata$fitness), 
                                            target = btarget_all,
                                            density = bdensity_all,
-                                           covariates = covdf,  
+                                           covariates = covariates,  
                                            fixed_parameters = fixed_parameters)
         bpar <- bpar$par
-      }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
+      }, error=function(e){cat("cxr_er_bootstrap optimization ERROR :",conditionMessage(e), "\n")})
     }
     
     if(!is.null(bpar)){

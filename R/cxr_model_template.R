@@ -96,10 +96,10 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
     # pos <- pos + ncol(covariates)
     
     # uncomment for alpha_cov_pairwise
-    # alpha.cov <- par[pos:(pos+(ncol(covariates)*ncol(neigh_matrix))-1)]
+    # alpha_cov <- par[pos:(pos+(ncol(covariates)*ncol(neigh_matrix))-1)]
     # pos <- pos + (ncol(covariates)*ncol(neigh_matrix))
   }else{
-    alpha.cov <- fixed_parameters[["alpha.cov"]]
+    alpha_cov <- fixed_parameters[["alpha_cov"]]
   }
   
   # sigma - this is always necessary
@@ -119,6 +119,6 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
   
   # the routine returns the sum of log-likelihoods of the data and model:
   # DO NOT CHANGE THIS
-  llik <- dnorm(log.fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
+  llik <- dnorm(fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
   return(sum(-1*llik))
 }

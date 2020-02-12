@@ -1,0 +1,54 @@
+---
+title: "Data and model formats"
+output: rmarkdown::html_vignette
+author: cxr team
+vignette: >
+  %\VignetteIndexEntry{Data and model formats}
+  \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+**Introduction**
+
+The `cxr` package provides diverse functions to handle empirical datasets, but the data provided needs to be in certain formats for compatibility. We will show the structure of the included dataset, and the specific formats accepted by functions of the package. 
+
+**The Caracoles dataset**
+
+We include a dataset of plant annual species... The sampling design is explained in *Lanuza, Bartomeus, Godoy, 2018, Ecology Letters 21:865-874*.
+
+```{r}
+library(cxr)
+data("neigh_list", package = "cxr")
+```
+
+its structure is as follows...
+
+```{r}
+?neigh_list
+names(neigh_list)
+head(neigh_list[[1]])
+```
+
+The abundance table...
+
+```{r}
+data("abundance", package = "cxr")
+head(abundance)
+```
+
+We also provide seed survival and germination rates for each species, obtained independently. This file also includes the complete scientific name and abbreviation of each species. In subsequent analyses and vignettes we use the abbreviation as species identifier.
+
+```{r}
+data("species_rates", package = "cxr")
+species_rates
+```
+
+Lastly, we provide the values of an environmental covariate, salinity, for each sampling unit:
+
+```{r}
+data("salinity_list", package = "cxr")
+names(salinity_list)
+head(salinity_list[[1]])
+```

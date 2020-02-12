@@ -1,5 +1,4 @@
-
-#' Retrieve parameters from the vector returned by the optimization procedures
+#' Internal, retrieve parameters from the vector returned by the optimization procedures
 #'
 #' @param optim_params 1d vector, the result of an optimization method
 #' @param lambda_length either 0 (lambda not fit) or a positive number
@@ -12,7 +11,7 @@
 #' @return list with elements "lambda", "effect", "response", "lambda_cov",
 #' "effect_cov", "response_cov", "sigma". 
 #' If one of these elements is not present, returns NULL.
-#' @export
+#' @noRd
 cxr_retrieve_er_params <- function(optim_params, 
                                 lambda_length = 0,
                                 effect_length = 0,

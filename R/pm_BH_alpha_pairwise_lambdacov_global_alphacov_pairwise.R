@@ -54,9 +54,7 @@
 #'
 #' @return log-likelihood value
 #' @export
-#'
-#' @examples
-pm_BH_alpha_pairwise_lambdacov_global_alphacov_global <- function(par,
+pm_BH_alpha_pairwise_lambdacov_global_alphacov_pairwise <- function(par,
                                                               fitness,
                                                               neigh_matrix,
                                                               covariates,
@@ -95,11 +93,11 @@ pm_BH_alpha_pairwise_lambdacov_global_alphacov_global <- function(par,
     alpha <- fixed_parameters[["alpha"]]
   }
   
-  if(is.null(fixed_parameters[["alpha.cov"]])){
-    alpha.cov <- par[pos:(pos+(ncol(covariates)*ncol(neigh_matrix))-1)]
+  if(is.null(fixed_parameters[["alpha_cov"]])){
+    alpha_cov <- par[pos:(pos+(ncol(covariates)*ncol(neigh_matrix))-1)]
     pos <- pos + (ncol(covariates)*ncol(neigh_matrix))
   }else{
-    alpha.cov <- fixed_parameters[["alpha.cov"]]
+    alpha_cov <- fixed_parameters[["alpha_cov"]]
   }
   
   sigma <- par[length(par)]
@@ -112,15 +110,15 @@ pm_BH_alpha_pairwise_lambdacov_global_alphacov_global <- function(par,
   num = 1
   focal.cov.matrix <- as.matrix(covariates)
   for(v in 1:ncol(covariates)){
-    num <- num + lambda.cov[v]*focal.cov.matrix[,v] 
+    num <- num + lambda_cov[v]*focal.cov.matrix[,v] 
   }
   cov_term_x <- list()
   for(v in 1:ncol(covariates)){
     cov_temp <- focal.cov.matrix[,v]
     for(z in 1:ncol(neigh_matrix)){
-      #create  alpha.cov_i*cov_i vector
+      #create  alpha_cov_i*cov_i vector
       cov_term_x[[z+(ncol(neigh_matrix)*(v-1))]] <- 
-        alpha.cov[z+(ncol(neigh_matrix)*(v-1))] * cov_temp  
+        alpha_cov[z+(ncol(neigh_matrix)*(v-1))] * cov_temp  
     }
   }
   cov_term <- list()

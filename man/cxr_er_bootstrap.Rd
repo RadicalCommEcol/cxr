@@ -4,43 +4,41 @@
 \alias{cxr_er_bootstrap}
 \title{standard error estimates for effect and response parameters}
 \usage{
-cxr_er_bootstrap(effect.response.model, optim.method, sp.data, init.par,
-  lower.bounds, upper.bounds, covariates, optimize.lambda, lambda.vector,
-  nsamples)
+cxr_er_bootstrap(fitness_model, optimization_method, data, covariates,
+  init_par, lower_bounds, upper_bounds, fixed_parameters,
+  bootstrap_samples)
 }
 \arguments{
-\item{effect.response.model}{effect/response function}
+\item{fitness_model}{effect/response function, see \code{cxr_er_fit}}
 
-\item{optim.method}{optimization method to use. One of the following: "optim_NM","optim_L-BFGS-B","nloptr_CRS2_LM", 
-"nloptr_ISRES","nloptr_DIRECT_L_RAND","GenSA","hydroPSO","DEoptimR".}
+\item{optimization_method}{numerical optimization method}
 
-\item{sp.data}{dataframe with all the necessary information in long format. It should have the following columns:
-- site: character ID
-- focal: character ID of the focal species. Any number of focal species is allowed, but the number of focal species
-must match the number of initial parameters (one lambda, e, and r per species).
-- fitness: numeric, a fitness metric
-- competitor: character, ID of a competitor for that observation. The set of competitors must be, for now, the same
-as the set of focal species.
-- number: number of neighbouring/competitor individuals from the associated species. Observations without competitors of a given species
-must be explicit, i.e. setting number to zero.}
-
-\item{init.par}{1d vector of initial parameters}
-
-\item{lower.bounds}{1d vector of lower bounds}
-
-\item{upper.bounds}{1d vector of upper bounds}
-
-\item{covariates}{dataframe/matrix with observations in rows and covariates in columns. Each cell is the value of a covariate
-from an observation.}
-
-\item{optimize.lambda}{boolean, whether to optimize the values of lambda or not.}
-
-\item{lambda.vector}{in case lambda is not to be optimized, fixed values for it.}
-
-\item{nsamples}{how many bootstrap samples to compute.}
+\item{data}{either a list of dataframes or a single dataframe. if 'data' is a list, each element is a dataframe with the following columns:
+\itemize{
+\item fitness: fitness metric for each observation
+\item neighbours: named columns giving the number of neighbours of each column
+the names of the list elements are taken to be the names of the focal species.
 }
-\value{
-1d vector, the standard error of each parameter in init.par
+
+If 'data' is a dataframe, it also needs a 'focal' column.
+Regardless of the data structure, all focal species need to have the same number of observations (i.e. same number of rows),
+and the set of neighbour species needs to be the same as the set of focal species, so that
+the neighbours columns correspond to the names of the list elements or, if 'data' is a dataframe,
+to the values of the 'focal' column. Future versions will relax this requirement.}
+
+\item{covariates}{a data structure equivalent to 'data', in which each column are the values of a covariate.}
+
+\item{init_par}{initial values for parameters}
+
+\item{lower_bounds}{optional list with single values for "lambda", "effect","response",
+and optionally "lambda_cov", "effect_cov", "response_cov".}
+
+\item{upper_bounds}{optional list with single values for "lambda", "effect","response",
+and optionally "lambda_cov", "effect_cov", "response_cov".}
+
+\item{fixed_parameters}{list with values for fixed parameters, or NULL.}
+
+\item{bootstrap_samples}{number of bootstrap samples for error calculation. Defaults to 0, i.e. no error is calculated.}
 }
 \description{
 Computes bootstrap standard errors for a given effect/response function

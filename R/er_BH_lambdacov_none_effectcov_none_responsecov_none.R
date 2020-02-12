@@ -5,18 +5,18 @@
 #' Note that, as e and r are not pair-specific, all species parameters are fit in the same function.
 #'
 #' @param par 1d vector with initial parameters in the order: 
-#' lambda,effect,response,sigma
-#' @param fitness 1d vector with fitness observations
-#' @param target 
-#' @param density 
-#' @param covariates included for compatibility, not used in this model
+#' lambda,effect,response,sigma.
+#' @param fitness 1d vector with fitness observations.
+#' @param target matrix with species in rows, observations in columns. Value is 1 if
+#' a species is focal for a given observation, 0 otherwise.
+#' @param density matrix with species in rows, observations in columns. Value is 
+#' density of each sp as neighbour for each observation.
+#' @param covariates included for compatibility, not used in this model.
 #' @param fixed_parameters optional list specifying values of fixed parameters, 
 #' with components "lambda","effect","response".
 #'
 #' @return log-likelihood value
 #' @export
-#'
-#' @examples
 er_BH_lambdacov_none_effectcov_none_responsecov_none <- function(par,
                                                                  fitness,
                                                                  target,

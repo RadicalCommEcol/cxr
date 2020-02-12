@@ -1,54 +1,85 @@
-# load test data
-library(cxr)
-# data("competition")
-
-# TEMP
-source("R/cxr_return_init_length.R")
-source("R/cxr_init_params.R")
-source("R/cxr_retrieve_params.R")
-source("R/pm_BH_alpha_pairwise_lambdacov_none_alphacov_none.R")
-source("R/pm_BH_alpha_pairwise_lambdacov_global_alphacov_global.R")
-source("R/cxr_pm_bootstrap.R")
-source("R/cxr_pm_fit.R")
-source("R/cxr_check_input_data.R")
-
-# spread the data from long to wide format
-# competition.data <- tidyr::spread(competition,competitor,number,fill = 0)
-# focal.sp <- unique(competition$focal)
-# mindata <- subset(competition.data,focal == "LEMA")
-# mindata$fitness <- log(mindata$seed)
-# mindata <- mindata[,c("fitness",as.character(focal.sp))] #changes as.character,
-# mind2 <- subset(competition.data,focal == "HOMA")
-# mind2$fitness <- log(mind2$seed)
-# mind2 <- mind2[,c("fitness", as.character(focal.sp))] #idem
-
-# test the new competition data, sorted in a list
-load("../Caracoles/data/competition.RData")
-data <- neigh_list[1:3]
-
-initial_values <- list(lambda = 1,alpha = 0.1,lambda_cov = 0.1, alpha_cov = 0.1)
-lower_bounds <- list(lambda = 0.01,alpha = 0.01,lambda_cov = 0.01, alpha_cov = 0.01)
-upper_bounds <- list(lambda = 10,alpha = 1,lambda_cov = 1, alpha_cov = 1)
-
-# covariates: rows are observations, columns are different covariates
-# either matrix or dataframe, will be transformed to matrix in the function
-c1 <- data.frame(c1 = rnorm(nrow(data[[1]]),1,.1))
-c2 <- data.frame(c2 = rnorm(nrow(data[[2]]),1,.1))
-c3 <- data.frame(c2 = rnorm(nrow(data[[3]]),1,.1))
-covariates <- list(c1 = c1, c2 = c2, c3 = c3)
-
-model_family <- "BH"
-optimization_method <- "bobyqa"
-alpha_form <- "pairwise"
-lambda_cov_form <- "global"
-alpha_cov_form <- "global"
-fixed_terms <- NULL
-bootstrap_samples <- 3
-
+#' Multi-species parameter optimization
+#' 
+#' This function is a wrapper for estimating parameters for several
+#' focal species, instead of making separate calls to \code{cxr_pm_fit}.
+#'
+#' @param data named list in which each component is 
+#' a dataframe with a fitness column and a number of columns representing neigbhours
+#' @inheritParams cxr_pm_fit
+#' @param covariates optional named list in which each component is
+#' a dataframe with values of each covariate for each observation. The ith component
+#' of \code{covariates} are the covariate values that correspond to 
+#' the ith component of \code{data}, so they must have the same number of observations.
+#'
+#' @return an object of type 'cxr_pm_multifit' which is a list with the following components:
+#' * model_name: string with the name of the fitness model
+#' * model: model function
+#' * data: data supplied 
+#' * covariates: covariate data supplied
+#' * optimization_method: optimization method used
+#' * initial_values: list with initial values
+#' * fixed_terms: list with fixed terms
+#' * lambda: fitted values for lambda, or NULL if fixed
+#' * alpha: fitted values for alpha, or NULL if fixed
+#' * lambda_cov: fitted values for lambda_cov, or NULL if fixed
+#' * alpha_cov: fitted values for alpha_cov, or NULL if fixed
+#' * lambda_standard_error: standard errors for lambda, if computed
+#' * alpha_standard_error: standard errors for alpha, if computed
+#' * lambda_cov_standard_error: standard errors for lambda_cov, if computed
+#' * alpha_cov_standard_error: standard errors for alpha_cov, if computed
+#' * log_likelihood: log-likelihood of the fits
+#' @export
+#' @md
+#' @examples
+#' # fit three species at once
+#' data("neigh_list")
+#' data <- neigh_list[1:3]
+#' # keep only fitness and neighbours columns
+#' for(i in 1:length(data)){
+#'   data[[i]] <- data[[i]][,2:length(data[[i]])]
+#' }
+#' # covariates: salinity
+#' data("salinity_list")
+#' salinity <- salinity_list[1:3]
+#' # keep only salinity column
+#' for(i in 1:length(salinity)){
+#'   salinity[[i]] <- salinity[[i]][,2:length(salinity[[i]])]
+#' }
+#' \dontrun{
+#'   fit_3sp <- cxr_pm_multifit(data = data,
+#'                              optimization_method = "bobyqa",
+#'                              covariates = salinity,
+#'                              alpha_form = "pairwise",
+#'                              lambda_cov_form = "global",
+#'                              alpha_cov_form = "global",
+#'                              initial_values = list(lambda = 1,
+#'                                                    alpha = 0.1,
+#'                                                    lambda_cov = 0.1, 
+#'                                                    alpha_cov = 0.1),
+#'                              lower_bounds = list(lambda = 0.01,
+#'                                                  alpha = 0,
+#'                                                  lambda_cov = 0, 
+#'                                                  alpha_cov = 0),
+#'                              upper_bounds = list(lambda = 100,
+#'                                                  alpha = 1,
+#'                                                  lambda_cov = 1, 
+#'                                                  alpha_cov = 1),
+#'                              bootstrap_samples = 3)
+#'   # brief summary
+#'   summary(fit_3sp)
+#'   # interaction matrix
+#'   fit_3sp$alpha
+#' }
 cxr_pm_multifit <- function(data, 
                             model_family = c("BH"),
                             covariates = NULL, 
-                            optimization_method = c(), 
+                            optimization_method = c("BFGS", "CG", "Nelder-Mead", 
+                                                    "ucminf","L-BFGS-B", "nlm", "nlminb", 
+                                                    "Rcgmin", "Rvmmin", "spg", 
+                                                    "bobyqa", "nmkb", "hjkb",
+                                                    "nloptr_CRS2_LM","nloptr_ISRES",
+                                                    "nloptr_DIRECT_L_RAND","DEoptimR",
+                                                    "hydroPSO","GenSA"), 
                             alpha_form = c("none","global","pairwise"), 
                             lambda_cov_form = c("none","global"),
                             alpha_cov_form = c("none","global","pairwise"),
@@ -60,14 +91,92 @@ cxr_pm_multifit <- function(data,
                             bootstrap_samples = 0
 ){
   
-
+  # argument checks ---------------------------------------------------------
+  
+  optimization_method <- match.arg(optimization_method)
+  alpha_form <- match.arg(alpha_form)
+  lambda_cov_form <- match.arg(lambda_cov_form)
+  alpha_cov_form <- match.arg(alpha_cov_form)
+  
+  # TODO fixed terms?
+  
+  # check installed packages for optimization method
+  if (optimization_method %in% c("nloptr_CRS2_LM","nloptr_ISRES","nloptr_DIRECT_L_RAND") & !requireNamespace("nloptr", quietly = TRUE)) {
+    stop("cxr_pm_fit ERROR: Package \"nloptr\" needed for the method selected to work.",
+         call. = FALSE)
+  }
+  if (optimization_method == "GenSA" & !requireNamespace("GenSA", quietly = TRUE)) {
+    stop("cxr_pm_fit ERROR: Package \"GenSA\" needed for the method selected to work.",
+         call. = FALSE)
+  }
+  if (optimization_method == "hydroPSO" & !requireNamespace("hydroPSO", quietly = TRUE)) {
+    stop("cxr_pm_fit ERROR: Package \"hydroPSO\" needed for the method selected to work.",
+         call. = FALSE)
+  }
+  if (optimization_method == "DEoptimR" & !requireNamespace("DEoptimR", quietly = TRUE)) {
+    stop("cxr_pm_fit ERROR: Package \"DEoptimR\" needed for the method selected to work.",
+         call. = FALSE)
+  }
+  
+  # check input data
+  if(class(data) != "list"){
+    data.ok <- FALSE  
+  }else{
+    data.ok <- logical(length = length(data))
+    for(i.sp in 1:length(data)){
+      data.ok[i.sp] <- cxr_check_input_data(data[[i.sp]],covariates[[i.sp]])
+    }
+    data.ok <- all(data.ok)
+  }
+  if(!data.ok){
+    stop("cxr_pm_fit ERROR: check the consistency of your input data: 
+    1) data is a named list containing dataframes with observations for each focal species;
+    2) No NAs; 
+    3) first column in 'data' is named 'fitness'; 
+    4) abundances of at least one neighbour species in 'data';
+    5) data and covariates (if present) have the same number of observations")  }
+  
+  # check covariates if alpha_cov or lambda_cov are to be fit
+  if(is.null(covariates) & (alpha_cov_form != "none" | lambda_cov_form != "none")){
+    stop("cxr_pm_fit ERROR: need to specify covariates if lambda_cov and/or alpha_cov are to be fit")
+  }
+  
+  # retrieve model ----------------------------------------------------------
+  # character string giving the name of the model
+  model_name <- paste("pm_",model_family,"_alpha_",alpha_form,"_lambdacov_",lambda_cov_form,"_alphacov_",alpha_cov_form,sep="")
+  
+  # try to retrieve the function from its name
+  # using function "get"
+  fitness_model <- try(get(model_name),silent = TRUE)
+  if(class(fitness_model) == "try-error"){
+    stop(paste("cxr_pm_fit ERROR: model '",model_name,"' could not be retrieved. 
+  Make sure it is defined and available in the cxr package or in the global environment.\n",sep=""))
+  }
+  
+  # check that lower/upper bounds are provided if the method requires it
+  bound.ok <- cxr_check_method_boundaries(optimization_method,lower_bounds,upper_bounds, type = "pm")
+  if(!bound.ok){
+    stop("cxr_pm_fit ERROR: check the optimization method selected and lower/upper bounds.
+         The following methods require explicit lower and upper parameter boundaries to be set:
+         L-BFGS-B, nlm, nlminb, Rcgmin, Rvmmin, spg, bobyqa, nmkb, hjkb, nloptr_CRS2_LM,
+         nloptr_ISRES, nloptr_DIRECT_L_RAND, GenSA, hydroPSO, DEoptimR.")
+  }
+  
+  # warning if initial values are not set
+  if(identical(initial_values,list(lambda = 0, alpha = 0, lambda_cov = 0, alpha_cov = 0))){
+    message("cxr_pm_fit: Using default initial values. Note that these may not be appropriate for your data/model, or
+    for the optimization method selected.")
+  }
+  
+  
+  
 # prepare multisp data ----------------------------------------------------
 spnames <- names(data)
 
 # fit every sp ------------------------------------------------------------
 spfits <- list()
 for(i.sp in 1:length(data)){
-  spfits[[i.sp]] <- cxr_pm_fit(data = data[[i.sp]],
+  spfits[[i.sp]] <- try(cxr_pm_fit(data = data[[i.sp]],
                                model_family = model_family,
                                covariates = covariates[[i.sp]],
                                optimization_method = optimization_method,
@@ -79,7 +188,7 @@ for(i.sp in 1:length(data)){
                                upper_bounds = upper_bounds,
                                fixed_terms = fixed_terms,
                                bootstrap_samples = bootstrap_samples
-                               )
+                               ))
 }
 
 # output ------------------------------------------------------------------
@@ -165,7 +274,6 @@ for(i.sp in 1:length(spnames)){
 list_names <- c("model_name",
                 "model",
                 "data",
-                "model_family",
                 "covariates",
                 "optimization_method",
                 "initial_values",
@@ -180,7 +288,6 @@ fit <- sapply(list_names,function(x) NULL)
 fit$model_name <- spfits[[1]]$model_name
 fit$model <- spfits[[1]]$fitness_model
 fit$data <- data
-fit$model_family <- model_family
 fit$covariates <- covariates
 fit$optimization_method <- optimization_method
 fit$initial_values <- initial_values
@@ -220,4 +327,3 @@ class(fit) <- "cxr_pm_multifit"
 fit
 
 }
-

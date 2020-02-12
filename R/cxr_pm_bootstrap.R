@@ -1,4 +1,3 @@
-
 #' Standard error estimates for model parameters
 #' 
 #' Computes bootstrap standard errors for a given population dynamics model.
@@ -44,7 +43,9 @@ cxr_pm_bootstrap <- function(fitness_model,
     # sample data
     bdata <- data[bsample,]
     
-    bneigh <- subset(bdata, select = -c(fitness))
+    # just to avoid a note in R CMD CHECK
+    dropname <- "fitness"
+    bneigh <- as.data.frame(bdata[ , !(names(bdata) %in% dropname)])
     bneigh <- as.matrix(bneigh)
     # how many neighbour species?
     nneigh <- ncol(bneigh)
