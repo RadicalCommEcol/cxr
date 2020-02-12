@@ -1,3 +1,15 @@
+# niche overlap is the same for all model families
+# given in Hart et al. 2018 table A1
+
+# Barabás et al. 2018 say "eq.. only
+# applies to Lotka–Volterra and some related models however"
+
+# we can make the point that our package is meant to be used
+# precisely with these type of models
+# with defined niche overlap/competitive ability
+
+# define LW LV RK model families
+
 #' Niche overlap between two species
 #'
 #' quoting Godoy et al. (2014):

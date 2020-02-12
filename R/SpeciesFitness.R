@@ -1,3 +1,9 @@
+# model-specific definitions are given in Hart et al. 2018
+# supp mat table A.1
+# species fitness is another way of saying competitive ability
+
+
+
 #' Fitness of a species
 #' 
 #' Calculates the fitness of a species following eq. S2 of Godoy et al. (2014). If germ.rate and survival.rate are provided, 
