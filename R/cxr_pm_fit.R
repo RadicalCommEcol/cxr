@@ -5,20 +5,29 @@
 #' @param data dataframe with observations in rows and two sets of columns:
 #' * fitness: fitness metric for the focal individual
 #' * neighbours: columns with user-defined names, giving number of neighbours for each group
+#' @param focal_column optional integer value giving the position, or name, of the column
+#' with neighbours from the same species as the focal one. This is necessary if "alpha_intra" or 
+#' "alpha_inter" are specified (see \code{lower_bounds}, \code{upper_bounds}, and \code{fixed_terms}).
 #' @param model_family family of model to use. Available families are BH (Beverton-Holt) as default.
 #' Users may define their own families and models (see vignette XXXXX).
-#' @param covariates optional named matrix or dataframe with observations (rows) of any number of environmental covariates (columns)
-#' @param optimization_method numerical optimization method
+#' @param covariates optional named matrix or dataframe with observations (rows) of any number of environmental covariates (columns).
+#' @param optimization_method numerical optimization method.
 #' @param alpha_form what form does the alpha parameter take? one of "none" (no alpha in the model), 
-#' "global" (a single alpha for all pairwise interactions), or "pairwise" (one alpha value for every interaction)
-#' @param lambda_cov_form form of the covariate effects on lambda. Either "none" (no covariate effects) or "global" (one estimate per covariate)
+#' "global" (a single alpha for all pairwise interactions), or "pairwise" (one alpha value for every interaction).
+#' @param lambda_cov_form form of the covariate effects on lambda. Either "none" (no covariate effects) or "global" (one estimate per covariate).
 #' @param alpha_cov_form form of the covariate effects on alpha. One of "none" (no covariate effects), "global" (one estimate per covariate on every alpha),
 #' or "pairwise" (one estimate per covariate and pairwise alpha)
 #' @param initial_values list with components "lambda","alpha","lambda_cov", "alpha_cov", specifying the initial values
 #' for numerical optimization. Single values are allowed.
 #' @param lower_bounds optional list with single values for "lambda","alpha","lambda_cov", "alpha_cov".
-#' @param upper_bounds optional list with single values for "lambda","alpha","lambda_cov", "alpha_cov".
+#' Intra- and interspecific interactions may have different biological significance, and it is possible to specify
+#' different bounds for them. You can do so including elements "alpha_intra" and "alpha_inter" instead of "alpha". 
+#' @param upper_bounds optional list with single values for "lambda","alpha","lambda_cov", "alpha_cov". 
+#' Intra- and interspecific interactions may have different biological significance, and it is possible to specify
+#' different bounds for them. You can do so including elements "alpha_intra" and "alpha_inter" instead of "alpha".
 #' @param fixed_terms optional list specifying which model parameters are fixed, among "lambda","alpha","lambda_cov", and "alpha_cov".
+#' It is possible to separately fix intra- and interspecific interactions by 
+#' including elements "alpha_intra" and "alpha_inter" instead of "alpha".
 #' @param bootstrap_samples number of bootstrap samples for error calculation. Defaults to 0, i.e. no error is calculated.
 #' @return an object of type 'cxr_pm_fit' which is a list with the following components:
 #' * model_name: string with the name of the fitness model
@@ -55,7 +64,32 @@
 #'                        bootstrap_samples = 3)
 #'   summary(sp_fit)
 #' }
+
+# TEST
+library(cxr)
+model_family <- "BH"
+focal_column <- 1
+data = sp_data
+optimization_method = "bobyqa"
+alpha_form = "pairwise"
+lambda_cov_form = "none"
+alpha_cov_form = "none"
+initial_values = list(lambda = 1,alpha_intra = 0.1,alpha_inter = 0.1)#alpha = 0.1)
+lower_bounds = list(lambda = 0,alpha_intra = 0,alpha_inter = -1)
+upper_bounds = list(lambda = 100,alpha_intra = 1,alpha_inter = 1)
+bootstrap_samples = 3
+covariates <- fixed_terms <- NULL
+
+source("R/cxr_check_input_data.R")
+source("R/cxr_check_method_boundaries.R")
+source("R/cxr_return_init_length.R")
+source("R/cxr_init_params.R")
+source("R/cxr_pm_bootstrap.R")
+source("R/cxr_retrieve_params.R")
+# source("R/cxr_check_alpha_distinction.R")
+
 cxr_pm_fit <- function(data, 
+                       focal_column = NULL,
                        model_family = c("BH"),
                        covariates = NULL, 
                        optimization_method = c("BFGS", "CG", "Nelder-Mead", 
@@ -77,6 +111,10 @@ cxr_pm_fit <- function(data,
 ){
   
   # TODO add cxr:: to the internal functions once they are added
+  
+  #########################################
+  # TODO WORK IN PROGRESS, ALPHA_INTRA/INTER
+  ##########################################
   
   # argument checks ---------------------------------------------------------
   
@@ -141,6 +179,28 @@ cxr_pm_fit <- function(data,
          nloptr_ISRES, nloptr_DIRECT_L_RAND, GenSA, hydroPSO, DEoptimR.")
   }
   
+
+  # alphas are general or intra/inter? --------------------------------------
+
+  alpha_distinction <- TRUE # THIS IS A TEST, to be replaced
+  try(cxr_check_alpha_distinction(focal_column,alpha_form,initial_values,lower_bounds,upper_bounds,fixed_terms))
+  if(class(alpha_distinction) == "try-error"){
+    stop("cxr_pm_fit ERROR: please specify consistent initial values/bounds for alpha, either choosing
+         a general 'alpha' element on those lists or setting 'alpha_intra' and 'alpha_inter'
+         in all of them (only possible for alpha_form = 'pairwise'). 
+         If the latter case, you also need to explicitly set 'focal_column.")
+  }
+  
+  # which column are the intraspecific observations in
+  # substract one because of the 'fitness' column
+  if(alpha_distinction){
+    if(class(focal_column) == "character"){
+      focal_column_num <- which(names(data) == focal_column) - 1
+    }else{
+      focal_column_num <- focal_column -1
+    }
+  }
+  
   # warning if initial values are not set
   if(identical(initial_values,list(lambda = 0, alpha = 0, lambda_cov = 0, alpha_cov = 0))){
     message("cxr_pm_fit: Using default initial values. Note that these may not be appropriate for your data/model, or
@@ -159,6 +219,14 @@ cxr_pm_fit <- function(data,
   # neighbour species?
   neigh <- colnames(neigh_matrix)
   
+  if(alpha_distinction){
+    neigh_inter <- neigh[-focal_column_num]
+    neigh_intra <- ifelse(is.character(focal_column),focal_column,neigh[focal_column_num])
+  }else{
+    neigh_inter <- neigh
+    neigh_intra <- NULL
+  }
+  
   # are covariates named?
   if(!is.null(covariates)){
     if(is.null(names(covariates))){
@@ -176,7 +244,15 @@ cxr_pm_fit <- function(data,
   
   # here I store initial values for fitted parameters
   init_lambda <- NULL
-  init_alpha <- NULL
+  
+  # initialize all potential alphas
+  if(!alpha_distinction){
+    init_alpha <- NULL
+  }else{
+    init_alpha_intra <- NULL
+    init_alpha_inter <- NULL
+  }
+  
   init_lambda_cov <- NULL
   init_alpha_cov <- NULL
   
@@ -199,6 +275,7 @@ cxr_pm_fit <- function(data,
   # e.g. if we want to fit pairwise alphas but only provide a single initial value
   
   if(alpha_form != "none"){
+    if(!alpha_distinction){
     if("alpha" %in% fixed_terms){
       fixed_parameters[["alpha"]] <- cxr_return_init_length(alpha_form,
                                                             initial_values$alpha,
@@ -207,6 +284,22 @@ cxr_pm_fit <- function(data,
       init_alpha <- cxr_return_init_length(alpha_form,
                                            initial_values$alpha,
                                            neigh,"pm")
+    }
+    # intra/inter
+    }else{
+      if("alpha" %in% fixed_terms){
+        fixed_parameters[["alpha_intra"]] <- initial_values$alpha_intra
+                                                              
+        fixed_parameters[["alpha_inter"]] <- cxr_return_init_length(alpha_form,
+                                                                    initial_values$alpha_inter,
+                                                                    neigh_inter,"pm")
+      }else{
+        init_alpha_intra <- initial_values$alpha_intra
+        names(init_alpha_intra) <- neigh_intra 
+        init_alpha_inter <- cxr_return_init_length(alpha_form,
+                                                   initial_values$alpha_inter,
+                                                   neigh_inter,"pm")
+      }
     }
   }
   
@@ -246,8 +339,16 @@ cxr_pm_fit <- function(data,
   upper_lambda <- NULL
   lower_sigma <- NULL
   upper_sigma <- NULL
-  lower_alpha <- NULL
-  upper_alpha <- NULL
+  if(alpha_distinction){
+    lower_alpha_intra <- NULL
+    upper_alpha_intra <- NULL
+    lower_alpha_inter <- NULL
+    upper_alpha_inter <- NULL
+  }else{
+    lower_alpha <- NULL
+    upper_alpha <- NULL
+  }
+  
   lower_lambda_cov <- NULL
   upper_lambda_cov <- NULL
   lower_alpha_cov <- NULL
@@ -268,11 +369,15 @@ cxr_pm_fit <- function(data,
     upper_sigma <- 1e5
   }
   
-  if(!is.null(lower_bounds$alpha) & 
-     !is.null(upper_bounds$alpha) &
-     !"alpha" %in% fixed_terms){
-    lower_alpha <- lower_bounds$alpha
-    upper_alpha <- upper_bounds$alpha
+  if(alpha_distinction){
+    
+  }else{
+    if(!is.null(lower_bounds$alpha) & 
+       !is.null(upper_bounds$alpha) &
+       !"alpha" %in% fixed_terms){
+      lower_alpha <- lower_bounds$alpha
+      upper_alpha <- upper_bounds$alpha
+    } 
   }
   
   if(!is.null(lower_bounds$lambda_cov) &
