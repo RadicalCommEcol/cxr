@@ -62,7 +62,7 @@ pm_BH_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
   # retrieve parameters -----------------------------------------------------
   # parameters to fit are all in the "par" vector,
   # so we need to retrieve them one by one
-  # order is {lambda,lambda_cov,alpha,alpha_cov,sigma}
+  # order is {lambda,lambda_cov,alpha_intra,alpha_inter,alpha_cov,sigma}
   
   # comment or uncomment sections for the different parameters
   # depending on whether your model includes them
