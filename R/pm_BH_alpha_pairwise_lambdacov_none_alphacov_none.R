@@ -43,18 +43,20 @@
 
 #' Beverton-Holt model with pairwise alphas and no covariate effects
 #'
-#' @param par 1d vector of initial parameters: lambda, alpha, and sigma
+#' @param par 1d vector of initial parameters: 'lambda', 'alpha_intra' (optional), 'alpha_inter', and 'sigma'
 #' @param fitness 1d vector of fitness observations, in log scale
-#' @param neigh_matrix matrix with number of neighbours (each neighbour a column) for each observation (in rows)
+#' @param neigh_intra_matrix optional matrix of one column, number of intraspecific neighbours for each observation
+#' @param neigh_inter_matrix matrix of arbitrary columns, number of interspecific neighbours for each observation
 #' @param covariates included for compatibility, not used in this model
 #' @param fixed_parameters optional list specifying values of fixed parameters, 
-#' with components "lambda","alpha".
+#' with components "lambda","alpha_intra","alpha_inter".
 #'
 #' @return log-likelihood value
 #' @export
 pm_BH_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
                                                               fitness,
-                                                              neigh_matrix,
+                                                              neigh_intra_matrix = NULL,
+                                                              neigh_inter_matrix,
                                                               covariates,
                                                               fixed_parameters){
   
@@ -84,12 +86,26 @@ pm_BH_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
   #   lambda_cov <- fixed_parameters[["lambda_cov"]]
   # }
   
-  if(is.null(fixed_parameters[["alpha"]])){
-    alpha <- par[pos:(pos+ncol(neigh_matrix)-1)]
-    pos <- pos + ncol(neigh_matrix)
+  if(!is.null(neigh_intra_matrix)){
+    # intra
+    if(is.null(fixed_parameters[["alpha_intra"]])){
+      alpha_intra <- par[pos]
+      pos <- pos + 1
+    }else{
+      alpha_intra <- fixed_parameters[["alpha_intra"]]
+    }
   }else{
-    alpha <- fixed_parameters[["alpha"]]
+    alpha_intra <- NULL
   }
+  
+  # inter
+  if(is.null(fixed_parameters[["alpha_inter"]])){
+    alpha_inter <- par[pos:(pos+ncol(neigh_inter_matrix)-1)]
+    pos <- pos + ncol(neigh_inter_matrix) -1
+  }else{
+    alpha_inter <- fixed_parameters[["alpha_inter"]]
+  }
+  
   
   # if(is.null(fixed_parameters$alpha_cov)){
   #   alpha.cov <- par[pos:(pos+(ncol(covariates)*ncol(neigh_matrix))-1)]
@@ -105,9 +121,20 @@ pm_BH_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
   
   # MODEL CODE HERE ---------------------------------------------------------
   
+  # we do not differentiate alpha_intra from alpha_inter in this model
+  # so, put together alpha_intra and alpha_inter, and the observations
+  # with intraspecific ones at the beginning
+  if(!is.null(alpha_intra)){
+    alpha <- c(alpha_intra,alpha_inter)
+    all_neigh_matrix <- cbind(neigh_intra_matrix,neigh_inter_matrix)
+  }else{
+    alpha <- alpha_inter
+    all_neigh_matrix <- neigh_inter_matrix
+  }
+  
   term = 1 #create the denominator term for the model
-  for(z in 1:ncol(neigh_matrix)){
-    term <- term + alpha[z]*neigh_matrix[,z] 
+  for(z in 1:ncol(all_neigh_matrix)){
+    term <- term + alpha[z]*all_neigh_matrix[,z] 
   }
   pred <- lambda/ term
   

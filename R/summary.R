@@ -14,7 +14,8 @@ summary.cxr_pm_fit <- function(object,...){
     "\ncovariates: ",ifelse(is.null(object$covariates),0,ncol(object$covariates)),
     "\n----------",
     "\nfocal lambda: ",ifelse(is.null(object$lambda)," - not fit - ",object$lambda),
-    "\nmean alpha: ",ifelse(is.null(object$alpha)," - not fit - ",mean(object$alpha)),
+    "\nalpha_intra: ",ifelse(is.null(object$alpha_intra)," - not fit - ",object$alpha_intra),
+    "\nmean alpha_inter: ",ifelse(is.null(object$alpha_inter)," - not fit - ",mean(object$alpha_inter)),
     "\nmean lambda_cov: ",ifelse(is.null(object$lambda_cov),"- not fit - ",mean(object$lambda_cov)),
     "\nmean alpha_cov: ",ifelse(is.null(object$alpha_cov),"- not fit - ",mean(object$alpha_cov)),
     "\nlog-likelihood of the fit: ",object$log_likelihood,
@@ -109,10 +110,15 @@ summary.cxr_pm_multifit <- function(object,...){
   }else{
     sl <- object$lambda
   }
-  if(is.null(object$alpha)){
+  if(is.null(object$alpha_intra)){
     sa <- rep("- not fit -",nrow(object$data))
   }else{
-    sa <- rowMeans(object$alpha)
+    sa <- object$alpha_intra
+  }
+  if(is.null(object$alpha_inter)){
+    sai <- rep("- not fit -",nrow(object$data))
+  }else{
+    sai <- rowMeans(object$alpha_inter)
   }
   if(is.null(object$lambda_cov)){
     slc <- rep("- not fit -",nrow(object$data))
@@ -131,7 +137,8 @@ summary.cxr_pm_multifit <- function(object,...){
                                                   ncol(object$covariates[[1]])),
                               # lambda = NULL,
                               lambda = sl,
-                              mean_alpha = sa,
+                              alpha_intra = sa,
+                              mean_alpha_inter = sai,
                               # mean_lambda_cov = ifelse(is.null(object$lambda_cov),
                               #                          "- not fit - ",
                               #                          mean(object$lambda_cov)),

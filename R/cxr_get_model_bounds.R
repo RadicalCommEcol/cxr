@@ -67,6 +67,8 @@ cxr_get_model_bounds <- function(lower_bounds,upper_bounds,fixed_terms){
        upper_alpha_intra = upper_alpha_intra,
        upper_alpha_inter = upper_alpha_inter,
        upper_lambda_cov = upper_lambda_cov,
-       upper_alpha_cov = upper_alpha_cov)
+       upper_alpha_cov = upper_alpha_cov,
+       lower_sigma = lower_sigma,
+       upper_sigma = upper_sigma)
   
 }

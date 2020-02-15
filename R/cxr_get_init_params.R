@@ -42,14 +42,20 @@ cxr_get_init_params <- function(initial_values,
   
   if(alpha_form != "none"){
     if("alpha" %in% fixed_terms){
-      fixed_parameters[["alpha_intra"]] <- initial_values$alpha_intra
+      if(!is.null(neigh_intra)){
+        fixed_parameters[["alpha_intra"]] <- initial_values$alpha_intra
+      }
       
       fixed_parameters[["alpha_inter"]] <- cxr_return_init_length(alpha_form,
                                                                   initial_values$alpha_inter,
                                                                   neigh_inter,"pm")
     }else{
-      init_alpha_intra <- initial_values$alpha_intra
-      names(init_alpha_intra) <- neigh_intra 
+      
+      if(!is.null(neigh_intra)){
+        init_alpha_intra <- initial_values$alpha_intra
+        names(init_alpha_intra) <- neigh_intra 
+      }
+      
       init_alpha_inter <- cxr_return_init_length(alpha_form,
                                                  initial_values$alpha_inter,
                                                  neigh_inter,"pm")
