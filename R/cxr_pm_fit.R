@@ -46,10 +46,12 @@
 #' @md
 #' @examples
 #' data("neigh_list")
+#' my.sp <- "BEMA"
 #' # data for a single species, keep only fitness and neighbours columns
-#' sp_data <- neigh_list[[1]][2:ncol(neigh_list[[1]])]
+#' sp_data <- neigh_list[[my.sp]][2:ncol(neigh_list[[1]])]
 #' \donttest{
 #'   sp_fit <- cxr_pm_fit(data = sp_data,
+#'                        focal_column = my.sp,
 #'                        optimization_method = "bobyqa",
 #'                        alpha_form = "pairwise",
 #'                        lambda_cov_form = "none",
@@ -60,56 +62,6 @@
 #'                        bootstrap_samples = 3)
 #'   summary(sp_fit)
 #' }
-
-# TEST
-library(cxr)
-model_family <- "BH"
-focal_column <- "BEMA"
-data("neigh_list")
-sp_data <- neigh_list[[1]][2:ncol(neigh_list[[1]])]
-data = sp_data
-optimization_method = "bobyqa"
-alpha_form = "pairwise"
-lambda_cov_form = "none"
-alpha_cov_form = "none"
-initial_values = list(lambda = 1,alpha_intra = 0.1,alpha_inter = 0.1)#alpha = 0.1)
-i2 <- list(lambda = 1,alpha_inter = 0.1)
-lower_bounds = list(lambda = 0,alpha_intra = 0,alpha_inter = -1)
-l2 <- list(lambda = 0,alpha_inter = -1)
-upper_bounds = list(lambda = 100,alpha_intra = 1,alpha_inter = 1)
-u2 <- list(lambda = 100,alpha_inter = 1)
-bootstrap_samples = 3
-covariates <- fixed_terms <- NULL
-
-source("R/cxr_check_initial_values.R")
-source("R/cxr_check_pm_input.R")
-source("R/cxr_check_input_data.R")
-source("R/cxr_check_method_boundaries.R")
-source("R/cxr_return_init_length.R")
-source("R/cxr_get_init_params.R")
-source("R/cxr_check_input_data.R")
-source("R/cxr_get_model_bounds.R")
-source("R/cxr_sort_params.R")
-source("R/cxr_pm_bootstrap.R")
-source("R/cxr_retrieve_params.R")
-source("R/pm_BH_alpha_pairwise_lambdacov_none_alphacov_none.R")
-source("R/summary.R")
-# source("R/cxr_check_alpha_distinction.R")
-
-tt <- cxr_pm_fit(data = data,
-                 # focal_column = focal_column,
-                 model_family = model_family,
-                 covariates = covariates,
-                 optimization_method = optimization_method,
-                 alpha_form = alpha_form,
-                 lambda_cov_form = lambda_cov_form,
-                 alpha_cov_form = alpha_cov_form,
-                 initial_values = i2,#initial_values,
-                 lower_bounds = l2,#lower_bounds,
-                 upper_bounds = u2,#upper_bounds,
-                 fixed_terms = fixed_terms,
-                 bootstrap_samples = bootstrap_samples)
-
 cxr_pm_fit <- function(data, 
                        focal_column = NULL,
                        model_family = c("BH"),
