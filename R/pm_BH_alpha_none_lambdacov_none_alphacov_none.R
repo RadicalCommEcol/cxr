@@ -1,61 +1,20 @@
-
-# 1 - MODEL FAMILY
-# Model names are of the form shown below. "family" is the acronym of general family of your model,
-# as e.g. BH for Beverton-Holt, LW for Law-Wilkinson, etc.
-
-# 2 - PARAMETER FORMS
-# every model has, at least, a lambda parameter. Other potential parameters are 
-# pairwise interactions (alpha), and the effects of covariates over lambda (lambda_cov)
-# and over alpha (alpha_cov).
-
-# How these parameters are modelled is important to differentiate models,
-# and so should be reflected in the function name. The template for naming your model 
-# can be seen below. Note how a model name includes information about the model family,
-# and also about how parameters are modelled.
-
-# alpha_form can be one of "alpha_none", "alpha_global", or "alpha_pairwise" depending
-# on whether and how you include pairwise interactions in your model.
-# "global" means a single alpha value for every interaction, and "pairwise"
-# means specific values for every pairwise interaction.
-
-# lambdacov_form can be one of "lambdacov_none" or "lambdacov_global", where 
-# "none" indicates that no effect of covariates on lambda is modelled,
-# and "global" indicates that each covariate affects lambda
-
-# alphacov_form can be one of "alphacov_none", "alphacov_global", or "alphacov_pairwise",
-# where "none" indicates no effect of covariates on alpha values,
-# "global" indicates a single effect term of each covariate on alpha values,
-# and "pairwise" indicates a specific effect term of each covariate on each pairwise alpha
-
-# 3 - FIXED TERMS
-# if you have independent estimates of a subset of parameters, you may want
-# to keep these as fixed, and only fit those you need to. This can be achieved
-# through the argument "fixed_parameters", which is a list with four components (lambda, alpha, lambda_cov, alpha_cov),
-# where each component should be either NULL if the parameter is to be fit, 
-# or the fixed value of the parameter in question.
-
-# 4 - Saving your model
-# name the R file with the same name as your model
-# for making the model accesible to cxr, it should be loaded into the global R environment.
-
-# 5 - adding your model to cxr
-# document your model, file a pull_request etc
-
 #' Beverton-Holt model with no alphas and no covariate effects
 #'
 #' @param par 1d vector of initial parameters: lambda and sigma
 #' @param fitness 1d vector of fitness observations, in log scale
-#' @param neigh_matrix included for compatibility, not used in this model
+#' @param neigh_intra_matrix included for compatibility, not used in this model.
+#' @param neigh_inter_matrix included for compatibility, not used in this model.
 #' @param covariates included for compatibility, not used in this model
 #' @param fixed_parameters included for compatibility, not used in this model
 #'
 #' @return log-likelihood value
 #' @export
 pm_BH_alpha_none_lambdacov_none_alphacov_none <- function(par,
-                                                              fitness,
-                                                              neigh_matrix,
-                                                              covariates,
-                                                              fixed_parameters){
+                                                          fitness,
+                                                          neigh_intra_matrix = NULL,
+                                                          neigh_inter_matrix,
+                                                          covariates,
+                                                          fixed_parameters){
   
   
   # retrieve parameters -----------------------------------------------------
