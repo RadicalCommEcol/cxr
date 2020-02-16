@@ -35,8 +35,9 @@
 #' * lambda: fitted value for lambda, or NULL if fixed
 #' * alpha_intra: fitted value for intraspecific alpha, or NULL if fixed
 #' * alpha_inter: fitted value for interspecific alpha, or NULL if fixed
-#' * lambda_cov: fitted value(s) for lambda_cov, or NULL if fixed
-#' * alpha_cov: fitted value(s) for alpha_cov, or NULL if fixed
+#' * lambda_cov: fitted value(s) for lambda_cov, or NULL if fixed.
+#' * alpha_cov: fitted value(s) for alpha_cov, or NULL if fixed. 
+#' These are structured as a list with one element for each covariate.
 #' * lambda_standard_error: standard error for lambda, if computed
 #' * alpha_standard_error: standard error for alpha, if computed---------------TODO replace
 #' * lambda_cov_standard_error: standard error for lambda_cov, if computed
@@ -62,6 +63,50 @@
 #'                        bootstrap_samples = 3)
 #'   summary(sp_fit)
 #' }
+#' 
+
+source("R/cxr_check_initial_values.R")
+source("R/cxr_check_input_data.R")
+source("R/cxr_check_method_boundaries.R")
+source("R/cxr_check_pm_input.R")
+source("R/cxr_get_init_params.R")
+source("R/cxr_get_model_bounds.R")
+source("R/cxr_pm_bootstrap.R")
+source("R/cxr_retrieve_params.R")
+source("R/cxr_return_init_length.R")
+source("R/cxr_sort_params.R")
+source("R/pm_BH_alpha_pairwise_lambdacov_global_alphacov_pairwise.R")
+
+data("neigh_list")
+my.sp <- "BEMA"
+data <- neigh_list[[my.sp]][2:ncol(neigh_list[[1]])]
+focal_column = my.sp
+model_family = "BH"
+data("salinity_list")
+salinity <- salinity_list[[my.sp]][2]
+covariates <- salinity
+optimization_method <- "bobyqa"
+alpha_form <- "pairwise"
+lambda_cov_form <- "global"
+alpha_cov_form <- "pairwise"
+initial_values = list(lambda = 1, 
+                      alpha_intra = .1,
+                      alpha_inter = 0.1, 
+                      lambda_cov = 0.1, 
+                      alpha_cov = 0.1)
+lower_bounds = list(lambda = 0, 
+                      alpha_intra = 0,
+                      alpha_inter = -1, 
+                      lambda_cov = -1, 
+                      alpha_cov = -1)
+upper_bounds = list(lambda = 100, 
+                      alpha_intra = 1,
+                      alpha_inter = 1, 
+                      lambda_cov = 1, 
+                      alpha_cov = 1)
+fixed_terms <- NULL
+bootstrap_samples <- 3
+
 cxr_pm_fit <- function(data, 
                        focal_column = NULL,
                        model_family = c("BH"),
@@ -417,8 +462,8 @@ cxr_pm_fit <- function(data,
                          alpha_cov = NULL)
   }
   
-  # return cxr object ---------------------------------------------------
-  
+  # prepare and return cxr_pm_fit object --------------------------------
+
   list_names <- c("model_name",
                   "model",
                   "data",
@@ -458,7 +503,7 @@ cxr_pm_fit <- function(data,
     fit$lambda_cov <- optim_params$lambda_cov
   }
   if(!is.null(optim_params$alpha_cov)){
-    fit$alpha_cov <- optim_params$alpha_cov
+    # fit$alpha_cov <- optim_params$alpha_cov
   }
   if(!is.null(error_params$lambda)){
     fit$lambda_standard_error <- error_params$lambda

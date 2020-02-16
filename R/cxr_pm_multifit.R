@@ -5,6 +5,10 @@
 #'
 #' @param data named list in which each component is 
 #' a dataframe with a fitness column and a number of columns representing neigbhours
+#' @param focal_column character vector with the same length as data,
+#' giving the names of the columns representing
+#' intraspecific observations for each species, 
+#' or numeric vector giving the position of such columns.
 #' @inheritParams cxr_pm_fit
 #' @param covariates optional named list in which each component is
 #' a dataframe with values of each covariate for each observation. The ith component
@@ -20,7 +24,8 @@
 #' * initial_values: list with initial values
 #' * fixed_terms: list with fixed terms
 #' * lambda: fitted values for lambda, or NULL if fixed
-#' * alpha: fitted values for alpha, or NULL if fixed
+#' * alpha_intra: fitted values for alpha_intra, or NULL if fixed
+#' * alpha_inter: fitted values for alpha_inter, or NULL if fixed
 #' * lambda_cov: fitted values for lambda_cov, or NULL if fixed
 #' * alpha_cov: fitted values for alpha_cov, or NULL if fixed
 #' * lambda_standard_error: standard errors for lambda, if computed
@@ -45,7 +50,7 @@
 #' for(i in 1:length(salinity)){
 #'   salinity[[i]] <- salinity[[i]][,2:length(salinity[[i]])]
 #' }
-#' \dontrun{
+#' \donttest{
 #'   fit_3sp <- cxr_pm_multifit(data = data,
 #'                              optimization_method = "bobyqa",
 #'                              covariates = salinity,
@@ -72,6 +77,7 @@
 #' }
 cxr_pm_multifit <- function(data, 
                             model_family = c("BH"),
+                            focal_column = NULL,
                             covariates = NULL, 
                             optimization_method = c("BFGS", "CG", "Nelder-Mead", 
                                                     "ucminf","L-BFGS-B", "nlm", "nlminb", 
@@ -100,45 +106,37 @@ cxr_pm_multifit <- function(data,
   
   # TODO fixed terms?
   
-  # check installed packages for optimization method
-  if (optimization_method %in% c("nloptr_CRS2_LM","nloptr_ISRES","nloptr_DIRECT_L_RAND") & !requireNamespace("nloptr", quietly = TRUE)) {
-    stop("cxr_pm_fit ERROR: Package \"nloptr\" needed for the method selected to work.",
-         call. = FALSE)
-  }
-  if (optimization_method == "GenSA" & !requireNamespace("GenSA", quietly = TRUE)) {
-    stop("cxr_pm_fit ERROR: Package \"GenSA\" needed for the method selected to work.",
-         call. = FALSE)
-  }
-  if (optimization_method == "hydroPSO" & !requireNamespace("hydroPSO", quietly = TRUE)) {
-    stop("cxr_pm_fit ERROR: Package \"hydroPSO\" needed for the method selected to work.",
-         call. = FALSE)
-  }
-  if (optimization_method == "DEoptimR" & !requireNamespace("DEoptimR", quietly = TRUE)) {
-    stop("cxr_pm_fit ERROR: Package \"DEoptimR\" needed for the method selected to work.",
-         call. = FALSE)
-  }
-  
   # check input data
   if(class(data) != "list"){
-    data.ok <- FALSE  
-  }else{
-    data.ok <- logical(length = length(data))
-    for(i.sp in 1:length(data)){
-      data.ok[i.sp] <- cxr_check_input_data(data[[i.sp]],covariates[[i.sp]])
-    }
-    data.ok <- all(data.ok)
-  }
-  if(!data.ok){
-    stop("cxr_pm_fit ERROR: check the consistency of your input data: 
+    stop("cxr_pm_multifit ERROR: check the consistency of your input data: 
     1) data is a named list containing dataframes with observations for each focal species;
     2) No NAs; 
     3) first column in 'data' is named 'fitness'; 
     4) abundances of at least one neighbour species in 'data';
-    5) data and covariates (if present) have the same number of observations")  }
-  
-  # check covariates if alpha_cov or lambda_cov are to be fit
-  if(is.null(covariates) & (alpha_cov_form != "none" | lambda_cov_form != "none")){
-    stop("cxr_pm_fit ERROR: need to specify covariates if lambda_cov and/or alpha_cov are to be fit")
+    5) data and covariates (if present) have the same number of observations")
+  }else{
+    for(i.sp in 1:length(data)){
+      temp <- cxr_check_pm_input(data = data[[i.sp]],
+                                 focal_column = focal_column[i.sp],
+                                 model_family = model_family,
+                                 covariates = covariates[[i.sp]],
+                                 optimization_method = optimization_method,
+                                 alpha_form = alpha_form,
+                                 lambda_cov_form = lambda_cov_form,
+                                 alpha_cov_form = alpha_cov_form,
+                                 initial_values = initial_values,
+                                 lower_bounds = lower_bounds,
+                                 upper_bounds = upper_bounds,
+                                 fixed_terms = fixed_terms,
+                                 bootstrap_samples = bootstrap_samples)
+      if(temp[[1]] == "error"){
+        message(paste("cxr_pm_multifit ERROR: check data format for sp ",names(data)[i.sp]," and/or input parameters.\n",sep=""))
+        message(paste("more info on the error:\n",temp[[2]],sep=""))
+        return(NULL)
+      }
+    }
+}
+  if(!data.ok){
   }
   
   # retrieve model ----------------------------------------------------------
@@ -153,22 +151,6 @@ cxr_pm_multifit <- function(data,
   Make sure it is defined and available in the cxr package or in the global environment.\n",sep=""))
   }
   
-  # check that lower/upper bounds are provided if the method requires it
-  bound.ok <- cxr_check_method_boundaries(optimization_method,lower_bounds,upper_bounds, type = "pm")
-  if(!bound.ok){
-    stop("cxr_pm_fit ERROR: check the optimization method selected and lower/upper bounds.
-         The following methods require explicit lower and upper parameter boundaries to be set:
-         L-BFGS-B, nlm, nlminb, Rcgmin, Rvmmin, spg, bobyqa, nmkb, hjkb, nloptr_CRS2_LM,
-         nloptr_ISRES, nloptr_DIRECT_L_RAND, GenSA, hydroPSO, DEoptimR.")
-  }
-  
-  # warning if initial values are not set
-  if(identical(initial_values,list(lambda = 0, alpha = 0, lambda_cov = 0, alpha_cov = 0))){
-    message("cxr_pm_fit: Using default initial values. Note that these may not be appropriate for your data/model, or
-    for the optimization method selected.")
-  }
-  
-  
   
 # prepare multisp data ----------------------------------------------------
 spnames <- names(data)
@@ -176,19 +158,21 @@ spnames <- names(data)
 # fit every sp ------------------------------------------------------------
 spfits <- list()
 for(i.sp in 1:length(data)){
+  
   spfits[[i.sp]] <- try(cxr_pm_fit(data = data[[i.sp]],
-                               model_family = model_family,
-                               covariates = covariates[[i.sp]],
-                               optimization_method = optimization_method,
-                               alpha_form = alpha_form,
-                               lambda_cov_form = lambda_cov_form,
-                               alpha_cov_form = alpha_cov_form,
-                               initial_values = initial_values,
-                               lower_bounds = lower_bounds,
-                               upper_bounds = upper_bounds,
-                               fixed_terms = fixed_terms,
-                               bootstrap_samples = bootstrap_samples
-                               ))
+                                   focal_column = focal_column[i.sp],
+                                   model_family = model_family,
+                                   covariates = covariates[[i.sp]],
+                                   optimization_method = optimization_method,
+                                   alpha_form = alpha_form,
+                                   lambda_cov_form = lambda_cov_form,
+                                   alpha_cov_form = alpha_cov_form,
+                                   initial_values = initial_values,
+                                   lower_bounds = lower_bounds,
+                                   upper_bounds = upper_bounds,
+                                   fixed_terms = fixed_terms,
+                                   bootstrap_samples = bootstrap_samples
+  ))
 }
 
 # output ------------------------------------------------------------------
@@ -196,15 +180,17 @@ for(i.sp in 1:length(data)){
   # return a cxr_pm_multifit object
   # which is basically the same as the base object
   # but with info on more sp. e.g. lambda is a 1d vector,
-  # alpha is a n x n matrix
+  # alpha_inter is a n x n matrix
 
 splambda <- NULL
-spalpha <- NULL
+spalpha_intra <- NULL
+spalpha_inter <- NULL
 splambda_cov <- NULL
 spalpha_cov <- NULL
 
 er_splambda <- NULL
-er_spalpha <- NULL
+er_spalpha_intra <- NULL
+er_spalpha_inter <- NULL
 er_splambda_cov <- NULL
 er_spalpha_cov <- NULL
 
@@ -217,11 +203,17 @@ for(i.sp in 1:length(spnames)){
     names(mylambda) <- spnames[i.sp]
     splambda <- c(splambda,mylambda)
   }
+  # alpha_intra
+  if(!is.null(spfits[[i.sp]]$alpha_intra)){
+    myalpha_intra <- spfits[[i.sp]]$alpha_intra
+    names(myalpha_intra) <- spnames[i.sp]
+    spalpha_intra <- c(spalpha_intra,myalpha_intra)
+  }
   # alpha
-  if(!is.null(spfits[[i.sp]]$alpha)){
-    myalpha <- spfits[[i.sp]]$alpha
-    spalpha <- rbind(spalpha,myalpha)
-    rownames(spalpha)[i.sp] <- spnames[i.sp]
+  if(!is.null(spfits[[i.sp]]$alpha_inter)){
+    myalpha_inter <- spfits[[i.sp]]$alpha_inter
+    spalpha_inter <- rbind(spalpha_inter,myalpha_inter)
+    rownames(spalpha_inter)[i.sp] <- spnames[i.sp]
   }
   # lambda_cov
   if(!is.null(spfits[[i.sp]]$lambda_cov)){
@@ -229,6 +221,7 @@ for(i.sp in 1:length(spnames)){
     names(mylambda_cov) <- paste(spnames[i.sp],"_",names(spfits[[i.sp]]$lambda_cov),sep="")
     splambda_cov <- c(splambda_cov,mylambda_cov)
   }
+  # alpha_cov
   if(!is.null(spfits[[i.sp]]$alpha_cov)){
     myalpha_cov <- spfits[[i.sp]]$alpha_cov
     names(myalpha_cov) <- paste(spnames[i.sp],"_",names(spfits[[i.sp]]$alpha_cov),sep="")
@@ -247,11 +240,16 @@ for(i.sp in 1:length(spnames)){
     }
     er_splambda <- c(er_splambda,erlambda)
   }
-  # alpha
-  if(!is.null(spfits[[i.sp]]$alpha_standard_error)){
-    eralpha <- spfits[[i.sp]]$alpha_standard_error
-    er_spalpha <- rbind(er_spalpha,eralpha)
-    rownames(er_spalpha)[i.sp] <- spnames[i.sp]
+  # alpha_intra
+  if(!is.null(spfits[[i.sp]]$alpha_intra_standard_error)){
+    eralpha_intra <- spfits[[i.sp]]$alpha_intra_standard_error
+    er_spalpha_intra <- c(er_spalpha_intra,eralpha_intra)
+  }
+  # alpha_inter
+  if(!is.null(spfits[[i.sp]]$alpha_inter_standard_error)){
+    eralpha_inter <- spfits[[i.sp]]$alpha_inter_standard_error
+    er_spalpha_inter <- rbind(er_spalpha_inter,eralpha_inter)
+    rownames(er_spalpha_inter)[i.sp] <- spnames[i.sp]
   }
   # lambda_cov
   if(!is.null(spfits[[i.sp]]$lambda_cov_standard_error)){
