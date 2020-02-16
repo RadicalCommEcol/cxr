@@ -4,15 +4,16 @@
 \alias{cxr_pm_fit}
 \title{General optimization for population models}
 \usage{
-cxr_pm_fit(data, model_family = c("BH"), covariates = NULL,
-  optimization_method = c("BFGS", "CG", "Nelder-Mead", "ucminf",
-  "L-BFGS-B", "nlm", "nlminb", "Rcgmin", "Rvmmin", "spg", "bobyqa", "nmkb",
-  "hjkb", "nloptr_CRS2_LM", "nloptr_ISRES", "nloptr_DIRECT_L_RAND",
-  "DEoptimR", "hydroPSO", "GenSA"), alpha_form = c("none", "global",
-  "pairwise"), lambda_cov_form = c("none", "global"),
-  alpha_cov_form = c("none", "global", "pairwise"),
-  initial_values = list(lambda = 0, alpha = 0, lambda_cov = 0, alpha_cov
-  = 0), lower_bounds = NULL, upper_bounds = NULL, fixed_terms = NULL,
+cxr_pm_fit(data, focal_column = NULL, model_family = c("BH"),
+  covariates = NULL, optimization_method = c("BFGS", "CG",
+  "Nelder-Mead", "ucminf", "L-BFGS-B", "nlm", "nlminb", "Rcgmin", "Rvmmin",
+  "spg", "bobyqa", "nmkb", "hjkb", "nloptr_CRS2_LM", "nloptr_ISRES",
+  "nloptr_DIRECT_L_RAND", "DEoptimR", "hydroPSO", "GenSA"),
+  alpha_form = c("none", "global", "pairwise"),
+  lambda_cov_form = c("none", "global"), alpha_cov_form = c("none",
+  "global", "pairwise"), initial_values = list(lambda = 0, alpha_intra =
+  0, alpha_inter = 0, lambda_cov = 0, alpha_cov = 0),
+  lower_bounds = NULL, upper_bounds = NULL, fixed_terms = NULL,
   bootstrap_samples = 0)
 }
 \arguments{
@@ -22,29 +23,34 @@ cxr_pm_fit(data, model_family = c("BH"), covariates = NULL,
 \item neighbours: columns with user-defined names, giving number of neighbours for each group
 }}
 
+\item{focal_column}{optional integer value giving the position, or name, of the column
+with neighbours from the same species as the focal one. This is necessary if "alpha_intra" is specified
+in \code{initial_values}, \code{lower_bounds}, \code{upper_bounds}, or \code{fixed_terms}.}
+
 \item{model_family}{family of model to use. Available families are BH (Beverton-Holt) as default.
 Users may define their own families and models (see vignette XXXXX).}
 
-\item{covariates}{optional named matrix or dataframe with observations (rows) of any number of environmental covariates (columns)}
+\item{covariates}{optional named matrix or dataframe with observations (rows) of any number of environmental covariates (columns).}
 
-\item{optimization_method}{numerical optimization method}
+\item{optimization_method}{numerical optimization method.}
 
 \item{alpha_form}{what form does the alpha parameter take? one of "none" (no alpha in the model),
-"global" (a single alpha for all pairwise interactions), or "pairwise" (one alpha value for every interaction)}
+"global" (a single alpha for all pairwise interactions), or "pairwise" (one alpha value for every interaction).}
 
-\item{lambda_cov_form}{form of the covariate effects on lambda. Either "none" (no covariate effects) or "global" (one estimate per covariate)}
+\item{lambda_cov_form}{form of the covariate effects on lambda. Either "none" (no covariate effects) or "global" (one estimate per covariate).}
 
 \item{alpha_cov_form}{form of the covariate effects on alpha. One of "none" (no covariate effects), "global" (one estimate per covariate on every alpha),
 or "pairwise" (one estimate per covariate and pairwise alpha)}
 
-\item{initial_values}{list with components "lambda","alpha","lambda_cov", "alpha_cov", specifying the initial values
+\item{initial_values}{list with components "lambda","alpha_intra","alpha_inter","lambda_cov", "alpha_cov", specifying the initial values
 for numerical optimization. Single values are allowed.}
 
-\item{lower_bounds}{optional list with single values for "lambda","alpha","lambda_cov", "alpha_cov".}
+\item{lower_bounds}{optional list with single values for "lambda","alpha_intra","alpha_inter","lambda_cov", "alpha_cov".}
 
-\item{upper_bounds}{optional list with single values for "lambda","alpha","lambda_cov", "alpha_cov".}
+\item{upper_bounds}{optional list with single values for "lambda","alpha_intra","alpha_inter","lambda_cov", "alpha_cov".}
 
-\item{fixed_terms}{optional list specifying which model parameters are fixed, among "lambda","alpha","lambda_cov", and "alpha_cov".}
+\item{fixed_terms}{optional list specifying which model parameters are fixed, among
+"lambda","alpha_intra","alpha_inter","lambda_cov", and "alpha_cov".}
 
 \item{bootstrap_samples}{number of bootstrap samples for error calculation. Defaults to 0, i.e. no error is calculated.}
 }
@@ -59,11 +65,13 @@ an object of type 'cxr_pm_fit' which is a list with the following components:
 \item initial_values: list with initial values
 \item fixed_terms: list with fixed terms
 \item lambda: fitted value for lambda, or NULL if fixed
-\item alpha: fitted value(s) for alpha, or NULL if fixed
-\item lambda_cov: fitted value(s) for lambda_cov, or NULL if fixed
-\item alpha_cov: fitted value(s) for alpha_cov, or NULL if fixed
+\item alpha_intra: fitted value for intraspecific alpha, or NULL if fixed
+\item alpha_inter: fitted value for interspecific alpha, or NULL if fixed
+\item lambda_cov: fitted value(s) for lambda_cov, or NULL if fixed.
+\item alpha_cov: fitted value(s) for alpha_cov, or NULL if fixed.
+These are structured as a list with one element for each covariate.
 \item lambda_standard_error: standard error for lambda, if computed
-\item alpha_standard_error: standard error for alpha, if computed
+\item alpha_standard_error: standard error for alpha, if computed---------------TODO replace
 \item lambda_cov_standard_error: standard error for lambda_cov, if computed
 \item alpha_cov_standard_error: standard error for alpha_cov, if computed
 \item log_likelihood: log-likelihood of the fit
@@ -74,18 +82,21 @@ Estimates parameters of user-specified population dynamics models.
 }
 \examples{
 data("neigh_list")
+my.sp <- "BEMA"
 # data for a single species, keep only fitness and neighbours columns
-sp_data <- neigh_list[[1]][2:ncol(neigh_list[[1]])]
-\dontrun{
+sp_data <- neigh_list[[my.sp]][2:ncol(neigh_list[[1]])]
+\donttest{
   sp_fit <- cxr_pm_fit(data = sp_data,
+                       focal_column = my.sp,
                        optimization_method = "bobyqa",
                        alpha_form = "pairwise",
                        lambda_cov_form = "none",
                        alpha_cov_form = "none",
-                       initial_values = list(lambda = 1,alpha = 0.1),
-                       lower_bounds = list(lambda = 0,alpha = 0),
-                       upper_bounds = list(lambda = 100,alpha = 1),
+                       initial_values = list(lambda = 1,alpha_intra = 0.1,alpha_inter = 0.1),
+                       lower_bounds = list(lambda = 0,alpha_intra = 0,alpha_inter = 0),
+                       upper_bounds = list(lambda = 100,alpha_intra = 1,alpha_inter = 1),
                        bootstrap_samples = 3)
   summary(sp_fit)
 }
+
 }

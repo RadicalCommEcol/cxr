@@ -34,9 +34,9 @@ Users may define their own families and models (see vignette XXXXX).}
 
 \item{covariates}{a data structure equivalent to 'data', in which each column are the values of a covariate.}
 
-\item{optimization_method}{numerical optimization method}
+\item{optimization_method}{numerical optimization method.}
 
-\item{lambda_cov_form}{form of the covariate effects on lambda. Either "none" (no covariate effects) or "global" (one estimate per covariate)}
+\item{lambda_cov_form}{form of the covariate effects on lambda. Either "none" (no covariate effects) or "global" (one estimate per covariate).}
 
 \item{effect_cov_form}{form of the covariate effects on competitive effects.
 Either "none" (no covariate effects) or "global" (one estimate per covariate)}

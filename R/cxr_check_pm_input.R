@@ -10,8 +10,6 @@
 #' either 'ok','warning',or 'error'. 'input.message' is either NULL
 #' or the message returned by the errors/warnings
 #' @noRd
-#'
-#' @examples
 cxr_check_pm_input <- function(data, 
                                focal_column = NULL,
                                model_family = c("BH"),

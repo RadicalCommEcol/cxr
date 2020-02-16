@@ -4,15 +4,15 @@
 \alias{cxr_pm_multifit}
 \title{Multi-species parameter optimization}
 \usage{
-cxr_pm_multifit(data, model_family = c("BH"), covariates = NULL,
-  optimization_method = c("BFGS", "CG", "Nelder-Mead", "ucminf",
-  "L-BFGS-B", "nlm", "nlminb", "Rcgmin", "Rvmmin", "spg", "bobyqa", "nmkb",
-  "hjkb", "nloptr_CRS2_LM", "nloptr_ISRES", "nloptr_DIRECT_L_RAND",
-  "DEoptimR", "hydroPSO", "GenSA"), alpha_form = c("none", "global",
-  "pairwise"), lambda_cov_form = c("none", "global"),
-  alpha_cov_form = c("none", "global", "pairwise"),
-  initial_values = NULL, lower_bounds = NULL, upper_bounds = NULL,
-  fixed_terms = NULL, bootstrap_samples = 0)
+cxr_pm_multifit(data, model_family = c("BH"), focal_column = NULL,
+  covariates = NULL, optimization_method = c("BFGS", "CG",
+  "Nelder-Mead", "ucminf", "L-BFGS-B", "nlm", "nlminb", "Rcgmin", "Rvmmin",
+  "spg", "bobyqa", "nmkb", "hjkb", "nloptr_CRS2_LM", "nloptr_ISRES",
+  "nloptr_DIRECT_L_RAND", "DEoptimR", "hydroPSO", "GenSA"),
+  alpha_form = c("none", "global", "pairwise"),
+  lambda_cov_form = c("none", "global"), alpha_cov_form = c("none",
+  "global", "pairwise"), initial_values = NULL, lower_bounds = NULL,
+  upper_bounds = NULL, fixed_terms = NULL, bootstrap_samples = 0)
 }
 \arguments{
 \item{data}{named list in which each component is
@@ -21,29 +21,35 @@ a dataframe with a fitness column and a number of columns representing neigbhour
 \item{model_family}{family of model to use. Available families are BH (Beverton-Holt) as default.
 Users may define their own families and models (see vignette XXXXX).}
 
+\item{focal_column}{character vector with the same length as data,
+giving the names of the columns representing
+intraspecific observations for each species,
+or numeric vector giving the position of such columns.}
+
 \item{covariates}{optional named list in which each component is
 a dataframe with values of each covariate for each observation. The ith component
 of \code{covariates} are the covariate values that correspond to
 the ith component of \code{data}, so they must have the same number of observations.}
 
-\item{optimization_method}{numerical optimization method}
+\item{optimization_method}{numerical optimization method.}
 
 \item{alpha_form}{what form does the alpha parameter take? one of "none" (no alpha in the model),
-"global" (a single alpha for all pairwise interactions), or "pairwise" (one alpha value for every interaction)}
+"global" (a single alpha for all pairwise interactions), or "pairwise" (one alpha value for every interaction).}
 
-\item{lambda_cov_form}{form of the covariate effects on lambda. Either "none" (no covariate effects) or "global" (one estimate per covariate)}
+\item{lambda_cov_form}{form of the covariate effects on lambda. Either "none" (no covariate effects) or "global" (one estimate per covariate).}
 
 \item{alpha_cov_form}{form of the covariate effects on alpha. One of "none" (no covariate effects), "global" (one estimate per covariate on every alpha),
 or "pairwise" (one estimate per covariate and pairwise alpha)}
 
-\item{initial_values}{list with components "lambda","alpha","lambda_cov", "alpha_cov", specifying the initial values
+\item{initial_values}{list with components "lambda","alpha_intra","alpha_inter","lambda_cov", "alpha_cov", specifying the initial values
 for numerical optimization. Single values are allowed.}
 
-\item{lower_bounds}{optional list with single values for "lambda","alpha","lambda_cov", "alpha_cov".}
+\item{lower_bounds}{optional list with single values for "lambda","alpha_intra","alpha_inter","lambda_cov", "alpha_cov".}
 
-\item{upper_bounds}{optional list with single values for "lambda","alpha","lambda_cov", "alpha_cov".}
+\item{upper_bounds}{optional list with single values for "lambda","alpha_intra","alpha_inter","lambda_cov", "alpha_cov".}
 
-\item{fixed_terms}{optional list specifying which model parameters are fixed, among "lambda","alpha","lambda_cov", and "alpha_cov".}
+\item{fixed_terms}{optional list specifying which model parameters are fixed, among
+"lambda","alpha_intra","alpha_inter","lambda_cov", and "alpha_cov".}
 
 \item{bootstrap_samples}{number of bootstrap samples for error calculation. Defaults to 0, i.e. no error is calculated.}
 }
@@ -58,7 +64,8 @@ an object of type 'cxr_pm_multifit' which is a list with the following component
 \item initial_values: list with initial values
 \item fixed_terms: list with fixed terms
 \item lambda: fitted values for lambda, or NULL if fixed
-\item alpha: fitted values for alpha, or NULL if fixed
+\item alpha_intra: fitted values for alpha_intra, or NULL if fixed
+\item alpha_inter: fitted values for alpha_inter, or NULL if fixed
 \item lambda_cov: fitted values for lambda_cov, or NULL if fixed
 \item alpha_cov: fitted values for alpha_cov, or NULL if fixed
 \item lambda_standard_error: standard errors for lambda, if computed
@@ -87,7 +94,7 @@ salinity <- salinity_list[1:3]
 for(i in 1:length(salinity)){
   salinity[[i]] <- salinity[[i]][,2:length(salinity[[i]])]
 }
-\dontrun{
+\donttest{
   fit_3sp <- cxr_pm_multifit(data = data,
                              optimization_method = "bobyqa",
                              covariates = salinity,

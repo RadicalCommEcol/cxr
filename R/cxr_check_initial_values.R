@@ -4,8 +4,6 @@
 #'
 #' @return boolean, whether the values are consistent
 #' @noRd
-#'
-#' @examples
 cxr_check_initial_values <- function(initial_values,
                                      focal_column,
                                      lower_bounds,

@@ -4,8 +4,8 @@
 \alias{cxr_pm_bootstrap}
 \title{Standard error estimates for model parameters}
 \usage{
-cxr_pm_bootstrap(fitness_model, optimization_method, data, covariates,
-  init_par, lower_bounds, upper_bounds, fixed_parameters,
+cxr_pm_bootstrap(fitness_model, optimization_method, data, focal_column,
+  covariates, init_par, lower_bounds, upper_bounds, fixed_parameters,
   bootstrap_samples)
 }
 \arguments{
@@ -19,6 +19,9 @@ cxr_pm_bootstrap(fitness_model, optimization_method, data, covariates,
 \item neighbours: columns with user-defined names with number of neighbours for each group
 }}
 
+\item{focal_column}{optional integer value giving the position, or name, of the column
+with neighbours from the same species as the focal one. This is necessary if "alpha_intra" is specified.}
+
 \item{covariates}{optional matrix with observations in rows and covariates in columns. Each cell is the value of a covariate
 in a given observation.}
 
@@ -28,7 +31,8 @@ in a given observation.}
 
 \item{upper_bounds}{1d vector of upper bounds}
 
-\item{fixed_parameters}{optional list specifying values of fixed parameters, with components "lambda","alpha","lambda_cov", and "alpha_cov".}
+\item{fixed_parameters}{optional list specifying values of fixed parameters,
+with components "lambda","alpha_intra","alpha_inter","lambda_cov", and "alpha_cov".}
 
 \item{bootstrap_samples}{how many bootstrap samples to compute.}
 }

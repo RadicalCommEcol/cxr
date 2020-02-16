@@ -64,49 +64,6 @@
 #'   summary(sp_fit)
 #' }
 #' 
-
-source("R/cxr_check_initial_values.R")
-source("R/cxr_check_input_data.R")
-source("R/cxr_check_method_boundaries.R")
-source("R/cxr_check_pm_input.R")
-source("R/cxr_get_init_params.R")
-source("R/cxr_get_model_bounds.R")
-source("R/cxr_pm_bootstrap.R")
-source("R/cxr_retrieve_params.R")
-source("R/cxr_return_init_length.R")
-source("R/cxr_sort_params.R")
-source("R/pm_BH_alpha_pairwise_lambdacov_global_alphacov_pairwise.R")
-
-data("neigh_list")
-my.sp <- "BEMA"
-data <- neigh_list[[my.sp]][2:ncol(neigh_list[[1]])]
-focal_column = my.sp
-model_family = "BH"
-data("salinity_list")
-salinity <- salinity_list[[my.sp]][2]
-covariates <- salinity
-optimization_method <- "bobyqa"
-alpha_form <- "pairwise"
-lambda_cov_form <- "global"
-alpha_cov_form <- "pairwise"
-initial_values = list(lambda = 1, 
-                      alpha_intra = .1,
-                      alpha_inter = 0.1, 
-                      lambda_cov = 0.1, 
-                      alpha_cov = 0.1)
-lower_bounds = list(lambda = 0, 
-                      alpha_intra = 0,
-                      alpha_inter = -1, 
-                      lambda_cov = -1, 
-                      alpha_cov = -1)
-upper_bounds = list(lambda = 100, 
-                      alpha_intra = 1,
-                      alpha_inter = 1, 
-                      lambda_cov = 1, 
-                      alpha_cov = 1)
-fixed_terms <- NULL
-bootstrap_samples <- 3
-
 cxr_pm_fit <- function(data, 
                        focal_column = NULL,
                        model_family = c("BH"),
@@ -219,8 +176,8 @@ cxr_pm_fit <- function(data,
   
   # are covariates named?
   if(!is.null(covariates)){
-    if(is.null(names(covariates))){
-      names(covariates) <- paste("cov",1:ncol(covariates),sep="")
+    if(is.null(colnames(covariates))){
+      colnames(covariates) <- paste("cov",1:ncol(covariates),sep="")
     }
   }
 
@@ -503,7 +460,13 @@ cxr_pm_fit <- function(data,
     fit$lambda_cov <- optim_params$lambda_cov
   }
   if(!is.null(optim_params$alpha_cov)){
-    # fit$alpha_cov <- optim_params$alpha_cov
+    tidy_ac <- list()
+    for(i.cov in 1:ncol(covariates)){
+      my.cov <- which(grepl(names(covariates)[i.cov],names(optim_params$alpha_cov)))
+      tidy_ac[[i.cov]] <- optim_params$alpha_cov[my.cov]
+    }
+    names(tidy_ac) <- names(covariates)
+    fit$alpha_cov <- tidy_ac
   }
   if(!is.null(error_params$lambda)){
     fit$lambda_standard_error <- error_params$lambda
@@ -518,7 +481,13 @@ cxr_pm_fit <- function(data,
     fit$lambda_cov_standard_error <- error_params$lambda_cov
   }
   if(!is.null(error_params$alpha_cov)){
-    fit$alpha_cov_standard_error <- error_params$alpha_cov
+    tidy_acr <- list()
+    for(i.cov in 1:ncol(covariates)){
+      my.cov <- which(grepl(names(covariates)[i.cov],names(error_params$alpha_cov)))
+      tidy_acr[[i.cov]] <- error_params$alpha_cov[my.cov]
+    }
+    names(tidy_acr) <- names(covariates)
+    fit$alpha_cov_standard_error <- tidy_acr
   }
   
   fit$log_likelihood <- llik
@@ -555,7 +524,7 @@ cxr_pm_fit <- function(data,
   }
   
   if(!is.null(fit$alpha_cov) & !is.null(bounds$lower_alpha_cov) & !is.null(bounds$upper_alpha_cov)){
-    if(any(fit$alpha_cov == bounds$lower_alpha_cov) | any(fit$alpha_cov == bounds$upper_alpha_cov)){
+    if(any(unlist(fit$alpha_cov) == bounds$lower_alpha_cov) | any(unlist(fit$alpha_cov) == bounds$upper_alpha_cov)){
       message("cxr_pm_fit: One or more fitted alpha_covs are equal to lower or upper bounds. 
       Consider refitting with different boundaries.")
     }
