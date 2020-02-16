@@ -1,3 +1,11 @@
+#' check the initial values and bounds provided to cxr_pm_fit
+#'
+#' @inheritParams cxr_pm_fit
+#'
+#' @return boolean, whether the values are consistent
+#' @noRd
+#'
+#' @examples
 cxr_check_initial_values <- function(initial_values,
                                      focal_column,
                                      lower_bounds,

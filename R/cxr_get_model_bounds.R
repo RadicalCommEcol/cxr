@@ -1,4 +1,13 @@
 
+#' clean the lower/upper bounds from the input of cxr_pm_fit
+#'
+#' @param lower_bounds list with lower bounds
+#' @param upper_bounds list
+#' @param fixed_terms list
+#'
+#' @return single list with all bounds and their values
+#' @noRd
+#'
 cxr_get_model_bounds <- function(lower_bounds,upper_bounds,fixed_terms){
   
   lower_lambda <- NULL

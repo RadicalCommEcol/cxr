@@ -8,7 +8,8 @@
 #'
 #' @param init_lambda numeric, lambda
 #' @param init_sigma numeric, sigma
-#' @param init_alpha 1d vector, interaction coefficients over the species
+#' @param init_alpha_intra numeric, intraspecific alpha
+#' @param init_alpha_inter 1d vector, interspecific alpha
 #' @param init_lambda_cov 1d vector, initial values for lambda_cov
 #' @param init_alpha_cov 1d vector, initial values for alpha_cov
 #' @param lower_lambda lower bound for lambda
@@ -25,30 +26,30 @@
 #' @return list with three 1d vectors, ready for passing to the optim methods
 #' @noRd
 cxr_sort_params <- function(init_lambda = NULL,
-                       init_sigma = 0,
-                       init_alpha_intra = NULL,
-                       init_alpha_inter = NULL,
-                       init_lambda_cov = NULL,
-                       init_alpha_cov = NULL,
-                       lower_lambda = 1,
-                       upper_lambda = 1e5,
-                       lower_sigma = 1e-5,
-                       upper_sigma = 1e5,
-                       lower_alpha_intra = 1e-5,
-                       upper_alpha_intra = 1e5,
-                       lower_alpha_inter = 1e-5,
-                       upper_alpha_inter = 1e5,
-                       lower_lambda_cov = 1e-5,
-                       upper_lambda_cov = 1e5,
-                       lower_alpha_cov = 1e-5,
-                       upper_alpha_cov = 1e5
+                            init_sigma = 0,
+                            init_alpha_intra = NULL,
+                            init_alpha_inter = NULL,
+                            init_lambda_cov = NULL,
+                            init_alpha_cov = NULL,
+                            lower_lambda = 1,
+                            upper_lambda = 1e5,
+                            lower_sigma = 1e-5,
+                            upper_sigma = 1e5,
+                            lower_alpha_intra = 1e-5,
+                            upper_alpha_intra = 1e5,
+                            lower_alpha_inter = 1e-5,
+                            upper_alpha_inter = 1e5,
+                            lower_lambda_cov = 1e-5,
+                            upper_lambda_cov = 1e5,
+                            lower_alpha_cov = 1e-5,
+                            upper_alpha_cov = 1e5
 ){
   init_par <- NULL
   lower_bounds <- NULL
   upper_bounds <- NULL
   
   # if lambda is not null, it goes first
-
+  
   if(!is.null(init_lambda)){
     init_par <- init_lambda
     lower_bounds <- rep(lower_lambda,length(init_lambda))

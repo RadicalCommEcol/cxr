@@ -1,3 +1,17 @@
+#' internal to check input consistency to cxr_pm_fit
+#'
+#' this function draws on several other internal functions,
+#' performing checks on data consistency, covariates, bounds,
+#' initial values, packages installed.
+#'
+#' @inheritParams cxr_pm_fit
+#'
+#' @return list with two components. 'input.ok' is a character,
+#' either 'ok','warning',or 'error'. 'input.message' is either NULL
+#' or the message returned by the errors/warnings
+#' @noRd
+#'
+#' @examples
 cxr_check_pm_input <- function(data, 
                                focal_column = NULL,
                                model_family = c("BH"),

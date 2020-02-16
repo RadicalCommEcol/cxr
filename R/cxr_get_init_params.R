@@ -1,4 +1,14 @@
 
+#' sort initial values from cxr_pm/er_fit in an appropriate way
+#'
+#' @inheritParams cxr_pm_fit
+#' @param model_type either 'pm' or 'er'
+#' @param neigh_intra name of neigh_intra column
+#' @param neigh_inter names of neigh_inter_columns
+#'
+#' @return list with named initial values and fixed terms
+#' @noRd
+#'
 cxr_get_init_params <- function(initial_values,
                                 fixed_terms,
                                 alpha_form,
@@ -80,7 +90,8 @@ cxr_get_init_params <- function(initial_values,
     if(alpha_cov_form == "global"){
       name.alpha.cov <- paste("alpha_cov_",names(covariates),sep="")
     }else{
-      name.alpha.cov <- paste("alpha_cov",rep(names(covariates),each = length(neigh)),rep(neigh,ncol(covariates)),sep="_")
+      all_neigh <- c(neigh_intra,neigh_inter)
+      name.alpha.cov <- paste("alpha_cov",rep(names(covariates),each = length(all_neigh)),rep(all_neigh,ncol(covariates)),sep="_")
     }
     if("alpha_cov" %in% fixed_terms){
       fixed_parameters[["alpha_cov"]] <- cxr_return_init_length(alpha_cov_form,

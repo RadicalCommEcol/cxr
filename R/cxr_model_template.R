@@ -6,8 +6,9 @@
 
 # 2 - PARAMETER FORMS
 # every model has, at least, a lambda parameter. Other potential parameters are 
-# pairwise interactions (alpha), and the effects of covariates over lambda (lambda_cov)
-# and over alpha (alpha_cov).
+# intraspecific (alpha_intra) and interspecific interactions (alpha_inter), 
+# as well as the effects of covariates over lambda (lambda_cov)
+# and over all alphas (alpha_cov).
 
 # How these parameters are modelled is important to differentiate models,
 # and so should be reflected in the function name. The template for naming your model 
@@ -31,7 +32,8 @@
 # 3 - FIXED TERMS
 # if you have independent estimates of a subset of parameters, you may want
 # to keep these as fixed, and only fit those you need to. This can be achieved
-# through the argument "fixed_parameters", which is a list with four components (lambda, alpha, lambda_cov, alpha_cov),
+# through the argument "fixed_parameters", which is a list with five components 
+# (lambda, alpha_intra, alpha_inter, lambda_cov, alpha_cov),
 # where each component should be either NULL if the parameter is to be fit, 
 # or the fixed value of the parameter in question.
 
@@ -44,7 +46,8 @@
 
 pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
                                                               fitness,
-                                                              neigh_matrix,
+                                                              neigh_intra_matrix = NULL,
+                                                              neigh_inter_matrix,
                                                               covariates,
                                                               fixed_parameters){
   
@@ -56,10 +59,16 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
   
   # comment or uncomment sections for the different parameters
   # depending on whether your model includes them
-  # note that the section on alpha_cov includes two
-  # possibilities, depending on whether alpha_cov is 
-  # modelled as "global" or "pairwise"
-  # both are commented, you need to uncomment the one to be modelled
+  # note that the section on alpha_inter includes two
+  # possibilities, depending on whether a single alpha is 
+  # fitted for all interactions (global) or each pairwise alpha is 
+  # different (pairwise)
+  # both are commented, you need to uncomment the appropriate one
+  
+  # likewise for the section on alpha_cov
+  
+  # --------------------------------------------------------------------------
+  
   pos <- 1
   
   # if a parameter is passed within the "par" vector,
@@ -81,12 +90,30 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
     lambda_cov <- fixed_parameters[["lambda_cov"]]
   }
   
-  # alpha
-  if(is.null(fixed_parameters$alpha)){
-    alpha <- par[pos:(pos+ncol(neigh_matrix)-1)]
-    pos <- pos + ncol(neigh_matrix)
+  # alpha_intra
+  if(!is.null(neigh_intra_matrix)){
+    # intra
+    if(is.null(fixed_parameters[["alpha_intra"]])){
+      alpha_intra <- par[pos]
+      pos <- pos + 1
+    }else{
+      alpha_intra <- fixed_parameters[["alpha_intra"]]
+    }
   }else{
-    alpha <- fixed_parameters[["alpha"]]
+    alpha_intra <- NULL
+  }
+  
+  # alpha_inter
+  if(is.null(fixed_parameters[["alpha_inter"]])){
+    # uncomment for alpha_global
+    # alpha_inter <- par[pos]
+    # pos <- pos + 1
+    
+    # uncomment for alpha_pairwise
+    # alpha_inter <- par[pos:(pos+ncol(neigh_inter_matrix)-1)]
+    # pos <- pos + ncol(neigh_inter_matrix) -1
+  }else{
+    alpha_inter <- fixed_parameters[["alpha_inter"]]
   }
   
   # alpha_cov
@@ -110,10 +137,10 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
   
   # MODEL CODE HERE ---------------------------------------------------------
   
-  
-  
   # the model should return a "pred" value
-  pred <- 0# a function of lambda, alpha, lambda_cov, alpha_cov 
+  # a function of lambda, alpha_intra, alpha_inter, lambda_cov, alpha_cov 
+  # and neigh_intra, neigh_inter, and covariates
+  pred <- 0
   
   # MODEL CODE ENDS HERE ----------------------------------------------------
   
