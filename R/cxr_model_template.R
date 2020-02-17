@@ -111,7 +111,7 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
     
     # uncomment for alpha_pairwise
     # alpha_inter <- par[pos:(pos+ncol(neigh_inter_matrix)-1)]
-    # pos <- pos + ncol(neigh_inter_matrix) -1
+    # pos <- pos + ncol(neigh_inter_matrix)
   }else{
     alpha_inter <- fixed_parameters[["alpha_inter"]]
   }
@@ -123,8 +123,9 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
     # pos <- pos + ncol(covariates)
     
     # uncomment for alpha_cov_pairwise
-    # alpha_cov <- par[pos:(pos+(ncol(covariates)*ncol(neigh_matrix))-1)]
-    # pos <- pos + (ncol(covariates)*ncol(neigh_matrix))
+    # alpha_cov <- par[pos:(pos+(ncol(covariates)*
+    # (ncol(neigh_inter_matrix)+ncol(neigh_intra_matrix)))-1)]
+    # pos <- pos + (ncol(covariates)*(ncol(neigh_inter_matrix)+ncol(neigh_intra_matrix)))
   }else{
     alpha_cov <- fixed_parameters[["alpha_cov"]]
   }
@@ -139,7 +140,7 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
   
   # the model should return a "pred" value
   # a function of lambda, alpha_intra, alpha_inter, lambda_cov, alpha_cov 
-  # and neigh_intra, neigh_inter, and covariates
+  # and neigh_intra_matrix, neigh_inter_matrix, and covariates
   pred <- 0
   
   # MODEL CODE ENDS HERE ----------------------------------------------------
