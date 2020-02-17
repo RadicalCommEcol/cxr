@@ -1,16 +1,23 @@
 library(cxr)
-source("R/cxr_check_initial_values.R")
-source("R/cxr_check_input_data.R")
-source("R/cxr_check_method_boundaries.R")
 source("R/cxr_check_pm_input.R")
 source("R/cxr_get_init_params.R")
 source("R/cxr_get_model_bounds.R")
-source("R/cxr_pm_bootstrap.R")
-source("R/cxr_retrieve_params.R")
-source("R/cxr_return_init_length.R")
 source("R/cxr_sort_params.R")
+source("R/cxr_return_init_length.R")
+
 source("R/pm_BH_alpha_pairwise_lambdacov_global_alphacov_pairwise.R")
+source("R/pm_BH_alpha_pairwise_lambdacov_none_alphacov_none.R")
+source("R/pm_BH_alpha_pairwise_lambdacov_global_alphacov_global.R")
+
+source("R/cxr_retrieve_params.R")
+source("R/cxr_pm_bootstrap.R")
+
+source("R/cxr_check_initial_values.R")
+source("R/cxr_check_input_data.R")
+source("R/cxr_check_method_boundaries.R")
+
 source("R/cxr_pm_fit.R")
+source("R/summary.R")
 
 data("neigh_list")
 my.sp <- "BEMA"
@@ -45,7 +52,7 @@ tt <- cxr_pm_fit(data = data,
                  focal_column = focal_column,
                  model_family = model_family,
                  covariates = covariates,
-                 optimization_method = optimization_method,
+                 optimization_method = "Nelder-Mead",#optimization_method,
                  alpha_form = alpha_form,
                  lambda_cov_form = lambda_cov_form,
                  alpha_cov_form = alpha_cov_form,
@@ -54,3 +61,5 @@ tt <- cxr_pm_fit(data = data,
                  upper_bounds = upper_bounds,
                  fixed_terms = fixed_terms,
                  bootstrap_samples = bootstrap_samples)
+summary(tt)
+

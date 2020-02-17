@@ -11,6 +11,10 @@ source("R/cxr_return_init_length.R")
 source("R/cxr_sort_params.R")
 source("R/pm_BH_alpha_pairwise_lambdacov_global_alphacov_pairwise.R")
 
+source("R/cxr_pm_fit.R")
+source("R/cxr_pm_multifit.R")
+
+
  data("neigh_list")
  data <- neigh_list[1:3]
  # keep only fitness and neighbours columns
@@ -48,3 +52,17 @@ upper_bounds = list(lambda = 100,
                       alpha_cov = 1)
 fixed_terms <- NULL
 bootstrap_samples <- 3
+
+ttt <- cxr_pm_multifit(data = data,
+                      focal_column = focal_column,
+                      model_family = model_family,
+                      covariates = covariates,
+                      optimization_method = optimization_method,
+                      alpha_form = alpha_form,
+                      lambda_cov_form = lambda_cov_form,
+                      alpha_cov_form = alpha_cov_form,
+                      initial_values = initial_values,
+                      lower_bounds = lower_bounds,
+                      upper_bounds = upper_bounds,
+                      fixed_terms = fixed_terms,
+                      bootstrap_samples = bootstrap_samples)

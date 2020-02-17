@@ -37,15 +37,22 @@ obs_homa <- subset(obs_homa,select = -c(obs_ID))
 
 ```{r warning=FALSE,message=FALSE}
 fit_homa <- cxr_pm_fit(data = obs_homa,
+                       focal_column = my.sp,
                        model_family = "BH",
                        covariates = NULL,
                        optimization_method = "bobyqa",
                        alpha_form = "pairwise",
                        lambda_cov_form = "none",
                        alpha_cov_form = "none",
-                       initial_values = list(lambda = 1,alpha = 1),
-                       lower_bounds = list(lambda = 0,alpha = 0),
-                       upper_bounds = list(lambda = 100,alpha = 10),
+                       initial_values = list(lambda = 1,
+                                             alpha_intra = .1,
+                                             alpha_inter = .1),
+                       lower_bounds = list(lambda = 0,
+                                           alpha_intra = 0,
+                                           alpha_inter = 0),
+                       upper_bounds = list(lambda = 100,
+                                           alpha_intra = 1,
+                                           alpha_inter = 1),
                        fixed_terms = NULL,
                        bootstrap_samples = 3)
 ```
