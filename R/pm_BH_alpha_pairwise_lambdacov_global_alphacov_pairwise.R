@@ -45,7 +45,6 @@ pm_BH_alpha_pairwise_lambdacov_global_alphacov_pairwise <- function(par,
     lambda_cov <- fixed_parameters[["lambda_cov"]]
   }
   
-  
   if(!is.null(neigh_intra_matrix)){
     # intra
     if(is.null(fixed_parameters[["alpha_intra"]])){
@@ -61,14 +60,15 @@ pm_BH_alpha_pairwise_lambdacov_global_alphacov_pairwise <- function(par,
   # inter
   if(is.null(fixed_parameters[["alpha_inter"]])){
     alpha_inter <- par[pos:(pos+ncol(neigh_inter_matrix)-1)]
-    pos <- pos + ncol(neigh_inter_matrix) -1
+    pos <- pos + ncol(neigh_inter_matrix)
   }else{
     alpha_inter <- fixed_parameters[["alpha_inter"]]
   }
   
   if(is.null(fixed_parameters[["alpha_cov"]])){
-    alpha_cov <- par[pos:(pos+(ncol(covariates)*ncol(neigh_matrix))-1)]
-    pos <- pos + (ncol(covariates)*ncol(neigh_matrix))
+    alpha_cov <- par[pos:(pos+(ncol(covariates)*
+                                 (ncol(neigh_inter_matrix)+ncol(neigh_intra_matrix)))-1)]
+    pos <- pos + (ncol(covariates)*(ncol(neigh_inter_matrix)+ncol(neigh_intra_matrix)))
   }else{
     alpha_cov <- fixed_parameters[["alpha_cov"]]
   }

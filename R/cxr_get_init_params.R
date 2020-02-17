@@ -77,21 +77,23 @@ cxr_get_init_params <- function(initial_values,
     if("lambda_cov" %in% fixed_terms){
       fixed_parameters[["lambda_cov"]] <- cxr_return_init_length(lambda_cov_form,
                                                                  initial_values$lambda_cov,
-                                                                 names(covariates),"pm")
+                                                                 colnames(covariates),"pm")
     }else{
       init_lambda_cov <- cxr_return_init_length(lambda_cov_form,
                                                 initial_values$lambda_cov,
-                                                names(covariates),"pm")
-      names(init_lambda_cov) <- paste("lambda_cov_",names(covariates),sep="")
+                                                colnames(covariates),"pm")
+      names(init_lambda_cov) <- paste("lambda_cov_",colnames(covariates),sep="")
     }
   }
   
   if(alpha_cov_form != "none" & !is.null(covariates)){
     if(alpha_cov_form == "global"){
-      name.alpha.cov <- paste("alpha_cov_",names(covariates),sep="")
+      name.alpha.cov <- paste("alpha_cov_",colnames(covariates),sep="")
     }else{
       all_neigh <- c(neigh_intra,neigh_inter)
-      name.alpha.cov <- paste("alpha_cov",rep(names(covariates),each = length(all_neigh)),rep(all_neigh,ncol(covariates)),sep="_")
+      name.alpha.cov <- paste("alpha_cov",rep(colnames(covariates),
+                                              each = length(all_neigh)),
+                              rep(all_neigh,ncol(covariates)),sep="_")
     }
     if("alpha_cov" %in% fixed_terms){
       fixed_parameters[["alpha_cov"]] <- cxr_return_init_length(alpha_cov_form,

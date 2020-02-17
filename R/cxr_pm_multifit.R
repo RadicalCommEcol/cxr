@@ -157,18 +157,18 @@ spfits <- list()
 for(i.sp in 1:length(data)){
   
   spfits[[i.sp]] <- cxr_pm_fit(data = data[[i.sp]],
-                                   focal_column = focal_column[i.sp],
-                                   model_family = model_family,
-                                   covariates = covariates[[i.sp]],
-                                   optimization_method = optimization_method,
-                                   alpha_form = alpha_form,
-                                   lambda_cov_form = lambda_cov_form,
-                                   alpha_cov_form = alpha_cov_form,
-                                   initial_values = initial_values,
-                                   lower_bounds = lower_bounds,
-                                   upper_bounds = upper_bounds,
-                                   fixed_terms = fixed_terms,
-                                   bootstrap_samples = bootstrap_samples)
+                               focal_column = focal_column[i.sp],
+                               model_family = model_family,
+                               covariates = covariates[[i.sp]],
+                               optimization_method = optimization_method,
+                               alpha_form = alpha_form,
+                               lambda_cov_form = lambda_cov_form,
+                               alpha_cov_form = alpha_cov_form,
+                               initial_values = initial_values,
+                               lower_bounds = lower_bounds,
+                               upper_bounds = upper_bounds,
+                               fixed_terms = fixed_terms,
+                               bootstrap_samples = bootstrap_samples)
 }
 names(spfits) <- spnames
 
@@ -233,7 +233,7 @@ if(!is.null(covariates)){
   # in case different sp have different covariates
   cov.names <- NULL
   for(i.cov in 1:length(covariates)){
-    cov.names <- c(cov.names,names(covariates[[i.cov]]))
+    cov.names <- c(cov.names,colnames(covariates[[i.cov]]))
   }
   cov.names <- sort(unique(cov.names))
   
@@ -262,7 +262,7 @@ if(!is.null(covariates)){
   # in case different sp have different covariates
   cov.names <- NULL
   for(i.cov in 1:length(covariates)){
-    cov.names <- c(cov.names,names(covariates[[i.cov]]))
+    cov.names <- c(cov.names,colnames(covariates[[i.cov]]))
   }
   cov.names <- sort(unique(cov.names))
   
@@ -286,7 +286,7 @@ if(!is.null(covariates)){
     spalpha_cov[[i.cov]] <- ac_matrix_template
     
     # fill up matrix
-    for(i.sp in 1:spnames){
+    for(i.sp in 1:length(spnames)){
       mycov <- spfits[[i.sp]]$alpha_cov[[cov.names[i.cov]]]
       # sort sp just in case
       sp.pos <- sapply(matrix.names,function(x)which(grepl(x,names(mycov))))
@@ -358,7 +358,7 @@ list_names <- c("model_name",
                 "optimization_method",
                 "initial_values",
                 "fixed_terms",
-                "lambda","alpha_intra","alpha_inter","lambda_cov","alpha_cov",
+                "lambda","alpha_matrix","lambda_cov","alpha_cov",
                 "lambda_standard_error","alpha_standard_error",
                 "lambda_cov_standard_error","alpha_cov_standard_error",
                 "log_likelihood")
@@ -379,11 +379,8 @@ if(!is.null(fixed_terms)){
 if(!is.null(splambda)){
   fit$lambda <- splambda
 }
-if(!is.null(spalpha_intra)){
-  fit$alpha_intra <- spalpha_intra
-}
-if(!is.null(spalpha_inter)){
-  fit$alpha_inter <- spalpha_inter
+if(!is.null(alpha_matrix)){
+  fit$alpha_matrix <- alpha_matrix
 }
 if(!is.null(splambda_cov)){
   fit$lambda_cov <- splambda_cov

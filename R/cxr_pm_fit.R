@@ -91,11 +91,7 @@ cxr_pm_fit <- function(data,
 ){
   
   # TODO add cxr:: to the internal functions once they are added
-  
-  #########################################
-  # TODO WORK IN PROGRESS, ALPHA_INTRA/INTER
-  ##########################################
-  
+
   # argument checks ---------------------------------------------------------
   
   optimization_method <- match.arg(optimization_method)
@@ -106,12 +102,12 @@ cxr_pm_fit <- function(data,
   # TODO fixed terms?
   
   # wrapper for several consistency checks on the input arguments
-  input.ok <- cxr_check_pm_input(data, 
+  input.ok <- cxr_check_pm_input(data,
                                  focal_column,
                                  model_family,
-                                 covariates, 
-                                 optimization_method, 
-                                 alpha_form, 
+                                 covariates,
+                                 optimization_method,
+                                 alpha_form,
                                  lambda_cov_form,
                                  alpha_cov_form,
                                  initial_values,
@@ -197,6 +193,7 @@ cxr_pm_fit <- function(data,
                                   neigh_intra,
                                   neigh_inter,
                                   covariates)
+  
   
   # retrieve lower and upper bounds, if present
   bounds <- cxr_get_model_bounds(lower_bounds,upper_bounds,fixed_terms)
@@ -462,10 +459,10 @@ cxr_pm_fit <- function(data,
   if(!is.null(optim_params$alpha_cov)){
     tidy_ac <- list()
     for(i.cov in 1:ncol(covariates)){
-      my.cov <- which(grepl(names(covariates)[i.cov],names(optim_params$alpha_cov)))
+      my.cov <- which(grepl(colnames(covariates)[i.cov],names(optim_params$alpha_cov)))
       tidy_ac[[i.cov]] <- optim_params$alpha_cov[my.cov]
     }
-    names(tidy_ac) <- names(covariates)
+    names(tidy_ac) <- colnames(covariates)
     fit$alpha_cov <- tidy_ac
   }
   if(!is.null(error_params$lambda)){
@@ -483,10 +480,10 @@ cxr_pm_fit <- function(data,
   if(!is.null(error_params$alpha_cov)){
     tidy_acr <- list()
     for(i.cov in 1:ncol(covariates)){
-      my.cov <- which(grepl(names(covariates)[i.cov],names(error_params$alpha_cov)))
+      my.cov <- which(grepl(colnames(covariates)[i.cov],names(error_params$alpha_cov)))
       tidy_acr[[i.cov]] <- error_params$alpha_cov[my.cov]
     }
-    names(tidy_acr) <- names(covariates)
+    names(tidy_acr) <- colnames(covariates)
     fit$alpha_cov_standard_error <- tidy_acr
   }
   
