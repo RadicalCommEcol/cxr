@@ -3,10 +3,11 @@
 #' @param par 1d vector of initial parameters: lambda, alpha, and sigma.
 #' @param fitness 1d vector of fitness observations, in log scale.
 #' @param neigh_intra_matrix included for compatibility, not used in this model.
-#' @param neigh_inter_matrix matrix of arbitrary columns, number of interspecific neighbours for each observation.
+#' @param neigh_inter_matrix matrix of arbitrary columns, number of neighbours for each observation.
+#' As in this model there is a single alpha argument, do not distinguish neighbour identity
 #' @param covariates included for compatibility, not used in this model.
 #' @param fixed_parameters optional list specifying values of fixed parameters, 
-#' with components "lambda","alpha".
+#' with components "lambda","alpha_inter".
 #'
 #' @return log-likelihood value
 #' @export

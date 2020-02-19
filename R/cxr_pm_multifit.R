@@ -138,7 +138,10 @@ cxr_pm_multifit <- function(data,
   
   # retrieve model ----------------------------------------------------------
   # character string giving the name of the model
-  model_name <- paste("pm_",model_family,"_alpha_",alpha_form,"_lambdacov_",lambda_cov_form,"_alphacov_",alpha_cov_form,sep="")
+  model_name <- paste("pm_",model_family,
+                      "_alpha_",alpha_form,
+                      "_lambdacov_",lambda_cov_form,
+                      "_alphacov_",alpha_cov_form,sep="")
   
   # try to retrieve the function from its name
   # using function "get"
@@ -149,261 +152,357 @@ cxr_pm_multifit <- function(data,
   }
   
   
-# prepare multisp data ----------------------------------------------------
-spnames <- names(data)
-
-# fit every sp ------------------------------------------------------------
-spfits <- list()
-for(i.sp in 1:length(data)){
+  # prepare multisp data ----------------------------------------------------
+  spnames <- names(data)
   
-  spfits[[i.sp]] <- cxr_pm_fit(data = data[[i.sp]],
-                               focal_column = focal_column[i.sp],
-                               model_family = model_family,
-                               covariates = covariates[[i.sp]],
-                               optimization_method = optimization_method,
-                               alpha_form = alpha_form,
-                               lambda_cov_form = lambda_cov_form,
-                               alpha_cov_form = alpha_cov_form,
-                               initial_values = initial_values,
-                               lower_bounds = lower_bounds,
-                               upper_bounds = upper_bounds,
-                               fixed_terms = fixed_terms,
-                               bootstrap_samples = bootstrap_samples)
-}
-names(spfits) <- spnames
-
-# output ------------------------------------------------------------------
-
-# integrate output from the different sp
-
-# lambda
-splambda <- NULL
-for(i.sp in 1:length(spnames)){
+  # fit every sp ------------------------------------------------------------
+  spfits <- list()
+  for(i.sp in 1:length(data)){
+    
+    spfits[[i.sp]] <- cxr_pm_fit(data = data[[i.sp]],
+                                 focal_column = focal_column[i.sp],
+                                 model_family = model_family,
+                                 covariates = covariates[[i.sp]],
+                                 optimization_method = optimization_method,
+                                 alpha_form = alpha_form,
+                                 lambda_cov_form = lambda_cov_form,
+                                 alpha_cov_form = alpha_cov_form,
+                                 initial_values = initial_values,
+                                 lower_bounds = lower_bounds,
+                                 upper_bounds = upper_bounds,
+                                 fixed_terms = fixed_terms,
+                                 bootstrap_samples = bootstrap_samples)
+  }
+  names(spfits) <- spnames
+  
+  # output ------------------------------------------------------------------
+  
+  # integrate output from the different sp
+  
   # lambda
-  if(!is.null(spfits[[i.sp]]$lambda)){
-    mylambda <- spfits[[i.sp]]$lambda
-    names(mylambda) <- spnames[i.sp]
-    splambda <- c(splambda,mylambda)
-  }
-}
-
-# a single alpha matrix, 
-# including all focal and neighbours
-
-# get the names of all sp and sort them
-# these will be the columns of the alpha matrix
-matrix.names <- NULL
-for(i.sp in 1:length(spfits)){
-  if(!is.null(spfits[[i.sp]]$alpha_intra)){
-    matrix.names <- c(matrix.names,names(spfits[[i.sp]]$alpha_intra))
-  }
-  if(!is.null(spfits[[i.sp]]$alpha_inter)){
-    matrix.names <- c(matrix.names,names(spfits[[i.sp]]$alpha_inter))
-  }
-}
-matrix.names <- sort(unique(matrix.names))
-
-# build the matrix
-if(is.null(matrix.names)){
-  alpha_matrix <- NULL
-}else{
-  alpha_matrix <- matrix(nrow = length(spfits),ncol = length(matrix.names),dimnames = list(names(spfits),matrix.names))
-  
-  # go sp by sp filling the matrix
-  for(i.sp in 1:nrow(alpha_matrix)){
-    # intraspecific term
-    if(!is.null(spfits[[i.sp]]$alpha_intra)){
-      intra.col <- which(colnames(alpha_matrix) == names(spfits[[i.sp]]$alpha_intra))
-      alpha_matrix[i.sp,intra.col] <- spfits[[i.sp]]$alpha_intra
-    }
-    # interspecific terms
-    if(!is.null(spfits[[i.sp]]$alpha_inter)){
-      inter.col <- match(names(spfits[[i.sp]]$alpha_inter),colnames(alpha_matrix))
-      # which(colnames(alpha_matrix) == names(spfits[[i.sp]]$alpha_inter))
-      alpha_matrix[i.sp,inter.col] <- spfits[[i.sp]]$alpha_inter
-    }
-  }
-}# if-else
-
-# lambda_cov also as a matrix, with covariates in columns
-# and focal species in rows
-splambda_cov <- NULL
-if(!is.null(covariates)){
-  # covariate names
-  # in case different sp have different covariates
-  cov.names <- NULL
-  for(i.cov in 1:length(covariates)){
-    cov.names <- c(cov.names,colnames(covariates[[i.cov]]))
-  }
-  cov.names <- sort(unique(cov.names))
-  
-  splambda_cov <- matrix(nrow = length(spfits),ncol = length(cov.names),dimnames = list(names(spfits),cov.names))
+  splambda <- NULL
   for(i.sp in 1:length(spnames)){
-    # lambda_cov
-    if(!is.null(spfits[[i.sp]]$lambda_cov)){
-      for(i.cov in 1:length(cov.names)){
-        # look for i.cov covariate in the vector of lambda_covs affecting i.sp
-        # and place it in the matrix
-        splambda_cov[i.sp,i.cov] <- spfits[[i.sp]]$lambda_cov[which(grepl(cov.names[i.cov],names(spfits[[i.sp]]$lambda_cov)))]
-      }
+    # lambda
+    if(!is.null(spfits[[i.sp]]$lambda)){
+      mylambda <- spfits[[i.sp]]$lambda
+      names(mylambda) <- spnames[i.sp]
+      splambda <- c(splambda,mylambda)
     }
-  }# for i.sp
-}# if covariates
-
-# alpha_cov
-
-# this is a list where, for each cov, a focalsp x neighsp matrix gives the alpha_covs
-# if a global alpha_cov is fitted, does not matter
-
-spalpha_cov <- NULL
-if(!is.null(covariates)){
-  
-  # covariate names
-  # in case different sp have different covariates
-  cov.names <- NULL
-  for(i.cov in 1:length(covariates)){
-    cov.names <- c(cov.names,colnames(covariates[[i.cov]]))
   }
-  cov.names <- sort(unique(cov.names))
+  
+  # a single alpha matrix, 
+  # including all focal and neighbours
   
   # get the names of all sp and sort them
-  # these will be the columns of the alpha_cov matrix
+  # these will be the columns of the alpha matrix
   matrix.names <- NULL
   for(i.sp in 1:length(spfits)){
-    if(!is.null(spfits[[i.sp]])){
-      matrix.names <- c(matrix.names,spnames[i.sp],names(data[[i.sp]]))
+    if(!is.null(spfits[[i.sp]]$alpha_intra)){
+      matrix.names <- c(matrix.names,names(spfits[[i.sp]]$alpha_intra))
+    }
+    if(!is.null(spfits[[i.sp]]$alpha_inter)){
+      matrix.names <- c(matrix.names,names(spfits[[i.sp]]$alpha_inter))
     }
   }
-  matrix.names <- sort(unique(matrix.names[which(!matrix.names == "fitness")]))
+  matrix.names <- sort(unique(matrix.names))
   
-  # template
-  # I could simply copy the alpha one, but not sure if its robust enough
-  # for the cases in which alpha is fixed. anyway.
-  ac_matrix_template <- matrix(nrow = length(spfits),ncol = length(matrix.names),dimnames = list(spnames,matrix.names))
-  
-  spalpha_cov <- list()
-  for(i.cov in 1:length(cov.names)){
-    spalpha_cov[[i.cov]] <- ac_matrix_template
+  # build the matrix
+  if(is.null(matrix.names)){
+    alpha_matrix <- NULL
+  }else{
+    alpha_matrix <- matrix(nrow = length(spfits),ncol = length(matrix.names),dimnames = list(names(spfits),matrix.names))
     
-    # fill up matrix
+    # go sp by sp filling the matrix
+    for(i.sp in 1:nrow(alpha_matrix)){
+      # intraspecific term
+      if(!is.null(spfits[[i.sp]]$alpha_intra)){
+        intra.col <- which(colnames(alpha_matrix) == names(spfits[[i.sp]]$alpha_intra))
+        alpha_matrix[i.sp,intra.col] <- spfits[[i.sp]]$alpha_intra
+      }
+      # interspecific terms
+      if(!is.null(spfits[[i.sp]]$alpha_inter)){
+        inter.col <- match(names(spfits[[i.sp]]$alpha_inter),colnames(alpha_matrix))
+        # which(colnames(alpha_matrix) == names(spfits[[i.sp]]$alpha_inter))
+        alpha_matrix[i.sp,inter.col] <- spfits[[i.sp]]$alpha_inter
+      }
+    }
+  }# if-else
+  
+  # lambda_cov also as a matrix, with covariates in columns
+  # and focal species in rows
+  splambda_cov <- NULL
+  if(!is.null(covariates)){
+    # covariate names
+    # in case different sp have different covariates
+    cov.names <- NULL
+    for(i.cov in 1:length(covariates)){
+      cov.names <- c(cov.names,colnames(covariates[[i.cov]]))
+    }
+    cov.names <- sort(unique(cov.names))
+    
+    splambda_cov <- matrix(nrow = length(spfits),ncol = length(cov.names),dimnames = list(names(spfits),cov.names))
     for(i.sp in 1:length(spnames)){
-      mycov <- spfits[[i.sp]]$alpha_cov[[cov.names[i.cov]]]
-      # sort sp just in case
-      sp.pos <- sapply(matrix.names,function(x)which(grepl(x,names(mycov))))
-      spalpha_cov[[i.cov]][i.sp,] <- mycov[sp.pos]
-    }# for each focal sp
-  }# for each covariate
-  names(spalpha_cov) <- cov.names
-}
-
+      # lambda_cov
+      if(!is.null(spfits[[i.sp]]$lambda_cov)){
+        for(i.cov in 1:length(cov.names)){
+          # look for i.cov covariate in the vector of lambda_covs affecting i.sp
+          # and place it in the matrix
+          splambda_cov[i.sp,i.cov] <- spfits[[i.sp]]$lambda_cov[which(grepl(cov.names[i.cov],names(spfits[[i.sp]]$lambda_cov)))]
+        }
+      }
+    }# for i.sp
+  }# if covariates
+  
+  # alpha_cov
+  
+  # this is a list where, for each cov, a focalsp x neighsp matrix gives the alpha_covs
+  # if a global alpha_cov is fitted, does not matter
+  
+  spalpha_cov <- NULL
+  if(!is.null(covariates)){
+    
+    # covariate names
+    # in case different sp have different covariates
+    cov.names <- NULL
+    for(i.cov in 1:length(covariates)){
+      cov.names <- c(cov.names,colnames(covariates[[i.cov]]))
+    }
+    cov.names <- sort(unique(cov.names))
+    
+    # get the names of all sp and sort them
+    # these will be the columns of the alpha_cov matrix
+    matrix.names <- NULL
+    for(i.sp in 1:length(spfits)){
+      if(!is.null(spfits[[i.sp]])){
+        matrix.names <- c(matrix.names,spnames[i.sp],names(data[[i.sp]]))
+      }
+    }
+    matrix.names <- sort(unique(matrix.names[which(!matrix.names == "fitness")]))
+    
+    # template
+    # I could simply copy the alpha one, but not sure if its robust enough
+    # for the cases in which alpha is fixed. anyway.
+    ac_matrix_template <- matrix(nrow = length(spfits),ncol = length(matrix.names),dimnames = list(spnames,matrix.names))
+    
+    spalpha_cov <- list()
+    for(i.cov in 1:length(cov.names)){
+      spalpha_cov[[i.cov]] <- ac_matrix_template
+      
+      # fill up matrix
+      for(i.sp in 1:length(spnames)){
+        mycov <- spfits[[i.sp]]$alpha_cov[[cov.names[i.cov]]]
+        # sort sp just in case
+        sp.pos <- sapply(matrix.names,function(x)which(grepl(x,names(mycov))))
+        spalpha_cov[[i.cov]][i.sp,] <- mycov[sp.pos]
+      }# for each focal sp
+    }# for each covariate
+    names(spalpha_cov) <- cov.names
+  }
+  
+  # log-likelihood
+  spllik <- NULL
+  for(i.sp in 1:length(spnames)){
+    myllik <- spfits[[i.sp]]$log_likelihood
+    names(myllik) <- spnames[i.sp]
+    spllik <- c(spllik,myllik)
+  }
+  
+  # error output ------------------------------------------------------------
+  
+  # lambda
+  er_splambda <- NULL
+  for(i.sp in 1:length(spnames)){
+    # lambda
+    if(!is.null(spfits[[i.sp]]$lambda_standard_error)){
+      myer_lambda <- spfits[[i.sp]]$lambda_standard_error
+      names(myer_lambda) <- spnames[i.sp]
+      er_splambda <- c(er_splambda,myer_lambda)
+    }
+  }
+  
+  # a single alpha matrix, 
+  # including all focal and neighbours
+  
+  # get the names of all sp and sort them
+  # these will be the columns of the alpha matrix
+  er_matrix.names <- NULL
+  for(i.sp in 1:length(spfits)){
+    if(!is.null(spfits[[i.sp]]$alpha_intra_standard_error)){
+      er_matrix.names <- c(er_matrix.names,names(spfits[[i.sp]]$alpha_intra_standard_error))
+    }
+    if(!is.null(spfits[[i.sp]]$alpha_inter_standard_error)){
+      er_matrix.names <- c(er_matrix.names,names(spfits[[i.sp]]$alpha_inter_standard_error))
+    }
+  }
+  er_matrix.names <- sort(unique(er_matrix.names))
+  
+  # build the matrix
+  if(is.null(er_matrix.names)){
+    er_alpha_matrix <- NULL
+  }else{
+    er_alpha_matrix <- matrix(nrow = length(spfits),
+                              ncol = length(er_matrix.names),
+                              dimnames = list(names(spfits),er_matrix.names))
+    
+    # go sp by sp filling the matrix
+    for(i.sp in 1:nrow(er_alpha_matrix)){
+      # intraspecific term
+      if(!is.null(spfits[[i.sp]]$alpha_intra_standard_error)){
+        intra.col <- which(colnames(er_alpha_matrix) == 
+                             names(spfits[[i.sp]]$alpha_intra_standard_error))
+        er_alpha_matrix[i.sp,intra.col] <- spfits[[i.sp]]$alpha_intra_standard_error
+      }
+      # interspecific terms
+      if(!is.null(spfits[[i.sp]]$alpha_inter_standard_error)){
+        inter.col <- match(names(spfits[[i.sp]]$alpha_inter_standard_error),
+                           colnames(er_alpha_matrix))
+        # which(colnames(alpha_matrix) == names(spfits[[i.sp]]$alpha_inter))
+        er_alpha_matrix[i.sp,inter.col] <- spfits[[i.sp]]$alpha_inter_standard_error
+      }
+    }
+  }# if-else
+  
+  # lambda_cov also as a matrix, with covariates in columns
+  # and focal species in rows
+  er_splambda_cov <- NULL
+  if(!is.null(covariates)){
+    # covariate names
+    # in case different sp have different covariates
+    cov.names <- NULL
+    for(i.cov in 1:length(covariates)){
+      cov.names <- c(cov.names,colnames(covariates[[i.cov]]))
+    }
+    cov.names <- sort(unique(cov.names))
+    
+    er_splambda_cov <- matrix(nrow = length(spfits),
+                              ncol = length(cov.names),
+                              dimnames = list(names(spfits),cov.names))
+    for(i.sp in 1:length(spnames)){
+      # lambda_cov
+      if(!is.null(spfits[[i.sp]]$lambda_cov)){
+        for(i.cov in 1:length(cov.names)){
+          # look for i.cov covariate in the vector of lambda_covs affecting i.sp
+          # and place it in the matrix
+          er_splambda_cov[i.sp,i.cov] <- 
+            spfits[[i.sp]]$lambda_cov_standard_error[which(
+              grepl(cov.names[i.cov],
+                    names(spfits[[i.sp]]$lambda_cov_standard_error)))]
+        }
+      }
+    }# for i.sp
+  }# if covariates
+  
+  # alpha_cov
+  
+  # this is a list where, for each cov, a focalsp x neighsp matrix gives the alpha_covs
+  # if a global alpha_cov is fitted, does not matter
+  
+  er_spalpha_cov <- NULL
+  if(!is.null(covariates)){
+    
+    # covariate names
+    # in case different sp have different covariates
+    cov.names <- NULL
+    for(i.cov in 1:length(covariates)){
+      cov.names <- c(cov.names,colnames(covariates[[i.cov]]))
+    }
+    cov.names <- sort(unique(cov.names))
+    
+    # get the names of all sp and sort them
+    # these will be the columns of the alpha_cov matrix
+    er_matrix.names <- NULL
+    for(i.sp in 1:length(spfits)){
+      if(!is.null(spfits[[i.sp]])){
+        er_matrix.names <- c(er_matrix.names,spnames[i.sp],names(data[[i.sp]]))
+      }
+    }
+    er_matrix.names <- sort(unique(matrix.names[which(!matrix.names == "fitness")]))
+    er_matrix.names <- paste(er_matrix.names,"_se",sep="")
+    
+    # template
+    # I could simply copy the alpha one, but not sure if its robust enough
+    # for the cases in which alpha is fixed. anyway.
+    er_ac_matrix_template <- matrix(nrow = length(spfits),
+                                    ncol = length(er_matrix.names),
+                                    dimnames = list(spnames,er_matrix.names))
+    
+    er_spalpha_cov <- list()
+    for(i.cov in 1:length(cov.names)){
+      er_spalpha_cov[[i.cov]] <- er_ac_matrix_template
+      
+      # fill up matrix
+      for(i.sp in 1:length(spnames)){
+        mycov <- spfits[[i.sp]]$alpha_cov_standard_error[[cov.names[i.cov]]]
+        # sort sp just in case
+        sp.pos <- sapply(er_matrix.names,function(x)which(grepl(x,names(mycov))))
+        er_spalpha_cov[[i.cov]][i.sp,] <- mycov[sp.pos]
+      }# for each focal sp
+    }# for each covariate
+    names(er_spalpha_cov) <- cov.names
+  }
+  
+  
+  # prepare cxr_pm_multifit object ------------------------------------------
+  
+  
   # return a cxr_pm_multifit object
   # which is basically the same as the base object
   # but with info on more sp. e.g. lambda is a 1d vector,
   # alpha is a matrix including the intra and interspecific terms
-
-er_splambda <- NULL
-er_spalpha_intra <- NULL
-er_spalpha_inter <- NULL
-er_splambda_cov <- NULL
-er_spalpha_cov <- NULL
-
-spllik <- NULL
-# 
-# for(i.sp in 1:length(spnames)){
-#   # errors
-#   
-#   # lambda
-#   if(!is.null(spfits[[i.sp]]$lambda_standard_error)){
-#     erlambda <- spfits[[i.sp]]$lambda_standard_error
-#     if(!is.null(names(erlambda))){
-#       names(erlambda) <- paste(spnames[i.sp],"_",names(erlambda),sep="")
-#     }else{
-#       names(erlambda) <- paste(spnames[i.sp],"_lambda_se",sep="")
-#     }
-#     er_splambda <- c(er_splambda,erlambda)
-#   }
-#   # alpha_intra
-#   if(!is.null(spfits[[i.sp]]$alpha_intra_standard_error)){
-#     eralpha_intra <- spfits[[i.sp]]$alpha_intra_standard_error
-#     er_spalpha_intra <- c(er_spalpha_intra,eralpha_intra)
-#   }
-#   # alpha_inter
-#   if(!is.null(spfits[[i.sp]]$alpha_inter_standard_error)){
-#     eralpha_inter <- spfits[[i.sp]]$alpha_inter_standard_error
-#     er_spalpha_inter <- rbind(er_spalpha_inter,eralpha_inter)
-#     rownames(er_spalpha_inter)[i.sp] <- spnames[i.sp]
-#   }
-#   # lambda_cov
-#   if(!is.null(spfits[[i.sp]]$lambda_cov_standard_error)){
-#     erlambda_cov <- spfits[[i.sp]]$lambda_cov_standard_error
-#     names(erlambda_cov) <- paste(spnames[i.sp],"_",names(spfits[[i.sp]]$lambda_cov_standard_error),sep="")
-#     er_splambda_cov <- c(er_splambda_cov,erlambda_cov)
-#   }
-#   # if(!is.null(spfits[[i.sp]]$alpha_cov_standard_error)){
-#   #   eralpha_cov <- spfits[[i.sp]]$alpha_cov_standard_error
-#   #   names(eralpha_cov) <- paste(spnames[i.sp],"_",names(spfits[[i.sp]]$alpha_cov_standard_error),sep="")
-#   #   er_spalpha_cov <- c(er_spalpha_cov,eralpha_cov)
-#   # }
-#   
-#   # log-likelihood
-#   myllik <- spfits[[i.sp]]$log_likelihood
-#   names(myllik) <- spnames[i.sp]
-#   spllik <- c(spllik,myllik)
-# }
-
-list_names <- c("model_name",
-                "model",
-                "data",
-                "covariates",
-                "optimization_method",
-                "initial_values",
-                "fixed_terms",
-                "lambda","alpha_matrix","lambda_cov","alpha_cov",
-                "lambda_standard_error","alpha_standard_error",
-                "lambda_cov_standard_error","alpha_cov_standard_error",
-                "log_likelihood")
-
-fit <- sapply(list_names,function(x) NULL)
-
-fit$model_name <- spfits[[1]]$model_name
-fit$model <- spfits[[1]]$fitness_model
-fit$data <- data
-fit$covariates <- covariates
-fit$optimization_method <- optimization_method
-fit$initial_values <- initial_values
-
-# for returning explicit NULL values
-if(!is.null(fixed_terms)){
-  fit$fixed_terms <- fixed_terms
-}
-if(!is.null(splambda)){
-  fit$lambda <- splambda
-}
-if(!is.null(alpha_matrix)){
-  fit$alpha_matrix <- alpha_matrix
-}
-if(!is.null(splambda_cov)){
-  fit$lambda_cov <- splambda_cov
-}
-if(!is.null(spalpha_cov)){
-  fit$alpha_cov <- spalpha_cov
-}
-if(!is.null(er_splambda)){
-  fit$lambda_standard_error <- er_splambda
-}
-if(!is.null(er_spalpha)){
-  fit$alpha_standard_error <- er_spalpha
-}
-if(!is.null(er_splambda_cov)){
-  fit$lambda_cov_standard_error <- er_splambda_cov
-}
-if(!is.null(er_spalpha_cov)){
-  fit$alpha_cov_standard_error <- er_spalpha_cov
-}
-
-fit$log_likelihood <- spllik
-
-class(fit) <- "cxr_pm_multifit"
-fit
-
+  
+  list_names <- c("model_name",
+                  "model",
+                  "data",
+                  "covariates",
+                  "optimization_method",
+                  "initial_values",
+                  "fixed_terms",
+                  "lambda","alpha_matrix","lambda_cov","alpha_cov",
+                  "lambda_standard_error","alpha_standard_error",
+                  "lambda_cov_standard_error","alpha_cov_standard_error",
+                  "log_likelihood")
+  
+  fit <- sapply(list_names,function(x) NULL)
+  
+  fit$model_name <- spfits[[1]]$model_name
+  fit$model <- spfits[[1]]$fitness_model
+  fit$data <- data
+  fit$covariates <- covariates
+  fit$optimization_method <- optimization_method
+  fit$initial_values <- initial_values
+  
+  # for returning explicit NULL values
+  if(!is.null(fixed_terms)){
+    fit$fixed_terms <- fixed_terms
+  }
+  if(!is.null(splambda)){
+    fit$lambda <- splambda
+  }
+  if(!is.null(alpha_matrix)){
+    fit$alpha_matrix <- alpha_matrix
+  }
+  if(!is.null(splambda_cov)){
+    fit$lambda_cov <- splambda_cov
+  }
+  if(!is.null(spalpha_cov)){
+    fit$alpha_cov <- spalpha_cov
+  }
+  if(!is.null(er_splambda)){
+    fit$lambda_standard_error <- er_splambda
+  }
+  if(!is.null(er_alpha_matrix)){
+    fit$alpha_matrix_standard_error <- er_alpha_matrix
+  }
+  if(!is.null(er_splambda_cov)){
+    fit$lambda_cov_standard_error <- er_splambda_cov
+  }
+  if(!is.null(er_spalpha_cov)){
+    fit$alpha_cov_standard_error <- er_spalpha_cov
+  }
+  
+  fit$log_likelihood <- spllik
+  
+  class(fit) <- "cxr_pm_multifit"
+  fit
+  
 }

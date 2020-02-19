@@ -16,12 +16,13 @@ pm_BH_alpha_global_lambdacov_none_alphacov_none(par, fitness,
 
 \item{neigh_intra_matrix}{included for compatibility, not used in this model.}
 
-\item{neigh_inter_matrix}{matrix of arbitrary columns, number of interspecific neighbours for each observation.}
+\item{neigh_inter_matrix}{matrix of arbitrary columns, number of neighbours for each observation.
+As in this model there is a single alpha argument, do not distinguish neighbour identity}
 
 \item{covariates}{included for compatibility, not used in this model.}
 
 \item{fixed_parameters}{optional list specifying values of fixed parameters, 
-with components "lambda","alpha".}
+with components "lambda","alpha_inter".}
 }
 \value{
 log-likelihood value

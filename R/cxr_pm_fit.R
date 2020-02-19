@@ -115,21 +115,29 @@ cxr_pm_fit <- function(data,
                                  upper_bounds,
                                  fixed_terms)
   if(input.ok[[1]] == "error"){
-    stop(input.ok[[2]],call. = FALSE)
+    message(input.ok[[2]])
+    return(NULL)
+    # stop(input.ok[[2]],call. = FALSE)
   }else if(input.ok[[1]] == "warning"){
     message(input.ok[[2]])
   }
   
   # retrieve model ----------------------------------------------------------
   # character string giving the name of the model
-  model_name <- paste("pm_",model_family,"_alpha_",alpha_form,"_lambdacov_",lambda_cov_form,"_alphacov_",alpha_cov_form,sep="")
+  model_name <- paste("pm_",model_family,
+                      "_alpha_",alpha_form,
+                      "_lambdacov_",lambda_cov_form,
+                      "_alphacov_",alpha_cov_form,sep="")
   
   # try to retrieve the function from its name
   # using function "get"
   fitness_model <- try(get(model_name),silent = TRUE)
   if(class(fitness_model) == "try-error"){
-    stop(paste("cxr_pm_fit ERROR: model '",model_name,"' could not be retrieved. 
-  Make sure it is defined and available in the cxr package or in the global environment.\n",sep=""),call.= FALSE)
+    message(paste("cxr_pm_fit ERROR: model '",model_name,"' could not be retrieved. 
+  Make sure it is defined and available 
+               in the cxr package or in the global environment.\n"
+               ,sep=""))
+    return(NULL)
   }
   
   # prepare data ------------------------------------------------------------
