@@ -11,7 +11,7 @@ cxr_er_bootstrap(fitness_model, optimization_method, data, covariates,
 \arguments{
 \item{fitness_model}{effect/response function, see \code{cxr_er_fit}}
 
-\item{optimization_method}{numerical optimization method}
+\item{optimization_method}{numerical optimization method.}
 
 \item{data}{either a list of dataframes or a single dataframe. if 'data' is a list, each element is a dataframe with the following columns:
 \itemize{

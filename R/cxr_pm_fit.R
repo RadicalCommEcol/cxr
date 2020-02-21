@@ -5,20 +5,24 @@
 #' @param data dataframe with observations in rows and two sets of columns:
 #' * fitness: fitness metric for the focal individual
 #' * neighbours: columns with user-defined names, giving number of neighbours for each group
+#' @param focal_column optional integer value giving the position, or name, of the column
+#' with neighbours from the same species as the focal one. This is necessary if "alpha_intra" is specified 
+#' in \code{initial_values}, \code{lower_bounds}, \code{upper_bounds}, or \code{fixed_terms}.
 #' @param model_family family of model to use. Available families are BH (Beverton-Holt) as default.
 #' Users may define their own families and models (see vignette XXXXX).
-#' @param covariates optional named matrix or dataframe with observations (rows) of any number of environmental covariates (columns)
-#' @param optimization_method numerical optimization method
+#' @param covariates optional named matrix or dataframe with observations (rows) of any number of environmental covariates (columns).
+#' @param optimization_method numerical optimization method.
 #' @param alpha_form what form does the alpha parameter take? one of "none" (no alpha in the model), 
-#' "global" (a single alpha for all pairwise interactions), or "pairwise" (one alpha value for every interaction)
-#' @param lambda_cov_form form of the covariate effects on lambda. Either "none" (no covariate effects) or "global" (one estimate per covariate)
+#' "global" (a single alpha for all pairwise interactions), or "pairwise" (one alpha value for every interaction).
+#' @param lambda_cov_form form of the covariate effects on lambda. Either "none" (no covariate effects) or "global" (one estimate per covariate).
 #' @param alpha_cov_form form of the covariate effects on alpha. One of "none" (no covariate effects), "global" (one estimate per covariate on every alpha),
 #' or "pairwise" (one estimate per covariate and pairwise alpha)
-#' @param initial_values list with components "lambda","alpha","lambda_cov", "alpha_cov", specifying the initial values
+#' @param initial_values list with components "lambda","alpha_intra","alpha_inter","lambda_cov", "alpha_cov", specifying the initial values
 #' for numerical optimization. Single values are allowed.
-#' @param lower_bounds optional list with single values for "lambda","alpha","lambda_cov", "alpha_cov".
-#' @param upper_bounds optional list with single values for "lambda","alpha","lambda_cov", "alpha_cov".
-#' @param fixed_terms optional list specifying which model parameters are fixed, among "lambda","alpha","lambda_cov", and "alpha_cov".
+#' @param lower_bounds optional list with single values for "lambda","alpha_intra","alpha_inter","lambda_cov", "alpha_cov".
+#' @param upper_bounds optional list with single values for "lambda","alpha_intra","alpha_inter","lambda_cov", "alpha_cov".
+#' @param fixed_terms optional list specifying which model parameters are fixed, among 
+#' "lambda","alpha_intra","alpha_inter","lambda_cov", and "alpha_cov".
 #' @param bootstrap_samples number of bootstrap samples for error calculation. Defaults to 0, i.e. no error is calculated.
 #' @return an object of type 'cxr_pm_fit' which is a list with the following components:
 #' * model_name: string with the name of the fitness model
@@ -29,11 +33,13 @@
 #' * initial_values: list with initial values
 #' * fixed_terms: list with fixed terms
 #' * lambda: fitted value for lambda, or NULL if fixed
-#' * alpha: fitted value(s) for alpha, or NULL if fixed
-#' * lambda_cov: fitted value(s) for lambda_cov, or NULL if fixed
-#' * alpha_cov: fitted value(s) for alpha_cov, or NULL if fixed
+#' * alpha_intra: fitted value for intraspecific alpha, or NULL if fixed
+#' * alpha_inter: fitted value for interspecific alpha, or NULL if fixed
+#' * lambda_cov: fitted value(s) for lambda_cov, or NULL if fixed.
+#' * alpha_cov: fitted value(s) for alpha_cov, or NULL if fixed. 
+#' These are structured as a list with one element for each covariate.
 #' * lambda_standard_error: standard error for lambda, if computed
-#' * alpha_standard_error: standard error for alpha, if computed
+#' * alpha_standard_error: standard error for alpha, if computed---------------TODO replace
 #' * lambda_cov_standard_error: standard error for lambda_cov, if computed
 #' * alpha_cov_standard_error: standard error for alpha_cov, if computed
 #' * log_likelihood: log-likelihood of the fit
@@ -41,21 +47,25 @@
 #' @md
 #' @examples
 #' data("neigh_list")
+#' my.sp <- "BEMA"
 #' # data for a single species, keep only fitness and neighbours columns
-#' sp_data <- neigh_list[[1]][2:ncol(neigh_list[[1]])]
-#' \dontrun{
+#' sp_data <- neigh_list[[my.sp]][2:ncol(neigh_list[[1]])]
+#' \donttest{
 #'   sp_fit <- cxr_pm_fit(data = sp_data,
+#'                        focal_column = my.sp,
 #'                        optimization_method = "bobyqa",
 #'                        alpha_form = "pairwise",
 #'                        lambda_cov_form = "none",
 #'                        alpha_cov_form = "none",
-#'                        initial_values = list(lambda = 1,alpha = 0.1),
-#'                        lower_bounds = list(lambda = 0,alpha = 0),
-#'                        upper_bounds = list(lambda = 100,alpha = 1),
+#'                        initial_values = list(lambda = 1,alpha_intra = 0.1,alpha_inter = 0.1),
+#'                        lower_bounds = list(lambda = 0,alpha_intra = 0,alpha_inter = 0),
+#'                        upper_bounds = list(lambda = 100,alpha_intra = 1,alpha_inter = 1),
 #'                        bootstrap_samples = 3)
 #'   summary(sp_fit)
 #' }
+#' 
 cxr_pm_fit <- function(data, 
+                       focal_column = NULL,
                        model_family = c("BH"),
                        covariates = NULL, 
                        optimization_method = c("BFGS", "CG", "Nelder-Mead", 
@@ -68,7 +78,11 @@ cxr_pm_fit <- function(data,
                        alpha_form = c("none","global","pairwise"), 
                        lambda_cov_form = c("none","global"),
                        alpha_cov_form = c("none","global","pairwise"),
-                       initial_values = list(lambda = 0, alpha = 0, lambda_cov = 0, alpha_cov = 0),
+                       initial_values = list(lambda = 0, 
+                                             alpha_intra = 0,
+                                             alpha_inter = 0, 
+                                             lambda_cov = 0, 
+                                             alpha_cov = 0),
                        lower_bounds = NULL,
                        upper_bounds = NULL,
                        fixed_terms = NULL,
@@ -77,7 +91,7 @@ cxr_pm_fit <- function(data,
 ){
   
   # TODO add cxr:: to the internal functions once they are added
-  
+
   # argument checks ---------------------------------------------------------
   
   optimization_method <- match.arg(optimization_method)
@@ -87,64 +101,43 @@ cxr_pm_fit <- function(data,
   
   # TODO fixed terms?
   
-  # check installed packages for optimization method
-  if (optimization_method %in% c("nloptr_CRS2_LM","nloptr_ISRES","nloptr_DIRECT_L_RAND") & !requireNamespace("nloptr", quietly = TRUE)) {
-    stop("cxr_pm_fit ERROR: Package \"nloptr\" needed for the method selected to work.",
-         call. = FALSE)
-  }
-  if (optimization_method == "GenSA" & !requireNamespace("GenSA", quietly = TRUE)) {
-    stop("cxr_pm_fit ERROR: Package \"GenSA\" needed for the method selected to work.",
-         call. = FALSE)
-  }
-  if (optimization_method == "hydroPSO" & !requireNamespace("hydroPSO", quietly = TRUE)) {
-    stop("cxr_pm_fit ERROR: Package \"hydroPSO\" needed for the method selected to work.",
-         call. = FALSE)
-  }
-  if (optimization_method == "DEoptimR" & !requireNamespace("DEoptimR", quietly = TRUE)) {
-    stop("cxr_pm_fit ERROR: Package \"DEoptimR\" needed for the method selected to work.",
-         call. = FALSE)
-  }
-  
-  # check input data
-  data.ok <- cxr_check_input_data(data,covariates)
-  if(!data.ok){
-    stop("cxr_pm_fit ERROR: check the consistency of your input data: 
-    1) All variables are integer/numeric, with no NAs; 
-    2) first column in 'data' is named 'fitness'; 
-    3) abundances of at least one neighbour species in 'data';
-    4) data and covariates (if present) have the same number of observations")
-  }
-  
-  # check covariates if alpha_cov or lambda_cov are to be fit
-  if(is.null(covariates) & (alpha_cov_form != "none" | lambda_cov_form != "none")){
-    stop("cxr_pm_fit ERROR: need to specify covariates if lambda_cov and/or alpha_cov are to be fit")
+  # wrapper for several consistency checks on the input arguments
+  input.ok <- cxr_check_pm_input(data,
+                                 focal_column,
+                                 model_family,
+                                 covariates,
+                                 optimization_method,
+                                 alpha_form,
+                                 lambda_cov_form,
+                                 alpha_cov_form,
+                                 initial_values,
+                                 lower_bounds,
+                                 upper_bounds,
+                                 fixed_terms)
+  if(input.ok[[1]] == "error"){
+    message(input.ok[[2]])
+    return(NULL)
+    # stop(input.ok[[2]],call. = FALSE)
+  }else if(input.ok[[1]] == "warning"){
+    message(input.ok[[2]])
   }
   
   # retrieve model ----------------------------------------------------------
   # character string giving the name of the model
-  model_name <- paste("pm_",model_family,"_alpha_",alpha_form,"_lambdacov_",lambda_cov_form,"_alphacov_",alpha_cov_form,sep="")
+  model_name <- paste("pm_",model_family,
+                      "_alpha_",alpha_form,
+                      "_lambdacov_",lambda_cov_form,
+                      "_alphacov_",alpha_cov_form,sep="")
   
   # try to retrieve the function from its name
   # using function "get"
   fitness_model <- try(get(model_name),silent = TRUE)
   if(class(fitness_model) == "try-error"){
-    stop(paste("cxr_pm_fit ERROR: model '",model_name,"' could not be retrieved. 
-  Make sure it is defined and available in the cxr package or in the global environment.\n",sep=""))
-  }
-  
-  # check that lower/upper bounds are provided if the method requires it
-  bound.ok <- cxr_check_method_boundaries(optimization_method,lower_bounds,upper_bounds, type = "pm")
-  if(!bound.ok){
-    stop("cxr_pm_fit ERROR: check the optimization method selected and lower/upper bounds.
-         The following methods require explicit lower and upper parameter boundaries to be set:
-         L-BFGS-B, nlm, nlminb, Rcgmin, Rvmmin, spg, bobyqa, nmkb, hjkb, nloptr_CRS2_LM,
-         nloptr_ISRES, nloptr_DIRECT_L_RAND, GenSA, hydroPSO, DEoptimR.")
-  }
-  
-  # warning if initial values are not set
-  if(identical(initial_values,list(lambda = 0, alpha = 0, lambda_cov = 0, alpha_cov = 0))){
-    message("cxr_pm_fit: Using default initial values. Note that these may not be appropriate for your data/model, or
-    for the optimization method selected.")
+    message(paste("cxr_pm_fit ERROR: model '",model_name,"' could not be retrieved. 
+  Make sure it is defined and available 
+               in the cxr package or in the global environment.\n"
+               ,sep=""))
+    return(NULL)
   }
   
   # prepare data ------------------------------------------------------------
@@ -155,164 +148,92 @@ cxr_pm_fit <- function(data,
   neigh_matrix <- as.matrix(data[ , !(names(data) %in% dropname)])
   # neigh_matrix <- subset(data, select = -c(fitness))
   # neigh_matrix <- as.matrix(neigh_matrix)
+
+  # if alpha_intra is present, intraspecific neighbours
+  # should be in a different 1-column matrix
+  # there are other options, but this 
+  # clearly separates both types of observations
+  # and avoids mixing columns in neigh_matrix, etc
   
-  # neighbour species?
-  neigh <- colnames(neigh_matrix)
+  if(is.null(focal_column)){
+    # no alpha_intra
+    neigh_inter_matrix <- neigh_matrix
+    neigh_intra_matrix <- NULL
+    # set also names
+    neigh_inter <- colnames(neigh_inter_matrix)
+    neigh_intra <- NULL
+  }else{
+    # which column number
+    if(class(focal_column) == "character"){
+      focal_column_num <- which(names(data) == focal_column) - 1
+    }else{
+      focal_column_num <- focal_column -1
+    }
+    # intra and inter observations in different matrices
+    neigh_inter_matrix <- neigh_matrix[,-focal_column_num]
+    neigh_intra_matrix <- as.matrix(neigh_matrix[,focal_column_num])
+    colnames(neigh_intra_matrix) <- colnames(neigh_matrix)[focal_column_num]
+    # set also names
+    neigh_inter <- colnames(neigh_inter_matrix)
+    neigh_intra <- colnames(neigh_matrix)[focal_column_num]
+  }
   
   # are covariates named?
   if(!is.null(covariates)){
-    if(is.null(names(covariates))){
-      names(covariates) <- paste("cov",1:ncol(covariates),sep="")
+    if(is.null(colnames(covariates))){
+      colnames(covariates) <- paste("cov",1:ncol(covariates),sep="")
     }
   }
 
-  # initial parameters
-  # check wheter each model parameter is to be fitted or is fixed
-  # note how initial_values also function as values 
-  # for those parameters that are fixed
+  # clean initial parameters ------------------------------------------------
   
-  # here I store values for fixed parameters
-  fixed_parameters <- list()
+  # prepare initial parameters, 
+  # checking which ones are fixed or not,
+  # their length, and names.
+  # these functions do not check for errors
+  # since that is already done with 'cxr_check_pm_input'
+  init_par <- cxr_get_init_params(initial_values,
+                                  fixed_terms,
+                                  alpha_form,
+                                  lambda_cov_form,
+                                  alpha_cov_form,
+                                  model_type = "pm",
+                                  neigh_intra,
+                                  neigh_inter,
+                                  covariates)
   
-  # here I store initial values for fitted parameters
-  init_lambda <- NULL
-  init_alpha <- NULL
-  init_lambda_cov <- NULL
-  init_alpha_cov <- NULL
-  
-  if("lambda" %in% fixed_terms){
-    fixed_parameters[["lambda"]] <- initial_values$lambda
-  }else{
-    init_lambda <- initial_values$lambda
-    names(init_lambda) <- "lambda"
-  }
-  
-  if(!is.null(initial_values$sigma)){
-    init_sigma <- initial_values$sigma
-  }else{
-    init_sigma <- 0.1
-  }
-  names(init_sigma) <- "sigma"
-  
-  # return_init_length is an auxiliary function
-  # in case initial values are not of the same length of the expected parameters
-  # e.g. if we want to fit pairwise alphas but only provide a single initial value
-  
-  if(alpha_form != "none"){
-    if("alpha" %in% fixed_terms){
-      fixed_parameters[["alpha"]] <- cxr_return_init_length(alpha_form,
-                                                            initial_values$alpha,
-                                                            neigh,"pm")
-    }else{
-      init_alpha <- cxr_return_init_length(alpha_form,
-                                           initial_values$alpha,
-                                           neigh,"pm")
-    }
-  }
-  
-  if(lambda_cov_form != "none" & !is.null(covariates)){
-    if("lambda_cov" %in% fixed_terms){
-      fixed_parameters[["lambda_cov"]] <- cxr_return_init_length(lambda_cov_form,
-                                                                 initial_values$lambda_cov,
-                                                                 names(covariates),"pm")
-    }else{
-      init_lambda_cov <- cxr_return_init_length(lambda_cov_form,
-                                                initial_values$lambda_cov,
-                                                names(covariates),"pm")
-      names(init_lambda_cov) <- paste("lambda_cov_",names(covariates),sep="")
-    }
-  }
-  
-  if(alpha_cov_form != "none" & !is.null(covariates)){
-    if(alpha_cov_form == "global"){
-      name.alpha.cov <- paste("alpha_cov_",names(covariates),sep="")
-    }else{
-      name.alpha.cov <- paste("alpha_cov",rep(names(covariates),each = length(neigh)),rep(neigh,ncol(covariates)),sep="_")
-    }
-    if("alpha_cov" %in% fixed_terms){
-      fixed_parameters[["alpha_cov"]] <- cxr_return_init_length(alpha_cov_form,
-                                                                initial_values$alpha_cov,
-                                                                name.alpha.cov,"pm")
-    }else{
-      init_alpha_cov <- cxr_return_init_length(alpha_cov_form,
-                                               initial_values$alpha_cov,
-                                               name.alpha.cov,"pm")
-    }
-  }
   
   # retrieve lower and upper bounds, if present
-  
-  lower_lambda <- NULL
-  upper_lambda <- NULL
-  lower_sigma <- NULL
-  upper_sigma <- NULL
-  lower_alpha <- NULL
-  upper_alpha <- NULL
-  lower_lambda_cov <- NULL
-  upper_lambda_cov <- NULL
-  lower_alpha_cov <- NULL
-  upper_alpha_cov <- NULL
-  
-  if(!is.null(lower_bounds$lambda) & 
-     !is.null(upper_bounds$lambda) &
-     !"lambda" %in% fixed_terms){
-    lower_lambda <- lower_bounds$lambda
-    upper_lambda <- upper_bounds$lambda
-  }
-  
-  # sigma bounds can be hidden from the user
-  # only set if there are bounds for other params
-  if(!is.null(lower_bounds) & 
-     !is.null(upper_bounds)){
-    lower_sigma <- 1e-5
-    upper_sigma <- 1e5
-  }
-  
-  if(!is.null(lower_bounds$alpha) & 
-     !is.null(upper_bounds$alpha) &
-     !"alpha" %in% fixed_terms){
-    lower_alpha <- lower_bounds$alpha
-    upper_alpha <- upper_bounds$alpha
-  }
-  
-  if(!is.null(lower_bounds$lambda_cov) &
-     !is.null(upper_bounds$lambda_cov) &
-     !"lambda_cov" %in% fixed_terms){
-    lower_lambda_cov <- lower_bounds$lambda_cov
-    upper_lambda_cov <- upper_bounds$lambda_cov
-  }
-  
-  if(!is.null(lower_bounds$alpha_cov) &
-     !is.null(upper_bounds$alpha_cov) &
-     !"alpha_cov" %in% fixed_terms){
-    lower_alpha_cov <- lower_bounds$alpha_cov
-    upper_alpha_cov <- upper_bounds$alpha_cov
-  }
+  bounds <- cxr_get_model_bounds(lower_bounds,upper_bounds,fixed_terms)
   
   # sort parameters for optim routine ---------------------------------------
-  init_par <- cxr_init_params(init_lambda = init_lambda,
-                              init_sigma = init_sigma,
-                              init_alpha = init_alpha,
-                              init_lambda_cov = init_lambda_cov,
-                              init_alpha_cov = init_alpha_cov,
-                              lower_lambda = lower_lambda,
-                              upper_lambda = upper_lambda,
-                              lower_sigma = lower_sigma,
-                              upper_sigma = upper_sigma,
-                              lower_alpha = lower_alpha,
-                              upper_alpha = upper_alpha,
-                              lower_lambda_cov = lower_lambda_cov,
-                              upper_lambda_cov = upper_lambda_cov,
-                              lower_alpha_cov = lower_alpha_cov,
-                              upper_alpha_cov = upper_alpha_cov)
+  vector_par <- cxr_sort_params(init_lambda = init_par$init_lambda,
+                              init_sigma = init_par$init_sigma,
+                              init_alpha_intra = init_par$init_alpha_intra,
+                              init_alpha_inter = init_par$init_alpha_inter,
+                              init_lambda_cov = init_par$init_lambda_cov,
+                              init_alpha_cov = init_par$init_alpha_cov,
+                              lower_lambda = bounds$lower_lambda,
+                              upper_lambda = bounds$upper_lambda,
+                              lower_sigma = bounds$lower_sigma,
+                              upper_sigma = bounds$upper_sigma,
+                              lower_alpha_intra = bounds$lower_alpha_intra,
+                              upper_alpha_intra = bounds$upper_alpha_intra,
+                              lower_alpha_inter = bounds$lower_alpha_inter,
+                              upper_alpha_inter = bounds$upper_alpha_inter,
+                              lower_lambda_cov = bounds$lower_lambda_cov,
+                              upper_lambda_cov = bounds$upper_lambda_cov,
+                              lower_alpha_cov = bounds$lower_alpha_cov,
+                              upper_alpha_cov = bounds$upper_alpha_cov)
   
   # fit parameters ----------------------------------------------------------
 
   optim_result <- NULL
+  error.message <- NULL
 
   if(optimization_method %in% c("BFGS", "CG", "Nelder-Mead", "ucminf")){
     tryCatch({
-      optim_result <- optimx::optimx(par = init_par$init_par, 
+      optim_result <- optimx::optimx(par = vector_par$init_par, 
                                      fn = fitness_model, 
                                      gr = NULL, 
                                      method = optimization_method,
@@ -321,100 +242,108 @@ cxr_pm_fit <- function(data,
                                      control = list(), 
                                      hessian = F,
                                      fitness = log(data$fitness), 
-                                     neigh_matrix = neigh_matrix,
+                                     neigh_intra_matrix = neigh_intra_matrix,
+                                     neigh_inter_matrix = neigh_inter_matrix,
                                      covariates = covariates, 
-                                     fixed_parameters = fixed_parameters)
+                                     fixed_parameters = init_par$fixed_parameters)
     }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
   }else if(optimization_method %in% c("L-BFGS-B", "nlm", "nlminb", 
                                "Rcgmin", "Rvmmin", "spg", 
                                "bobyqa", "nmkb", "hjkb")){
     tryCatch({
-      optim_result <- optimx::optimx(par = init_par$init_par, 
+      optim_result <- optimx::optimx(par = vector_par$init_par, 
                                      fn = fitness_model, 
                                      gr = NULL, 
                                      method = optimization_method,
-                                     lower = init_par$lower_bounds,
-                                     upper = init_par$upper_bounds,
+                                     lower = vector_par$lower_bounds,
+                                     upper = vector_par$upper_bounds,
                                      control = list(), 
                                      hessian = F,
                                      fitness = log(data$fitness), 
-                                     neigh_matrix = neigh_matrix,
+                                     neigh_intra_matrix = neigh_intra_matrix,
+                                     neigh_inter_matrix = neigh_inter_matrix,
                                      covariates = covariates, 
-                                     fixed_parameters = fixed_parameters)
+                                     fixed_parameters = init_par$fixed_parameters)
     }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
   }else if(optimization_method == "nloptr_CRS2_LM"){
     tryCatch({
-      optim_result <- nloptr::nloptr(x0 = init_par$init_par,
+      optim_result <- nloptr::nloptr(x0 = vector_par$init_par,
                                      eval_f = fitness_model,
                                      opts = list("algorithm"="NLOPT_GN_CRS2_LM", "maxeval"=1e4),
-                                     lb = init_par$lower_bounds,
-                                     ub = init_par$upper_bounds,
+                                     lb = vector_par$lower_bounds,
+                                     ub = vector_par$upper_bounds,
                                      fitness = log(data$fitness), 
-                                     neigh_matrix = neigh_matrix,
+                                     neigh_intra_matrix = neigh_intra_matrix,
+                                     neigh_inter_matrix = neigh_inter_matrix,
                                      covariates = covariates, 
-                                     fixed_parameters = fixed_parameters)
+                                     fixed_parameters = init_par$fixed_parameters)
     }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
   }else if(optimization_method == "nloptr_ISRES"){
     tryCatch({
-      optim_result <- nloptr::nloptr(x0 = init_par$init_par,
+      optim_result <- nloptr::nloptr(x0 = vector_par$init_par,
                                      eval_f = fitness_model,
                                      opts = list("algorithm"="NLOPT_GN_ISRES", "maxeval"=1e4),
-                                     lb = init_par$lower_bounds,
-                                     ub = init_par$upper_bounds,
+                                     lb = vector_par$lower_bounds,
+                                     ub = vector_par$upper_bounds,
                                      fitness = log(data$fitness), 
-                                     neigh_matrix = neigh_matrix,
+                                     neigh_intra_matrix = neigh_intra_matrix,
+                                     neigh_inter_matrix = neigh_inter_matrix,
                                      covariates = covariates, 
-                                     fixed_parameters = fixed_parameters)
+                                     fixed_parameters = init_par$fixed_parameters)
     }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
   }else if(optimization_method == "nloptr_DIRECT_L_RAND"){
     tryCatch({
-      optim_result <- nloptr::nloptr(x0 = init_par$init_par,
+      optim_result <- nloptr::nloptr(x0 = vector_par$init_par,
                                      eval_f = fitness_model,
                                      opts = list("algorithm"="NLOPT_GN_DIRECT_L_RAND", "maxeval"=1e4),
-                                     lb = init_par$lower_bounds,
-                                     ub = init_par$upper_bounds,
+                                     lb = vector_par$lower_bounds,
+                                     ub = vector_par$upper_bounds,
                                      fitness = log(data$fitness), 
-                                     neigh_matrix = neigh_matrix,
+                                     neigh_intra_matrix = neigh_intra_matrix,
+                                     neigh_inter_matrix = neigh_inter_matrix,
                                      covariates = covariates, 
-                                     fixed_parameters = fixed_parameters)
+                                     fixed_parameters = init_par$fixed_parameters)
     }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
   }else if(optimization_method == "GenSA"){
     tryCatch({
-      optim_result <- GenSA::GenSA(par = init_par$init_par,
+      optim_result <- GenSA::GenSA(par = vector_par$init_par,
                                    fn = fitness_model,
-                                   lower = init_par$lower_bounds,
-                                   upper = init_par$upper_bounds, 
+                                   lower = vector_par$lower_bounds,
+                                   upper = vector_par$upper_bounds, 
                                    control = list(maxit = 1e3), 
                                    fitness = log(data$fitness), 
-                                   neigh_matrix = neigh_matrix,
+                                   neigh_intra_matrix = neigh_intra_matrix,
+                                   neigh_inter_matrix = neigh_inter_matrix,
                                    covariates = covariates, 
-                                   fixed_parameters = fixed_parameters)
+                                   fixed_parameters = init_par$fixed_parameters)
     }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
   }else if(optimization_method == "hydroPSO"){
     tryCatch({
       # suppress annoying output??
       # sink("/dev/null")
-      optim_result <- hydroPSO::hydroPSO(par = init_par$init_par,
+      optim_result <- hydroPSO::hydroPSO(par = vector_par$init_par,
                                          fn = fitness_model,
-                                         lower = init_par$lower_bounds,
-                                         upper = init_par$upper_bounds, 
+                                         lower = vector_par$lower_bounds,
+                                         upper = vector_par$upper_bounds, 
                                          control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
                                          fitness = log(data$fitness), 
-                                         neigh_matrix = neigh_matrix,
+                                         neigh_intra_matrix = neigh_intra_matrix,
+                                         neigh_inter_matrix = neigh_inter_matrix,
                                          covariates = covariates, 
-                                         fixed_parameters = fixed_parameters)
+                                         fixed_parameters = init_par$fixed_parameters)
 
     }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
     
   }else if(optimization_method == "DEoptimR"){
     tryCatch({
-      optim_result <- DEoptimR::JDEoptim(lower = init_par$lower_bounds,
-                                         upper = init_par$upper_bounds,
+      optim_result <- DEoptimR::JDEoptim(lower = vector_par$lower_bounds,
+                                         upper = vector_par$upper_bounds,
                                          fn = fitness_model,
                                          fitness = log(data$fitness), 
-                                         neigh_matrix = neigh_matrix,
+                                         neigh_intra_matrix = neigh_intra_matrix,
+                                         neigh_inter_matrix = neigh_inter_matrix,
                                          covariates = covariates, 
-                                         fixed_parameters = fixed_parameters)
+                                         fixed_parameters = init_par$fixed_parameters)
     }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
   }
   
@@ -424,12 +353,10 @@ cxr_pm_fit <- function(data,
   # have different output types
   
   if(is.null(optim_result)){
-    optim_params <- cxr_retrieve_params(optim_par = rep(NA_real_,length(init_par$init_par)),
-                                        lambda_length = length(init_lambda),
-                                        alpha_length = length(init_alpha),
-                                        lambda_cov_length = length(init_lambda_cov),
-                                        alpha_cov_length = length(init_alpha_cov))
-    llik <- NA_real_
+    # error has been printed by trycatch method above,
+    # so simply stop
+    return(NULL)
+    
   }else{
     if(optimization_method %in% c("BFGS", "CG", "Nelder-Mead", "L-BFGS-B", "nlm", 
                            "nlminb", "Rcgmin", "Rvmmin", "spg", "ucminf", 
@@ -450,41 +377,55 @@ cxr_pm_fit <- function(data,
     }# if-else method
     
     optim_params <- cxr_retrieve_params(optim_par = outpar,
-                                        lambda_length = length(init_lambda),
-                                        alpha_length = length(init_alpha),
-                                        lambda_cov_length = length(init_lambda_cov),
-                                        alpha_cov_length = length(init_alpha_cov))
+                                        lambda_length = length(init_par$init_lambda),
+                                        alpha_intra_length = length(init_par$init_alpha_intra),
+                                        alpha_inter_length = length(init_par$init_alpha_inter),
+                                        lambda_cov_length = length(init_par$init_lambda_cov),
+                                        alpha_cov_length = length(init_par$init_alpha_cov))
     
   }# if not null
   
   # calculate errors --------------------------------------------------------
 
+  # double check 
+  # 1) whether errors are calculated
+  # 2) whether errors are *correctly* calculated
   if(bootstrap_samples > 0){
-
+    
     errors <- cxr_pm_bootstrap(fitness_model = fitness_model,
                                optimization_method = optimization_method,
                                data = data,
+                               focal_column = focal_column,
                                covariates = covariates,
-                               init_par = init_par$init_par,
-                               lower_bounds = init_par$lower_bounds,
-                               upper_bounds = init_par$upper_bounds,
-                               fixed_parameters = fixed_parameters,
+                               init_par = vector_par$init_par,
+                               lower_bounds = vector_par$lower_bounds,
+                               upper_bounds = vector_par$upper_bounds,
+                               fixed_parameters = init_par$fixed_parameters,
                                bootstrap_samples = bootstrap_samples)
-    
-    error_params <- cxr_retrieve_params(optim_par = errors,
-                                        lambda_length = length(init_lambda),
-                                        alpha_length = length(init_alpha),
-                                        lambda_cov_length = length(init_lambda_cov),
-                                        alpha_cov_length = length(init_alpha_cov))
+    if(!is.null(errors)){
+      error_params <- cxr_retrieve_params(optim_par = errors,
+                                          lambda_length = length(init_par$init_lambda),
+                                          alpha_intra_length = length(init_par$init_alpha_intra),
+                                          alpha_inter_length = length(init_par$init_alpha_inter),
+                                          lambda_cov_length = length(init_par$init_lambda_cov),
+                                          alpha_cov_length = length(init_par$init_alpha_cov))
+    }else{
+      error_params <- list(lambda = NULL, 
+                           alpha_intra = NULL,
+                           alpha_inter = NULL,
+                           lambda_cov = NULL,
+                           alpha_cov = NULL)
+    }
   }else{
     error_params <- list(lambda = NULL, 
-                         alpha = NULL,
+                         alpha_intra = NULL,
+                         alpha_inter = NULL,
                          lambda_cov = NULL,
                          alpha_cov = NULL)
   }
   
-  # return cxr object ---------------------------------------------------
-  
+  # prepare and return cxr_pm_fit object --------------------------------
+
   list_names <- c("model_name",
                   "model",
                   "data",
@@ -492,8 +433,9 @@ cxr_pm_fit <- function(data,
                   "optimization_method",
                   "initial_values",
                   "fixed_terms",
-                  "lambda","alpha","lambda_cov","alpha_cov",
-                  "lambda_standard_error","alpha_standard_error",
+                  "lambda","alpha_intra","alpha_inter","lambda_cov","alpha_cov",
+                  "lambda_standard_error","alpha_intra_standard_error",
+                  "alpha_inter_standard_error",
                   "lambda_cov_standard_error","alpha_cov_standard_error",
                   "log_likelihood")
   
@@ -513,26 +455,44 @@ cxr_pm_fit <- function(data,
   if(!is.null(optim_params$lambda)){
     fit$lambda <- optim_params$lambda
   }
-  if(!is.null(optim_params$alpha)){
-    fit$alpha <- optim_params$alpha
+  if(!is.null(optim_params$alpha_intra)){
+    fit$alpha_intra <- optim_params$alpha_intra
+  }
+  if(!is.null(optim_params$alpha_inter)){
+    fit$alpha_inter <- optim_params$alpha_inter
   }
   if(!is.null(optim_params$lambda_cov)){
     fit$lambda_cov <- optim_params$lambda_cov
   }
   if(!is.null(optim_params$alpha_cov)){
-    fit$alpha_cov <- optim_params$alpha_cov
+    tidy_ac <- list()
+    for(i.cov in 1:ncol(covariates)){
+      my.cov <- which(grepl(colnames(covariates)[i.cov],names(optim_params$alpha_cov)))
+      tidy_ac[[i.cov]] <- optim_params$alpha_cov[my.cov]
+    }
+    names(tidy_ac) <- colnames(covariates)
+    fit$alpha_cov <- tidy_ac
   }
   if(!is.null(error_params$lambda)){
     fit$lambda_standard_error <- error_params$lambda
   }
-  if(!is.null(error_params$alpha)){
-    fit$alpha_standard_error <- error_params$alpha
+  if(!is.null(error_params$alpha_intra)){
+    fit$alpha_intra_standard_error <- error_params$alpha_intra
+  }
+  if(!is.null(error_params$alpha_inter)){
+    fit$alpha_inter_standard_error <- error_params$alpha_inter
   }
   if(!is.null(error_params$lambda_cov)){
     fit$lambda_cov_standard_error <- error_params$lambda_cov
   }
   if(!is.null(error_params$alpha_cov)){
-    fit$alpha_cov_standard_error <- error_params$alpha_cov
+    tidy_acr <- list()
+    for(i.cov in 1:ncol(covariates)){
+      my.cov <- which(grepl(colnames(covariates)[i.cov],names(error_params$alpha_cov)))
+      tidy_acr[[i.cov]] <- error_params$alpha_cov[my.cov]
+    }
+    names(tidy_acr) <- colnames(covariates)
+    fit$alpha_cov_standard_error <- tidy_acr
   }
   
   fit$log_likelihood <- llik
@@ -540,29 +500,36 @@ cxr_pm_fit <- function(data,
   
   class(fit) <- "cxr_pm_fit"
   
-  if(!is.null(fit$lambda) & !is.null(lower_lambda) & !is.null(upper_lambda)){
-    if(fit$lambda == lower_lambda | fit$lambda == upper_lambda){
+  if(!is.null(fit$lambda) & !is.null(bounds$lower_lambda) & !is.null(bounds$upper_lambda)){
+    if(fit$lambda == bounds$lower_lambda | fit$lambda == bounds$upper_lambda){
       message("cxr_pm_fit: A fitted lambda is equal to lower or upper bounds. Consider refitting
               with different boundaries.")
     }
   }
   
-  if(!is.null(fit$alpha) & !is.null(lower_alpha) & !is.null(upper_alpha)){
-    if(any(fit$alpha == lower_alpha) | any(fit$alpha == upper_alpha)){
-      message("cxr_pm_fit: One or more fitted alphas are equal to lower or upper bounds. 
+  if(!is.null(fit$alpha_intra) & !is.null(bounds$lower_alpha_intra) & !is.null(bounds$upper_alpha_intra)){
+    if(fit$alpha_intra == bounds$lower_alpha_intra | fit$alpha_intra == bounds$upper_alpha_intra){
+      message("cxr_pm_fit: Fitted Intraspecific alpha is equal to lower or upper bounds. 
       Consider refitting with different boundaries.")
     }
   }
   
-  if(!is.null(fit$lambda_cov) & !is.null(lower_lambda_cov) & !is.null(upper_lambda_cov)){
-    if(any(fit$lambda_cov == lower_lambda_cov) | any(fit$lambda_cov == upper_lambda_cov)){
+  if(!is.null(fit$alpha_inter) & !is.null(bounds$lower_alpha_inter) & !is.null(bounds$upper_alpha_inter)){
+    if(any(fit$alpha_inter == bounds$lower_alpha_inter) | any(fit$alpha_inter == bounds$upper_alpha_inter)){
+      message("cxr_pm_fit: One or more fitted interspecific alphas are equal to lower or upper bounds. 
+      Consider refitting with different boundaries.")
+    }
+  }
+  
+  if(!is.null(fit$lambda_cov) & !is.null(bounds$lower_lambda_cov) & !is.null(bounds$upper_lambda_cov)){
+    if(any(fit$lambda_cov == bounds$lower_lambda_cov) | any(fit$lambda_cov == bounds$pper_lambda_cov)){
       message("cxr_pm_fit: A fitted lambda_cov is equal to lower or upper bounds. 
       Consider refitting with different boundaries.")
     }
   }
   
-  if(!is.null(fit$alpha_cov) & !is.null(lower_alpha_cov) & !is.null(upper_alpha_cov)){
-    if(any(fit$alpha_cov == lower_alpha_cov) | any(fit$alpha_cov == upper_alpha_cov)){
+  if(!is.null(fit$alpha_cov) & !is.null(bounds$lower_alpha_cov) & !is.null(bounds$upper_alpha_cov)){
+    if(any(unlist(fit$alpha_cov) == bounds$lower_alpha_cov) | any(unlist(fit$alpha_cov) == bounds$upper_alpha_cov)){
       message("cxr_pm_fit: One or more fitted alpha_covs are equal to lower or upper bounds. 
       Consider refitting with different boundaries.")
     }

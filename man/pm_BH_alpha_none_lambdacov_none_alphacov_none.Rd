@@ -4,15 +4,18 @@
 \alias{pm_BH_alpha_none_lambdacov_none_alphacov_none}
 \title{Beverton-Holt model with no alphas and no covariate effects}
 \usage{
-pm_BH_alpha_none_lambdacov_none_alphacov_none(par, fitness, neigh_matrix,
-  covariates, fixed_parameters)
+pm_BH_alpha_none_lambdacov_none_alphacov_none(par, fitness,
+  neigh_intra_matrix = NULL, neigh_inter_matrix, covariates,
+  fixed_parameters)
 }
 \arguments{
 \item{par}{1d vector of initial parameters: lambda and sigma}
 
 \item{fitness}{1d vector of fitness observations, in log scale}
 
-\item{neigh_matrix}{included for compatibility, not used in this model}
+\item{neigh_intra_matrix}{included for compatibility, not used in this model.}
+
+\item{neigh_inter_matrix}{included for compatibility, not used in this model.}
 
 \item{covariates}{included for compatibility, not used in this model}
 

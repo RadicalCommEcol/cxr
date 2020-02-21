@@ -14,9 +14,10 @@ summary.cxr_pm_fit <- function(object,...){
     "\ncovariates: ",ifelse(is.null(object$covariates),0,ncol(object$covariates)),
     "\n----------",
     "\nfocal lambda: ",ifelse(is.null(object$lambda)," - not fit - ",object$lambda),
-    "\nmean alpha: ",ifelse(is.null(object$alpha)," - not fit - ",mean(object$alpha)),
+    "\nalpha_intra: ",ifelse(is.null(object$alpha_intra)," - not fit - ",object$alpha_intra),
+    "\nmean alpha_inter: ",ifelse(is.null(object$alpha_inter)," - not fit - ",mean(object$alpha_inter)),
     "\nmean lambda_cov: ",ifelse(is.null(object$lambda_cov),"- not fit - ",mean(object$lambda_cov)),
-    "\nmean alpha_cov: ",ifelse(is.null(object$alpha_cov),"- not fit - ",mean(object$alpha_cov)),
+    "\nmean alpha_cov: ",ifelse(is.null(object$alpha_cov),"- not fit - ",mean(unlist(object$alpha_cov))),
     "\nlog-likelihood of the fit: ",object$log_likelihood,
     "\n----------",
     sep="")
@@ -99,30 +100,34 @@ summary.cxr_er_fit <- function(object,...){
 #' @return console output
 #' @export
 summary.cxr_pm_multifit <- function(object,...){
-  cat("model: '",object$model_name,"'",
-      "\noptimization method: '",object$optimization_method,"'",
-      "\n----------",sep="")
   # for printing null or valid values
   # ifelse returns single values over single conditions
   if(is.null(object$lambda)){
-    sl <- rep("- not fit -",nrow(object$data))
+    sl <- rep("- not fitted -",length(object$data))
   }else{
     sl <- object$lambda
   }
-  if(is.null(object$alpha)){
-    sa <- rep("- not fit -",nrow(object$data))
+  if(is.null(object$alpha_matrix)){
+    sa <- "- not fit -"
   }else{
-    sa <- rowMeans(object$alpha)
+    sa <- object$alpha_matrix
   }
   if(is.null(object$lambda_cov)){
-    slc <- rep("- not fit -",nrow(object$data))
+    slc <- as.matrix(rep("- not fit -",length(object$data)))
+    colnames(slc) <- "lambda_cov"
   }else{
     slc <- object$lambda_cov
+    colnames(slc) <- paste("lambda_cov_",colnames(slc),sep="")
   }
   if(is.null(object$alpha_cov)){
-    sac <- rep("- not fit -",nrow(object$data))
+    sac <- as.matrix(rep("- not fit -",length(object$data)))
+    colnames(sac) <- "alpha_cov"
   }else{
-    sac <- object$alpha_cov
+    # average over covariates and alpha values, 
+    # hence the double rowmeans
+    sac <- sapply(object$alpha_cov,function(x)rowMeans(x))
+    colnames(sac) <- paste("mean_alpha_cov_",colnames(sac),sep="")
+    
   }
   summary_table <- data.frame(sp = names(object$data),
                               observations = unlist(lapply(object$data, nrow)),
@@ -131,17 +136,20 @@ summary.cxr_pm_multifit <- function(object,...){
                                                   ncol(object$covariates[[1]])),
                               # lambda = NULL,
                               lambda = sl,
-                              mean_alpha = sa,
-                              # mean_lambda_cov = ifelse(is.null(object$lambda_cov),
-                              #                          "- not fit - ",
-                              #                          mean(object$lambda_cov)),
-                              # mean_alpha_cov = ifelse(is.null(object$alpha_cov),
-                              #                         "- not fit - ",
-                              #                         mean(object$alpha_cov)),
+                              # alpha_intra = sa,
+                              # mean_alpha_inter = sai,
+                              # mean_lambda_cov = slc,
                               row.names = NULL)
-  cat("\n")
-  summary_table
+  summary_table <- cbind(summary_table,slc,sac)
+  row.names(summary_table) <- NULL
   
+  cat("model: '",object$model_name,"'",
+      "\noptimization method: '",object$optimization_method,"'",
+      "\n----------",sep="")
+  cat("\n")
+  print(summary_table)
+  cat("\n----------\nalpha matrix:\n")
+  object$alpha_matrix
 }
 
 

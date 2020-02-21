@@ -5,20 +5,24 @@
 \alias{pm_BH_alpha_global_lambdacov_none_alphacov_none}
 \title{Beverton-Holt model with a global alpha and no covariate effects}
 \usage{
-pm_BH_alpha_global_lambdacov_none_alphacov_none(par, fitness, neigh_matrix,
-  covariates, fixed_parameters)
+pm_BH_alpha_global_lambdacov_none_alphacov_none(par, fitness,
+  neigh_intra_matrix = NULL, neigh_inter_matrix, covariates,
+  fixed_parameters)
 }
 \arguments{
-\item{par}{1d vector of initial parameters: lambda, alpha, and sigma}
+\item{par}{1d vector of initial parameters: lambda, alpha, and sigma.}
 
-\item{fitness}{1d vector of fitness observations, in log scale}
+\item{fitness}{1d vector of fitness observations, in log scale.}
 
-\item{neigh_matrix}{matrix with number of neighbours (each neighbour a column) for each observation (in rows)}
+\item{neigh_intra_matrix}{included for compatibility, not used in this model.}
 
-\item{covariates}{included for compatibility, not used in this model}
+\item{neigh_inter_matrix}{matrix of arbitrary columns, number of neighbours for each observation.
+As in this model there is a single alpha argument, do not distinguish neighbour identity}
+
+\item{covariates}{included for compatibility, not used in this model.}
 
 \item{fixed_parameters}{optional list specifying values of fixed parameters, 
-with components "lambda","alpha".}
+with components "lambda","alpha_inter".}
 }
 \value{
 log-likelihood value

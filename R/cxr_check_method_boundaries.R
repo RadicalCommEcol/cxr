@@ -22,7 +22,7 @@ cxr_check_method_boundaries <- function(optimization_method,lower_bounds,upper_b
     method.ok <- FALSE
   }else if(!is.null(lower_bounds) & !is.null(upper_bounds)){
     if(type == "pm"){
-      bnames <- c("lambda", "alpha", "lambda_cov", "alpha_cov")
+      bnames <- c("lambda", "alpha_intra","alpha_inter", "lambda_cov", "alpha_cov")
     }else{
       bnames <- c("lambda", "effect", "response", "lambda_cov", "effect_cov", "response_cov")
     }

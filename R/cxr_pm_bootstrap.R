@@ -7,12 +7,15 @@
 #' @param data dataframe with observations in rows and two sets of columns:
 #' * fitness: fitness metric for the focal individual
 #' * neighbours: columns with user-defined names with number of neighbours for each group
+#' @param focal_column optional integer value giving the position, or name, of the column
+#' with neighbours from the same species as the focal one. This is necessary if "alpha_intra" is specified. 
 #' @param covariates optional matrix with observations in rows and covariates in columns. Each cell is the value of a covariate
 #' in a given observation.
 #' @param init_par 1d vector of initial parameters
 #' @param lower_bounds 1d vector of lower bounds
 #' @param upper_bounds 1d vector of upper bounds
-#' @param fixed_parameters optional list specifying values of fixed parameters, with components "lambda","alpha","lambda_cov", and "alpha_cov".
+#' @param fixed_parameters optional list specifying values of fixed parameters, 
+#' with components "lambda","alpha_intra","alpha_inter","lambda_cov", and "alpha_cov".
 #' @param bootstrap_samples how many bootstrap samples to compute.
 #'
 #' @return 1d vector, the standard error of each parameter in init.par
@@ -22,6 +25,7 @@
 cxr_pm_bootstrap <- function(fitness_model,
                              optimization_method,
                              data,
+                             focal_column,
                              covariates,
                              init_par,
                              lower_bounds,
@@ -43,12 +47,33 @@ cxr_pm_bootstrap <- function(fitness_model,
     # sample data
     bdata <- data[bsample,]
     
+    # same as in cxr_pm_fit
     # just to avoid a note in R CMD CHECK
     dropname <- "fitness"
-    bneigh <- as.data.frame(bdata[ , !(names(bdata) %in% dropname)])
-    bneigh <- as.matrix(bneigh)
-    # how many neighbour species?
-    nneigh <- ncol(bneigh)
+    bneigh_matrix <- as.matrix(bdata[ , !(names(bdata) %in% dropname)])
+
+    if(is.null(focal_column)){
+      # no alpha_intra
+      bneigh_inter_matrix <- bneigh_matrix
+      bneigh_intra_matrix <- NULL
+      # set also names
+      bneigh_inter <- colnames(bneigh_inter_matrix)
+      bneigh_intra <- NULL
+    }else{
+      # which column number
+      if(class(focal_column) == "character"){
+        bfocal_column_num <- which(names(bdata) == focal_column) - 1
+      }else{
+        bfocal_column_num <- focal_column -1
+      }
+      # intra and inter observations in different matrices
+      bneigh_inter_matrix <- bneigh_matrix[,-bfocal_column_num]
+      bneigh_intra_matrix <- as.matrix(bneigh_matrix[,bfocal_column_num])
+      colnames(bneigh_intra_matrix) <- colnames(bneigh_matrix)[bfocal_column_num]
+      # set also names
+      bneigh_inter <- colnames(bneigh_inter_matrix)
+      bneigh_intra <- colnames(bneigh_matrix)[bfocal_column_num]
+    }
     
     if(is.data.frame(covariates)){
       bcov <- as.data.frame(covariates[bsample,])
@@ -72,7 +97,8 @@ cxr_pm_bootstrap <- function(fitness_model,
                                control = list(), 
                                hessian = F,
                                fitness = log(bdata$fitness), 
-                               neigh_matrix = bneigh,
+                               neigh_intra_matrix = bneigh_intra_matrix,
+                               neigh_inter_matrix = bneigh_inter_matrix,
                                covariates = covariates, 
                                fixed_parameters = fixed_parameters)
         
@@ -94,7 +120,8 @@ cxr_pm_bootstrap <- function(fitness_model,
                                control = list(), 
                                hessian = F,
                                fitness = log(bdata$fitness), 
-                               neigh_matrix = bneigh,
+                               neigh_intra_matrix = bneigh_intra_matrix,
+                               neigh_inter_matrix = bneigh_inter_matrix,
                                covariates = covariates, 
                                fixed_parameters = fixed_parameters)
         
@@ -110,7 +137,8 @@ cxr_pm_bootstrap <- function(fitness_model,
                                lb = lower_bounds,
                                ub = upper_bounds,
                                fitness = log(bdata$fitness), 
-                               neigh_matrix = bneigh,
+                               neigh_intra_matrix = bneigh_intra_matrix,
+                               neigh_inter_matrix = bneigh_inter_matrix,
                                covariates = covariates, 
                                fixed_parameters = fixed_parameters)
         bpar <- bpar$solution
@@ -123,7 +151,8 @@ cxr_pm_bootstrap <- function(fitness_model,
                                lb = lower_bounds,
                                ub = upper_bounds,
                                fitness = log(bdata$fitness), 
-                               neigh_matrix = bneigh,
+                               neigh_intra_matrix = bneigh_intra_matrix,
+                               neigh_inter_matrix = bneigh_inter_matrix,
                                covariates = covariates, 
                                fixed_parameters = fixed_parameters)
         bpar <- bpar$solution
@@ -136,7 +165,8 @@ cxr_pm_bootstrap <- function(fitness_model,
                                lb = lower_bounds,
                                ub = upper_bounds,
                                fitness = log(bdata$fitness), 
-                               neigh_matrix = bneigh,
+                               neigh_intra_matrix = bneigh_intra_matrix,
+                               neigh_inter_matrix = bneigh_inter_matrix,
                                covariates = covariates, 
                                fixed_parameters = fixed_parameters)
         bpar <- bpar$solution
@@ -149,7 +179,8 @@ cxr_pm_bootstrap <- function(fitness_model,
                              upper = upper_bounds, 
                              control = list(maxit = 1e3), 
                              fitness = log(bdata$fitness), 
-                             neigh_matrix = bneigh,
+                             neigh_intra_matrix = bneigh_intra_matrix,
+                             neigh_inter_matrix = bneigh_inter_matrix,
                              covariates = covariates, 
                              fixed_parameters = fixed_parameters)
         bpar <- bpar$par
@@ -163,7 +194,8 @@ cxr_pm_bootstrap <- function(fitness_model,
                                    upper = upper_bounds, 
                                    control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
                                    fitness = log(bdata$fitness), 
-                                   neigh_matrix = bneigh,
+                                   neigh_intra_matrix = bneigh_intra_matrix,
+                                   neigh_inter_matrix = bneigh_inter_matrix,
                                    covariates = covariates, 
                                    fixed_parameters = fixed_parameters)
         
@@ -175,7 +207,8 @@ cxr_pm_bootstrap <- function(fitness_model,
                                    upper = upper_bounds,
                                    fn = fitness_model,
                                    fitness = log(bdata$fitness), 
-                                   neigh_matrix = bneigh,
+                                   neigh_intra_matrix = bneigh_intra_matrix,
+                                   neigh_inter_matrix = bneigh_inter_matrix,
                                    covariates = covariates, 
                                    fixed_parameters = fixed_parameters)
         bpar <- bpar$par
@@ -186,16 +219,31 @@ cxr_pm_bootstrap <- function(fitness_model,
       if(sum(is.na(bpar)) == 0){
         bootres[i.sample,] <- bpar
       }
+    }else{
+      return(NULL)
     }
     
   }# for i.sample  
   
   bootres <- bootres[which(!is.na(rowSums(bootres))),]
-  if(nrow(bootres)>2){
-    boot.se <- apply(bootres,2,sd)
+  valid.samples <- nrow(bootres)
+  if(!is.null(valid.samples)){
+    if(valid.samples == 1){
+      boot.se <- bootres
+    }else{
+      boot.se <- apply(bootres,2,sd)
+    }
   }else{
-    boot.se <- bootres[1,]
+    boot.se <- rep(NA_integer_,length(init_par))
   }
+  # 
+  # if(nrow(bootres)>2){
+  #   boot.se <- apply(bootres,2,sd)
+  # }else if(nrow(bootres)!= 0){
+  #   boot.se <- bootres[1,]
+  # }else{
+  #   boot.se <- rep(NA_integer_,length(init_par))
+  # }
   
   if(!is.null(names(init_par))){
     names(boot.se) <- paste(names(init_par),"_se",sep="")

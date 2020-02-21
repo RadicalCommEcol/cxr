@@ -6,8 +6,7 @@
 #' 3-all dataframes same columns, all numeric
 #' 4-same set of focals and neighbour sp
 #'
-#' @param data as in cxr_er_fit
-#' @param covariates as in cxr_er_fit
+#' @inheritParams cxr_er_fit
 #'
 #' @return logical, whether conditions are met
 #'
