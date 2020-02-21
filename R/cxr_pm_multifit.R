@@ -291,9 +291,16 @@ cxr_pm_multifit <- function(data,
       # fill up matrix
       for(i.sp in 1:length(spnames)){
         mycov <- spfits[[i.sp]]$alpha_cov[[cov.names[i.cov]]]
-        # sort sp just in case
-        sp.pos <- sapply(matrix.names,function(x)which(grepl(x,names(mycov))))
-        spalpha_cov[[i.cov]][i.sp,] <- mycov[sp.pos]
+
+        if(length(mycov)==1){
+          # same alpha_cov for all interactions
+          spalpha_cov[[i.cov]][i.sp,] <- mycov
+        }else{
+          # specific alpha_cov
+          # sort sp just in case
+          sp.pos <- sapply(matrix.names,function(x)which(grepl(x,names(mycov))))
+          spalpha_cov[[i.cov]][i.sp,] <- mycov[sp.pos]
+        }
       }# for each focal sp
     }# for each covariate
     names(spalpha_cov) <- cov.names
@@ -433,9 +440,16 @@ cxr_pm_multifit <- function(data,
       # fill up matrix
       for(i.sp in 1:length(spnames)){
         mycov <- spfits[[i.sp]]$alpha_cov_standard_error[[cov.names[i.cov]]]
-        # sort sp just in case
-        sp.pos <- sapply(er_matrix.names,function(x)which(grepl(x,names(mycov))))
-        er_spalpha_cov[[i.cov]][i.sp,] <- mycov[sp.pos]
+        
+        if(length(mycov)==1){
+          # same alpha_cov for all interactions
+          er_spalpha_cov[[i.cov]][i.sp,] <- mycov
+        }else{
+          # specific alpha_cov
+          # sort sp just in case
+          sp.pos <- sapply(er_matrix.names,function(x)which(grepl(x,names(mycov))))
+          er_spalpha_cov[[i.cov]][i.sp,] <- mycov[sp.pos]
+        }
       }# for each focal sp
     }# for each covariate
     names(er_spalpha_cov) <- cov.names
