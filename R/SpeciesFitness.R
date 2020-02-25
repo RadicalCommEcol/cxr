@@ -2,7 +2,12 @@
 # supp mat table A.1
 # species fitness is another way of saying competitive ability
 
-
+# either a cxr_pm_fit object
+# or
+# model family
+# lambda
+# intraspecific_alpha
+# interspecific_alpha
 
 #' Fitness of a species
 #' 
