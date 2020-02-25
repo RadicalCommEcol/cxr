@@ -9,7 +9,8 @@ jobs:
     - stage: prepare cache
       script: true
     - stage: test
-    
+services:
+  - xvfb
 addons:
   apt:
     packages:
@@ -31,6 +32,5 @@ r_binary_packages:
   
 r_build_args: --resave-data
   
-before_install:
+before_script:
   - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start

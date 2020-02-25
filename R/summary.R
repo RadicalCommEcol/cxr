@@ -9,6 +9,7 @@ summary.cxr_pm_fit <- function(object,...){
     "\nmodel: '",object$model_name,"'",
     "\noptimization method: '",object$optimization_method,"'",
     "\n----------",
+    "\nfocal taxa ID: ",ifelse(is.null(object$focal_ID),"-",object$focal_ID),
     "\nobservations: ",nrow(object$data),
     "\nneighbours: ",length(object$data)-1,
     "\ncovariates: ",ifelse(is.null(object$covariates),0,ncol(object$covariates)),

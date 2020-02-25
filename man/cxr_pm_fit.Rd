@@ -23,8 +23,8 @@ cxr_pm_fit(data, focal_column = NULL, model_family = c("BH"),
 \item neighbours: columns with user-defined names, giving number of neighbours for each group
 }}
 
-\item{focal_column}{optional integer value giving the position, or name, of the column
-with neighbours from the same species as the focal one. This is necessary if "alpha_intra" is specified
+\item{focal_column}{optional integer or character giving the column
+with neighbours from the same species as the focal one. This field is necessary if "alpha_intra" is specified
 in \code{initial_values}, \code{lower_bounds}, \code{upper_bounds}, or \code{fixed_terms}.}
 
 \item{model_family}{family of model to use. Available families are BH (Beverton-Holt) as default.
@@ -60,6 +60,7 @@ an object of type 'cxr_pm_fit' which is a list with the following components:
 \item model_name: string with the name of the fitness model
 \item model: model function
 \item data: data supplied
+\item focal_ID: name/ID of the focal taxa, if provided in 'focal_column'
 \item covariates: covariate data supplied
 \item optimization_method: optimization method used
 \item initial_values: list with initial values

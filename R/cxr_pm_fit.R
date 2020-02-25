@@ -5,8 +5,8 @@
 #' @param data dataframe with observations in rows and two sets of columns:
 #' * fitness: fitness metric for the focal individual
 #' * neighbours: columns with user-defined names, giving number of neighbours for each group
-#' @param focal_column optional integer value giving the position, or name, of the column
-#' with neighbours from the same species as the focal one. This is necessary if "alpha_intra" is specified 
+#' @param focal_column optional integer or character giving the column
+#' with neighbours from the same species as the focal one. This field is necessary if "alpha_intra" is specified
 #' in \code{initial_values}, \code{lower_bounds}, \code{upper_bounds}, or \code{fixed_terms}.
 #' @param model_family family of model to use. Available families are BH (Beverton-Holt) as default.
 #' Users may define their own families and models (see vignette XXXXX).
@@ -28,6 +28,7 @@
 #' * model_name: string with the name of the fitness model
 #' * model: model function
 #' * data: data supplied 
+#' * focal_ID: name/ID of the focal taxa, if provided in 'focal_column'
 #' * covariates: covariate data supplied
 #' * optimization_method: optimization method used
 #' * initial_values: list with initial values
@@ -429,6 +430,7 @@ cxr_pm_fit <- function(data,
   list_names <- c("model_name",
                   "model",
                   "data",
+                  "focal_ID",
                   "covariates",
                   "optimization_method",
                   "initial_values",
@@ -449,6 +451,9 @@ cxr_pm_fit <- function(data,
   fit$initial_values <- initial_values
   
   # for returning explicit NULL values
+  if(!is.null(focal_column)){
+    fit$focal_ID <- neigh_intra
+  }
   if(!is.null(fixed_terms)){
     fit$fixed_terms <- fixed_terms
   }
