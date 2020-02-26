@@ -5,8 +5,12 @@
 #' The function given here assumes a community of n-species, so that species fitness is calculated according to a 
 #' general competitive response (r) substituting the 2-sp denominator terms of table A1 of Hart et al. 2018. 
 #' This competitive response can be calculated with the function 'cxr_er_fit'.
-#' Thus, the function accepts either a 'cxr_er_fit' object returned from that function, or 
-#' a specification of the model to follow as well as lambda and competitive response parameters.
+#' 
+#' Thus, the function accepts two sets of parameters. First, a 'cxr_er_fit' object returned from that function. In this case,
+#' species fitness will be calculated for all focal taxa included in the 'cxr_er_fit' object.
+#' 
+#' Otherwise, users may enter a specification of the model to follow as well as lambda and competitive response parameters.
+#' Note that there is no 'default' way of calculating species fitness without specifying the underlying model.
 #' 
 #' @param effect_response_fit cxr_er_fit object with valid lambda and response terms.
 #' @param model_family model with which to calculate species fitness.
@@ -22,7 +26,10 @@ species_fitness <- function(effect_response_fit = NULL,
                             competitive_response = NULL){
   res <- NULL
   if(!is.null(effect_response_fit)){
-    sf_fun <- paste(effect_response_fit$model_family,"_species_fitness")
+    
+    sf_f <- substr(effect_response_fit$model_name,4,5)
+    
+    sf_fun <- paste(sf_f,"_species_fitness",sep="")
     sf_model <- try(get(sf_fun),silent = TRUE)
     
     if(class(sf_model) == "try-error"){
@@ -31,7 +38,8 @@ species_fitness <- function(effect_response_fit = NULL,
                     ,sep=""))
       return(NULL)
     }else{
-      res <- sf_model(effect_response_fit$lambda,effect_response_fit$response)
+      res <- mapply(sf_model,effect_response_fit$lambda,effect_response_fit$response)
+      names(res) <- paste("fitness_",effect_response_fit$sp,sep = "")
     }
   }else{
     sf_fun <- paste(model_family,"_species_fitness")

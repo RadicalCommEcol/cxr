@@ -11,15 +11,16 @@
 #' Hart et al. (2018) How to quantify competitive ability. Journal of Ecology 106, 1902-1909. 
 #' Other model families may not adhere to the general definition. 
 #' 
-#' This function will calculate niche overlap, using either the general definition or user-provided formulae.
-#' It accepts either two 'cxr_pm_fit' objects calculated with the 'cxr_pm_fit' function,
-#' or a 2x2 interaction matrix. In the first case, it checks 
-#' whether the model family from which the parameters were calculated has an associated niche overlap formula. 
-#' In the second case, it uses the general formula from Godoy et al. (2014).
-#' Again, beware that this formula may not be appropriate if the interaction matrix provided is inferred
-#' from specific models.
-#'  
+#' This function will calculate niche overlap among two or more taxa, using either the general definition or specific ones.
+#' It accepts three different sets of arguments:
+#' * a 'cxr_pm_multifit' object, in which case it will return the niche overlap between all pairs of fitted species.
+#' * two 'cxr_pm_fit' objects. It returns the niche overlap between the two focal species. In this and the previous 
+#' parameterization, it checks whether the model family from which the parameters were calculated 
+#' has an associated niche overlap formula.
+#' * a 2x2 numeric matrix with intraspecific terms in the diagonal. 
+#' In this case, the general formula from Godoy et al. (2014) applies, with a warning.
 #' 
+#' @param cxr_multifit cxr_pm_multifit object, with parameters for a series of species.
 #' @param cxr_sp1 cxr_pm_fit object giving the parameters from the first species.
 #' @param cxr_sp2 cxr_pm_fit object giving the parameters from the second species. 
 #' @param pair_matrix optional 2x2 matrix with intra and interspecific interaction 
@@ -27,9 +28,17 @@
 #'
 #' @return niche overlap value, in the range 0-1.
 #' @export
-niche_overlap <- function(cxr_sp1 = NULL, cxr_sp2 = NULL, pair_matrix = NULL){
+#' @md
+niche_overlap <- function(cxr_multifit = NULL,cxr_sp1 = NULL, cxr_sp2 = NULL, pair_matrix = NULL){
   
   res <- NULL
+  
+  if(!is.null(cxr_multifit)){
+    if(!is.null(cxr_sp1) | !is.null(cxr_sp2) | !is.null(pair_matrix)){
+      message("cxr niche_overlap:both cxr objects and a pairwise matrix were specified. 
+              Pairwise matrix will be discarded")
+    }
+  }
   
   if(!is.null(cxr_sp1) & !is.null(cxr_sp2)){
     if(!is.null(pair_matrix)){
@@ -37,9 +46,12 @@ niche_overlap <- function(cxr_sp1 = NULL, cxr_sp2 = NULL, pair_matrix = NULL){
               Pairwise matrix will be discarded")
     }
     
-    if(cxr_sp1$model_family == cxr_sp2$model_family)
+    sp1_model <- substr(cxr_sp1$model_name,4,5)
+    sp2_model <- substr(cxr_sp2$model_name,4,5)
     
-    nov_fun <- paste(cxr_sp1$model_family,"_niche_overlap")
+    if(sp1_model == sp2_model){
+    
+    nov_fun <- paste(sp1_model,"_niche_overlap",sep="")
     nov_model <- try(get(nov_fun),silent = TRUE)
     
     if(class(nov_model) == "try-error"){
@@ -71,13 +83,17 @@ niche_overlap <- function(cxr_sp1 = NULL, cxr_sp2 = NULL, pair_matrix = NULL){
                         or because the 'alpha_intra' fields are NULL."))
           return(NULL)
         }else{
-          nov_matrix <- matrix(intra_sp1,inter_sp2_sp1,inter_sp1_sp2,intra_sp2,nrow = 2)
+          nov_matrix <- matrix(c(intra_sp1,inter_sp2_sp1,inter_sp1_sp2,intra_sp2),nrow = 2)
           res <- nov_model(nov_matrix)
         }# if-else null
         
       }# if-else null
 
     }# if-else model found
+    }else{
+      message("niche_overlap ERROR: 'cxr_sp1' and 'cxr_sp2' were fitted for different model families.")
+      return(NULL)
+    }
   }else if(!is.null(pair_matrix)){
     
     message("Niche overlap calculated with the standard formula. You should be sure that

@@ -53,7 +53,7 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # fit three species at once
 #' data("neigh_list")
 #' # these species all have >250 observations
@@ -679,7 +679,7 @@ cxr_er_fit <- function(data,
   list_names <- c("model_name",
                   "model",
                   "data",
-                  "model_family",
+                  # "model_family",
                   "covariates",
                   "sp",
                   "optimization_method",
@@ -704,7 +704,7 @@ cxr_er_fit <- function(data,
   fit$model_name <- model_name
   fit$model <- fitness_model
   fit$data <- spdf
-  fit$model_family <- model_family
+  # fit$model_family <- model_family
   fit$covariates <- covdf
   fit$sp <- sp.list
   fit$optimization_method <- optimization_method
@@ -799,69 +799,3 @@ cxr_er_fit <- function(data,
   
   fit
 }
-
-# summary method ----------------------------------------------------------
-
-# summary.cxr_er_fit <- function(x){
-#   covar <- 0
-#   if("list" %in% class(x$data)){
-#     obs <- nrow(x$data[[1]])
-#     if(!is.null(x$covariates)){
-#       covar <- length(x$covariates)
-#     }
-#   }else{
-#     obs <- unique(table(x$data$focal))
-#     if(!is.null(x$covariates)){
-#       covar <- ncol(x$covariates)
-#     }
-#   }
-#   
-#   cat("model:",x$model_name,"",
-#       "\noptimization method:",x$optimization_method,"",
-#       "\nspecies:", x$sp,
-#       "\ncovariates:", covar,
-#       "\nobservations:", obs,
-#       "\n----------",sep=" ")
-#   
-#   # for printing null or valid values
-#   # ifelse returns single values over single conditions
-#   if(is.null(x$lambda)){
-#     sl <- rep("-not fit-",length(x$sp))
-#   }else{
-#     sl <- x$lambda
-#   }
-#   if(is.null(x$effect)){
-#     se <- rep("-not fit-",length(x$sp))
-#   }else{
-#     se <- x$effect
-#   }
-#   if(is.null(x$response)){
-#     sr <- rep("-not fit-",length(x$sp))
-#   }else{
-#     sr <- x$response
-#   }
-#   if(is.null(x$lambda_cov)){
-#     slc <- rep("-not fit-",length(x$sp))
-#   }else{
-#     slc <- x$lambda_cov
-#   }
-#   if(is.null(x$effect_cov)){
-#     sec <- rep("-not fit-",length(x$sp))
-#   }else{
-#     sec <- x$effect_cov
-#   }
-#   if(is.null(x$response_cov)){
-#     src <- rep("-not fit-",length(x$sp))
-#   }else{
-#     src <- x$response_cov
-#   }
-#   summary_table <- data.frame(lambda = sl,
-#                               effect = se,
-#                               response = sr,
-#                               lambda_cov = slc,
-#                               effect_cov = sec,
-#                               response_cov = src,
-#                               row.names = x$sp)
-#   cat("\n")
-#   summary_table
-# }
