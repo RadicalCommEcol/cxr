@@ -57,3 +57,7 @@ The cxr objects may be calculated with user-defined model families. If this is t
 if simply a 2x2 matrix is provided, the niche overlap metrics will be calculated and
 a warning will be raised.
 }
+\examples{
+niche_overlap(pair_matrix = matrix(c(0.33,0.12,0.2,0.4),nrow = 2))
+
+}

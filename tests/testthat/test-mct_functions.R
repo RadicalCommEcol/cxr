@@ -52,7 +52,7 @@ bootstrap_samples <- 3
 
 sp1.fit <- cxr::cxr_pm_fit(data = data[[1]],
                            focal_column = focal_column[1],
-                           model_family = model_families[i.model],
+                           model_family = model_families[1], # irrelevant
                            covariates = covariates[[1]],
                            optimization_method = optimization_method,
                            alpha_form = alpha_form,
@@ -66,7 +66,7 @@ sp1.fit <- cxr::cxr_pm_fit(data = data[[1]],
 
 sp2.fit <- cxr::cxr_pm_fit(data = data[[2]],
                            focal_column = focal_column[2],
-                           model_family = model_families[i.model],
+                           model_family = model_families[1],
                            covariates = covariates[[2]],
                            optimization_method = optimization_method,
                            alpha_form = alpha_form,
@@ -81,19 +81,19 @@ sp2.fit <- cxr::cxr_pm_fit(data = data[[2]],
 
 # 2 - generalization to n species, niche overlap across all pairs ---------
 
-  cxr_multifit <- cxr_pm_multifit(data = data,
-                                  model_family = model_families[i.model],
-                                  focal_column = focal_column,
-                                  covariates = covariates,
-                                  optimization_method = optimization_method,
-                                  alpha_form = alpha_form,
-                                  lambda_cov_form = lambda_cov_form,
-                                  alpha_cov_form = alpha_cov_form,
-                                  initial_values = initial_values,
-                                  lower_bounds = lower_bounds,
-                                  upper_bounds = upper_bounds,
-                                  fixed_terms = fixed_terms,
-                                  bootstrap_samples = bootstrap_samples)
+cxr_multifit <- cxr_pm_multifit(data = data,
+                                model_family = model_families[1], # irrelevant
+                                focal_column = focal_column,
+                                covariates = covariates,
+                                optimization_method = optimization_method,
+                                alpha_form = alpha_form,
+                                lambda_cov_form = lambda_cov_form,
+                                alpha_cov_form = alpha_cov_form,
+                                initial_values = initial_values,
+                                lower_bounds = lower_bounds,
+                                upper_bounds = upper_bounds,
+                                fixed_terms = fixed_terms,
+                                bootstrap_samples = bootstrap_samples)
 
 
 # 3 - niche overlap from a pairwise matrix --------------------------------
@@ -102,16 +102,16 @@ sp2.fit <- cxr::cxr_pm_fit(data = data[[2]],
 posmatrix <- matrix(c(runif(1,0.5,1),runif(2,0,0.5),runif(1,0.5,1)),nrow = 2)
 
 # test --------------------------------------------------------------------
-
-# multispecies
-expect_s3_class(niche_overlap(cxr_multifit = cxr_multifit),"data.frame")
-# 2 cxr objects
-expect_vector(niche_overlap(cxr_sp1 = sp1.fit,cxr_sp2 = sp2.fit))
-expect_length(niche_overlap(cxr_sp1 = sp1.fit,cxr_sp2 = sp2.fit),2)
-# pairwise matrix
-expect_vector(niche_overlap(posmatrix))
-expect_length(niche_overlap(posmatrix),2)
-
+test_that("niche overlaps are correctly calculated", {
+  # multispecies
+  expect_s3_class(niche_overlap(cxr_multifit = cxr_multifit),"data.frame")
+  # 2 cxr objects
+  expect_vector(niche_overlap(cxr_sp1 = sp1.fit,cxr_sp2 = sp2.fit))
+  expect_length(niche_overlap(cxr_sp1 = sp1.fit,cxr_sp2 = sp2.fit),2)
+  # pairwise matrix
+  expect_vector(niche_overlap(pair_matrix = posmatrix))
+  expect_length(niche_overlap(pair_matrix = posmatrix),2)
+})
 # 4 - n-sp fitness, and difference, for all model families --------------
 
 # fit three species at once
@@ -129,30 +129,51 @@ for(i in 1:length(data)){
   data[[i]] <- data[[i]][1:n.obs,c(2,example_sp+2)]#2:length(data[[i]])]
 }
 initial_values_er = list(lambda = 1, 
-                      effect = 1, 
-                      response = 1)
+                         effect = 1, 
+                         response = 1)
 lower_bounds_er = list(lambda = 0, 
-                    effect = 0, 
-                    response = 0)
+                       effect = 0, 
+                       response = 0)
 upper_bounds_er = list(lambda = 100, 
-                    effect = 10, 
-                    response = 10)
-
+                       effect = 10, 
+                       response = 10)
+iv_LV <- list(lambda = 1, 
+              effect = 0, 
+              response = 0)
+lb_LV = list(lambda = 0, 
+                       effect = -1, 
+                       response = -1)
+ub_LV = list(lambda = 100, 
+                       effect = 1, 
+                       response = 1)
 # test --------------------------------------------------------------------
-
-for(i.model in 1:length(model_families)){
-  
-  er.fit <- cxr::cxr_er_fit(data = data,
-                             model_family = model_families[i.model],
-                             # covariates = covariates,
-                             optimization_method = optimization_method,
-                             initial_values = initial_values_er,
-                             lower_bounds = lower_bounds_er,
-                             upper_bounds = upper_bounds_er,
-                             fixed_terms = fixed_terms,
-                             bootstrap_samples = bootstrap_samples)
-  
-  spfitness <- cxr::species_fitness(er.fit)
-  expect_vector(spfitness)
-  expect_length(spfitness,length(data))
-}
+test_that("species fitness are correctly calculated", {
+  for(i.model in 1:length(model_families)){
+    
+    # lotka-volterra are trickier to fit,
+    # need different sets of initial values and bounds
+    if(model_families[i.model] == "LV"){
+      iv <- iv_LV
+      lb <- lb_LV
+      ub <- ub_LV
+    }else{
+      iv <- initial_values_er
+      lb <- lower_bounds_er
+      ub <- upper_bounds_er
+    }
+    
+    er.fit <- cxr::cxr_er_fit(data = data,
+                              model_family = model_families[i.model],
+                              # covariates = covariates,
+                              optimization_method = optimization_method,
+                              initial_values = iv,
+                              lower_bounds = lb,
+                              upper_bounds = ub,
+                              fixed_terms = fixed_terms,
+                              bootstrap_samples = bootstrap_samples)
+    
+    spfitness <- cxr::species_fitness(er.fit)
+    expect_vector(spfitness)
+    expect_length(spfitness,length(data))
+  }
+})

@@ -26,9 +26,10 @@ License: MIT + file LICENCE
 Depends:
   R (>= 3.5)
 Imports:
-  optimx,
-  stats,
-  nlme
+    optimx,
+    stats,
+    nlme,
+    mvtnorm
 RoxygenNote: 6.1.1
 Suggests: 
     ggplot2,

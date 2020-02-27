@@ -40,9 +40,12 @@
 #' @return either a dataframe with as many rows as species, or a single named numeric vector,
 #' containing niche overlap values for the MCT (modern coexistence theory) and SA (structural approach)
 #' formulations.
-#' @export
+#' @importFrom utils combn
 #' @md
-#' @example niche_overlap(pair_matrix = matrix(c(0.33,0.12,0.2,0.4),nrow = 2))
+#' @examples 
+#' niche_overlap(pair_matrix = matrix(c(0.33,0.12,0.2,0.4),nrow = 2))
+#' 
+#' @export
 niche_overlap <- function(cxr_multifit = NULL,cxr_sp1 = NULL, cxr_sp2 = NULL, pair_matrix = NULL){
   
   res <- NULL

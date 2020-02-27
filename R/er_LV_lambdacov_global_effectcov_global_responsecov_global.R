@@ -112,7 +112,7 @@ er_LV_lambdacov_global_effectcov_global_responsecov_global <- function(par,
   r.part <- colSums(response*(1+response_cov_all)*target)
   e.part <- colSums(effect*(1+effect_cov_all)*density)
   
-  lambda.part - (r.part*e.part)
+  pred <- lambda.part - (r.part*e.part)
   
   # MODEL CODE ENDS HERE ----------------------------------------------------
   
