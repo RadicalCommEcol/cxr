@@ -29,7 +29,8 @@ species_fitness <- function(effect_response_fit = NULL,
   if(!is.null(effect_response_fit)){
     
     if(!is.null(model_family) | !is.null(lambda) | !is.null(competitive_response)){
-      message("species_fitness: ")
+      message("species_fitness: the 'cxr_er_fit' object will be used, other
+              arguments will be discarded.")
     }
     
     sf_f <- substr(effect_response_fit$model_name,4,5)
@@ -44,7 +45,7 @@ species_fitness <- function(effect_response_fit = NULL,
       return(NULL)
     }else{
       res <- mapply(sf_model,effect_response_fit$lambda,effect_response_fit$response)
-      names(res) <- paste("fitness_",effect_response_fit$sp,sep = "")
+      names(res) <- paste("fitness_",effect_response_fit$taxa,sep = "")
     }
   }else{
     sf_fun <- paste(model_family,"_species_fitness")

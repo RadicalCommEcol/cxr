@@ -1,7 +1,5 @@
+context("niche overlap and species fitness functions")
 # test niche overlap and species fitness
-
-library(cxr)
-library(tidyverse)
 
 # data --------------------------------------------------------------------
 
@@ -105,9 +103,14 @@ posmatrix <- matrix(c(runif(1,0.5,1),runif(2,0,0.5),runif(1,0.5,1)),nrow = 2)
 
 # test --------------------------------------------------------------------
 
-expect_s3_class(niche_overlap(cxr_multifit = cxr_multifit),"dataframe")
-niche_overlap(cxr_sp1 = sp1.fit,cxr_sp2 = sp2.fit)
-niche_overlap(posmatrix)
+# multispecies
+expect_s3_class(niche_overlap(cxr_multifit = cxr_multifit),"data.frame")
+# 2 cxr objects
+expect_vector(niche_overlap(cxr_sp1 = sp1.fit,cxr_sp2 = sp2.fit))
+expect_length(niche_overlap(cxr_sp1 = sp1.fit,cxr_sp2 = sp2.fit),2)
+# pairwise matrix
+expect_vector(niche_overlap(posmatrix))
+expect_length(niche_overlap(posmatrix),2)
 
 # 4 - n-sp fitness, and difference, for all model families --------------
 

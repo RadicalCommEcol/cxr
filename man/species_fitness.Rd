@@ -17,19 +17,20 @@ species_fitness(effect_response_fit = NULL, model_family = NULL,
 \item{competitive_response}{parameter reflecting the species' sensitivity to competition.}
 }
 \value{
-single numeric value, species fitness
+single numeric value/vector, species fitness for one or several taxa
 }
 \description{
-Calculates the fitness of a species, a.k.a. its competitive ability (Godoy et al. 2014, Hart et al. 2018 Journal of Ecology).
+Calculates the fitness of a species, a.k.a. its competitive ability (Godoy et al. 2014 Ecology, Hart et al. 2018 Journal of Ecology).
 Note that its definition is model-specific, i.e. it depends on the model family from which interaction coefficients were estimated.
 The function given here assumes a community of n-species, so that species fitness is calculated according to a 
 general competitive response (r) substituting the 2-sp denominator terms of table A1 of Hart et al. 2018. 
-This competitive response can be calculated with the function 'cxr_er_fit'.
+This competitive response can be calculated for a series of species with the function 'cxr_er_fit'.
 }
 \details{
-Thus, the function accepts two sets of parameters. First, a 'cxr_er_fit' object returned from that function. In this case,
-species fitness will be calculated for all focal taxa included in the 'cxr_er_fit' object.
+Thus, the function accepts two sets of parameters. First, a 'cxr_er_fit' object returned from that function. 
+In this case, species fitness will be calculated for all focal taxa included in the 'cxr_er_fit' object.
 
-Otherwise, users may enter a specification of the model to follow as well as lambda and competitive response parameters.
+Otherwise, users may enter a specification of the model to use, 
+as well as lambda and competitive response parameters of a single species.
 Note that there is no 'default' way of calculating species fitness without specifying the underlying model.
 }

@@ -46,7 +46,7 @@ summary.cxr_er_fit <- function(object,...){
 
   cat("model:",object$model_name,"",
       "\noptimization method:",object$optimization_method,"",
-      "\nspecies:", object$sp,
+      "\ntaxa:", object$taxa,
       "\ncovariates:", covar,
       "\nobservations:", obs,
       "\n----------",sep=" ")
@@ -54,32 +54,32 @@ summary.cxr_er_fit <- function(object,...){
   # for printing null or valid values
   # ifelse returns single values over single conditions
   if(is.null(object$lambda)){
-    sl <- rep("-not fit-",length(object$sp))
+    sl <- rep("-not fit-",length(object$taxa))
   }else{
     sl <- object$lambda
   }
   if(is.null(object$effect)){
-    se <- rep("-not fit-",length(object$sp))
+    se <- rep("-not fit-",length(object$taxa))
   }else{
     se <- object$effect
   }
   if(is.null(object$response)){
-    sr <- rep("-not fit-",length(object$sp))
+    sr <- rep("-not fit-",length(object$taxa))
   }else{
     sr <- object$response
   }
   if(is.null(object$lambda_cov)){
-    slc <- rep("-not fit-",length(object$sp))
+    slc <- rep("-not fit-",length(object$taxa))
   }else{
     slc <- object$lambda_cov
   }
   if(is.null(object$effect_cov)){
-    sec <- rep("-not fit-",length(object$sp))
+    sec <- rep("-not fit-",length(object$taxa))
   }else{
     sec <- object$effect_cov
   }
   if(is.null(object$response_cov)){
-    src <- rep("-not fit-",length(object$sp))
+    src <- rep("-not fit-",length(object$taxa))
   }else{
     src <- object$response_cov
   }
@@ -148,7 +148,7 @@ summary.cxr_pm_multifit <- function(object,...){
       "\noptimization method: '",object$optimization_method,"'",
       "\n----------",sep="")
   cat("\n")
-  print(summary_table)
+  summary_table
   cat("\n----------\nalpha matrix:\n")
   object$alpha_matrix
 }

@@ -59,6 +59,7 @@ an object of type 'cxr_pm_multifit' which is a list with the following component
 \item model_name: string with the name of the fitness model
 \item model: model function
 \item data: data supplied
+\item taxa: names of the taxa fitted
 \item covariates: covariate data supplied
 \item optimization_method: optimization method used
 \item initial_values: list with initial values
@@ -72,7 +73,7 @@ an object of type 'cxr_pm_multifit' which is a list with the following component
 \item alpha_standard_error: standard errors for alpha, if computed
 \item lambda_cov_standard_error: standard errors for lambda_cov, if computed
 \item alpha_cov_standard_error: standard errors for alpha_cov, if computed
-\item log_likelihood: log-likelihood of the fits
+\item log_likelihood: log-likelihoods of the fits
 }
 }
 \description{

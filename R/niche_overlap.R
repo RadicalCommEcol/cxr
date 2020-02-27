@@ -37,9 +37,12 @@
 #' @param pair_matrix optional 2x2 matrix with intra and interspecific interaction 
 #' coefficients between the two species.
 #'
-#' @return niche overlap value, in the range 0-1.
+#' @return either a dataframe with as many rows as species, or a single named numeric vector,
+#' containing niche overlap values for the MCT (modern coexistence theory) and SA (structural approach)
+#' formulations.
 #' @export
 #' @md
+#' @example niche_overlap(pair_matrix = matrix(c(0.33,0.12,0.2,0.4),nrow = 2))
 niche_overlap <- function(cxr_multifit = NULL,cxr_sp1 = NULL, cxr_sp2 = NULL, pair_matrix = NULL){
   
   res <- NULL

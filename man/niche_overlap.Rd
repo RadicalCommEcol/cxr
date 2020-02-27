@@ -18,7 +18,9 @@ niche_overlap(cxr_multifit = NULL, cxr_sp1 = NULL, cxr_sp2 = NULL,
 coefficients between the two species.}
 }
 \value{
-niche overlap value, in the range 0-1.
+either a dataframe with as many rows as species, or a single named numeric vector,
+containing niche overlap values for the MCT (modern coexistence theory) and SA (structural approach)
+formulations.
 }
 \description{
 quoting Godoy et al. (2014):
@@ -29,18 +31,29 @@ and coexistence is not possible unless species are otherwise identical.
 At the other extreme, if species have no interspecific effects, then niche overlap is 0.
 }
 \details{
-Niche overlap has a common functional form for a series of models, including those specified in table A1 of
-Hart et al. (2018) How to quantify competitive ability. Journal of Ecology 106, 1902-1909.
+Niche overlap has a common functional form, in the context of Modern Coexistence Theory (MCT),
+for a series of models, including those specified in table A1 of
+Hart et al. (2018) Journal of Ecology 106, 1902-1909.
 Other model families may not adhere to the general definition.
 
-This function will calculate niche overlap among two or more taxa, using either the general definition or specific ones.
+Furthermore, the MCT definition only accounts for competitive interactions (i.e. positive alpha coefficients
+in these models). An alternative definition is given in Saavedra et al. (2017) Ecological Monographs 87,470-486.
+In this 'structural approach', positive interactions are allowed. Incidentally, both approaches do not yield
+equivalent results for purely competitive matrices.
+
+In all cases, these definitions only apply to models whose feasible equilibrium point can be described by a
+linear equation (see Saavedra et al. 2017, Hart et al. 2018 for details).
+
+This function will calculate niche overlap among two or more taxa, using both the MCT and the structural formulation.
 It accepts three different sets of arguments:
 \itemize{
 \item a 'cxr_pm_multifit' object, in which case it will return the niche overlap between all pairs of fitted species.
-\item two 'cxr_pm_fit' objects. It returns the niche overlap between the two focal species. In this and the previous
-parameterization, it checks whether the model family from which the parameters were calculated
-has an associated niche overlap formula.
+\item two 'cxr_pm_fit' objects. It returns the niche overlap between the two focal species.
 \item a 2x2 numeric matrix with intraspecific terms in the diagonal.
-In this case, the general formula from Godoy et al. (2014) applies, with a warning.
 }
+
+If negative interactions are present, the MCT niche overlap will be NA.
+The cxr objects may be calculated with user-defined model families. If this is the case, or
+if simply a 2x2 matrix is provided, the niche overlap metrics will be calculated and
+a warning will be raised.
 }

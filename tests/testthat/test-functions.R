@@ -1,5 +1,5 @@
-context("functions")
-# library(testthat)
+context("parameter fitting functions")
+
 # set data ----------------------------------------------------------------
 
 data("neigh_list")
@@ -313,7 +313,6 @@ test_that("errors are correctly calculated", {
     expect_equal(class(sp_fit$log_likelihood), "numeric")
   }
 })
-
 
 # test multifit -----------------------------------------------------------
 

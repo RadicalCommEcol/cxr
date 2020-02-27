@@ -64,7 +64,7 @@ an object of type 'cxr_er_fit' which is a list with the following components:
 \item model_name: string with the name of the fitness model
 \item model: model function
 \item data: data supplied
-\item sp: names of the species fitted
+\item taxa: names of the taxa fitted
 \item covariates: covariate data supplied
 \item optimization_method: optimization method used
 \item initial_values: list with initial values
