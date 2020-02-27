@@ -88,7 +88,7 @@ an object of type 'cxr_er_fit' which is a list with the following components:
 Estimates parameters of user-specified models of competitive effects and responses.
 }
 \examples{
-\dontrun{
+\donttest{
 # fit three species at once
 data("neigh_list")
 # these species all have >250 observations

@@ -32,7 +32,7 @@
 #' * model_name: string with the name of the fitness model
 #' * model: model function
 #' * data: data supplied
-#' * sp: names of the species fitted 
+#' * taxa: names of the taxa fitted 
 #' * covariates: covariate data supplied
 #' * optimization_method: optimization method used
 #' * initial_values: list with initial values
@@ -679,9 +679,8 @@ cxr_er_fit <- function(data,
   list_names <- c("model_name",
                   "model",
                   "data",
-                  # "model_family",
+                  "taxa",
                   "covariates",
-                  "sp",
                   "optimization_method",
                   "initial_values",
                   "fixed_terms",
@@ -706,7 +705,7 @@ cxr_er_fit <- function(data,
   fit$data <- spdf
   # fit$model_family <- model_family
   fit$covariates <- covdf
-  fit$sp <- sp.list
+  fit$taxa <- sp.list
   fit$optimization_method <- optimization_method
   fit$initial_values <- initial_values
   
@@ -757,42 +756,42 @@ cxr_er_fit <- function(data,
   
   if(!is.null(fit$lambda) & !is.null(lower_lambda) & !is.null(upper_lambda)){
     if(any(fit$lambda == lower_lambda) | any(fit$lambda == upper_lambda)){
-      message("cxr_pm_fit: A fitted lambda is equal to lower or upper bounds. Consider refitting
+      message("cxr_er_fit: A fitted lambda is equal to lower or upper bounds. Consider refitting
               with different boundaries.")
     }
   }
   
   if(!is.null(fit$response) & !is.null(lower_response) & !is.null(upper_response)){
     if(any(fit$response == lower_response) | any(fit$response == upper_response)){
-      message("cxr_pm_fit: One or more fitted responses are equal to lower or upper bounds. 
+      message("cxr_er_fit: One or more fitted responses are equal to lower or upper bounds. 
       Consider refitting with different boundaries.")
     }
   }
   
   if(!is.null(fit$effect) & !is.null(lower_effect) & !is.null(upper_effect)){
     if(any(fit$effect == lower_effect) | any(fit$effect == upper_effect)){
-      message("cxr_pm_fit: One or more fitted effects are equal to lower or upper bounds. 
+      message("cxr_er_fit: One or more fitted effects are equal to lower or upper bounds. 
       Consider refitting with different boundaries.")
     }
   }
   
   if(!is.null(fit$lambda_cov) & !is.null(lower_lambda_cov) & !is.null(upper_lambda_cov)){
     if(any(fit$lambda_cov == lower_lambda_cov) | any(fit$lambda_cov == upper_lambda_cov)){
-      message("cxr_pm_fit: A fitted lambda_cov is equal to lower or upper bounds. 
+      message("cxr_er_fit: A fitted lambda_cov is equal to lower or upper bounds. 
       Consider refitting with different boundaries.")
     }
   }
   
   if(!is.null(fit$response_cov) & !is.null(lower_response_cov) & !is.null(upper_response_cov)){
     if(any(fit$response_cov == lower_response_cov) | any(fit$response_cov == upper_response_cov)){
-      message("cxr_pm_fit: One or more fitted response_covs are equal to lower or upper bounds. 
+      message("cxr_er_fit: One or more fitted response_covs are equal to lower or upper bounds. 
       Consider refitting with different boundaries.")
     }
   }
   
   if(!is.null(fit$effect_cov) & !is.null(lower_effect_cov) & !is.null(upper_effect_cov)){
     if(any(fit$effect_cov == lower_effect_cov) | any(fit$effect_cov == upper_effect_cov)){
-      message("cxr_pm_fit: One or more fitted effects are equal to lower or upper bounds. 
+      message("cxr_er_fit: One or more fitted effects are equal to lower or upper bounds. 
       Consider refitting with different boundaries.")
     }
   }

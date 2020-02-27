@@ -16,5 +16,5 @@ numeric value
 niche overlap function for Ricker (RK) models
 }
 \examples{
-RK_niche_overlap(matrix(c(.1,.2,.03,.3)))
+RK_niche_overlap(matrix(c(.1,.2,.03,.3),nrow = 2))
 }

@@ -16,5 +16,5 @@ numeric value
 niche overlap function for Lotka-Volterra (LV) models
 }
 \examples{
-LV_niche_overlap(matrix(c(.1,.2,.03,.3)))
+LV_niche_overlap(matrix(c(.1,.2,.03,.3),nrow = 2))
 }

@@ -16,5 +16,5 @@ numeric value
 niche overlap function for Lqw-Watkinson (LW) models
 }
 \examples{
-LW_niche_overlap(matrix(c(.1,.2,.03,.3)))
+LW_niche_overlap(matrix(c(.1,.2,.03,.3),nrow = 2))
 }

@@ -4,14 +4,17 @@
 \alias{niche_overlap}
 \title{Niche overlap between two species}
 \usage{
-niche_overlap(cxr_sp1 = NULL, cxr_sp2 = NULL, pair_matrix = NULL)
+niche_overlap(cxr_multifit = NULL, cxr_sp1 = NULL, cxr_sp2 = NULL,
+  pair_matrix = NULL)
 }
 \arguments{
+\item{cxr_multifit}{cxr_pm_multifit object, with parameters for a series of species.}
+
 \item{cxr_sp1}{cxr_pm_fit object giving the parameters from the first species.}
 
 \item{cxr_sp2}{cxr_pm_fit object giving the parameters from the second species.}
 
-\item{pair_matrix}{optional 2x2 matrix with intra and interspecific interaction 
+\item{pair_matrix}{optional 2x2 matrix with intra and interspecific interaction
 coefficients between the two species.}
 }
 \value{
@@ -19,22 +22,25 @@ niche overlap value, in the range 0-1.
 }
 \description{
 quoting Godoy et al. (2014):
-reflects the average degree to which species limit individuals of their own species relative to competitors. 
-Low niche overlap causes species to have greater per capita growth rates when rare than when common. 
-If species limit individuals of their own species and their competitors equally, then niche overlap is 1, 
-and coexistence is not possible unless species are otherwise identical. 
+reflects the average degree to which species limit individuals of their own species relative to competitors.
+Low niche overlap causes species to have greater per capita growth rates when rare than when common.
+If species limit individuals of their own species and their competitors equally, then niche overlap is 1,
+and coexistence is not possible unless species are otherwise identical.
 At the other extreme, if species have no interspecific effects, then niche overlap is 0.
 }
 \details{
 Niche overlap has a common functional form for a series of models, including those specified in table A1 of
-Hart et al. (2018) How to quantify competitive ability. Journal of Ecology 106, 1902-1909. 
+Hart et al. (2018) How to quantify competitive ability. Journal of Ecology 106, 1902-1909.
 Other model families may not adhere to the general definition.
 
-This function will calculate niche overlap, using either the general definition or user-provided formulae.
-It accepts either two 'cxr_pm_fit' objects calculated with the 'cxr_pm_fit' function,
-or a 2x2 interaction matrix. In the first case, it checks 
-whether the model family from which the parameters were calculated has an associated niche overlap formula. 
-In the second case, it uses the general formula from Godoy et al. (2014).
-Again, beware that this formula may not be appropriate if the interaction matrix provided is inferred
-from specific models.
+This function will calculate niche overlap among two or more taxa, using either the general definition or specific ones.
+It accepts three different sets of arguments:
+\itemize{
+\item a 'cxr_pm_multifit' object, in which case it will return the niche overlap between all pairs of fitted species.
+\item two 'cxr_pm_fit' objects. It returns the niche overlap between the two focal species. In this and the previous
+parameterization, it checks whether the model family from which the parameters were calculated
+has an associated niche overlap formula.
+\item a 2x2 numeric matrix with intraspecific terms in the diagonal.
+In this case, the general formula from Godoy et al. (2014) applies, with a warning.
+}
 }

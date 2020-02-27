@@ -19,6 +19,7 @@
 #' * model_name: string with the name of the fitness model
 #' * model: model function
 #' * data: data supplied 
+#' * taxa: names of the taxa fitted
 #' * covariates: covariate data supplied
 #' * optimization_method: optimization method used
 #' * initial_values: list with initial values
@@ -32,7 +33,7 @@
 #' * alpha_standard_error: standard errors for alpha, if computed
 #' * lambda_cov_standard_error: standard errors for lambda_cov, if computed
 #' * alpha_cov_standard_error: standard errors for alpha_cov, if computed
-#' * log_likelihood: log-likelihood of the fits
+#' * log_likelihood: log-likelihoods of the fits
 #' @export
 #' @md
 #' @examples
@@ -231,7 +232,8 @@ cxr_pm_multifit <- function(data,
   # lambda_cov also as a matrix, with covariates in columns
   # and focal species in rows
   splambda_cov <- NULL
-  if(!is.null(covariates)){
+  if(!is.null(covariates) & 
+     !all(sapply(spfits,function(x){is.null(x$lambda_cov)}))){
     # covariate names
     # in case different sp have different covariates
     cov.names <- NULL
@@ -259,7 +261,8 @@ cxr_pm_multifit <- function(data,
   # if a global alpha_cov is fitted, does not matter
   
   spalpha_cov <- NULL
-  if(!is.null(covariates)){
+  if(!is.null(covariates) & 
+     !all(sapply(spfits,function(x){is.null(x$alpha_cov)}))){
     
     # covariate names
     # in case different sp have different covariates
@@ -372,7 +375,8 @@ cxr_pm_multifit <- function(data,
   # lambda_cov also as a matrix, with covariates in columns
   # and focal species in rows
   er_splambda_cov <- NULL
-  if(!is.null(covariates)){
+  if(!is.null(covariates) & 
+     !all(sapply(spfits,function(x){is.null(x$lambda_cov_standard_error)}))){
     # covariate names
     # in case different sp have different covariates
     cov.names <- NULL
@@ -405,7 +409,8 @@ cxr_pm_multifit <- function(data,
   # if a global alpha_cov is fitted, does not matter
   
   er_spalpha_cov <- NULL
-  if(!is.null(covariates)){
+  if(!is.null(covariates) & 
+     !all(sapply(spfits,function(x){is.null(x$alpha_cov_standard_error)}))){
     
     # covariate names
     # in case different sp have different covariates
@@ -467,6 +472,7 @@ cxr_pm_multifit <- function(data,
   list_names <- c("model_name",
                   "model",
                   "data",
+                  "taxa",
                   "covariates",
                   "optimization_method",
                   "initial_values",
@@ -481,6 +487,7 @@ cxr_pm_multifit <- function(data,
   fit$model_name <- spfits[[1]]$model_name
   fit$model <- spfits[[1]]$fitness_model
   fit$data <- data
+  fit$taxa <- spnames
   fit$covariates <- covariates
   fit$optimization_method <- optimization_method
   fit$initial_values <- initial_values

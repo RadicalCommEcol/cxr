@@ -16,5 +16,5 @@ numeric value
 niche overlap function for Beverton-Holt (BH) models
 }
 \examples{
-BH_niche_overlap(matrix(c(.1,.2,.03,.3)))
+BH_niche_overlap(matrix(c(.1,.2,.03,.3),nrow = 2))
 }

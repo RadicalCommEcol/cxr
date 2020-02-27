@@ -1,7 +1,5 @@
-#' Effect response Beverton-Holt model with covariate effects on lambda, effect, and response
+#' Effect response Law-Watkinson model with covariate effects on lambda, effect, and response
 #'
-#' The function for calculating fecundity given 
-#' effect and response values is taken from Godoy et al. (2014). 
 #' Note that, as e and r are not pair-specific, all species parameters are fit in the same function.
 #'
 #' @param par 1d vector with initial parameters in the order: 
@@ -20,7 +18,7 @@
 #'
 #' @return log-likelihood value
 #' @export
-er_BH_lambdacov_global_effectcov_global_responsecov_global <- function(par,
+er_LW_lambdacov_global_effectcov_global_responsecov_global <- function(par,
                                                                  fitness,
                                                                  target,
                                                                  density,
@@ -112,9 +110,9 @@ er_BH_lambdacov_global_effectcov_global_responsecov_global <- function(par,
   
   lambda.part <- colSums(lambda*(1+lambda_cov_all)*target)
   r.part <- colSums(response*(1+response_cov_all)*target)
-  e.part <- colSums(effect*(1+effect_cov_all)*density)
+  e.part <- colSums(density^(effect*(1+effect_cov_all)))
   
-  pred <- lambda.part/ (1+ e.part*r.part )
+  pred <- lambda.part/(1+(r.part*e.part))
   
   # MODEL CODE ENDS HERE ----------------------------------------------------
   

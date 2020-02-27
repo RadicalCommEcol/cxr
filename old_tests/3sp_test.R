@@ -9,7 +9,7 @@ source("R/cxr_pm_bootstrap.R")
 source("R/cxr_retrieve_params.R")
 source("R/cxr_return_init_length.R")
 source("R/cxr_sort_params.R")
-source("R/pm_BH_alpha_pairwise_lambdacov_global_alphacov_pairwise.R")
+source("R/pm_BH_alpha_pairwise_lambdacov_none_alphacov_none.R")
 
 source("R/cxr_pm_fit.R")
 source("R/cxr_pm_multifit.R")

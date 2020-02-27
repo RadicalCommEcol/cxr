@@ -25,6 +25,11 @@ Note that its definition is model-specific, i.e. it depends on the model family 
 The function given here assumes a community of n-species, so that species fitness is calculated according to a 
 general competitive response (r) substituting the 2-sp denominator terms of table A1 of Hart et al. 2018. 
 This competitive response can be calculated with the function 'cxr_er_fit'.
-Thus, the function accepts either a 'cxr_er_fit' object returned from that function, or 
-a specification of the model to follow as well as lambda and competitive response parameters.
+}
+\details{
+Thus, the function accepts two sets of parameters. First, a 'cxr_er_fit' object returned from that function. In this case,
+species fitness will be calculated for all focal taxa included in the 'cxr_er_fit' object.
+
+Otherwise, users may enter a specification of the model to follow as well as lambda and competitive response parameters.
+Note that there is no 'default' way of calculating species fitness without specifying the underlying model.
 }
