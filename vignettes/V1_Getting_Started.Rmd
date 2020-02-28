@@ -10,6 +10,10 @@ editor_options:
   chunk_output_type: console
 ---
 
+```{r setup}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
 **Introduction**
 
 The `cxr` package provides a general interface to parameterize population dynamics models from empirical data, and obtain from the estimations of these parameters (species vital rates and interaction coefficients) a series of metrics associated with modern coexistence theory. These metrics measure species competitive ability, their responses to competition as well as niche and average fitness differences (both demographic and competitive response differences).
@@ -35,7 +39,7 @@ obs_homa <- neigh_list[[my.sp]]
 obs_homa <- subset(obs_homa,select = -c(obs_ID))
 ```
 
-```{r warning=FALSE,message=FALSE}
+```{r}
 fit_homa <- cxr_pm_fit(data = obs_homa,
                        focal_column = my.sp,
                        model_family = "BH",
@@ -84,11 +88,12 @@ data("salinity_list")
 salinity <- salinity_list[my.sp]
 # keep only salinity column
 for(i in 1:length(salinity)){
-  salinity[[i]] <- salinity[[i]][,2:length(salinity[[i]])]
+  salinity[[i]] <- as.matrix(salinity[[i]][,2:length(salinity[[i]])])
+  colnames(salinity[[i]]) <- "salinity"
 }
 ```
 
-```{r warning=FALSE,message=FALSE}
+```{r}
 fit_3sp <- cxr_pm_multifit(data = obs_3sp,
                            focal_column = my.sp,
                            optimization_method = "bobyqa",

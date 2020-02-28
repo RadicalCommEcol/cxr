@@ -10,6 +10,10 @@ editor_options:
   chunk_output_type: console
 ---
 
+```{r setup}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
 **Introduction**
 
 The `cxr` package provides diverse functions to handle empirical datasets, but the data provided needs to be in certain formats for compatibility. We will show the structure of the included dataset, and the specific formats accepted by functions of the package. 

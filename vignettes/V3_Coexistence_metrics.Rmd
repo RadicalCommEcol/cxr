@@ -1,0 +1,132 @@
+---
+title: "Niche overlap and fitness differences"
+output: rmarkdown::html_vignette
+author: cxr team
+vignette: >
+  %\VignetteIndexEntry{coexistence metrics}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+note - we disable warnings and other output for the vignette, otherwise the functions are quite "chatty".
+
+1 - niche overlap among a series of species
+
+1.1 - initial parameters
+
+```{r}
+library(cxr)
+data("neigh_list")
+data <- neigh_list
+# keep only fitness and neighbours columns
+for(i in 1:length(data)){
+  data[[i]] <- data[[i]][,2:length(data[[i]])]
+}
+
+focal_column <- names(data)
+model_family <- "BH"
+optimization_method <- "nlminb"
+alpha_form <- "pairwise"
+lambda_cov_form <- "none"
+alpha_cov_form <- "none"
+initial_values = list(lambda = 1,
+                      alpha_intra = 0.1,
+                      alpha_inter = 0.1)
+lower_bounds = list(lambda = 0,
+                    alpha_intra = 0.01,
+                    alpha_inter = 0.01)
+upper_bounds = list(lambda = 100,
+                    alpha_intra = 1,
+                    alpha_inter = 1)
+fixed_terms <- NULL
+bootstrap_samples <- 0
+```
+
+1.2 - obtain lambda and alpha values
+
+```{r}
+all.sp.fit <- cxr_pm_multifit(data = data,
+                              model_family = model_family,
+                              focal_column = focal_column,
+                              optimization_method = optimization_method,
+                              alpha_form = alpha_form,
+                              lambda_cov_form = lambda_cov_form,
+                              alpha_cov_form = alpha_cov_form,
+                              initial_values = initial_values,
+                              lower_bounds = lower_bounds,
+                              upper_bounds = upper_bounds,
+                              fixed_terms = fixed_terms,
+                              bootstrap_samples = bootstrap_samples)
+
+```
+
+1.3 - calculate niche overlap
+
+```{r}
+niche_overlap_all_pairs <- niche_overlap(cxr_multifit = all.sp.fit)
+head(niche_overlap_all_pairs)
+```
+
+2 - Fitness of a series of species.
+Three in this case, because for calculating effect and responses, all species need to have the same number of observations
+
+2.1 - initial parameters
+
+```{r}
+# fit three species at once
+data("neigh_list")
+# these species all have >250 observations
+example_sp <- c(1,4,5)
+n.obs <- 250
+data <- neigh_list[example_sp]
+optimization_method <- "nlminb"
+fixed_terms <- NULL
+model_family <- "BH"
+bootstrap_samples <- 0
+# keep only fitness and neighbours columns
+for(i in 1:length(data)){
+  data[[i]] <- data[[i]][1:n.obs,c(2,example_sp+2)]#2:length(data[[i]])]
+}
+initial_values_er = list(lambda = 1, 
+                         effect = 1, 
+                         response = 1)
+lower_bounds_er = list(lambda = 0, 
+                       effect = 0, 
+                       response = 0)
+upper_bounds_er = list(lambda = 100, 
+                       effect = 10, 
+                       response = 10)
+```
+
+2.2 - calculate competitive response and effect of all species
+
+```{r}
+er.fit <- cxr::cxr_er_fit(data = data,
+                          model_family = model_family,
+                          optimization_method = optimization_method,
+                          initial_values = initial_values_er,
+                          lower_bounds = lower_bounds_er,
+                          upper_bounds = upper_bounds_er,
+                          fixed_terms = fixed_terms,
+                          bootstrap_samples = bootstrap_samples)
+```
+
+2.2 - fitness of all species fitted. Notice the Inf of BEMA, because the model fitted effect = response = 0.
+
+```{r}
+spfitness <- cxr::species_fitness(er.fit)
+spfitness
+```
+
+2.3 - fitness ratios among all species pairs
+
+```{r}
+fitness_ratios <- fitness_ratio(er.fit)
+fitness_ratios
+```
+

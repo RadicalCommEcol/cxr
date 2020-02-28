@@ -148,9 +148,9 @@ summary.cxr_pm_multifit <- function(object,...){
       "\noptimization method: '",object$optimization_method,"'",
       "\n----------",sep="")
   cat("\n")
-  summary_table
+  print(summary_table)
   cat("\n----------\nalpha matrix:\n")
-  object$alpha_matrix
+  print(object$alpha_matrix)
 }
 
 

@@ -14,7 +14,7 @@ niche_overlap(cxr_multifit = NULL, cxr_sp1 = NULL, cxr_sp2 = NULL,
 
 \item{cxr_sp2}{cxr_pm_fit object giving the parameters from the second species.}
 
-\item{pair_matrix}{optional 2x2 matrix with intra and interspecific interaction
+\item{pair_matrix}{2x2 matrix with intra and interspecific interaction
 coefficients between the two species.}
 }
 \value{
@@ -38,13 +38,13 @@ Other model families may not adhere to the general definition.
 
 Furthermore, the MCT definition only accounts for competitive interactions (i.e. positive alpha coefficients
 in these models). An alternative definition is given in Saavedra et al. (2017) Ecological Monographs 87,470-486.
-In this 'structural approach', positive interactions are allowed. Incidentally, both approaches do not yield
-equivalent results for purely competitive matrices.
+In this 'structural approach', positive interactions are allowed. Incidentally, both approaches yield
+qualitatively similar, but not equivalent, results for purely competitive matrices.
 
 In all cases, these definitions only apply to models whose feasible equilibrium point can be described by a
 linear equation (see Saavedra et al. 2017, Hart et al. 2018 for details).
 
-This function will calculate niche overlap among two or more taxa, using both the MCT and the structural formulation.
+This function calculates niche overlap among two or more taxa, using both the MCT and the structural formulation.
 It accepts three different sets of arguments:
 \itemize{
 \item a 'cxr_pm_multifit' object, in which case it will return the niche overlap between all pairs of fitted species.

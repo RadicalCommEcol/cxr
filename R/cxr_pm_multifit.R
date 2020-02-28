@@ -148,13 +148,24 @@ cxr_pm_multifit <- function(data,
   # using function "get"
   fitness_model <- try(get(model_name),silent = TRUE)
   if(class(fitness_model) == "try-error"){
-    stop(paste("cxr_pm_fit ERROR: model '",model_name,"' could not be retrieved. 
-  Make sure it is defined and available in the cxr package or in the global environment.\n",sep=""))
+    message(paste("cxr_pm_fit ERROR: model '",model_name,"' could not be retrieved. 
+    Make sure it is defined and available in the cxr package or in the global environment.\n",sep=""))
+    return(NULL)
   }
   
   
   # prepare multisp data ----------------------------------------------------
   spnames <- names(data)
+  
+  # ugly check to see all covariates are named
+  if(!is.null(covariates)){
+    covnames <- unlist(sapply(covariates,colnames))
+    if(any(is.null(covnames))){
+      message("at least one covariate column is not named. Please fix this to avoid inconsistencies
+              in the fitting process.")
+      return(NULL)
+    }
+  } 
   
   # fit every sp ------------------------------------------------------------
   spfits <- list()
@@ -238,7 +249,11 @@ cxr_pm_multifit <- function(data,
     # in case different sp have different covariates
     cov.names <- NULL
     for(i.cov in 1:length(covariates)){
+      if(!is.null(colnames(covariates[[i.cov]]))){
       cov.names <- c(cov.names,colnames(covariates[[i.cov]]))
+      }else{
+        cov.names <- c(cov.names,paste("cov",i.cov,sep=""))
+      }
     }
     cov.names <- sort(unique(cov.names))
     
