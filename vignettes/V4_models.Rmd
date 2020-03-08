@@ -1,0 +1,36 @@
+---
+title: "Using your own model"
+output: rmarkdown::html_vignette
+author: cxr team
+vignette: >
+  %\VignetteIndexEntry{User-defined Models}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+One of the design principles of `cxr` is to allow users to estimate parameters from their own models. In this vignette we show, step by step, how user-defined models can be integrated in the package.
+
+0 - what to include for a complete set of models
+
+* population dynamic model(s): pm_XX_...
+* species fitness function: XX_species_fitness
+* abundance projection:
+
+1 - coding your model
+
+* explain template and parameters
+
+2 - using your model in cxr
+
+* load it into the global environment
+* make a pull request for integrating it in cxr
+
+3 - troubleshooting
+
+* function undefined for a certain parameterization: e.g. lotka-volterra
+
