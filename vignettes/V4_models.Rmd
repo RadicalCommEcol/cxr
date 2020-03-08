@@ -24,6 +24,7 @@ One of the design principles of `cxr` is to allow users to estimate parameters f
 1 - coding your model
 
 * explain template and parameters
+* family acronym may also be used to specify non-linear variants of standard families, e.g. BHNL for Beverton-Holt non-linear. Any acronym can be used.
 
 2 - using your model in cxr
 
