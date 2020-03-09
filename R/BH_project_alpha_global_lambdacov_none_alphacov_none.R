@@ -2,14 +2,15 @@
 #' Beverton-Holt model for projecting abundances,
 #' with a global alpha and no covariate effects
 #'
-#' @param lambda numeric lambda value
-#' @param alpha_intra included for compatibility, not used in this model
-#' @param alpha_inter single numeric value
-#' @param lambda_cov included for compatibility, not used in this model
-#' @param alpha_cov included for compatibility, not used in this model
-#' @param intra_abundance numeric abundance of the focal species in the previous timestep
-#' @param inter_abundances 1d vector of neighbour abundances in the previous timestep
-#' @param covariates included for compatibility, not used in this model
+#' @param lambda numeric lambda value.
+#' @param alpha_intra included for compatibility, not used in this model.
+#' @param alpha_inter single numeric value.
+#' @param lambda_cov included for compatibility, not used in this model.
+#' @param alpha_cov_intra included for compatibility, not used in this model.
+#' @param alpha_cov_inter included for compatibility, not used in this model.
+#' @param intra_abundance numeric abundance of the focal species in the previous timestep.
+#' @param inter_abundances 1d vector of neighbour abundances in the previous timestep.
+#' @param covariates included for compatibility, not used in this model.
 #'
 #' @return numeric abundance projected one timestep
 #' @export

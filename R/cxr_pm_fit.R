@@ -40,7 +40,8 @@
 #' * alpha_cov: fitted value(s) for alpha_cov, or NULL if fixed. 
 #' These are structured as a list with one element for each covariate.
 #' * lambda_standard_error: standard error for lambda, if computed
-#' * alpha_standard_error: standard error for alpha, if computed---------------TODO replace
+#' * alpha_intra_standard_error: standard error for intraspecific alpha, if computed
+#' * alpha_inter_standard_error: standard error for interspecific alpha, if computed
 #' * lambda_cov_standard_error: standard error for lambda_cov, if computed
 #' * alpha_cov_standard_error: standard error for alpha_cov, if computed
 #' * log_likelihood: log-likelihood of the fit
