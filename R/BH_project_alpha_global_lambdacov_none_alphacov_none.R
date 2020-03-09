@@ -17,13 +17,14 @@
 #'
 #' @examples
 BH_project_alpha_global_lambdacov_none_alphacov_none <- function(lambda,
-                                                                   alpha_intra,
-                                                                   alpha_inter,
-                                                                   lambda_cov,
-                                                                   alpha_cov,
-                                                                   abundance_intra,
-                                                                   abundance_inter,
-                                                                   covariates){
+                                                                 alpha_intra,
+                                                                 alpha_inter,
+                                                                 lambda_cov,
+                                                                 alpha_cov_intra,
+                                                                 alpha_cov_inter,
+                                                                 abundance_intra,
+                                                                 abundance_inter,
+                                                                 covariates){
   
   expected_abund <- NA_real_
   
