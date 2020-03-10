@@ -72,7 +72,8 @@ an object of type 'cxr_pm_fit' which is a list with the following components:
 \item alpha_cov: fitted value(s) for alpha_cov, or NULL if fixed.
 These are structured as a list with one element for each covariate.
 \item lambda_standard_error: standard error for lambda, if computed
-\item alpha_standard_error: standard error for alpha, if computed---------------TODO replace
+\item alpha_intra_standard_error: standard error for intraspecific alpha, if computed
+\item alpha_inter_standard_error: standard error for interspecific alpha, if computed
 \item lambda_cov_standard_error: standard error for lambda_cov, if computed
 \item alpha_cov_standard_error: standard error for alpha_cov, if computed
 \item log_likelihood: log-likelihood of the fit

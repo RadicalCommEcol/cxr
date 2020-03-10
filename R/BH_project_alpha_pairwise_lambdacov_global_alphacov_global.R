@@ -6,31 +6,28 @@
 #' @param alpha_intra single numeric value.
 #' @param alpha_inter numeric vector with interspecific alpha values.
 #' @param lambda_cov numeric vector with effects of covariates over lambda.
-#' @param alpha_cov_intra included for compatibility, not used in this model.
-#' @param alpha_cov_inter list of numeric vectors with effects of each covariate over every alpha.
-#' @param intra_abundance numeric abundance of the focal species in the previous timestep.
-#' @param inter_abundances 1d vector of neighbour abundances in the previous timestep.
+#' @param alpha_cov named list of numeric values 
+#' with effects of each covariate over alpha.
+#' @param abundance named numeric vector of abundances in the previous timestep.
 #' @param covariates matrix with observations in rows and covariates in columns. Each cell is the value of a covariate
 #' in a given observation.
 #'
 #' @return numeric abundance projected one timestep
 #' @export
-#'
-#' @examples
 BH_project_alpha_pairwise_lambdacov_global_alphacov_global <- function(lambda,
-                                                               alpha_intra,
-                                                               alpha_inter,
-                                                               lambda_cov,
-                                                               alpha_cov_intra,
-                                                               alpha_cov_inter,
-                                                               abundance_intra,
-                                                               abundance_inter,
-                                                               covariates){
+                                                                       alpha_intra,
+                                                                       alpha_inter,
+                                                                       lambda_cov,
+                                                                       alpha_cov,
+                                                                       abundance,
+                                                                       covariates){
+  
+  spnames <- names(abundance)
   
   alpha <- c(alpha_intra,alpha_inter)
-  abund <- c(abundance_intra,abundance_inter)
-  alpha_cov <- alpha_cov_inter
-  numsp <- length(abund)
+  alpha <- alpha[spnames]
+  
+  numsp <- length(abundance)
   expected_abund <- NA_real_
   
   # numerator
@@ -45,11 +42,11 @@ BH_project_alpha_pairwise_lambdacov_global_alphacov_global <- function(lambda,
     cov_term <- cov_term + alpha_cov[[v]] * focal.cov.matrix[,v]
   }
   term <- 1 #create the denominator term for the model
-  for(z in 1:length(abund)){
-    term <- term + (alpha[z] + cov_term) * abund[z] 
+  for(z in 1:length(abundance)){
+    term <- term + (alpha[z] + cov_term) * abundance[z] 
   }
   
-  expected_abund <- (lambda * (num / term)) * abundance_intra
+  expected_abund <- (lambda * (num / term)) * abundance[names(lambda)]
   expected_abund
 }
 
