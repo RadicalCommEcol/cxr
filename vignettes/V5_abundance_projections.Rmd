@@ -1,0 +1,112 @@
+---
+title: "Projecting species abundances"
+output: rmarkdown::html_vignette
+author: cxr team
+vignette: >
+  %\VignetteIndexEntry{Abundance projections}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+We will first estimate model coefficients for a number of species with the cxr_pm_multifit function, and then use this output to project the abundance of these species a number of timesteps.
+
+```{r}
+library(cxr)
+data("neigh_list")
+data("salinity_list")
+three_sp <- c("BEMA","LEMA","HOMA")
+sp.pos <- which(names(neigh_list) %in% three_sp)
+
+data <- neigh_list[sp.pos]
+# keep only fitness and neighbours columns
+for(i in 1:length(data)){
+  data[[i]] <- data[[i]][,2:length(data[[i]])]
+}
+focal_column <- names(data)
+
+salinity <- salinity_list[sp.pos]
+# keep only salinity column
+for(i in 1:length(salinity)){
+  salinity[[i]] <- as.matrix(salinity[[i]][,2:length(salinity[[i]])])
+  colnames(salinity[[i]]) <- "salinity"
+}
+
+model_family <- "BH"
+covariates <- salinity
+optimization_method <- "bobyqa"
+alpha_form <- "pairwise"
+lambda_cov_form <- "none"
+alpha_cov_form <- "none"
+
+fixed_terms <- NULL
+bootstrap_samples <- 3
+timesteps <- 10
+initial_abundances <- c("BEMA" = 10,"HOMA" = 12,"LEMA" = 13)
+
+initial_values <- list(lambda = 1,
+                                 alpha_intra = 0,
+                                 alpha_inter = 0,
+                                 lambda_cov = 0,
+                                 alpha_cov = 0)
+lower_bounds <- list(lambda = 0,
+                              alpha_intra = 0,
+                              alpha_inter = -1,
+                              lambda_cov = -1,
+                              alpha_cov = -1)
+upper_bounds <- list(lambda = 1000,
+                              alpha_intra = 1,
+                              alpha_inter = 1,
+                              lambda_cov = 1,
+                              alpha_cov = 1)
+```
+
+run parameter fit
+
+```{r}
+  cxr_fit <- cxr_pm_multifit(data = data,
+                             focal_column = focal_column,
+                             model_family = model_family,
+                             # covariates = salinity,
+                             optimization_method = optimization_method,
+                             alpha_form = alpha_form,
+                             lambda_cov_form = lambda_cov_form,
+                             alpha_cov_form = alpha_cov_form,
+                             initial_values = initial_values,
+                             lower_bounds = lower_bounds,
+                             upper_bounds = upper_bounds,
+                             fixed_terms = fixed_terms,
+                             bootstrap_samples = bootstrap_samples)
+```
+
+run abundance projection
+
+```{r}
+  ab <- abundance_projection(cxr_fit = cxr_fit,
+                             # covariates = covariates_proj,
+                             timesteps = timesteps,
+                             initial_abundances = initial_abundances)
+```
+
+a basic plot showing the projection
+
+```{r}
+ab.df <- as.data.frame(ab)
+ab.df$timestep <- 1:nrow(ab.df)
+ab.df <- tidyr::gather(ab.df,key = "sp",value = "abund",-timestep)
+abund.plot <- ggplot2::ggplot(ab.df,
+                              ggplot2::aes(x = timestep,
+                                           y = abund, group = sp)) + 
+  ggplot2::geom_line(ggplot2::aes(color = sp)) + 
+  ggplot2::ylab("number of individuals")+
+  ggplot2::ggtitle("Projected abundances of three plant species")+
+  NULL
+```
+
+```{r fig.width=7.2, fig.height=7}
+abund.plot
+```
