@@ -20,7 +20,7 @@ The `cxr` package provides diverse functions to handle empirical datasets, yet t
 
 **The Caracoles dataset**
 
-We include a dataset of an annual plant system subject to spatial variaiblity in a Mediterranean type ecosystem of South Europe... The sampling design is explained in *Lanuza, Bartomeus, Godoy, 2018, Ecology Letters 21:865-874*.
+We include a dataset of an annual plant system subjected to spatial variaiblity in a Mediterranean type ecosystem of South Europe... The sampling design is explained in *Lanuza, Bartomeus, Godoy, 2018, Ecology Letters 21:865-874*.
 
 ```{r}
 library(cxr)
