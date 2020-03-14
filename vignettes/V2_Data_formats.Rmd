@@ -16,11 +16,11 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 
 **Introduction**
 
-The `cxr` package provides diverse functions to handle empirical datasets, but the data provided needs to be in certain formats for compatibility. We will show the structure of the included dataset, and the specific formats accepted by functions of the package. 
+The `cxr` package provides diverse functions to handle empirical datasets, yet there are limitations in data format. Here we present the structure of the dataset included in this package and the specific formats accepted according to the developed functions. 
 
 **The Caracoles dataset**
 
-We include a dataset of plant annual species... The sampling design is explained in *Lanuza, Bartomeus, Godoy, 2018, Ecology Letters 21:865-874*.
+We include a dataset of an annual plant system subject to spatial variaiblity in a Mediterranean type ecosystem of South Europe... The sampling design is explained in *Lanuza, Bartomeus, Godoy, 2018, Ecology Letters 21:865-874*.
 
 ```{r}
 library(cxr)
@@ -42,14 +42,14 @@ data("abundance", package = "cxr")
 head(abundance)
 ```
 
-We also provide seed survival and germination rates for each species, obtained independently. This file also includes the complete scientific name and abbreviation of each species. In subsequent analyses and vignettes we use the abbreviation as species identifier.
+We also provide seed soil survival and germination rates for each species. These species vital rates have been obtained independently. They are critical to parameterize a model describing the population dynamics of interacting annual plant species. This file also includes the complete scientific name and abbreviation of each species. Such abreviation will be used as species identifier in subsequent analyses and vignettes.
 
 ```{r}
 data("species_rates", package = "cxr")
 species_rates
 ```
 
-Lastly, we provide the values of an environmental covariate, salinity, for each sampling unit:
+The environmental covariate provided for this analysis is soil salinity measured with a portable TDR (i.e. Time Domain Reflectometer). This technology measures the amount of salt disolved in the soil water that is accesible to plant species. This environmenal covariate has been estimated for each sampling unit: 
 
 ```{r}
 data("salinity_list", package = "cxr")
