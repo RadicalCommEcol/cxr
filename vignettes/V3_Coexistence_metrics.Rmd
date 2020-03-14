@@ -47,7 +47,7 @@ fixed_terms <- NULL
 bootstrap_samples <- 0
 ```
 
-1.2 - obtain lambda and alpha values
+1.2 - obtain lambda (seed production in the absence of interactions) and alpha (interaction coefficients) values
 
 ```{r}
 all.sp.fit <- cxr_pm_multifit(data = data,
