@@ -1,7 +1,7 @@
 ---
 title: "Using your own model"
 output: rmarkdown::html_vignette
-author: cxr team
+author: David García-Callejas and cxr team
 vignette: >
   %\VignetteIndexEntry{User-defined Models}
   %\VignetteEngine{knitr::rmarkdown}
@@ -13,24 +13,25 @@ editor_options:
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
 
-One of the design principles of `cxr` is to allow users to estimate parameters from their own models. In this vignette we show, step by step, how user-defined models can be integrated in the package.
+One of the design principles of `cxr` is to allow users to estimate parameters from their own models. `cxr` already includes X families of well-known population dynamic models (namely: ...). In this vignette we show, step by step, how other user-defined models can be integrated in the package.
 
-0 - what to include for a complete set of models
+1 - Use the following template to add you preferred model. Note that the parameter names must be respected.
 
-* population dynamic model(s): pm_XX_...
-* species fitness function: XX_species_fitness
-* abundance projection:
-
-1 - coding your model
+--TEMPLATE--
 
 * explain template and parameters
 * family acronym may also be used to specify non-linear variants of standard families, e.g. BHNL for Beverton-Holt non-linear. Any acronym can be used.
 
 2 - using your model in cxr
 
-* load it into the global environment
-* make a pull request for integrating it in cxr
+* load the model function into the global environment, and ...
+* Optionally, if you think the model can be usefull for fellow scientists, we encourage to make a pull request for a potential integration it in cxr.
 
+Note that depending on the model especification, the derivation of the fitness and niche differences may need to be tailored and both population dynamic model(s): (pm_XX_...), species fitness function (XX_species_fitness) and abundance projection are needed... blah...
+
+
+
+NOT SURE WHAT THIS IS:
 3 - troubleshooting
 
 * function undefined for a certain parameterization: e.g. lotka-volterra

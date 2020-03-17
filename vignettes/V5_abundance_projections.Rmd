@@ -1,7 +1,7 @@
 ---
 title: "Projecting species abundances"
 output: rmarkdown::html_vignette
-author: cxr team
+author: David García-Callejas and cxr team
 vignette: >
   %\VignetteIndexEntry{Abundance projections}
   %\VignetteEngine{knitr::rmarkdown}
@@ -108,5 +108,5 @@ abund.plot <- ggplot2::ggplot(ab.df,
 ```
 
 ```{r fig.width=7.2, fig.height=7}
-abund.plot
+abund.plot #POLT POCO LLAMATIVO.
 ```
