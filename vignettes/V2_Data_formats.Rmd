@@ -1,7 +1,7 @@
 ---
-title: "Data and model formats"
+title: "Data formats"
 output: rmarkdown::html_vignette
-author: cxr team
+author: David García-Callejas and cxr team
 vignette: >
   %\VignetteIndexEntry{Data and model formats}
   \usepackage[utf8]{inputenc}
@@ -16,18 +16,18 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 
 **Introduction**
 
-The `cxr` package provides diverse functions to handle empirical datasets, yet there are limitations in data format. Here we present the structure of the dataset included in this package and the specific formats accepted according to the developed functions. 
+The `cxr` package provides diverse functions to handle empirical datasets, yet there are limitations in data format. Here we present the structure of the dataset included in this package, which is in the specific formats accepted according to the developed functions. 
 
 **The Caracoles dataset**
 
-We include a dataset of an annual plant system subjected to spatial variability in a Mediterranean-type ecosystem of South Europe... The sampling design is explained in *Lanuza, Bartomeus, Godoy, 2018, Ecology Letters 21:865-874*.
+We include a dataset of an annual plant system subjected to spatial variability in a Mediterranean-type ecosystem of South Europe. The sampling design is explained in *Lanuza, Bartomeus, Godoy, 2018, Ecology Letters 21:865-874*. The main data file contains, for each individual sampled, its reproductive sucess and the number of neighbors per species in a 7.5 cm buffer. Note that this format of data is not limited to plant species, but can contain any information of individual performance as a function of the interacting species density. 
 
 ```{r}
 library(cxr)
 data("neigh_list", package = "cxr")
 ```
 
-its structure is as follows...
+You can check the structure of the data in the help file
 
 ```{r}
 ?neigh_list
@@ -35,7 +35,7 @@ names(neigh_list)
 head(neigh_list[[1]])
 ```
 
-The abundance table...
+For each sub-plot, we also recorded the species abundance:
 
 ```{r}
 data("abundance", package = "cxr")
@@ -46,10 +46,10 @@ We also provide seed soil survival and germination rates for each species. These
 
 ```{r}
 data("species_rates", package = "cxr")
-species_rates
+species_rates ##SPECIES COMBINA MINUSCULAS Y MAYUSCULAS; MOLARIA UNIFICAR A Gen sp.
 ```
 
-The environmental covariate provided for this analysis is soil salinity measured with a portable TDR (i.e. Time Domain Reflectometer). This technology measures the amount of salt disolved in the soil water that is accesible to plant species. This environmenal covariate has been estimated for each sampling unit: 
+The environmental covariate provided for this analysis is soil salinity measured with a portable TDR (i.e. Time Domain Reflectometer). This technology measures the amount of salt disolved in the soil water that is accesible to plant species. This environmenal covariate has been estimated for each sub-plot: 
 
 ```{r}
 data("salinity_list", package = "cxr")

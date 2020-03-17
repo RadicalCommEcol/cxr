@@ -1,7 +1,7 @@
 ---
 title: "Niche overlap and fitness differences"
 output: rmarkdown::html_vignette
-author: cxr team
+author: David García-Callejas and cxr team
 vignette: >
   %\VignetteIndexEntry{coexistence metrics}
   %\VignetteEngine{knitr::rmarkdown}
@@ -11,13 +11,12 @@ editor_options:
 
 ```{r setup}
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+#note - we disable warnings and other output for the vignette, otherwise the functions are quite "chatty". 
 ```
 
-note - we disable warnings and other output for the vignette, otherwise the functions are quite "chatty".
+1 - Calculate niche overlap among a series of species
 
-1 - niche overlap among a series of species
-
-1.1 - initial parameters
+1.1 - Create a series of objects with the initial parameters.
 
 ```{r}
 library(cxr)
@@ -29,8 +28,8 @@ for(i in 1:length(data)){
 }
 
 focal_column <- names(data)
-model_family <- "BH"
-optimization_method <- "nlminb"
+model_family <- "BH" 
+optimization_method <- "nlminb" #AGAIN; WHY? MAKE A DEFAULT?
 alpha_form <- "pairwise"
 lambda_cov_form <- "none"
 alpha_cov_form <- "none"
@@ -47,7 +46,7 @@ fixed_terms <- NULL
 bootstrap_samples <- 0
 ```
 
-1.2 - obtain lambda (seed production in the absence of interactions) and alpha (interaction coefficients) values
+1.2 - Obtain lambda (seed production in the absence of interactions) and alpha (interaction coefficients) values.
 
 ```{r}
 all.sp.fit <- cxr_pm_multifit(data = data,
@@ -65,23 +64,23 @@ all.sp.fit <- cxr_pm_multifit(data = data,
 
 ```
 
-1.3 - calculate niche overlap
+IB: LOS WARINGS SON FEOS PARA UNA VIGNETTE....
+
+1.3 - Calculate niche overlap following Chesson (2000) [REF] and Saavedra et al. [REF]. This second one is specially suitable for when alpha prameters are positive (i.e. facilitation), as Chesson formulation can't handle such situations.
 
 ```{r}
 niche_overlap_all_pairs <- niche_overlap(cxr_multifit = all.sp.fit)
 head(niche_overlap_all_pairs)
 ```
 
-2 - Fitness of a series of species.
-Three in this case, because for calculating effect and responses, all species need to have the same number of observations
+2 - Calculate competitive ability of a series of species. ESTO NECESITA MÄS EXPLANATION... REF a GODOY al menos.
 
-2.1 - initial parameters
+2.1 - Set initial parameters
 
 ```{r}
-# fit three species at once
 data("neigh_list")
-# these species all have >250 observations
-example_sp <- c(1,4,5)
+# For culating effect and responses, all species need to have the same number of observations, hence we selct only 3 species that have >250 observations
+example_sp <- c(1,4,5) #corresponding to BEMA, HOMA, LEMA
 n.obs <- 250
 data <- neigh_list[example_sp]
 optimization_method <- "nlminb"
@@ -103,10 +102,10 @@ upper_bounds_er = list(lambda = 100,
                        response = 10)
 ```
 
-2.2 - calculate competitive response and effect of all species
+2.2 - calculate competitive response and effect of all species. Again, ref to Godoy 2014.
 
 ```{r}
-er.fit <- cxr::cxr_er_fit(data = data,
+er.fit <- cxr_er_fit(data = data,
                           model_family = model_family,
                           optimization_method = optimization_method,
                           initial_values = initial_values_er,
@@ -116,10 +115,10 @@ er.fit <- cxr::cxr_er_fit(data = data,
                           bootstrap_samples = bootstrap_samples)
 ```
 
-2.2 - fitness of all species fitted. Notice the Inf of BEMA, because the model fitted effect = response = 0.
+2.2 - fitness of all species fitted. Notice the Inf of BEMA, because the model fitted effect = response = 0. PICK A BETTER EXAMPLE THAT WORKS:
 
 ```{r}
-spfitness <- cxr::species_fitness(er.fit)
+spfitness <- species_fitness(er.fit)
 spfitness
 ```
 
