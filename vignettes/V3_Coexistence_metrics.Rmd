@@ -14,7 +14,8 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 #note - we disable warnings and other output for the vignette, otherwise the functions are quite "chatty". 
 ```
 
-1 - Calculate niche overlap among a series of species
+** Estimation of stabilizing niche differences between pair of species**
+The `cxr` package allow estimating two key concepts in modern coexistence theory *Chesson 2000* from species vital rates and interactions coefficients included in population model describing the dynamics of interacting species. These are stabilizing niche differences and average fitness differences. Niche differences are equal to 1 minus niche overlap. Niche overlap is defined as the square root of the ratio between interspecific competition (numerator) and intraspecific competition (denominator). If species limit themselves much more than they limit their competitors niche overlap will be very low and niche differences will be close to the maximum (i.e. 1). Conversely, if species limit themselves and other species similarly niche overlap will be very high and niche differences will be close to zero. In the absence of niche differences, the species with higher fitness is defined as the superior competitor. Here is presented how niche differences are computed in three steps. 
 
 1.1 - Create a series of objects with the initial parameters.
 
@@ -46,7 +47,7 @@ fixed_terms <- NULL
 bootstrap_samples <- 0
 ```
 
-1.2 - Obtain lambda (seed production in the absence of interactions) and alpha (interaction coefficients) values.
+1.2 - Obtain lambda (offspring production in the absence of interactions. In this case, this lambda is average viable seed production per species) and alpha (pairwise interaction coefficients) values.
 
 ```{r}
 all.sp.fit <- cxr_pm_multifit(data = data,
@@ -65,15 +66,22 @@ all.sp.fit <- cxr_pm_multifit(data = data,
 ```
 
 IB: LOS WARINGS SON FEOS PARA UNA VIGNETTE....
+OG: David para el apartado este 1.3 creo que es mejor poner el niche differences que el niche overlap. Niche differences es simplemente 1 - niche overlap. El capitulo de libro de chesson donde viene su definicion de niche overlap como una raiz cuadrada es un capitulo de libro en 2013. Chesson, P. (2013). Species competition and predation. In Ecological systems (pp. 223-256). Springer, New York, NY. Lo digo para incluirlo en las referencias. Incluye tambien la referencia de Adler et al. 2007 ELE. 
 
-1.3 - Calculate niche overlap following Chesson (2000) [REF] and Saavedra et al. [REF]. This second one is specially suitable for when alpha prameters are positive (i.e. facilitation), as Chesson formulation can't handle such situations.
+1.3 - Compute niche differences as 1 - niche overlap. Niche overlap following *Chesson 2013* [REF] definition can only include interaction coefficients with positive value (i.e. competition). Niche overlap can range from 0 to infinity and therefore niche differences can range from minus infinity to zero. Negative niche differences as a signature of priority effects. This means that the species of a pair arriving first to community is the winner. Niche differences between 0 and 1 reflect the degree to which species A and B limit each other compared to themselves. Within this range of values, species might coexist or be competitive excluded according to how stabilizing niche differences offset average fitness differences (see *Adler et al. 2007* for more details).
+
+Finally, it is worth noting that for those cases in which interaction coefficients are negative (i.e. a negative interaction coefficients in some models imply facilitative interaction between species), the `cxr` package provides another definition of niche differences provided by *Saavedra et al. 2017* [REF]. This definition of niche differences uses another set of tools based on structural stability. Please do not expect a match of values of niche differences for both defintions (see *Saavedra et al. 2017* for more details).
+
 
 ```{r}
 niche_overlap_all_pairs <- niche_overlap(cxr_multifit = all.sp.fit)
 head(niche_overlap_all_pairs)
 ```
 
-2 - Calculate competitive ability of a series of species. ESTO NECESITA MÄS EXPLANATION... REF a GODOY al menos.
+** Estimation of average fitness differences between pair of species**
+OG: A partir de aqui esto necesita ser cambiado fuerte como hablamos ayer. Te dejo el texto escrito
+
+Calculate average fitness differences between a pair of species. Average fitness differences reflect the degree to which one species is a superior competitor over another. Average niche differences equal to 1 means that both species are equivalent competitors. Average fitness differences is defined by two components. The "demographic ratio" and the "competitive response ratio". The "demographic ratio"" is a density independent term and describes the degree to which one species (species j) has higher offspring production than another species (species i). For the particular case of the annual plant model. This demographic ratio particularly describes the degree to which species j has higher annual seed production, per seed lost from the seed bank due to death or germination, than species i. The "competitive response ratio" is a density dependent term, which describes the degree to which species i is more sensitive to both intra and interspecific competition than species j. Because both ratios define the average fitness differences, this means that a species can be a superior competitor because it produces high number of for instance seeds/eggs or because its offspring production is little reduced in the presence of competitors. Here is presented how fitness differences are computed in three steps. 
 
 2.1 - Set initial parameters
 
@@ -102,7 +110,28 @@ upper_bounds_er = list(lambda = 100,
                        response = 10)
 ```
 
-2.2 - calculate competitive response and effect of all species. Again, ref to Godoy 2014.
+2.2 - Compute the demographic ratio and the competitive response ratio.
+
+OG: David traete el codigo de vuelta para computar estos dos ratio
+
+2.3 - Compute average fitness differences bewteen pair of species. 
+
+OG: El average fitness differences es la multiplicacion de ambos ratio, asi de simple. 
+
+** Estimation of species competitive ability**
+
+From average fitness differences, we can compute species' competitive ability. The definiton of species competitive ability changes according to the population model selected to describe the dynamics of interacting species. The mathematical procedure to obtain the definition of species competitive ability was firstly described in *Godoy and Levine 2014* [REF Ecology] for the annual plant model. For a wider family of models and definitions of species' competitive ability see *Hart et al. 2018* [REF Journal of Ecology]. 
+
+3.1 Compute species competitive ability
+
+OG: Aqui pondria el calculo del species competitive ability para el modelo que sea, que entiendo que es el del annual plant models. En la viñeta 4 puedes expandir esto con el paper de Hart et al.2018. 
+
+** Estimation of species fitness in the absence of niche differences**
+
+In the previous steps, average fitness differences and therefore species competitive ability are computed according to density independent and density dependent effects. This means that these metrics are estimated in the presence of stabilizing niche differences. However in some cases, it can be interesting for the user to estimate species fitness in the absence of niche differences. This is the case for isntance if we want to list species according to a competitive hierarchy. With this procedure, we would be able to tease apart which species would be the first superior competitor if we remove niche differences, the second superior competitior, the third, and so on to the weakest competitor. In order to define this species fitness against all other competitors, we need to colapse pairwise interaction coefficients into two single parameters. These are how species response to competition (competitive response) and how species affect other species (competitive effect). See *Godoy et al. 2014* [REF Ecology Letters] for more details. Then we combine species vital rates and their obtained competitive responses to quantify this metric of species fitness in the absence of niche differences following two steps. 
+
+
+4.1 - calculate species competitive response and effect.
 
 ```{r}
 er.fit <- cxr_er_fit(data = data,
@@ -115,7 +144,11 @@ er.fit <- cxr_er_fit(data = data,
                           bootstrap_samples = bootstrap_samples)
 ```
 
-2.2 - fitness of all species fitted. Notice the Inf of BEMA, because the model fitted effect = response = 0. PICK A BETTER EXAMPLE THAT WORKS:
+4.2 - calculate species fitness using species vital rates and species competitive response. 
+
+OG: Dejo esta parte que tenias anteriormente David
+
+fitness of all species fitted. Notice the Inf of BEMA, because the model fitted effect = response = 0. PICK A BETTER EXAMPLE THAT WORKS:
 
 ```{r}
 spfitness <- species_fitness(er.fit)
@@ -123,6 +156,8 @@ spfitness
 ```
 
 2.3 - fitness ratios among all species pairs
+
+OG: David este apartado lo eliminaria. Tiene sentido pero creo que se nos va de madre la explicación.
 
 ```{r}
 fitness_ratios <- fitness_ratio(er.fit)
