@@ -116,7 +116,7 @@
 cxr_er_fit <- function(data, 
                        model_family = c("BH"),
                        covariates = NULL, 
-                       optimization_method = c("BFGS", "CG", "Nelder-Mead", 
+                       optimization_method = c("Nelder-Mead", "BFGS", "CG", 
                                                "ucminf","L-BFGS-B", "nlm", "nlminb", 
                                                "Rcgmin", "Rvmmin", "spg", 
                                                "bobyqa", "nmkb", "hjkb",

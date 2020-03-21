@@ -53,8 +53,10 @@ cxr_check_pm_input <- function(data,
   if(!t3){
     input.message <- ("cxr_pm_fit ERROR: check the optimization method selected and lower/upper bounds.
          The following methods require explicit lower and upper parameter boundaries to be set:
-         L-BFGS-B, nlm, nlminb, Rcgmin, Rvmmin, spg, bobyqa, nmkb, hjkb, nloptr_CRS2_LM,
-         nloptr_ISRES, nloptr_DIRECT_L_RAND, GenSA, hydroPSO, DEoptimR.")
+         'L-BFGS-B', 'nlm', 'nlminb', 'Rcgmin', 'Rvmmin', 'spg', 'bobyqa', 'nmkb', 'hjkb', 'nloptr_CRS2_LM',
+         'nloptr_ISRES', 'nloptr_DIRECT_L_RAND', 'GenSA', 'hydroPSO', 'DEoptimR.'
+         Likewise, the following methods require NULL lower and upper bounds:
+         'Nelder-Mead','CG','BFGC','ucminf'.")
   }
   
   t4 <- cxr_check_initial_values(initial_values,
@@ -70,7 +72,7 @@ cxr_check_pm_input <- function(data,
                       initial values for 'alpha_intra', and viceversa.
                       3) elements must be the same in the three lists.
                       4) if bounds are provided, you need to specify both lower and upper ones."
-                      )
+    )
   }
   
   # check installed packages for optimization method

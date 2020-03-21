@@ -11,7 +11,10 @@
 #'
 #' @return boolean, whether appropriate lower/upper bounds are provided.
 #' @noRd
-cxr_check_method_boundaries <- function(optimization_method,lower_bounds,upper_bounds,type = c("pm","er")){
+cxr_check_method_boundaries <- function(optimization_method,
+                                        lower_bounds = NULL,
+                                        upper_bounds = NULL,
+                                        type = c("pm","er")){
   method.ok <- TRUE
   if(optimization_method %in% c("L-BFGS-B", "nlm", "nlminb", 
                                 "Rcgmin", "Rvmmin", "spg", 
@@ -19,6 +22,9 @@ cxr_check_method_boundaries <- function(optimization_method,lower_bounds,upper_b
                                 "nloptr_CRS2_LM","nloptr_ISRES","nloptr_DIRECT_L_RAND",
                                 "GenSA","hydroPSO","DEoptimR") & 
      (is.null(lower_bounds) | is.null(upper_bounds))){
+    method.ok <- FALSE
+  }else if(optimization_method %in% c("BFGS", "CG", "Nelder-Mead", "ucminf") & 
+           (!is.null(lower_bounds) | !is.null(upper_bounds))){
     method.ok <- FALSE
   }else if(!is.null(lower_bounds) & !is.null(upper_bounds)){
     if(type == "pm"){

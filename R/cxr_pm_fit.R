@@ -8,8 +8,8 @@
 #' @param focal_column optional integer or character giving the column
 #' with neighbours from the same species as the focal one. This field is necessary if "alpha_intra" is specified
 #' in \code{initial_values}, \code{lower_bounds}, \code{upper_bounds}, or \code{fixed_terms}.
-#' @param model_family family of model to use. Available families are BH (Beverton-Holt) as default.
-#' Users may define their own families and models (see vignette XXXXX).
+#' @param model_family family of model to use. Available families are BH (Beverton-Holt) as default, LV (Lotka-Volterra),
+#' RK (Ricker), and LW (Law-Watkinson). Users may also define their own families and models (see vignette 4).
 #' @param covariates optional named matrix or dataframe with observations (rows) of any number of environmental covariates (columns).
 #' @param optimization_method numerical optimization method.
 #' @param alpha_form what form does the alpha parameter take? one of "none" (no alpha in the model), 
@@ -68,9 +68,9 @@
 #' 
 cxr_pm_fit <- function(data, 
                        focal_column = NULL,
-                       model_family = c("BH"),
+                       model_family,
                        covariates = NULL, 
-                       optimization_method = c("BFGS", "CG", "Nelder-Mead", 
+                       optimization_method = c("Nelder-Mead","BFGS", "CG", 
                                                "ucminf","L-BFGS-B", "nlm", "nlminb", 
                                                "Rcgmin", "Rvmmin", "spg", 
                                                "bobyqa", "nmkb", "hjkb",
@@ -371,11 +371,11 @@ cxr_pm_fit <- function(data,
     }else if(optimization_method %in% c("DEoptimR","hydroPSO","GenSA")){
       outpar <- optim_result$par
       names(outpar) <- names(init_par$init_par)
-      log.likelihood <- optim_result$value
+      llik <- optim_result$value
     }else{
       outpar <- optim_result$solution
       names(outpar) <- names(init_par$init_par)
-      log.likelihood <- optim_result$objective
+      llik <- optim_result$objective
     }# if-else method
     
     optim_params <- cxr_retrieve_params(optim_par = outpar,

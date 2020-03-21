@@ -44,7 +44,8 @@
 
 pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
                                                               fitness,
-                                                              neigh_matrix,
+                                                              neigh_intra_matrix = NULL,
+                                                              neigh_inter_matrix,
                                                               covariates,
                                                               fixed_parameters){
   
@@ -81,12 +82,30 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
     lambda_cov <- fixed_parameters[["lambda_cov"]]
   }
   
-  # alpha
-  if(is.null(fixed_parameters$alpha)){
-    alpha <- par[pos:(pos+ncol(neigh_matrix)-1)]
-    pos <- pos + ncol(neigh_matrix)
+  # alpha_intra
+  if(!is.null(neigh_intra_matrix)){
+    # intra
+    if(is.null(fixed_parameters[["alpha_intra"]])){
+      alpha_intra <- par[pos]
+      pos <- pos + 1
+    }else{
+      alpha_intra <- fixed_parameters[["alpha_intra"]]
+    }
   }else{
-    alpha <- fixed_parameters[["alpha"]]
+    alpha_intra <- NULL
+  }
+  
+  # alpha_inter
+  if(is.null(fixed_parameters[["alpha_inter"]])){
+    # uncomment for alpha_global
+    # alpha_inter <- par[pos]
+    # pos <- pos + 1
+    
+    # uncomment for alpha_pairwise
+    # alpha_inter <- par[pos:(pos+ncol(neigh_inter_matrix)-1)]
+    # pos <- pos + ncol(neigh_inter_matrix)
+  }else{
+    alpha_inter <- fixed_parameters[["alpha_inter"]]
   }
   
   # alpha_cov
