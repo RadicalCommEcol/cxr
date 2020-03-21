@@ -18,10 +18,11 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 
 The `cxr` package provides a general interface to obtain estimates of species vital rates and interaction coefficients between species pairs from empirical data. These estimations are critical to parameterize population models describing the dynamics of interacting species. They also allow computing a series of metrics associated with modern coexistence theory that inform about the likelihood of species to coexist. These metrics are 1) *niche differences* that stabilize coexistence between competing species and 2) *average fitness differences* that drive competitive dominance and, in the absence of niche differences, determine the superior competitor. 
 
-The package also allows exploring how environmental variation modifies both the ability of species to produce offspring and the interaction coefficients between pairs of species (including with itself). This feature opens the possibility of exploring how stabilizing niche differences and average fitness differences vary across environmental gradients, and therefore, it allows analyzing whether the likelihood of species to coexist is constant across environmental conditions.  
+The package also allows exploring how environmental variation modifies both the intrinsic ability of species to produce offspring and the interaction coefficients between pairs of species (including with itself). This feature opens the possibility of exploring how stabilizing niche differences and average fitness differences vary across environmental gradients, and therefore, it allows analyzing whether the likelihood of species to coexist changes across environmental conditions.  
 
 Here we demonstrate the basic functionality of the package using a published observational dataset (see Lanuza et al. (2018) for a description of the dataset). With this example, we will specifically estimate seed production in the absence of neighbors (lambda) and the strength and sign of species interactions between species pairs (alpha matrix). These values are the basis for estimating the degree of niche overlap (i.e 1- niche differences) and average fitness differences between species pairs, which are covered in vignette 3.
 
+Finally, these estimations of lambda and alpha parameters are the basis for analyzing more complex dynamics such as the stability of the dynamics of multispecies communities (see Godoy et al. 2017) and multitrophic coexistence (see Godoy et al. 2018).  
 **Fitting a single species**
 
 First, we load the package and the associated data. The included dataset contains, for each individual, its reproductive sucess and the number of neighbors per species in a 7.5 cm buffer (see vignette 2).
@@ -43,7 +44,7 @@ obs_homa <- subset(obs_homa,select = -c(obs_ID))
 head(obs_homa)
 ```
 
-Next, we estimate both the reproduction success in the absence of neighbors (lambda) and the competition matrix (alpha). This is done by fitting a model that mathematically relates the reproductive success to the number of neighbors observed. In this first example, we fit the selected species with a Ricker model ('RK' model family, see vignette 4) and fairly standard initial values. The default optimization method (`Nelder-Mead`) does not allow for lower or upper bounds in model parameters, so these arguments are commented out. We can also specify whether we want to compute standard errors numerically, by setting the argument `bootstrap_samples` to the number of bootstrap replications for the calculation.
+Next, we estimate both the reproduction success in the absence of neighbors (lambda) and the competition matrix (alpha). This is done by fitting a model that mathematically relates the reproductive success to the number of neighbors observed. In this first example, we fit the selected species with a Ricker model ('RK' model family, see vignette 4) and fairly standard initial values. The default optimization method (`Nelder-Mead`) does not allow for lower or upper bounds in model parameters, so these arguments are commented out. In ecological terms, this optimization process allow for estimating the strength of both competitive and facilitative interactions, yet other optimization algorithm can be used to restrict the analysis to either competition or facilitation (see optim function for details). We can also specify whether we want to compute standard errors numerically, by setting the argument `bootstrap_samples` to the number of bootstrap replications for the calculation.
 
 ```{r}
 #?cxr_pm_fit #check the help file for a description of the arguments
@@ -89,7 +90,7 @@ fit_homa$alpha_inter
 
 **Fitting several species at once**
 
-Most likely users will want to fit model parameters to data from two or more focal species. In order to do that with a single call, we provide the function `cxr_pm_multifit`, which has a very similar interface to `cxr_pm_fit`. Here we show how multiple species can be fit using this function. In order to showcase other capabilities of the package, we include in this example the effect of a covariate over the fitted lambda and alpha parameters. This covariate, soil salinity, is also included as a dataset in the package (see vignette 2).
+Most likely users will want to fit model parameters to data from two or more focal species. In order to do that with a single call, we provide the function `cxr_pm_multifit`, which has a very similar interface to `cxr_pm_fit`. Here we show how multiple species can be fit using this function. For this multispecies case, rows correspond to species i and columns to species j for each alphaij coefficient. The diagonal correspond to the intraspecific cases. In order to showcase other capabilities of the package, we include in this example the effect of a covariate over the fitted lambda and alpha parameters. This covariate, soil salinity, is also included as a dataset in the package (see vignette 2). We consider that the covariate has a linear effect in both the modification of lambda and alpha parameters, although non-linear effects are also available.
 
 ```{r}
 my.sp <- c("BEMA","CETE","LEMA")
@@ -154,7 +155,7 @@ We can also have a glimpse of this multispecies fit with the summary function:
 summary(fit_3sp)
 ```
 
-The numerical estimation of parameters depends on the model with which to estimate fitness values, the optimization method, and the underlying data. In our example dataset, some species are better represented than others, and the function will raise warnings if the estimation can be improved or, for example, if any fitted parameter is equal to the lower or upper bound provided In the `cxr` objects returned from our functions, the log-likelihood of the fit is also included, which may be useful in helping users choose a certain optimization method for a particular dataset. In this example, the method used ("L-BFGS-B", a well-established bounded optimization algorithm) returns the following log-likelihood values:
+The numerical estimation of parameters depends on the model with which to estimate fitness values, the optimization method, and the underlying data. In our example dataset, some species are better represented than others, and the function will raise warnings if the estimation can be improved or, for example, if any fitted parameter is equal to the lower or upper bound provided. In the `cxr` objects returned from our functions, the log-likelihood of the fit is also included, which may be useful in helping users choose a certain optimization method for a particular dataset. In this example, the method used ("L-BFGS-B", a well-established bounded optimization algorithm) returns the following log-likelihood values:
 
 ```{r}
 fit_3sp$log_likelihood
@@ -187,6 +188,12 @@ fit_3sp$alpha_cov
 
 **References**
 
+Godoy, O., Stouffer, D. B., Kraft, N. J., & Levine, J. M. (2017). Intransitivity is infrequent and fails to promote annual plant coexistence without pairwise niche differences. Ecology, 98(5), 1193-1200.
+
 Lanuza, J. B., Bartomeus, I., & Godoy, O. (2018). Opposing effects of floral visitors and soil conditions on the determinants of competitive outcomes maintain species diversity in heterogeneous landscapes. Ecology letters, 21(6), 865-874.
+
+Godoy, O., Bartomeus, I., Rohr, R. P., & Saavedra, S. (2018). Towards the integration of niche and network theories. Trends in ecology & evolution, 33(4), 287-300.
+
+
 
 
