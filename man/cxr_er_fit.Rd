@@ -5,7 +5,7 @@
 \title{General optimization for effect-response models}
 \usage{
 cxr_er_fit(data, model_family = c("BH"), covariates = NULL,
-  optimization_method = c("BFGS", "CG", "Nelder-Mead", "ucminf",
+  optimization_method = c("Nelder-Mead", "BFGS", "CG", "ucminf",
   "L-BFGS-B", "nlm", "nlminb", "Rcgmin", "Rvmmin", "spg", "bobyqa", "nmkb",
   "hjkb", "nloptr_CRS2_LM", "nloptr_ISRES", "nloptr_DIRECT_L_RAND",
   "DEoptimR", "hydroPSO", "GenSA"), lambda_cov_form = c("none",
@@ -29,8 +29,8 @@ and the set of neighbour species needs to be the same as the set of focal specie
 the neighbours columns correspond to the names of the list elements or, if 'data' is a dataframe,
 to the values of the 'focal' column. Future versions will relax this requirement.}
 
-\item{model_family}{family of model to use. Available families are BH (Beverton-Holt) as default.
-Users may define their own families and models (see vignette XXXXX).}
+\item{model_family}{family of model to use. Available families are BH (Beverton-Holt) as default, LV (Lotka-Volterra),
+RK (Ricker), and LW (Law-Watkinson). Users may also define their own families and models (see vignette 4).}
 
 \item{covariates}{a data structure equivalent to 'data', in which each column are the values of a covariate.}
 

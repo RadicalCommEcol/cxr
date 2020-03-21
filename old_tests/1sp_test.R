@@ -1,23 +1,23 @@
 library(cxr)
-# source("R/cxr_check_pm_input.R")
-# source("R/cxr_get_init_params.R")
-# source("R/cxr_get_model_bounds.R")
-# source("R/cxr_sort_params.R")
-# source("R/cxr_return_init_length.R")
-# 
-# source("R/pm_LV_alpha_pairwise_lambdacov_global_alphacov_pairwise.R")
-# source("R/pm_LV_alpha_pairwise_lambdacov_none_alphacov_none.R")
-# source("R/pm_LV_alpha_pairwise_lambdacov_global_alphacov_global.R")
-# 
-# source("R/cxr_retrieve_params.R")
-# source("R/cxr_pm_bootstrap.R")
-# 
-# source("R/cxr_check_initial_values.R")
-# source("R/cxr_check_input_data.R")
-# source("R/cxr_check_method_boundaries.R")
-# 
-# source("R/cxr_pm_fit.R")
-# source("R/summary.R")
+source("R/cxr_check_pm_input.R")
+source("R/cxr_get_init_params.R")
+source("R/cxr_get_model_bounds.R")
+source("R/cxr_sort_params.R")
+source("R/cxr_return_init_length.R")
+
+source("R/pm_LV_alpha_pairwise_lambdacov_global_alphacov_pairwise.R")
+source("R/pm_LV_alpha_pairwise_lambdacov_none_alphacov_none.R")
+source("R/pm_LV_alpha_pairwise_lambdacov_global_alphacov_global.R")
+
+source("R/cxr_retrieve_params.R")
+source("R/cxr_pm_bootstrap.R")
+
+source("R/cxr_check_initial_values.R")
+source("R/cxr_check_input_data.R")
+source("R/cxr_check_method_boundaries.R")
+
+source("R/cxr_pm_fit.R")
+source("R/summary.R")
 
 data("neigh_list")
 

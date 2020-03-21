@@ -45,11 +45,11 @@ In all cases, these definitions only apply to models whose feasible equilibrium 
 linear equation (see Saavedra et al. 2017, Hart et al. 2018 for details).
 
 This function calculates niche overlap among two or more taxa, using both the MCT and the structural formulation.
-It accepts three different sets of arguments:
+The function, as in \code{avg_fitness_diff} and \code{competitive_ability}, accepts three different parameterizations:
 \itemize{
-\item a 'cxr_pm_multifit' object, in which case it will return the niche overlap between all pairs of fitted species.
-\item two 'cxr_pm_fit' objects. It returns the niche overlap between the two focal species.
-\item a 2x2 numeric matrix with intraspecific terms in the diagonal.
+\item A cxr_pm_multifit object, from which niche overlap will be computed across all species pairs.
+\item two cxr_pm_fit objects, one for each species.
+\item explicit lambda and alpha values, as well as the model family from which these parameters were obtained.
 }
 
 If negative interactions are present, the MCT niche overlap will be NA.

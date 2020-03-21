@@ -4,24 +4,24 @@
 \alias{species_fitness}
 \title{Fitness of a species}
 \usage{
-species_fitness(effect_response_fit = NULL, model_family = NULL,
-  lambda = NULL, competitive_response = NULL)
+species_fitness(effect_response_fit = NULL, lambda = NULL,
+  competitive_response = NULL, model_family = NULL)
 }
 \arguments{
 \item{effect_response_fit}{cxr_er_fit object with valid lambda and response terms.}
 
-\item{model_family}{model with which to calculate species fitness.}
-
 \item{lambda}{per capita fecundity of the species in the absence of competition.}
 
 \item{competitive_response}{parameter reflecting the species' sensitivity to competition.}
+
+\item{model_family}{model family for which to calculate species fitness.}
 }
 \value{
-single numeric value/vector, species fitness for one or several taxa
+single numeric value/vector, species fitness of one or several taxa
 }
 \description{
-Calculates the fitness of a species, a.k.a. its competitive ability (Godoy et al. 2014 Ecology, Hart et al. 2018 Journal of Ecology).
-Note that its definition is model-specific, i.e. it depends on the model family from which interaction coefficients were estimated.
+Calculates the fitness of a species sensu Godoy et al. (2014).Note that its definition is model-specific, 
+i.e. it depends on the model family from which interaction coefficients were estimated.
 The function given here assumes a community of n-species, so that species fitness is calculated according to a 
 general competitive response (r) substituting the 2-sp denominator terms of table A1 of Hart et al. 2018. 
 This competitive response can be calculated for a series of species with the function 'cxr_er_fit'.
@@ -32,5 +32,10 @@ In this case, species fitness will be calculated for all focal taxa included in 
 
 Otherwise, users may enter a specification of the model to use, 
 as well as lambda and competitive response parameters of a single species.
-Note that there is no 'default' way of calculating species fitness without specifying the underlying model.
+
+If no model family is provided, or a model family for which there is no associated 'XX_species_fitness'
+function, the function resorts to the standard Lotka-Volterra formulation (Hart et al. 2018). 
+Overall, we strongly suggest that you use the standard formulation ONLY if you are completely confident 
+that the model from which you obtained your parameters is consistent with it. 
+Otherwise, you should include your own formulation of species fitness (see vignette 4).
 }

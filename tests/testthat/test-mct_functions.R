@@ -48,7 +48,7 @@ fixed_terms <- NULL
 bootstrap_samples <- 3
 
 
-# 1 - two sp niche overlap ------------------------------------------------
+# 1 - two cxr objects ------------------------------------------------
 
 sp1.fit <- cxr::cxr_pm_fit(data = data[[1]],
                            focal_column = focal_column[1],
@@ -79,7 +79,7 @@ sp2.fit <- cxr::cxr_pm_fit(data = data[[2]],
                            bootstrap_samples = bootstrap_samples)
 
 
-# 2 - generalization to n species, niche overlap across all pairs ---------
+# 2 - generalization to n species, across all pairs ---------
 
 cxr_multifit <- cxr_pm_multifit(data = data,
                                 model_family = model_families[1], # irrelevant
@@ -96,22 +96,53 @@ cxr_multifit <- cxr_pm_multifit(data = data,
                                 bootstrap_samples = bootstrap_samples)
 
 
-# 3 - niche overlap from a pairwise matrix --------------------------------
+# 3 - pairwise matrix --------------------------------
 
 # make sure intra>inter
 posmatrix <- matrix(c(runif(1,0.5,1),runif(2,0,0.5),runif(1,0.5,1)),nrow = 2)
+poslambdas <- runif(2,1,10)
+model_family <- "BH"
 
 # test --------------------------------------------------------------------
 test_that("niche overlaps are correctly calculated", {
   # multispecies
   expect_s3_class(niche_overlap(cxr_multifit = cxr_multifit),"data.frame")
   # 2 cxr objects
-  expect_vector(niche_overlap(cxr_sp1 = sp1.fit,cxr_sp2 = sp2.fit))
+  # expect_vector(object = niche_overlap(cxr_sp1 = sp1.fit,cxr_sp2 = sp2.fit),ptype = numeric,size = 2)
   expect_length(niche_overlap(cxr_sp1 = sp1.fit,cxr_sp2 = sp2.fit),2)
   # pairwise matrix
-  expect_vector(niche_overlap(pair_matrix = posmatrix))
+  # expect_vector(niche_overlap(pair_matrix = posmatrix))
   expect_length(niche_overlap(pair_matrix = posmatrix),2)
 })
+
+# test --------------------------------------------------------------------
+test_that("average fitness differenes are correctly calculated", {
+  # multispecies
+  expect_s3_class(avg_fitness_diff(cxr_multifit = cxr_multifit),"data.frame")
+  # 2 cxr objects
+  expect_s3_class(avg_fitness_diff(cxr_sp1 = sp1.fit,
+                                   cxr_sp2 = sp2.fit),"data.frame")
+  # pairwise matrix
+  expect_s3_class(avg_fitness_diff(pair_lambdas = poslambdas,
+                                   pair_matrix = posmatrix,
+                                   model_family = model_family),"data.frame")
+  
+})
+
+# test --------------------------------------------------------------------
+test_that("competitive ability is correctly calculated", {
+  # multispecies
+  expect_s3_class(competitive_ability(cxr_multifit = cxr_multifit),"data.frame")
+  # 2 cxr objects
+  expect_s3_class(competitive_ability(cxr_sp1 = sp1.fit,
+                                   cxr_sp2 = sp2.fit),"data.frame")
+  # pairwise matrix
+  expect_s3_class(competitive_ability(lambda = poslambdas[1],
+                                   pair_matrix = posmatrix,
+                                   model_family = model_family),"data.frame")
+  
+})
+
 # 4 - n-sp fitness, and difference, for all model families --------------
 
 # fit three species at once
@@ -173,7 +204,7 @@ test_that("species fitness are correctly calculated", {
                               bootstrap_samples = bootstrap_samples)
     
     spfitness <- cxr::species_fitness(er.fit)
-    expect_vector(spfitness)
+    # expect_vector(spfitness)
     expect_length(spfitness,length(data))
   }
 })

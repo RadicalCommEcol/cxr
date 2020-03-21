@@ -18,8 +18,8 @@ cxr_pm_multifit(data, model_family = c("BH"), focal_column = NULL,
 \item{data}{named list in which each component is
 a dataframe with a fitness column and a number of columns representing neigbhours}
 
-\item{model_family}{family of model to use. Available families are BH (Beverton-Holt) as default.
-Users may define their own families and models (see vignette XXXXX).}
+\item{model_family}{family of model to use. Available families are BH (Beverton-Holt) as default, LV (Lotka-Volterra),
+RK (Ricker), and LW (Law-Watkinson). Users may also define their own families and models (see vignette 4).}
 
 \item{focal_column}{character vector with the same length as data,
 giving the names of the columns representing

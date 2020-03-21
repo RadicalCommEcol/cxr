@@ -86,16 +86,20 @@ upper_bounds = list(BH = list(lambda = 1000,
 # it returns NULL
 test_that("invalid arguments return NULL",{
   wrong.data <- data.frame(c1 = c(1,2,3),c2 = c("ab","a","a"))
-  wrong_fit1 <- cxr_pm_fit(data = wrong.data,alpha_form = "none",
+  wrong_fit1 <- cxr_pm_fit(data = wrong.data,
+                           model_family = "BH",
+                           alpha_form = "none",
                            lambda_cov_form = "none",
                            alpha_cov_form = "none")
   
   wrong_fit2 <- cxr_pm_fit(data = sp_data,
+                           model_family = "BH",
                            alpha_form = "none",
                            lambda_cov_form = "none",
                            alpha_cov_form = "none")
   
   wrong_fit3 <- cxr_pm_fit(data = sp_data,
+                           model_family = "BH",
                            initial_values = list(lambda = 1,
                                                  alpha_intra = 0.1,# here is the error
                                                  alpha_inter = 0.1, 
