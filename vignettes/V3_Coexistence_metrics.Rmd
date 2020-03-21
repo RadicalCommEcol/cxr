@@ -16,7 +16,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 
 **Introduction**
 
-The `cxr` package facilitates the estimation of key metrics from modern coexistence theory (MCT, Chesson 2000), by obtaining species vital rates and interactions coefficients from population dynamics models. The metrics that can be obtained with `cxr` relate to the idea pioneered by Chesson that the degree to which two species can coexist depends both on their stabilizing niche differences and on their average fitness differences. In this vignette we review the metrics that can be computed with `cxr`, starting with those related to niche differences and moving on to the more complex situation of average fitness differences.
+The `cxr` package facilitates the estimation of key metrics from modern coexistence theory (MCT, Chesson 2000), by obtaining species vital rates and interactions coefficients from population dynamics models. The metrics that can be obtained with `cxr` relate to the idea pioneered by Chesson that the degree to which two species can coexist depends both on their stabilizing niche differences and on their average fitness differences. In this vignette we review the metrics that can be computed with `cxr`, starting with those related to niche differences and moving on to the more complex situation of average fitness differences and its different demographic and density-dependent components.
 
 **Stabilizing niche differences**
 
@@ -90,7 +90,7 @@ niche_overlap_all_pairs$SA_niche_diff <- 1 - niche_overlap_all_pairs$niche_overl
 
 **Average fitness differences between pair of species**
 
-The second type of pairwise differences relevant to species coexistence are the equalizing average fitness differences. These are, properly speaking, a ratio, and reflect the degree to which one species is a superior competitor over another. Conceptually, they range from 1 to infinity, so that when fitness differences are equal to 1, both species are equivalent competitors. Ratios lower than 1 mean than the denominator species is the superior competitor, so that the standard ratio is calculated with the superior competitor in the numerator.
+The second type of pairwise differences relevant to species coexistence are the average fitness differences. These are, properly speaking, a ratio, and reflect the degree to which one species is a superior competitor over another. Conceptually, they range from 1 to infinity, so that when fitness differences are equal to 1, both species are equivalent competitors. Ratios lower than 1 mean than the denominator species is the superior competitor, so that the standard ratio is calculated with the superior competitor in the numerator.
 
 Average fitness differences are defined by two components, the 'demographic ratio' and the 'competitive response ratio'. The 'demographic ratio' is a density independent term that describes the degree to which one species (species j) has higher offspring production than another species (species i). The 'competitive response ratio' is a density dependent term, which describes the degree to which species i is more sensitive to both intra and interspecific competition than species j. Because both ratios define the average fitness differences, this means that a species can be a superior competitor because it produces high number of for instance seeds/eggs or because its offspring production is little reduced in the presence of competitors. This formulation is explained in greater detail by Godoy and Levine (2014).
 
