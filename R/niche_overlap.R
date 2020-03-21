@@ -21,10 +21,10 @@
 #' linear equation (see Saavedra et al. 2017, Hart et al. 2018 for details).
 #' 
 #' This function calculates niche overlap among two or more taxa, using both the MCT and the structural formulation.
-#' It accepts three different sets of arguments:
-#' * a 'cxr_pm_multifit' object, in which case it will return the niche overlap between all pairs of fitted species.
-#' * two 'cxr_pm_fit' objects. It returns the niche overlap between the two focal species.
-#' * a 2x2 numeric matrix with intraspecific terms in the diagonal. 
+#' The function, as in `avg_fitness_diff` and `competitive_ability`, accepts three different parameterizations:
+#' * A cxr_pm_multifit object, from which niche overlap will be computed across all species pairs.
+#' * two cxr_pm_fit objects, one for each species.
+#' * explicit lambda and alpha values, as well as the model family from which these parameters were obtained.
 #' 
 #' If negative interactions are present, the MCT niche overlap will be NA.
 #' The cxr objects may be calculated with user-defined model families. If this is the case, or
@@ -41,11 +41,11 @@
 #' containing niche overlap values for the MCT (modern coexistence theory) and SA (structural approach)
 #' formulations.
 #' @importFrom utils combn
+#' @export
 #' @md
 #' @examples 
 #' niche_overlap(pair_matrix = matrix(c(0.33,0.12,0.2,0.4),nrow = 2))
 #' 
-#' @export
 niche_overlap <- function(cxr_multifit = NULL,cxr_sp1 = NULL, cxr_sp2 = NULL, pair_matrix = NULL){
   
   res <- NULL
@@ -131,7 +131,7 @@ niche_overlap <- function(cxr_multifit = NULL,cxr_sp1 = NULL, cxr_sp2 = NULL, pa
   }else if(!is.null(pair_matrix)){
     
     warning("niche_overlap: calculating niche overlap for coefficients estimated from an
-              unknown model family. Be aware that this may yield incorrect results.")
+              unknown model family. Be aware that this may yield incorrect results.",call.=FALSE)
     
     res <- c(niche_overlap_MCT = niche_overlap_MCT(pair_matrix),
              niche_overlap_SA = niche_overlap_SA(pair_matrix))

@@ -1,7 +1,7 @@
 #' Fitness of a species
 #' 
-#' Calculates the fitness of a species, a.k.a. its competitive ability (Godoy et al. 2014 Ecology, Hart et al. 2018 Journal of Ecology).
-#' Note that its definition is model-specific, i.e. it depends on the model family from which interaction coefficients were estimated.
+#' Calculates the fitness of a species sensu Godoy et al. (2014).Note that its definition is model-specific, 
+#' i.e. it depends on the model family from which interaction coefficients were estimated.
 #' The function given here assumes a community of n-species, so that species fitness is calculated according to a 
 #' general competitive response (r) substituting the 2-sp denominator terms of table A1 of Hart et al. 2018. 
 #' This competitive response can be calculated for a series of species with the function 'cxr_er_fit'.
@@ -11,25 +11,30 @@
 #' 
 #' Otherwise, users may enter a specification of the model to use, 
 #' as well as lambda and competitive response parameters of a single species.
-#' Note that there is no 'default' way of calculating species fitness without specifying the underlying model.
+#' 
+#' If no model family is provided, or a model family for which there is no associated 'XX_species_fitness'
+#' function, the function resorts to the standard Lotka-Volterra formulation (Hart et al. 2018). 
+#' Overall, we strongly suggest that you use the standard formulation ONLY if you are completely confident 
+#' that the model from which you obtained your parameters is consistent with it. 
+#' Otherwise, you should include your own formulation of species fitness (see vignette 4).
 #' 
 #' @param effect_response_fit cxr_er_fit object with valid lambda and response terms.
-#' @param model_family model with which to calculate species fitness.
 #' @param lambda per capita fecundity of the species in the absence of competition.
 #' @param competitive_response parameter reflecting the species' sensitivity to competition.
+#' @param model_family model family for which to calculate species fitness.
 #'
-#' @return single numeric value/vector, species fitness for one or several taxa
+#' @return single numeric value/vector, species fitness of one or several taxa
 #' @export
 #'
 species_fitness <- function(effect_response_fit = NULL, 
-                            model_family = NULL, 
                             lambda = NULL, 
-                            competitive_response = NULL){
+                            competitive_response = NULL,
+                            model_family = NULL){
   res <- NULL
   if(!is.null(effect_response_fit)){
     
     if(!is.null(model_family) | !is.null(lambda) | !is.null(competitive_response)){
-      message("species_fitness: the 'cxr_er_fit' object will be used, other
+      message("cxr species_fitness: the 'cxr_er_fit' object will be used, other
               arguments will be discarded.")
     }
     
@@ -39,7 +44,7 @@ species_fitness <- function(effect_response_fit = NULL,
     sf_model <- try(get(sf_fun),silent = TRUE)
     
     if(class(sf_model) == "try-error"){
-      message(paste("species_fitness ERROR: function '",sf_fun,"' could not be retrieved. 
+      message(paste("cxr species_fitness ERROR: function '",sf_fun,"' could not be retrieved. 
       Make sure it is defined and available in the cxr package or in the global environment.\n"
                     ,sep=""))
       return(NULL)
@@ -52,14 +57,16 @@ species_fitness <- function(effect_response_fit = NULL,
     sf_model <- try(get(sf_fun),silent = TRUE)
     
     if(class(sf_model) == "try-error"){
-      message(paste("species_fitness ERROR: function '",sf_fun,"' could not be retrieved. 
-      Make sure it is defined and available in the cxr package or in the global environment.\n"
+      
+      sf_model <- BH_species_fitness
+      
+      message(paste("cxr species_fitness: function '",sf_fun,"' could not be retrieved. 
+      The default formulation for Lotka-Volterra models (lambda - 1 in numerator term) will be used. 
+      Be aware that this may yield incorrect results for your model family.\n"
                     ,sep=""))
-      return(NULL)
-    }else{
-      res <- sf_model(lambda,competitive_response)
     }
-  }
+     res <- sf_model(lambda,competitive_response)
+  }# if-else parameters
   
   res
   
