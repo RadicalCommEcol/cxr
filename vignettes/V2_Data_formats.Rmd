@@ -16,11 +16,11 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 
 **Introduction**
 
-The `cxr` package provides diverse functions to handle empirical datasets, and these need to be in a common format for their processing. Here we review the structure of the dataset included in the package, which is the exact format accepted by the different functions of `cxr`. 
+The `cxr` package provides diverse functions to handle empirical datasets, and these need to be in a common format for their processing. Here we review the structure of the dataset included in the package. These are the exact format accepted by the different functions of `cxr`. 
 
 **The Caracoles dataset**
 
-We include a dataset of an annual plant system subjected to spatial variability in a Mediterranean-type ecosystem of Southern Europe. Details of the ecosystem and sampling design can be consulted in Lanuza et al. (2018). The main data file contains, for each focal individual sampled, its reproductive sucess and the number of neighbors per plant species in a 7.5 cm buffer. Note that this format of data is not limited to plant species, but can contain any information of individual performance as a function of the interacting species density. 
+We include a dataset of an annual plant system subjected to spatial variability in a Mediterranean-type ecosystem of Southern Europe. Details of the ecosystem and sampling design can be consulted in Lanuza et al. (2018). The main data file contains, for each focal individual sampled, its reproductive sucess and the number of neighbors per plant species in a 7.5 cm buffer. Note that this format of data is not limited to plant species. In fact, the package is not taxonomically biased, this means that the dataset can contain any information of individual performance as a function of the interacting species frelative frequency and density. 
 
 ```{r}
 library(cxr)
@@ -42,14 +42,14 @@ data("abundance", package = "cxr")
 head(abundance)
 ```
 
-We also provide seed soil survival and germination rates for each species. These species vital rates have been obtained independently, and are critical to parameterize a model describing the population dynamics of interacting annual plant species. This file also includes the complete scientific name and abbreviation of each species. Such abreviation will be used as species identifier in subsequent analyses and vignettes.
+We also provide seed soil survival and germination rates for each species. These species vital rates have been obtained independently, and are critical to parameterize a model describing the population dynamics of interacting annual plant species. For more information of how to estimate seed soil survival and germination rates see Godoy and Levine (2014). This file also includes the complete scientific name and abbreviation of each species. Such abreviation will be used as species identifier in subsequent analyses and vignettes.
 
 ```{r}
 data("species_rates", package = "cxr")
 species_rates 
 ```
 
-The environmental covariate provided for this analysis is soil salinity measured with a portable Time Domain Reflectometer (TDR). This technology measures the amount of salt disolved in the soil water that is accesible to plant species. This environmenal covariate has been estimated for each sub-plot: 
+The environmental covariate provided for this analysis is soil salinity measured with a portable Time Domain Reflectometer (TDR). This technology measures the amount of salt disolved in the soil water that is accesible to plant species. This environmenal covariate has been estimated for each sub-plot. There are 36 subplots for each plot, and there are 9 plots in total structured along a microtopographic gradient: 
 
 ```{r}
 data("salinity_list", package = "cxr")
@@ -58,5 +58,7 @@ head(salinity_list[[1]])
 ```
 
 **References**
+
+Godoy, O., & Levine, J. M. (2014). Phenology effects on invasion success: insights from coupling field experiments to coexistence theory. Ecology, 95(3), 726-736.
 
 Lanuza, J. B., Bartomeus, I., & Godoy, O. (2018). Opposing effects of floral visitors and soil conditions on the determinants of competitive outcomes maintain species diversity in heterogeneous landscapes. Ecology letters, 21(6), 865-874.
