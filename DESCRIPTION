@@ -23,6 +23,7 @@ Description: Recent developments in modern coexistence theory has advanced
     The functions are flexible and can include covariates 
     and different fitting algorithms can be used. 
 License: MIT + file LICENCE
+Encoding: latin1
 Depends:
   R (>= 3.5)
 Imports:
