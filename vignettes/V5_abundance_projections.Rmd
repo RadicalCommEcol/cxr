@@ -19,7 +19,7 @@ We will first estimate model coefficients for a number of species with the cxr_p
 library(cxr)
 data("neigh_list")
 data("salinity_list")
-three_sp <- c("BEMA","LEMA","HOMA")
+three_sp <- c("POMA","MEEL","PUPA")
 sp.pos <- which(names(neigh_list) %in% three_sp)
 
 data <- neigh_list[sp.pos]
@@ -46,7 +46,7 @@ alpha_cov_form <- "none"
 fixed_terms <- NULL
 bootstrap_samples <- 3
 timesteps <- 10
-initial_abundances <- c("BEMA" = 10,"HOMA" = 12,"LEMA" = 13)
+initial_abundances <- c("BEMA" = 10,"CHUFU" = 12,"LEMA" = 13)
 
 initial_values <- list(lambda = 1,
                                  alpha_intra = 0,
@@ -65,7 +65,7 @@ upper_bounds <- list(lambda = 1000,
                               alpha_cov = 1)
 ```
 
-run parameter fit
+1) run parameter fit
 
 ```{r}
   cxr_fit <- cxr_pm_multifit(data = data,
@@ -83,7 +83,7 @@ run parameter fit
                              bootstrap_samples = bootstrap_samples)
 ```
 
-run abundance projection
+2) run abundance projection
 
 ```{r}
   ab <- abundance_projection(cxr_fit = cxr_fit,
@@ -108,5 +108,5 @@ abund.plot <- ggplot2::ggplot(ab.df,
 ```
 
 ```{r fig.width=7.2, fig.height=7}
-abund.plot #POLT POCO LLAMATIVO.
+abund.plot
 ```

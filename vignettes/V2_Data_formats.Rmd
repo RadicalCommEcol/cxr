@@ -16,11 +16,11 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 
 **Introduction**
 
-The `cxr` package provides diverse functions to handle empirical datasets, and these need to be in a common format for their processing. Here we review the structure of the dataset included in the package. These are the exact format accepted by the different functions of `cxr`. 
+The `cxr` package provides diverse functions to handle empirical datasets, and these need to be in a common format for their processing. Here we review the structure of the dataset included in the package. These are the exact formats accepted by the different functions of `cxr`. 
 
 **The Caracoles dataset**
 
-We include a dataset of an annual plant system subjected to spatial variability in a Mediterranean-type ecosystem of Southern Europe. Details of the ecosystem and sampling design can be consulted in Lanuza et al. (2018). The main data file contains, for each focal individual sampled, its reproductive sucess and the number of neighbors per plant species in a 7.5 cm buffer. Note that this format of data is not limited to plant species. In fact, the package is not taxonomically biased, this means that the dataset can contain any information of individual performance as a function of the interacting species frelative frequency and density. 
+We include a dataset of an annual plant system subjected to spatial variability in a Mediterranean-type ecosystem of Southern Europe. Details of the ecosystem and sampling design can be consulted in Lanuza et al. (2018). The main data file contains, for each focal individual sampled, its reproductive sucess and the number of neighbors per plant species in a 7.5 cm buffer. Note that this format of data is not limited to plant species. In fact, the package is not taxonomically biased, this means that the dataset can contain any information of individual performance as a function of the interacting species relative frequency and density. 
 
 ```{r}
 library(cxr)
@@ -42,7 +42,7 @@ data("abundance", package = "cxr")
 head(abundance)
 ```
 
-We also provide seed soil survival and germination rates for each species. These species vital rates have been obtained independently, and are critical to parameterize a model describing the population dynamics of interacting annual plant species. For more information of how to estimate seed soil survival and germination rates see Godoy and Levine (2014). This file also includes the complete scientific name and abbreviation of each species. Such abreviation will be used as species identifier in subsequent analyses and vignettes.
+We also provide seed soil survival and germination rates for each species. These species vital rates have been obtained independently, and are critical to parameterize a model describing the population dynamics of interacting annual plant species. For more information of how to estimate seed soil survival and germination rates see Godoy and Levine (2014). This file also includes the complete scientific name and abbreviation of each species. Such abreviationare used as species identifier in all analyses and vignettes.
 
 ```{r}
 data("species_rates", package = "cxr")

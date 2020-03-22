@@ -20,9 +20,10 @@ The `cxr` package provides a general interface to obtain estimates of species vi
 
 The package also allows exploring how environmental variation modifies both the intrinsic ability of species to produce offspring and the interaction coefficients between pairs of species (including with itself). This feature opens the possibility of exploring how stabilizing niche differences and average fitness differences vary across environmental gradients, and therefore, it allows analyzing whether the likelihood of species to coexist changes across environmental conditions.  
 
-Here we demonstrate the basic functionality of the package using a published observational dataset (see Lanuza et al. (2018) for a description of the dataset). With this example, we will specifically estimate seed production in the absence of neighbors (lambda) and the strength and sign of species interactions between species pairs (alpha matrix). These values are the basis for estimating the degree of niche overlap (i.e 1- niche differences) and average fitness differences between species pairs, which are covered in vignette 3.
+Here we demonstrate the basic functionality of the package using a published observational dataset (see Lanuza et al. (2018) and vignette V2_Data_formats for a description of the dataset). With this example, we will specifically estimate seed production in the absence of neighbors (lambda) and the strength and sign of species interactions between species pairs (alpha matrix). These values are the basis for estimating the degree of niche overlap (i.e 1- niche differences) and average fitness differences between species pairs, which are covered in vignette 3.
 
 Finally, these estimations of lambda and alpha parameters are the basis for analyzing more complex dynamics such as the stability of the dynamics of multispecies communities (see Godoy et al. 2017) and multitrophic coexistence (see Godoy et al. 2018).  
+
 **Fitting a single species**
 
 First, we load the package and the associated data. The included dataset contains, for each individual, its reproductive sucess and the number of neighbors per species in a 7.5 cm buffer (see vignette 2).
@@ -52,14 +53,15 @@ fit_homa <- cxr_pm_fit(data = obs_homa,
                        focal_column = my.sp,
                        model_family = "RK",
                        covariates = NULL,
-                       # optimization_method = "Nelder-Mead",
+                       optimization_method = "Nelder-Mead",
                        alpha_form = "pairwise",
                        lambda_cov_form = "none",
                        alpha_cov_form = "none",
                        initial_values = list(lambda = 1,
                                              alpha_intra = .1,
                                              alpha_inter = .1),
-                       # lower_bounds = list(lambda = 0,
+                       #not aplicable to this optimazation method
+                       # lower_bounds = list(lambda = 0, 
                        #                     alpha_intra = 0,
                        #                     alpha_inter = 0),
                        # upper_bounds = list(lambda = 10,
@@ -90,7 +92,7 @@ fit_homa$alpha_inter
 
 **Fitting several species at once**
 
-Most likely users will want to fit model parameters to data from two or more focal species. In order to do that with a single call, we provide the function `cxr_pm_multifit`, which has a very similar interface to `cxr_pm_fit`. Here we show how multiple species can be fit using this function. For this multispecies case, rows correspond to species i and columns to species j for each alphaij coefficient. The diagonal correspond to the intraspecific cases. In order to showcase other capabilities of the package, we include in this example the effect of a covariate over the fitted lambda and alpha parameters. This covariate, soil salinity, is also included as a dataset in the package (see vignette 2). We consider that the covariate has a linear effect in both the modification of lambda and alpha parameters, although non-linear effects are also available.
+Most likely users will want to fit model parameters to data from two or more focal species. In order to do that with a single call, we provide the function `cxr_pm_multifit`, which has a very similar interface to `cxr_pm_fit`. Here we show how multiple species can be fit using this function. For this multispecies case, rows correspond to species i and columns to species j for each alpha_ij coefficient. The diagonal correspond to the intraspecific cases. In order to showcase other capabilities of the package, we include in this example the effect of a covariate over the fitted lambda and alpha parameters. This covariate, soil salinity, is also included as a dataset in the package (see vignette 2). We consider that the covariate has a linear effect in both the modification of lambda and alpha parameters, although non-linear effects are also possible
 
 ```{r}
 my.sp <- c("BEMA","CETE","LEMA")
@@ -126,7 +128,8 @@ And we fit the model as above, but using the `cxr_pm_multifit` function.
 fit_3sp <- cxr_pm_multifit(data = obs_3sp,
                            focal_column = my.sp,
                            model_family = "RK",
-                           optimization_method = "L-BFGS-B", # use a bounded method for demonstration purposes
+                           # here we use a bounded method for demonstration purposes
+                           optimization_method = "L-BFGS-B", 
                            covariates = salinity,
                            alpha_form = "pairwise",
                            lambda_cov_form = "global", # effect of covariates over lambda

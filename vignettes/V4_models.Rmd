@@ -13,7 +13,7 @@ editor_options:
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
 
-One of the design principles of `cxr` is to allow users to estimate parameters from their own models. `Cxr` already includes four families of well-known population dynamic models: Beverton-Holt (BH), Lotka-Volterra (LV), Ricker (RK), and Law-Watkinson (LW), all in their discrete time formulation (see the accompanying publication of `cxr` for formulation of these general families). Users can choose between these default families by setting the `model_family` argument to the acronym of the chosen model. In this vignette we show, step by step, how other user-defined models can be integrated in the package.
+One of the design principles of `cxr` is to allow users to estimate parameters from their own models. `cxr` already includes four families of well-known population dynamic models: Beverton-Holt (BH), Lotka-Volterra (LV), Ricker (RK), and Law-Watkinson (LW), all in their discrete time formulation (see the accompanying publication of `cxr` for formulation of these general families). Users can choose between these default families by setting the `model_family` argument to the acronym of the chosen model. In this vignette we show, step by step, how other user-defined models can be integrated in the package.
 
 First of all, a common feature of the families included is that they rely on a common set of parameters, namely `lambda`,`alpha` (separated in `alpha_intra` and `alpha_inter`), `lambda_cov`, and `alpha_cov`. For now, user-defined models within `cxr` must be restricted to these parameters. A detailed description of these parameters can be found in previous vignettes.
 
@@ -30,7 +30,7 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
                                                               fixed_parameters)
 ```
 
-Assuming data for $n$ observations of a focal species and $s$ neighbour species (including itself), these arguments are: 
+Assuming data for $n$ observations of a focal species and $s$ neighbour species (including itself), the function arguments are: 
 
 * *par*: one-dimensional numeric vector including all parameters to fit.
 * *fitness*: one-dimensional vector of length $n$ with fitness observations in log scale.
@@ -46,7 +46,7 @@ the name of the function should be adapted to the parameters you want to fit:
 * *'lambda_cov_form'* is one of 'lambda_cov_none' or 'lambda_cov_global', depending on whether you include the effect of covariates over lambda.
 * *'alpha_cov_form'* is one of 'alpha_cov_none', 'alpha_cov_global', or 'alpha_cov_pairwise', depending on whether and how to include the effect of covariates over alpha values: no inclusion, a global parameter for each covariate on the alpha values, or interaction-specific parameters for each covariate.
 
-Thus, if you code a model from your User Model (UM) family that includes pairwise alphas, but no effects of covariates over lambda or alpha, your function will be named as:
+Thus, if you code a model from your User Model (UM) family that includes pairwise alphas, but no effects of covariates over lambda or alpha, we recommend your function to be named as:
 
 ```{r eval=FALSE}
 pm_UM_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
@@ -177,7 +177,7 @@ pred <- lambda/ term
 
 Note how there are no hard-coded checks for ensuring that alpha values and neigh_matrix values are appropriately sorted. This is performed in the `cxr_pm_fit` function that internally sorts data and call this model for optimization.
 
-The las part of the model function is returning the negative log-likelihood value for that particular parameter combination. This is the value that the numerical optimization procedures aim to minimize. You should not change this code.
+The last part of the model function is returning the negative log-likelihood value for that particular parameter combination. This is the value that the numerical optimization procedures aim to minimize. You should not change this code.
 
 ```{r eval=FALSE}
 # the routine returns the sum of negative log-likelihoods of the data and model:

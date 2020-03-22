@@ -70,7 +70,7 @@ all.sp.fit <- cxr_pm_multifit(data = data,
 
 ```
 
-With these parameters, we can compute pairwise niche differences as 1 - niche overlap. Niche overlap following Chesson's (2013) definition can only include interaction coefficients with positive value (i.e. competition). Niche overlap can range from 0 to infinity and therefore niche differences can range from minus infinity to zero. Negative niche differences as a signature of priority effects. This means that the species of a pair arriving first to community is the winner. Niche differences between 0 and 1 reflect the degree to which species A and B limit each other compared to themselves. Within this range of values, species might coexist or be competitive excluded according to how stabilizing niche differences offset average fitness differences (see Adler et al. (2007) for more details).
+With these parameters, we can compute pairwise niche differences as 1 - niche overlap. Niche overlap following Chesson's (2013) definition can only include interaction coefficients with positive value (i.e. competition). Niche overlap can range from 0 to infinity and therefore niche differences can range from minus infinity to zero. Negative niche differences can be interpreted as a signature of priority effects. This means that the species of a pair arriving first to community is the winner. Niche differences between 0 and 1 reflect the degree to which species A and B limit each other compared to themselves. Within this range of values, species might coexist or be competitive excluded according to how stabilizing niche differences offset average fitness differences (see Adler et al. (2007) for more details).
 
 Finally, it is worth noting that for those cases in which interaction coefficients are negative (i.e. a negative interaction coefficients in some models imply facilitative interaction between species), the `cxr` package provides another definition of niche differences, developed by Saavedra et al. (2017). This definition of niche differences uses another set of tools based on the Structural Approach (SA) to species coexistence, and while it is qualitatively coherent with the MCT framework, niche differences from both definitions do not exactly match (see Saavedra et al. (2017) for more details).
 
@@ -143,7 +143,7 @@ optimization_method <- "L-BFGS-B"
 # no fixed terms, i.e. we fit all parameters
 fixed_terms <- NULL
 
-# according, as previous examples, to a Ricker model
+# according to a Ricker model (for consistency with previous examples)
 model_family <- "RK"
 
 # no standard error calculation in this example
