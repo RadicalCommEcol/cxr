@@ -1,7 +1,7 @@
 #' Salinity measurements
 #' 
 #' A list containing salinity values associated to the data from 'neigh_list'.
-#' The list has 16 elements, one for each focal species considered.
+#' The list has 17 elements, one for each focal species considered.
 #' Each element of the list is a dataframe with 2 columns:
 #' * obs_ID: unique identifier of each observation
 #' * salinity: salinity measurement for that observation,
@@ -12,7 +12,7 @@
 #' @keywords datasets
 #' @name salinity_list
 #' @usage data(salinity_list)
-#' @format A list with 16 elements, each of which a dataframe
+#' @format A list with 17 elements, each of which a dataframe
 #' of variable number of rows and 2 numeric columns
 #' @md
 "salinity_list"
