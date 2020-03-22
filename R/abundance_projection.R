@@ -27,8 +27,6 @@
 #' @return named matrix with projected abundance values for each taxa at each timestep.
 #' @export
 #'
-#' @examples
-#' 
 abundance_projection <- function(cxr_fit = NULL, 
                                  model_family = NULL,
                                  alpha_form = NULL,
