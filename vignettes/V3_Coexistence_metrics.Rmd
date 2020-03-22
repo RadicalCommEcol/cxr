@@ -20,7 +20,7 @@ The `cxr` package facilitates the estimation of key metrics from modern coexiste
 
 **Stabilizing niche differences**
 
-`Cxr` allows the calculation of niche overlap $\rho$ between pairs of species, from which niche differences can be easily obtained as $1 - \rho$. Conceptually, if species limit themselves much more than they limit their competitors niche overlap will be very low and niche differences will be close to the maximum (i.e. 1). Conversely, if species limit themselves and other species similarly niche overlap will be very high and niche differences will be close to zero. In the absence of niche differences, the species with higher fitness (next section) is defined as the superior competitor. For obtaining niche overlap, thus, we need interaction coefficients among pairs of species.
+`Cxr` allows the calculation of niche overlap ($\rho$) between pairs of species, from which niche differences can be easily obtained as $1 - \rho$. Conceptually, if species limit themselves much more than they limit their competitors niche overlap will be very low and niche differences will be close to the maximum (i.e. 1). Conversely, if species limit themselves and other species similarly niche overlap will be very high and niche differences will be close to zero. In the absence of niche differences, the species with higher fitness (next section) is defined as the superior competitor. For obtaining niche overlap, thus, we need interaction coefficients among pairs of species.
 
 First, we specify the data to use and the starting parameter values and bounds.
 
@@ -52,7 +52,7 @@ fixed_terms <- NULL
 bootstrap_samples <- 0
 ```
 
-Now we obtain, for each focal species, values for lambda (offspring production in the absence of interactions. In this case, this lambda is average viable seed production per species) and alpha (intra and interspecific pairwise interaction coefficients).
+Now we obtain, for each focal species, values for lambda (offspring production in the absence of interactions, in our dataset average viable seed production per species) and alpha (intra and interspecific pairwise interaction coefficients).
 
 ```{r}
 all.sp.fit <- cxr_pm_multifit(data = data,
@@ -70,7 +70,7 @@ all.sp.fit <- cxr_pm_multifit(data = data,
 
 ```
 
-With these parameters, we can compute pairwise niche differences as 1 - niche overlap. Niche overlap following Chesson's (2013) definition can only include interaction coefficients with positive value (i.e. competition). Niche overlap can range from 0 to infinity and therefore niche differences can range from minus infinity to zero. Negative niche differences can be interpreted as a signature of priority effects. This means that the species of a pair arriving first to community is the winner. Niche differences between 0 and 1 reflect the degree to which species A and B limit each other compared to themselves. Within this range of values, species might coexist or be competitive excluded according to how stabilizing niche differences offset average fitness differences (see Adler et al. (2007) for more details).
+With these parameters, we can compute pairwise niche differences as 1 - niche overlap. Niche overlap following Chesson's (2013) definition can only include interaction coefficients with positive values (i.e. competition). Niche overlap can range from 0 to infinity and therefore niche differences can range from minus infinity to zero. Negative niche differences can be interpreted as a signature of priority effects. This means that the species of a pair arriving first to community is the winner. Niche differences between 0 and 1 reflect the degree to which species A and B limit each other compared to themselves. Within this range of values, species might coexist or be competitive excluded according to how stabilizing niche differences offset average fitness differences (see Adler et al. (2007) for more details).
 
 Finally, it is worth noting that for those cases in which interaction coefficients are negative (i.e. a negative interaction coefficients in some models imply facilitative interaction between species), the `cxr` package provides another definition of niche differences, developed by Saavedra et al. (2017). This definition of niche differences uses another set of tools based on the Structural Approach (SA) to species coexistence, and while it is qualitatively coherent with the MCT framework, niche differences from both definitions do not exactly match (see Saavedra et al. (2017) for more details).
 
@@ -119,7 +119,7 @@ head(competitive_ability_all_pairs)
 
 **Estimation of species fitness in the absence of niche differences**
 
-In the previous steps, average fitness differences and therefore species competitive ability are computed combining density independent and density dependent effects. This means that these metrics are estimated in the presence of stabilizing niche differences. However in some cases, it can be interesting for the user to estimate species fitness in the absence of niche differences. This is the case for isntance if we want to list species according to a competitive hierarchy. With this procedure, we would be able to tease apart which species would be the first superior competitor if we remove niche differences, the second superior competitior, and so on, up to the weakest competitor. In order to define this species fitness against all other competitors, we need to colapse pairwise interaction coefficients into two components. These are how species respond to overall competition (competitive response) and how species affect other species (competitive effect). Both components are defined in Godoy et al. (2014). 
+In the previous steps, average fitness differences and therefore species competitive ability are computed combining density independent and density dependent effects. This means that these metrics are estimated in the presence of stabilizing niche differences. However in some cases, it can be interesting for the user to estimate species fitness in the absence of niche differences. This is the case for isntance if we want to list species according to a competitive hierarchy. With this procedure, we would be able to tease apart which species would be the first superior competitor if we remove niche differences, the second superior competitor, and so on, up to the weakest competitor. In order to define this species fitness against all other competitors, we need to collapse pairwise interaction coefficients into two components: how species respond to overall competition (competitive response) and how species affect other species (competitive effect). Both components are defined in Godoy et al. (2014). 
 
 In `cxr`, we first need to obtain these components from observational data, and this calculation is done with the `cxr_er_fit` function. This function is similar to `cxr_pm_fit`, with some caveats. It accepts a list of observational dataframes, but in this case the number of observations of each focal species must match (this is in order to compute balanced parameters). Furthermore, the set of focal species needs to be the same as the set of neighbours, unlike in `cxr_pm_fit`.
 

@@ -17,7 +17,7 @@ One of the design principles of `cxr` is to allow users to estimate parameters f
 
 First of all, a common feature of the families included is that they rely on a common set of parameters, namely `lambda`,`alpha` (separated in `alpha_intra` and `alpha_inter`), `lambda_cov`, and `alpha_cov`. For now, user-defined models within `cxr` must be restricted to these parameters. A detailed description of these parameters can be found in previous vignettes.
 
-Below we include the full R code of a model template that can be used directly into `cxr`. This template is also included as a stand-alone R file in the source files of the package (`cxr_model_template.R`), and here we first explain each section of it.
+At the end of this vignette we include the full R code of a model template that can be used directly into `cxr`. This template is also included as a stand-alone R file in the source files of the package (`cxr_model_template.R`), and here we first explain each section of it.
 
 First, model functions should be defined with the common set of arguments recognized by `cxr`. 
 
@@ -46,7 +46,7 @@ the name of the function should be adapted to the parameters you want to fit:
 * *'lambda_cov_form'* is one of 'lambda_cov_none' or 'lambda_cov_global', depending on whether you include the effect of covariates over lambda.
 * *'alpha_cov_form'* is one of 'alpha_cov_none', 'alpha_cov_global', or 'alpha_cov_pairwise', depending on whether and how to include the effect of covariates over alpha values: no inclusion, a global parameter for each covariate on the alpha values, or interaction-specific parameters for each covariate.
 
-Thus, if you code a model from your User Model (UM) family that includes pairwise alphas, but no effects of covariates over lambda or alpha, we recommend your function to be named as:
+Thus, if you code a model from your User Model (UM) family that includes pairwise alphas, but no effects of covariates over lambda or alpha, your function must be named as:
 
 ```{r eval=FALSE}
 pm_UM_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
@@ -57,7 +57,7 @@ pm_UM_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
                                                               fixed_parameters)
 ```
 
-The first step within the function is to retrieve the different parameters from the one-dimensional `par` vector. You should not have to change this section except for commenting or commenting out the section where parameters are retrieved. For example, if your model does not include `lambda_cov` or `alpha_cov`, you should comment their sections. Note that it includes a final parameter, sigma, that should always be there, as it keeps track of the error associated to the fit.
+The first step inside the function is to retrieve the different parameters from the one-dimensional `par` vector. You should not have to change this section except for commenting or commenting out the section where parameters are retrieved. For example, if your model does not include `lambda_cov` or `alpha_cov`, you should comment their sections. Note that it includes a final parameter, sigma, that should always be there, as it keeps track of the error associated to the fit.
 
 This is how this part in your 'pm_UM_alpha_pairwise_lambdacov_none_alphacov_none' model would look like:
 
@@ -145,7 +145,7 @@ if(is.null(fixed_parameters[["alpha_inter"]])){
 sigma <- par[length(par)]
 ```
 
-At this point, you can code your model. This is how the Beverton-Holt model looks like, for reference:
+At this point, you can code your model. This is how the equivalent Beverton-Holt model looks like, for reference:
 
 ``` {r eval=FALSE}
 
@@ -177,7 +177,7 @@ pred <- lambda/ term
 
 Note how there are no hard-coded checks for ensuring that alpha values and neigh_matrix values are appropriately sorted. This is performed in the `cxr_pm_fit` function that internally sorts data and call this model for optimization.
 
-The last part of the model function is returning the negative log-likelihood value for that particular parameter combination. This is the value that the numerical optimization procedures aim to minimize. You should not change this code.
+The last part of the model function is returning the negative log-likelihood value for that particular parameter combination. This is the value that the numerical optimization algorithms aim to minimize. You should not change this code.
 
 ```{r eval=FALSE}
 # the routine returns the sum of negative log-likelihoods of the data and model:
@@ -203,7 +203,7 @@ custom_fit <- cxr_pm_fit(data = custom_data, # assuming custom_data is already s
                          alpha_cov_form = "none")
 ```
 
-If the function cannot find a model matching the provided 'model_family','alpha_form','lambda_cov_form', and 'alpha_cov_form', it will output a message and return NULL. On a final note, if you think your bright new model can be useful for fellow scientists, we encourage you to make a pull request for integrating it in the set of default model families included in `cxr`.
+If the function cannot find a model matching the provided 'model_family','alpha_form','lambda_cov_form', and 'alpha_cov_form', it will output a message and return NULL. On a final note, if you think your bright new model can be useful for fellow scientists, we encourage you to make a pull request for integrating it in the set of default model families included in `cxr`. An interesting update to the package would be, in addition to include other model families, to implement non-linear models of covariate effects over lambda and alpha values.
 
 There are several issues that you should have in mind when developing custom models. First, recall that numerical optimization methods may be bounded or unbounded. If your model does not return meaningful values for part of the parameter space defined by the hypervolume of parameter boundaries, bounded optimization methods (such as 'L-BFGS-B' or 'bobyqa') will fail. This is well exemplified by the discrete Lotka-Volterra model: 
 
@@ -215,12 +215,10 @@ which can easily produce negative values and thus undefined log-likelihoods. The
 
 Among the coexistence metrics that can be calculated with `cxr`, five of them are model-specific, i.e. have different formulations depending on the underlying population dynamics model from which lambda and alpha values are obtained. These are:
 
-* average species fitness
-* demographic ratio
-* competitive response ratio
+* demographic ratio (and therefore, average fitness differences in the MCT formulation)
 * competitive ability
+* competitive effects and responses
 * species fitness in the absence of niche differences
-
 
 All these have different formulations for different model families. Therefore, if you want to estimate coexistence metrics based on custom models, you should provide a full set of formulations for these metrics. Here we show their formulation for Beverton-Holt models, for reference. The supplementary material of Godoy and Levine (2014) and that of Hart et al. (2018) are good places to explore the mathematical underpinnings of these particularities.
 
