@@ -133,7 +133,7 @@ data("neigh_list")
 names(neigh_list)
 sapply(neigh_list,nrow)
 # BEMA, HOMA, LEMA, SASO, have > 250 observations.
-example_sp <- c(1,4,5) #corresponds to c("BEMA","HOMA","LEMA") 
+example_sp <- c(1,5,6) #corresponds to c("BEMA","HOMA","LEMA") 
 n.obs <- 250
 data <- neigh_list[example_sp]
 

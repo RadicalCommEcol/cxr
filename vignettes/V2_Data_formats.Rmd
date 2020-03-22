@@ -35,11 +35,21 @@ names(neigh_list)
 head(neigh_list[[1]])
 ```
 
-For each sub-plot, we also recorded the species abundance:
+This structure is the one accepted by different `cxr` functions, save for the 'obs_ID' column. In particular, `cxr` accepts a dataframe with a first numeric column named 'fitness' (constrained to positive values), and a variable number of numeric columns with the densities of neighbour taxa. Each row is taken to be an observation of a focal individual.
+
+Additionally to individual fitness and neighbours, we also recorded the species abundance:
 
 ```{r}
 data("abundance", package = "cxr")
 head(abundance)
+```
+
+Abundances are stored per plot and subplot, in our spatially explicit design (see Lanuza et al. 2018 for details). In the `neigh_list` dataset, the `obs_ID` column relates each observation to the spatial coordinates of the system. The `spatial_sampling` dataset is a species list, in which each element contains the `obs_ID` of each observation and its spatial arrangement, i.e. the plot and subplot where it was taken.
+
+```{r}
+data("spatial_sampling")
+names(spatial_sampling)
+head(spatial_sampling[["BEMA"]])
 ```
 
 We also provide seed soil survival and germination rates for each species. These species vital rates have been obtained independently, and are critical to parameterize a model describing the population dynamics of interacting annual plant species. For more information of how to estimate seed soil survival and germination rates see Godoy and Levine (2014). This file also includes the complete scientific name and abbreviation of each species. Such abbreviations are used as species identifier in all analyses and vignettes.
