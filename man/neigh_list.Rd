@@ -4,20 +4,20 @@
 \name{neigh_list}
 \alias{neigh_list}
 \title{neighbours and fitness observations}
-\format{A list with 16 elements, each of which a dataframe
+\format{A list with 17 elements, each of which a dataframe
 of variable number of rows and 18 columns}
 \usage{
 data(neigh_list)
 }
 \description{
 A dataset containing fitness and neighbours
-for plant individuals of 16 species.
+for plant individuals of 17 species.
 The dataset is a named list with 16 elements,
 each of which is a dataframe with the following columns:
 \itemize{
 \item obs_ID: unique identifier for each observation
 \item fitness: number of viable seeds of the focal individual
-\item 16 columns indicating the number of neighbours from each plant sp.
+\item 17 columns indicating the number of neighbours from each plant sp.
 in a radius of 7.5 cm from the focal individual
 }
 }
