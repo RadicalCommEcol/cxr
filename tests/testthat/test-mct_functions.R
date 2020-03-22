@@ -148,7 +148,7 @@ test_that("competitive ability is correctly calculated", {
 # fit three species at once
 data("neigh_list")
 # these species all have >250 observations
-example_sp <- c(1,4,5)
+example_sp <- c(1,5,6)
 n.obs <- 250
 data <- neigh_list[example_sp]
 optimization_method <- "nlminb"
