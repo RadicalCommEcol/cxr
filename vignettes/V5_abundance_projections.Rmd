@@ -22,8 +22,8 @@ In this vignette, we show how to project the abundances of three species from ou
 ```{r}
 library(cxr)
 data("neigh_list")
-data("salinity_list")
-three_sp <- c("POMA","MEEL","PUPA")
+
+three_sp <- c("CHFU","MEEL","PUPA")
 sp.pos <- which(names(neigh_list) %in% three_sp)
 
 data <- neigh_list[sp.pos]
@@ -33,40 +33,47 @@ for(i in 1:length(data)){
 }
 focal_column <- names(data)
 
-salinity <- salinity_list[sp.pos]
-# keep only salinity column
-for(i in 1:length(salinity)){
-  salinity[[i]] <- as.matrix(salinity[[i]][,2:length(salinity[[i]])])
-  colnames(salinity[[i]]) <- "salinity"
-}
-
+# Beverton-Holt model
 model_family <- "BH"
-covariates <- salinity
+
+# the "bobyqa" algorithm works best for these species
 optimization_method <- "bobyqa"
+
+# pairwise alphas, but no covariate effects 
 alpha_form <- "pairwise"
 lambda_cov_form <- "none"
 alpha_cov_form <- "none"
 
+# no fixed terms, i.e. we fit both lambdas and alphas
 fixed_terms <- NULL
-bootstrap_samples <- 3
-timesteps <- 10
-initial_abundances <- c("POMA" = 10,"MEEL" = 12,"PUPA" = 13)
 
-initial_values <- list(lambda = 1,
-                                 alpha_intra = 0,
-                                 alpha_inter = 0,
-                                 lambda_cov = 0,
-                                 alpha_cov = 0)
-lower_bounds <- list(lambda = 0,
-                              alpha_intra = 0,
-                              alpha_inter = -1,
-                              lambda_cov = -1,
-                              alpha_cov = -1)
-upper_bounds <- list(lambda = 1000,
-                              alpha_intra = 1,
-                              alpha_inter = 1,
-                              lambda_cov = 1,
-                              alpha_cov = 1)
+# for demonstration purposes
+bootstrap_samples <- 3
+
+# a limited number of timesteps. 
+timesteps <- 10
+
+# for demonstration purposes
+initial_abundances <- c("CHFU" = 10,"MEEL" = 10,"PUPA" = 10)
+
+# standard initial values,
+# not allowing for intra-specific facilitation
+
+initial_values <- list(lambda = 10,
+                       alpha_intra = 0.1,
+                       alpha_inter = 0.1)
+                       # lambda_cov = 0.1,
+                       # alpha_cov = 0.1)
+lower_bounds <- list(lambda = 1,
+                     alpha_intra = 0,
+                     alpha_inter = -1)
+                     # lambda_cov = 0,
+                     # alpha_cov = 0)
+upper_bounds <- list(lambda = 100,
+                     alpha_intra = 1,
+                     alpha_inter = 1)
+                     # lambda_cov = 1,
+                     # alpha_cov = 1)
 ```
 
 With all initial values set, we can fit the parameters.
@@ -96,7 +103,7 @@ Projecting abundances from a `cxr` object is straightforward: just call the func
                              initial_abundances = initial_abundances)
 ```
 
-This function returns a simple numeric matrix with the projected abundances. Lastly, here is a basic plot showing the projection
+This function returns a simple numeric matrix with the projected abundances. Lastly, here is a basic plot showing the projection. This is a pedagogical example and does not make sense to interpret it ecologically, but it shows how the three species selected approach different equilibrium abundances in the short term.
 
 ```{r}
 ab.df <- as.data.frame(ab)

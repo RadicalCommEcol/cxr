@@ -158,7 +158,9 @@ We can also have a glimpse of this multispecies fit with the summary function:
 summary(fit_3sp)
 ```
 
-The numerical estimation of parameters depends on the model with which to estimate fitness values, the optimization method, and the underlying data. In our example dataset, some species are better represented than others, and the function will raise warnings if the estimation can be improved or, for example, if any fitted parameter is equal to the lower or upper bounds provided. In the `cxr` objects returned from our functions, the log-likelihood of the fit is also included, which may be useful in helping users choose a certain optimization algorithm for a particular dataset. In this example, the method used ("L-BFGS-B", a well-established bounded optimization algorithm) returns the following log-likelihood values:
+The numerical estimation of parameters depends on the model with which to estimate fitness values, the optimization method, and the underlying data. In our example dataset, some species are better represented than others, and the function will raise warnings if the estimation can be improved or, for example, if any fitted parameter is equal to the lower or upper bounds provided. The `cxr_pm_multifit` function will behave conservatively and return `NULL` if parameter fitting fails for *any* of the focal species passed as arguments, printing an informative message about which species failed to fit.
+
+Importantly, bounded methods can be very sensitive to the initial values and bounds, so, as in any numerical optimization problem, you should double-check the values obtained, at least by computing standard errors on your parameters with an adequate number of boostrap samples, and preferably by performing sensitivity analyses on the different parameters (in this and other vignettes, we have not included any of these checks, as our examples are merely for demonstration purposes). Aside from these recommendations, in the `cxr` objects returned from our functions, the log-likelihood of the fit is also included, which may be useful in helping users choose a certain optimization algorithm for a particular dataset. In general, it is recommended to test different optimization algorithms, as they may produce fairly different results (Mullen 2014). In this example, the method used ("L-BFGS-B", a well-established bounded optimization algorithm) returns the following log-likelihood values:
 
 ```{r}
 fit_3sp$log_likelihood
@@ -197,6 +199,6 @@ Lanuza, J. B., Bartomeus, I., & Godoy, O. (2018). Opposing effects of floral vis
 
 Godoy, O., Bartomeus, I., Rohr, R. P., & Saavedra, S. (2018). Towards the integration of niche and network theories. Trends in ecology & evolution, 33(4), 287-300.
 
-
+Mullen, K. M. (2014). Continuous global optimization in R. Journal of Statistical Software, 60(6), 1-45.
 
 
