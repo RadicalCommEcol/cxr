@@ -57,7 +57,7 @@ timesteps <- 10
 initial_abundances <- c("CHFU" = 10,"MEEL" = 10,"PUPA" = 10)
 
 # standard initial values,
-# not allowing for intra-specific facilitation
+# not allowing for intraspecific facilitation
 
 initial_values <- list(lambda = 10,
                        alpha_intra = 0.1,
