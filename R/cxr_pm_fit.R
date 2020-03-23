@@ -126,7 +126,7 @@ cxr_pm_fit <- function(data,
   
   # retrieve model ----------------------------------------------------------
   # character string giving the name of the model
-  model_name <- paste("pm_",model_family,
+  model_name <- paste(model_family,"_pm",
                       "_alpha_",alpha_form,
                       "_lambdacov_",lambda_cov_form,
                       "_alphacov_",alpha_cov_form,sep="")

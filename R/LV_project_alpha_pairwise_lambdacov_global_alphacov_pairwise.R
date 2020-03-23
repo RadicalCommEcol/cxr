@@ -1,5 +1,5 @@
 
-#' Beverton-Holt model for projecting abundances,
+#' Lotka-Volterra model for projecting abundances,
 #' with specific alpha values and global covariate effects on alpha and lambda
 #'
 #' @param lambda named numeric lambda value.
@@ -14,7 +14,7 @@
 #'
 #' @return numeric abundance projected one timestep
 #' @export
-BH_project_alpha_pairwise_lambdacov_global_alphacov_pairwise <- function(lambda,
+LV_project_alpha_pairwise_lambdacov_global_alphacov_pairwise <- function(lambda,
                                                                alpha_intra,
                                                                alpha_inter,
                                                                lambda_cov,
@@ -65,11 +65,12 @@ BH_project_alpha_pairwise_lambdacov_global_alphacov_pairwise <- function(lambda,
     cov_term[[z+1]] <- cov_term_x_sum
   }
   
-  term <- 1 #create the denominator term for the model
+  term <- 0 #create the denominator term for the model
   for(z in 1:length(abundance)){
-    term <- term + (alpha[z] + cov_term[[z]]) * abundance[z]  
+    term <- term - abundance[z] * (alpha[z] + cov_term[[z]])  
   }
-  expected_abund <- (lambda * (num) / term) * abundance[names(lambda)]
+  expected_abund <- (lambda * (num) + term) * abundance[names(lambda)]
   expected_abund
+  
 }
 

@@ -197,7 +197,7 @@ cxr_er_fit <- function(data,
   
   # retrieve model ----------------------------------------------------------
   # character string giving the name of the model
-  model_name <- paste("er_",model_family,"_lambdacov_",lambda_cov_form,"_effectcov_",effect_cov_form,"_responsecov_",response_cov_form,sep="")
+  model_name <- paste(model_family,"_er","_lambdacov_",lambda_cov_form,"_effectcov_",effect_cov_form,"_responsecov_",response_cov_form,sep="")
   
   fitness_model <- try(get(model_name),silent = TRUE)
   if(class(fitness_model) == "try-error"){
