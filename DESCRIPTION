@@ -42,6 +42,7 @@ Suggests:
     rmarkdown,
     testthat (>= 0.8.0),
     BB,
+    minqa,
     ucminf,
     dfoptim,
     hydroPSO,
