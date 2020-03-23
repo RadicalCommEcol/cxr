@@ -49,7 +49,7 @@ competitive_ability <- function(cxr_multifit = NULL,
               arguments will be discarded.")
     }
     
-    mf <- substr(cxr_multifit$model_name,4,5)
+    mf <- substr(cxr_multifit$model_name,1,2)
     if(!mf %in% c("LV","BH","RK","LW")){
       message("cxr competitive ability: calculating average niche differences for coefficients estimated from a
               custom model family.\n")

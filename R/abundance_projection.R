@@ -112,7 +112,7 @@ abundance_projection <- function(cxr_fit = NULL,
     }
     
     # obtain model family
-    model_family <- substr(cxr_fit$model_name,4,5)
+    model_family <- substr(cxr_fit$model_name,1,2)
     
     # data
     lambda <- cxr_fit$lambda

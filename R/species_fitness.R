@@ -38,7 +38,7 @@ species_fitness <- function(effect_response_fit = NULL,
               arguments will be discarded.")
     }
     
-    sf_f <- substr(effect_response_fit$model_name,4,5)
+    sf_f <- substr(effect_response_fit$model_name,1,2)
     
     sf_fun <- paste(sf_f,"_species_fitness",sep="")
     sf_model <- try(get(sf_fun),silent = TRUE)

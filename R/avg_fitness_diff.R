@@ -54,7 +54,7 @@ avg_fitness_diff <- function(cxr_multifit = NULL,
               arguments will be discarded.")
     }
     
-    mf <- substr(cxr_multifit$model_name,4,5)
+    mf <- substr(cxr_multifit$model_name,1,2)
     if(!mf %in% c("LV","BH","RK","LW")){
       warning("avg_fitness_diff: calculating average niche differences for coefficients estimated from a
               custom model family. Be aware that this may yield incorrect results.",call.=FALSE)

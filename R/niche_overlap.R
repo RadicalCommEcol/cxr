@@ -56,7 +56,7 @@ niche_overlap <- function(cxr_multifit = NULL,cxr_sp1 = NULL, cxr_sp2 = NULL, pa
               arguments will be discarded.")
     }
     
-    mf <- substr(cxr_multifit$model_name,4,5)
+    mf <- substr(cxr_multifit$model_name,1,2)
     if(!mf %in% c("LV","BH","RK","LW")){
       warning("niche_overlap: calculating niche overlap for coefficients estimated from a
               non-standard model family. Be aware that this may yield incorrect results.",call.=FALSE)
