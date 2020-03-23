@@ -185,14 +185,35 @@ cxr_pm_multifit <- function(data,
                                  fixed_terms = fixed_terms,
                                  bootstrap_samples = bootstrap_samples)
   }
-  names(spfits) <- spnames
+  
+  if(length(spfits) == length(spnames)){
+    names(spfits) <- spnames
+  }  
   
   # output ------------------------------------------------------------------
   
+  # in case some or all fits fail
+  if(length(spfits) < length(spnames)){
+    if(length(spfits) == 0){
+      message("cxr_pm_multifit ERROR: Parameter fitting failed for all focal species.
+            Please check the data, initial values, and bounds provided.")
+    }else{
+      message(paste("cxr_pm_multifit ERROR: Parameter fitting failed for the following taxa:\n",
+                    paste(which(!sapply(spfits,is.null)),collapse = ","),
+            "\nPlease check the data, initial values, and bounds provided.",sep=""))
+    }
+    return(NULL)
+  }
+  
+  # if fits are ok,
   # integrate output from the different sp
   
-  # lambda
   splambda <- NULL
+  alpha_matrix <- NULL
+  splambda_cov <- NULL
+  spalpha_cov <- NULL
+  spllik <- NULL
+
   for(i.sp in 1:length(spnames)){
     # lambda
     if(!is.null(spfits[[i.sp]]$lambda)){
@@ -242,7 +263,7 @@ cxr_pm_multifit <- function(data,
   
   # lambda_cov also as a matrix, with covariates in columns
   # and focal species in rows
-  splambda_cov <- NULL
+  # splambda_cov <- NULL
   if(!is.null(covariates) & 
      !all(sapply(spfits,function(x){is.null(x$lambda_cov)}))){
     # covariate names
@@ -275,7 +296,7 @@ cxr_pm_multifit <- function(data,
   # this is a list where, for each cov, a focalsp x neighsp matrix gives the alpha_covs
   # if a global alpha_cov is fitted, does not matter
   
-  spalpha_cov <- NULL
+  # spalpha_cov <- NULL
   if(!is.null(covariates) & 
      !all(sapply(spfits,function(x){is.null(x$alpha_cov)}))){
     
@@ -325,7 +346,7 @@ cxr_pm_multifit <- function(data,
   }
   
   # log-likelihood
-  spllik <- NULL
+  # spllik <- NULL
   for(i.sp in 1:length(spnames)){
     myllik <- spfits[[i.sp]]$log_likelihood
     names(myllik) <- spnames[i.sp]

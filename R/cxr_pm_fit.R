@@ -8,7 +8,7 @@
 #' @param focal_column optional integer or character giving the column
 #' with neighbours from the same species as the focal one. This field is necessary if "alpha_intra" is specified
 #' in \code{initial_values}, \code{lower_bounds}, \code{upper_bounds}, or \code{fixed_terms}.
-#' @param model_family family of model to use. Available families are BH (Beverton-Holt) as default, LV (Lotka-Volterra),
+#' @param model_family family of model to use. Available families are BH (Beverton-Holt), LV (Lotka-Volterra),
 #' RK (Ricker), and LW (Law-Watkinson). Users may also define their own families and models (see vignette 4).
 #' @param covariates optional named matrix or dataframe with observations (rows) of any number of environmental covariates (columns).
 #' @param optimization_method numerical optimization method.
@@ -360,6 +360,7 @@ cxr_pm_fit <- function(data,
     return(NULL)
     
   }else{
+    
     if(optimization_method %in% c("BFGS", "CG", "Nelder-Mead", "L-BFGS-B", "nlm", 
                            "nlminb", "Rcgmin", "Rvmmin", "spg", "ucminf", 
                            "bobyqa", "nmkb", "hjkb")){
@@ -377,6 +378,12 @@ cxr_pm_fit <- function(data,
       names(outpar) <- names(init_par$init_par)
       llik <- optim_result$objective
     }# if-else method
+    
+    if(any(is.na(outpar)) | is.na(llik)){
+      message("cxr_pm_fit ERROR: one or more fitted values are NA. This is likely to be because the optimization algorithm failed to find a solution.
+              Please check the lower and upper bounds provided and/or the optimization method selected.")
+      return(NULL)
+    }
     
     optim_params <- cxr_retrieve_params(optim_par = outpar,
                                         lambda_length = length(init_par$init_lambda),
