@@ -50,6 +50,3 @@ The function projects a number of steps of a time-discrete model,
 with model parameters taken from a `cxr_pm_multifit` object or as
 function arguments.
 }
-\examples{
-
-}

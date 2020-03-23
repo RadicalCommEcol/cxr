@@ -26,7 +26,7 @@ cxr_pm_fit(data, focal_column = NULL, model_family, covariates = NULL,
 with neighbours from the same species as the focal one. This field is necessary if "alpha_intra" is specified
 in \code{initial_values}, \code{lower_bounds}, \code{upper_bounds}, or \code{fixed_terms}.}
 
-\item{model_family}{family of model to use. Available families are BH (Beverton-Holt) as default, LV (Lotka-Volterra),
+\item{model_family}{family of model to use. Available families are BH (Beverton-Holt), LV (Lotka-Volterra),
 RK (Ricker), and LW (Law-Watkinson). Users may also define their own families and models (see vignette 4).}
 
 \item{covariates}{optional named matrix or dataframe with observations (rows) of any number of environmental covariates (columns).}

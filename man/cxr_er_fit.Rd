@@ -29,7 +29,7 @@ and the set of neighbour species needs to be the same as the set of focal specie
 the neighbours columns correspond to the names of the list elements or, if 'data' is a dataframe,
 to the values of the 'focal' column. Future versions will relax this requirement.}
 
-\item{model_family}{family of model to use. Available families are BH (Beverton-Holt) as default, LV (Lotka-Volterra),
+\item{model_family}{family of model to use. Available families are BH (Beverton-Holt), LV (Lotka-Volterra),
 RK (Ricker), and LW (Law-Watkinson). Users may also define their own families and models (see vignette 4).}
 
 \item{covariates}{a data structure equivalent to 'data', in which each column are the values of a covariate.}
