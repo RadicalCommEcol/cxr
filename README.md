@@ -6,10 +6,9 @@
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/cxr)](https://cran.r-project.org/package=cxr)
 [![DOI](https://zenodo.org/badge/115796966.svg)](https://zenodo.org/badge/latestdoi/115796966)
 
-
 # cxr 0.1.0
 
-CXR provides a complete toolbox for modelling competitive effects between species, calculate fitness and niche differences, and calculate and predict coexistence regions. The functions are flexible and can include covariates, use different optimization algorithms, or accept user-defined mathematical population models as starting points. 
+CXR provides a complete toolbox for modelling interactions between species, calculate fitness and niche differences, and project species abundances. The functions are flexible and can include covariates, use different optimization algorithms, or accept user-defined mathematical population models as starting points. 
 
 ### Installation
 
@@ -40,26 +39,20 @@ devtools::install_github("ibartomeus/cxr", build_opts = c("--no-resave-data", "-
 
 The package has several key functions:
 
-- `pm_optim()`
-- `er_optim()`
-- `NicheOverlap()` 
-- `SpeciesFitness()`
-- `AvgFitnessRatio()` 
-- `PredictAbundances()` 
-- `GenerateTestData()`
+- `cxr_pm_fit()`
+- `cxr_pm_multifit()`
+- `cxr_er_fit()` 
+- `niche_overlap()`
+- `species_fitness()`
+- `avg_fitness_diff()` 
+- `competitive_ability()` 
+- `abundance_projection()`
 
 And a set of internal functions, data and models.
 
 ### Prefix information
 
-The package functions have three different prefixes:
-
-- `model_`: Population models.
-- `pm_`: Population model parametrization.
-- `er_`: Effect-Response model parametrization.
-- `cxr_`: Internal functions.
-
-Other functions have no prefix.
+The functions used to numerically fit model parameters have the prefix `cxr_`. The acronym `pm` means 'population models', and `er` means 'effect and response', for specifying the type of models these functions parameterize. Other functions to calculate coexistence metrics have no prefix. We have implemented four model families to use with the package. These are 'Beverton-Holt' (`BH`), 'Lotka-Volterra' (`LV`), 'Law-Watkinson' (`LW`), and 'Ricker' (`RK`). Models from each family are named starting with the model family prefix, e.g. 'BH_', etc.
 
 ### Citation information
 
