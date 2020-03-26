@@ -75,7 +75,11 @@ When citing, please refer to both the [package citation](https://github.com/ibar
 `cxr` is in continuous development. This is a partial list of features we aim to implement in future releases:
 
 - uncertainty estimation: propagate standard error calculation to coexistence metrics and abundance projections.
+- diagnostic functions: guidance on whether model fits/coexistence metrics are meaningful for a certain data and model.
+- update the interface to allow users to pass other arguments to their models, 
+e.g. to implement properly the annual plant model with 'g' and 's' constants.
 - package design and style guide: provide a complete rationale and set of recommendations to contribute new features.
+- package website with pkgdown.
 
 ## Bug reports and contributions.  
 
