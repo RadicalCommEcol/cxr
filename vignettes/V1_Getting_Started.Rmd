@@ -1,7 +1,7 @@
 ---
 title: "Getting started with cxr"
 output: rmarkdown::html_vignette
-author: David García-Callejas and cxr team
+author: David Garcia-Callejas and cxr team
 vignette: >
   %\VignetteIndexEntry{Getting started}
   \usepackage[utf8]{inputenc}

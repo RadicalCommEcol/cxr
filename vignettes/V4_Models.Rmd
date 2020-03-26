@@ -1,7 +1,7 @@
 ---
 title: "Using your own models"
 output: rmarkdown::html_vignette
-author: David García-Callejas and cxr team
+author: David Garcia-Callejas and cxr team
 vignette: >
   %\VignetteIndexEntry{User-defined Models}
   %\VignetteEngine{knitr::rmarkdown}
