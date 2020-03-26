@@ -8,7 +8,7 @@
 
 # cxr 0.1.0
 
-CXR provides a complete toolbox for modelling interactions between species, calculate fitness and niche differences, and project species abundances. The functions are flexible and can include covariates, use different optimization algorithms, or accept user-defined mathematical population models as starting points. 
+CXR provides a complete toolbox for modelling interactions between species, calculate coexistence metrics (e.g. niche and fitness differences), and project species abundances. The functions are flexible and can include covariates, use different optimization algorithms, or accept user-defined mathematical population models as starting points. 
 
 ### Installation
 
@@ -48,19 +48,38 @@ The package has several key functions:
 - `competitive_ability()` 
 - `abundance_projection()`
 
-And a set of internal functions, data and models.
+And a set of internal functions, data and models. The functions with prefix `cxr` estimate model parameters from observational data, and functions without prefix calculate metrics related to species coexistence from model parameters. This basic workflow of the package is explained in different vignettes:
 
-### Prefix information
+- Vignette 1 "Getting started" shows how to fit observational data to population dynamics models, in order to obtain vital rates and interaction coefficients.
+- Vignette 2 "Data formats" explains the data structures accepted by these fitting functions, using as an example the dataset included with the package.
+- Vignette 3 "Coexistence metrics" details the complete workflow, from estimating model parameters to calculate the coexistence metrics available.
+- Vignette 4 "Using your own models" explains how to extend the package using user-defined population models.
+- Vignette 5 "Projecting species abundance" shows how to use model fits to project species abundances in time.
 
-The functions used to numerically fit model parameters have the prefix `cxr_`. The acronym `pm` means 'population models', and `er` means 'effect and response', for specifying the type of models these functions parameterize. Other functions to calculate coexistence metrics have no prefix. We have implemented four model families to use with the package. These are 'Beverton-Holt' (`BH`), 'Lotka-Volterra' (`LV`), 'Law-Watkinson' (`LW`), and 'Ricker' (`RK`). Models from each family are named starting with the model family prefix, e.g. 'BH_', etc.
+Once the package is installed, vignettes can be accessed in the standard way:
+
+```R
+vignette("V1_Getting_Started",package = "cxr")
+vignette("V2_Data_formats",package = "cxr")
+vignette("V3_Coexistence_metrics",package = "cxr")
+vignette("V4_Models",package = "cxr")
+vignette("V5_abundance_projections",package = "cxr")
+```
 
 ### Citation information
 
 When citing, please refer to both the [package citation](https://github.com/ibartomeus/cxr/blob/master/inst/CITATION) and the release paper (in prep).  
 
+### Future developments
+
+`cxr` is in continuous development. This is a partial list of features we aim to implement in future releases:
+
+- uncertainty estimation: propagate standard error calculation to coexistence metrics and abundance projections.
+- package design and style guide: provide a complete rationale and set of recommendations to contribute new features.
+
 ## Bug reports and contributions.  
 
-We expect to update the package with new developments. We welcome contributions (e.g. via pull request) and [bug reports](https://github.com/ibartomeus/cxr/issues).
+We welcome contributions (e.g. via pull request) and [bug reports](https://github.com/ibartomeus/cxr/issues).
 
 ## Code of Conduct  
 
