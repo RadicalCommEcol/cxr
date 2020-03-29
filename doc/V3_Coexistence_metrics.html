@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="David Garcia-Callejas and cxr team" />
+
+
+<title>Coexistence metrics</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#header {
+text-align: center;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Coexistence metrics</h1>
+<h4 class="author">David Garcia-Callejas and cxr team</h4>
+
+
+
+<p><strong>Introduction</strong></p>
+<p>The <code>cxr</code> package facilitates the estimation of key metrics from modern coexistence theory (MCT, Chesson 2000), by obtaining species vital rates and interactions coefficients from population dynamics models. The metrics that can be obtained with <code>cxr</code> relate to the idea pioneered by Chesson that the degree to which two species can coexist depends both on their stabilizing niche differences and on their average fitness differences. In this vignette we review the metrics that can be computed with <code>cxr</code>, starting with those related to niche differences and moving on to the more complex situation of average fitness differences and its different demographic and density-dependent components.</p>
+<p><strong>Stabilizing niche differences</strong></p>
+<p><code>Cxr</code> allows the calculation of niche overlap (<span class="math inline">\(\rho\)</span>) between pairs of species, from which niche differences can be easily obtained as <span class="math inline">\(1 - \rho\)</span>. Conceptually, if species limit themselves much more than they limit their competitors niche overlap will be very low and niche differences will be close to the maximum (i.e. 1). Conversely, if species limit themselves and other species similarly niche overlap will be very high and niche differences will be close to zero. In the absence of niche differences, the species with higher fitness (next section) is defined as the superior competitor. For obtaining niche overlap, thus, we need interaction coefficients among pairs of species.</p>
+<p>First, we specify the data to use and the starting parameter values and bounds.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">library</span>(cxr)</a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="kw">data</span>(<span class="st">&quot;neigh_list&quot;</span>)</a>
+<a class="sourceLine" id="cb1-3" title="3">data &lt;-<span class="st"> </span>neigh_list</a>
+<a class="sourceLine" id="cb1-4" title="4"><span class="co"># keep only fitness and neighbours columns</span></a>
+<a class="sourceLine" id="cb1-5" title="5"><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(data)){</a>
+<a class="sourceLine" id="cb1-6" title="6">  data[[i]] &lt;-<span class="st"> </span>data[[i]][,<span class="dv">2</span><span class="op">:</span><span class="kw">length</span>(data[[i]])]</a>
+<a class="sourceLine" id="cb1-7" title="7">}</a>
+<a class="sourceLine" id="cb1-8" title="8"></a>
+<a class="sourceLine" id="cb1-9" title="9">focal_column &lt;-<span class="st"> </span><span class="kw">names</span>(data)</a>
+<a class="sourceLine" id="cb1-10" title="10">model_family &lt;-<span class="st"> &quot;RK&quot;</span> </a>
+<a class="sourceLine" id="cb1-11" title="11">optimization_method &lt;-<span class="st"> &quot;L-BFGS-B&quot;</span> <span class="co"># we use a bounded method</span></a>
+<a class="sourceLine" id="cb1-12" title="12">alpha_form &lt;-<span class="st"> &quot;pairwise&quot;</span></a>
+<a class="sourceLine" id="cb1-13" title="13">lambda_cov_form &lt;-<span class="st"> &quot;none&quot;</span></a>
+<a class="sourceLine" id="cb1-14" title="14">alpha_cov_form &lt;-<span class="st"> &quot;none&quot;</span></a>
+<a class="sourceLine" id="cb1-15" title="15">initial_values =<span class="st"> </span><span class="kw">list</span>(<span class="dt">lambda =</span> <span class="dv">1</span>,</a>
+<a class="sourceLine" id="cb1-16" title="16">                      <span class="dt">alpha_intra =</span> <span class="fl">0.1</span>,</a>
+<a class="sourceLine" id="cb1-17" title="17">                      <span class="dt">alpha_inter =</span> <span class="fl">0.1</span>)</a>
+<a class="sourceLine" id="cb1-18" title="18">lower_bounds =<span class="st"> </span><span class="kw">list</span>(<span class="dt">lambda =</span> <span class="dv">0</span>,</a>
+<a class="sourceLine" id="cb1-19" title="19">                    <span class="dt">alpha_intra =</span> <span class="fl">0.01</span>,</a>
+<a class="sourceLine" id="cb1-20" title="20">                    <span class="dt">alpha_inter =</span> <span class="fl">0.01</span>)</a>
+<a class="sourceLine" id="cb1-21" title="21">upper_bounds =<span class="st"> </span><span class="kw">list</span>(<span class="dt">lambda =</span> <span class="dv">100</span>,</a>
+<a class="sourceLine" id="cb1-22" title="22">                    <span class="dt">alpha_intra =</span> <span class="dv">1</span>,</a>
+<a class="sourceLine" id="cb1-23" title="23">                    <span class="dt">alpha_inter =</span> <span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb1-24" title="24">fixed_terms &lt;-<span class="st"> </span><span class="ot">NULL</span></a>
+<a class="sourceLine" id="cb1-25" title="25">bootstrap_samples &lt;-<span class="st"> </span><span class="dv">0</span></a></code></pre></div>
+<p>Now we obtain, for each focal species, values for lambda (offspring production in the absence of interactions, in our dataset average viable seed production per species) and alpha (intra and interspecific pairwise interaction coefficients).</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">all.sp.fit &lt;-<span class="st"> </span><span class="kw">cxr_pm_multifit</span>(<span class="dt">data =</span> data,</a>
+<a class="sourceLine" id="cb2-2" title="2">                              <span class="dt">model_family =</span> model_family,</a>
+<a class="sourceLine" id="cb2-3" title="3">                              <span class="dt">focal_column =</span> focal_column,</a>
+<a class="sourceLine" id="cb2-4" title="4">                              <span class="dt">optimization_method =</span> optimization_method,</a>
+<a class="sourceLine" id="cb2-5" title="5">                              <span class="dt">alpha_form =</span> alpha_form,</a>
+<a class="sourceLine" id="cb2-6" title="6">                              <span class="dt">lambda_cov_form =</span> lambda_cov_form,</a>
+<a class="sourceLine" id="cb2-7" title="7">                              <span class="dt">alpha_cov_form =</span> alpha_cov_form,</a>
+<a class="sourceLine" id="cb2-8" title="8">                              <span class="dt">initial_values =</span> initial_values,</a>
+<a class="sourceLine" id="cb2-9" title="9">                              <span class="dt">lower_bounds =</span> lower_bounds,</a>
+<a class="sourceLine" id="cb2-10" title="10">                              <span class="dt">upper_bounds =</span> upper_bounds,</a>
+<a class="sourceLine" id="cb2-11" title="11">                              <span class="dt">fixed_terms =</span> fixed_terms,</a>
+<a class="sourceLine" id="cb2-12" title="12">                              <span class="dt">bootstrap_samples =</span> bootstrap_samples)</a></code></pre></div>
+<p>With these parameters, we can compute pairwise niche differences as 1 - niche overlap. Niche overlap following Chesson’s (2013) definition can only include interaction coefficients with positive values (i.e. competition). Niche overlap can range from 0 to infinity and therefore niche differences can range from minus infinity to zero. Negative niche differences can be interpreted as a signature of priority effects. This means that the species of a pair arriving first to community is the winner. Niche differences between 0 and 1 reflect the degree to which species A and B limit each other compared to themselves. Within this range of values, species might coexist or be competitive excluded according to how stabilizing niche differences offset average fitness differences (see Adler et al. (2007) for more details).</p>
+<p>Finally, it is worth noting that for those cases in which interaction coefficients are negative (i.e. a negative interaction coefficients in some models imply facilitative interaction between species), the <code>cxr</code> package provides another definition of niche differences, developed by Saavedra et al. (2017). This definition of niche differences uses another set of tools based on the Structural Approach (SA) to species coexistence, and while it is qualitatively coherent with the MCT framework, niche differences from both definitions do not exactly match (see Saavedra et al. (2017) for more details).</p>
+<p>The function <code>niche_overlap</code> computes both definitions (MCT and SA). If the input is a <code>cxr_pm_multifit</code> object it will compute the niche overlap between all pairs of focal species.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">niche_overlap_all_pairs &lt;-<span class="st"> </span><span class="kw">niche_overlap</span>(<span class="dt">cxr_multifit =</span> all.sp.fit)</a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="kw">head</span>(niche_overlap_all_pairs)</a></code></pre></div>
+<pre><code>##    sp1  sp2 niche_overlap_MCT niche_overlap_SA
+## 1 BEMA CETE         1.4799356        0.9261855
+## 2 BEMA CHFU         1.4799356        0.9261855
+## 3 BEMA CHMI         0.4679967        0.6372656
+## 4 BEMA HOMA         0.4679967        0.6372656
+## 5 BEMA LEMA         0.2897237        0.3702582
+## 6 BEMA MEEL         1.4755352        0.9265620</code></pre>
+<p>Thus, niche differences are simply</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">niche_overlap_all_pairs<span class="op">$</span>MCT_niche_diff &lt;-<span class="st"> </span><span class="dv">1</span> <span class="op">-</span><span class="st"> </span>niche_overlap_all_pairs<span class="op">$</span>niche_overlap_MCT</a>
+<a class="sourceLine" id="cb5-2" title="2">niche_overlap_all_pairs<span class="op">$</span>SA_niche_diff &lt;-<span class="st"> </span><span class="dv">1</span> <span class="op">-</span><span class="st"> </span>niche_overlap_all_pairs<span class="op">$</span>niche_overlap_SA</a></code></pre></div>
+<p><strong>Average fitness differences between pair of species</strong></p>
+<p>The second type of pairwise differences relevant to species coexistence are the average fitness differences. These are, properly speaking, a ratio, and reflect the degree to which one species is a superior competitor over another. Conceptually, they range from 1 to infinity, so that when fitness differences are equal to 1, both species are equivalent competitors. Ratios lower than 1 mean than the denominator species is the superior competitor, so that the standard ratio is calculated with the superior competitor in the numerator.</p>
+<p>Average fitness differences are defined by two components, the ‘demographic ratio’ and the ‘competitive response ratio’. The ‘demographic ratio’ is a density independent term that describes the degree to which one species (species j) has higher offspring production than another species (species i). The ‘competitive response ratio’ is a density dependent term, which describes the degree to which species i is more sensitive to both intra and interspecific competition than species j. Because both ratios define the average fitness differences, this means that a species can be a superior competitor because it produces high number of for instance seeds/eggs or because its offspring production is little reduced in the presence of competitors. This formulation is explained in greater detail by Godoy and Levine (2014).</p>
+<p>Both components of average fitness differences can be computed with <code>cxr</code>. As it is the case with the niche overlap calculations, average fitness differences in the context of MCT are only defined for negative interactions, i.e. positive alpha values. Saavedra et al. (2017) developed a structural analog of this metric, that we also include in our package. Thus, the function <code>avg_fitness_diff</code> returns the demographic ratio, competitive response ratio, and average fitness differences for each species pair in the context of MCT, as well as the structural analog of these differences. It accepts the same arguments as the <code>niche_overlap</code> function (see help for details), and here we use the multispecies fit obtained above to calculate differences across all pairs of focal species.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">avg_fitness_diff_all_pairs &lt;-<span class="st"> </span><span class="kw">avg_fitness_diff</span>(<span class="dt">cxr_multifit =</span> all.sp.fit)</a>
+<a class="sourceLine" id="cb6-2" title="2"></a>
+<a class="sourceLine" id="cb6-3" title="3"><span class="co"># average fitness ratio of sp1 over sp2</span></a>
+<a class="sourceLine" id="cb6-4" title="4"><span class="co"># if &lt; 1, sp2 is the superior competitor, </span></a>
+<a class="sourceLine" id="cb6-5" title="5"><span class="co"># and the average fitness difference is the inverse ratio,</span></a>
+<a class="sourceLine" id="cb6-6" title="6"><span class="co"># i.e. sp2 over sp1.</span></a>
+<a class="sourceLine" id="cb6-7" title="7"><span class="kw">head</span>(avg_fitness_diff_all_pairs)</a></code></pre></div>
+<pre><code>##    sp1  sp2 demographic_ratio competitive_response_ratio
+## 1 BEMA BEMA         1.0000000                   1.000000
+## 2 CETE BEMA         1.0324559                   6.757051
+## 3 CHFU BEMA         1.0324559                   6.757051
+## 4 CHMI BEMA         1.0324559                   2.136767
+## 5 HOMA BEMA         0.6893739                   2.136767
+## 6 LEMA BEMA         1.0324559                   1.322813
+##   average_fitness_ratio structural_fitness_diff
+## 1              1.000000                     NaN
+## 2              6.976357               40.100599
+## 3              6.976357               40.100599
+## 4              2.206118               20.455896
+## 5              1.473031               14.630237
+## 6              1.365746                8.440563</code></pre>
+<p><strong>Estimation of species competitive ability</strong></p>
+<p>From average fitness differences, we can compute species’ competitive ability. The definition of species competitive ability changes according to the population model selected to describe the dynamics of interacting species. The mathematical procedure to obtain the definition of species competitive ability was firstly described in Godoy and Levine (2014) for the annual plant model, and expanded to a wider family of models by Hart et al. (2018).</p>
+<p>Competitive ability can be calculated given a set of species parameters and model family (e.g. as specified in <code>cxr</code> objects). Again, the set of arguments accepted by the <code>competitive_ability</code> function is the same as the arguments passed to the <code>niche_overlap</code> and <code>avg_fitness_diff</code> functions. The easiest way is to provide a <code>cxr_pm_multifit</code> object with all necessary information.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1">competitive_ability_all_pairs &lt;-<span class="st"> </span><span class="kw">competitive_ability</span>(<span class="dt">cxr_multifit =</span> all.sp.fit)</a>
+<a class="sourceLine" id="cb8-2" title="2"><span class="kw">head</span>(competitive_ability_all_pairs)</a></code></pre></div>
+<pre><code>##    sp1  sp2 competitive_ability_sp1
+## 2 CETE BEMA                460.5170
+## 3 CHFU BEMA                460.5170
+## 4 CHMI BEMA                145.6283
+## 5 HOMA BEMA                307.4886
+## 6 LEMA BEMA                285.0932
+## 7 MEEL BEMA                280.2495</code></pre>
+<p><strong>Estimation of species fitness in the absence of niche differences</strong></p>
+<p>In the previous steps, average fitness differences and therefore species competitive ability are computed combining density independent and density dependent effects. This means that these metrics are estimated in the presence of stabilizing niche differences. However in some cases, it can be interesting for the user to estimate species fitness in the absence of niche differences. This is the case for instance if we want to list species according to a competitive hierarchy. With this procedure, we would be able to tease apart which species would be the first superior competitor if we remove niche differences, the second superior competitor, and so on, up to the weakest competitor. In order to define this species fitness against all other competitors, we need to collapse pairwise interaction coefficients into two components: how species respond to overall competition (competitive response) and how species affect other species (competitive effect). Both components are defined in Godoy et al. (2014).</p>
+<p>In <code>cxr</code>, we first need to obtain these components from observational data, and this calculation is done with the <code>cxr_er_fit</code> function. This function is similar to <code>cxr_pm_fit</code>, with some caveats. It accepts a list of observational dataframes, but in this case the number of observations of each focal species must match (this is in order to compute balanced parameters). Furthermore, the set of focal species needs to be the same as the set of neighbours, unlike in <code>cxr_pm_fit</code>.</p>
+<p>We first set the initial data and values</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1"><span class="kw">data</span>(<span class="st">&quot;neigh_list&quot;</span>)</a>
+<a class="sourceLine" id="cb10-2" title="2"></a>
+<a class="sourceLine" id="cb10-3" title="3"><span class="co"># For obtaining effect and responses, all species need to have the same number of observations. </span></a>
+<a class="sourceLine" id="cb10-4" title="4"><span class="co"># We selct 3 species that have &gt;250 observations</span></a>
+<a class="sourceLine" id="cb10-5" title="5"><span class="kw">names</span>(neigh_list)</a></code></pre></div>
+<pre><code>##  [1] &quot;BEMA&quot; &quot;CETE&quot; &quot;CHFU&quot; &quot;CHMI&quot; &quot;HOMA&quot; &quot;LEMA&quot; &quot;MEEL&quot; &quot;MESU&quot; &quot;PAIN&quot; &quot;PLCO&quot;
+## [11] &quot;POMA&quot; &quot;POMO&quot; &quot;PUPA&quot; &quot;SASO&quot; &quot;SCLA&quot; &quot;SOAS&quot; &quot;SPRU&quot;</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1"><span class="kw">sapply</span>(neigh_list,nrow)</a></code></pre></div>
+<pre><code>## BEMA CETE CHFU CHMI HOMA LEMA MEEL MESU PAIN PLCO POMA POMO PUPA SASO SCLA 
+##  287   10  160    5  288  273   76  229  108  169   90   16   98  290  100 
+## SOAS SPRU 
+##   87   44</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1"><span class="co"># BEMA, HOMA, LEMA, SASO, have &gt; 250 observations.</span></a>
+<a class="sourceLine" id="cb14-2" title="2">example_sp &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">5</span>,<span class="dv">6</span>) <span class="co">#corresponds to c(&quot;BEMA&quot;,&quot;HOMA&quot;,&quot;LEMA&quot;) </span></a>
+<a class="sourceLine" id="cb14-3" title="3">n.obs &lt;-<span class="st"> </span><span class="dv">250</span></a>
+<a class="sourceLine" id="cb14-4" title="4">data &lt;-<span class="st"> </span>neigh_list[example_sp]</a>
+<a class="sourceLine" id="cb14-5" title="5"></a>
+<a class="sourceLine" id="cb14-6" title="6"><span class="co"># use a bounded optimization method</span></a>
+<a class="sourceLine" id="cb14-7" title="7">optimization_method &lt;-<span class="st"> &quot;L-BFGS-B&quot;</span></a>
+<a class="sourceLine" id="cb14-8" title="8"></a>
+<a class="sourceLine" id="cb14-9" title="9"><span class="co"># no fixed terms, i.e. we fit all parameters</span></a>
+<a class="sourceLine" id="cb14-10" title="10">fixed_terms &lt;-<span class="st"> </span><span class="ot">NULL</span></a>
+<a class="sourceLine" id="cb14-11" title="11"></a>
+<a class="sourceLine" id="cb14-12" title="12"><span class="co"># according to a Ricker model (for consistency with previous examples)</span></a>
+<a class="sourceLine" id="cb14-13" title="13">model_family &lt;-<span class="st"> &quot;RK&quot;</span></a>
+<a class="sourceLine" id="cb14-14" title="14"></a>
+<a class="sourceLine" id="cb14-15" title="15"><span class="co"># no standard error calculation in this example</span></a>
+<a class="sourceLine" id="cb14-16" title="16">bootstrap_samples &lt;-<span class="st"> </span><span class="dv">0</span></a>
+<a class="sourceLine" id="cb14-17" title="17"></a>
+<a class="sourceLine" id="cb14-18" title="18"><span class="co"># keep only fitness and neighbours columns</span></a>
+<a class="sourceLine" id="cb14-19" title="19"><span class="co"># and subset to &#39;n.obs&#39; rows</span></a>
+<a class="sourceLine" id="cb14-20" title="20"><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(data)){</a>
+<a class="sourceLine" id="cb14-21" title="21">  data[[i]] &lt;-<span class="st"> </span>data[[i]][<span class="dv">1</span><span class="op">:</span>n.obs,<span class="kw">c</span>(<span class="dv">2</span>,example_sp<span class="op">+</span><span class="dv">2</span>)]<span class="co">#2:length(data[[i]])]</span></a>
+<a class="sourceLine" id="cb14-22" title="22">}</a>
+<a class="sourceLine" id="cb14-23" title="23"></a>
+<a class="sourceLine" id="cb14-24" title="24"><span class="co"># set initial values and bounds</span></a>
+<a class="sourceLine" id="cb14-25" title="25">initial_values_er =<span class="st"> </span><span class="kw">list</span>(<span class="dt">lambda =</span> <span class="dv">10</span>, </a>
+<a class="sourceLine" id="cb14-26" title="26">                         <span class="dt">effect =</span> <span class="dv">1</span>, </a>
+<a class="sourceLine" id="cb14-27" title="27">                         <span class="dt">response =</span> <span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb14-28" title="28">lower_bounds_er =<span class="st"> </span><span class="kw">list</span>(<span class="dt">lambda =</span> <span class="dv">1</span>, </a>
+<a class="sourceLine" id="cb14-29" title="29">                       <span class="dt">effect =</span> <span class="fl">0.1</span>, </a>
+<a class="sourceLine" id="cb14-30" title="30">                       <span class="dt">response =</span> <span class="fl">0.1</span>)</a>
+<a class="sourceLine" id="cb14-31" title="31">upper_bounds_er =<span class="st"> </span><span class="kw">list</span>(<span class="dt">lambda =</span> <span class="dv">100</span>, </a>
+<a class="sourceLine" id="cb14-32" title="32">                       <span class="dt">effect =</span> <span class="dv">10</span>, </a>
+<a class="sourceLine" id="cb14-33" title="33">                       <span class="dt">response =</span> <span class="dv">10</span>)</a></code></pre></div>
+<p>and obtain the maximum-likelihood estimation of competitive effects and responses.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1">er.fit &lt;-<span class="st"> </span><span class="kw">cxr_er_fit</span>(<span class="dt">data =</span> data,</a>
+<a class="sourceLine" id="cb15-2" title="2">                          <span class="dt">model_family =</span> model_family,</a>
+<a class="sourceLine" id="cb15-3" title="3">                          <span class="dt">optimization_method =</span> optimization_method,</a>
+<a class="sourceLine" id="cb15-4" title="4">                          <span class="dt">initial_values =</span> initial_values_er,</a>
+<a class="sourceLine" id="cb15-5" title="5">                          <span class="dt">lower_bounds =</span> lower_bounds_er,</a>
+<a class="sourceLine" id="cb15-6" title="6">                          <span class="dt">upper_bounds =</span> upper_bounds_er,</a>
+<a class="sourceLine" id="cb15-7" title="7">                          <span class="dt">fixed_terms =</span> fixed_terms,</a>
+<a class="sourceLine" id="cb15-8" title="8">                          <span class="dt">bootstrap_samples =</span> bootstrap_samples)</a></code></pre></div>
+<p>With this information, we can readily obtain specific species fitness by passing the <code>cxr_er_fit</code> object as argument to the <code>species_fitness</code> function.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1">spfitness &lt;-<span class="st"> </span><span class="kw">species_fitness</span>(er.fit)</a>
+<a class="sourceLine" id="cb16-2" title="2">spfitness</a></code></pre></div>
+<pre><code>## fitness_BEMA fitness_HOMA fitness_LEMA 
+##     44.64377     21.38093     41.92705</code></pre>
+<p><strong>References</strong></p>
+<p>Adler, P. B., HilleRisLambers, J., &amp; Levine, J. M. (2007). A niche for neutrality. Ecology letters, 10(2), 95-104.</p>
+<p>Chesson, P. (2000). Mechanisms of maintenance of species diversity. Annual review of Ecology and Systematics, 31(1), 343-366.</p>
+<p>Chesson, P. (2013). Species competition and predation. In Ecological systems (pp. 223-256). Springer, New York, NY.</p>
+<p>Godoy, O., &amp; Levine, J. M. (2014). Phenology effects on invasion success: insights from coupling field experiments to coexistence theory. Ecology, 95(3), 726-736.</p>
+<p>Godoy, O., Kraft, N. J., &amp; Levine, J. M. (2014). Phylogenetic relatedness and the determinants of competitive outcomes. Ecology Letters, 17(7), 836-844.</p>
+<p>Hart, S. P., Freckleton, R. P., &amp; Levine, J. M. (2018). How to quantify competitive ability. Journal of Ecology, 106(5), 1902-1909.</p>
+<p>Saavedra, S., Rohr, R. P., Bascompte, J., Godoy, O., Kraft, N. J., &amp; Levine, J. M. (2017). A structural approach for understanding multispecies coexistence. Ecological Monographs, 87(3), 470-486.</p>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

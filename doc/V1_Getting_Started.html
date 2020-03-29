@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="David Garcia-Callejas and cxr team" />
+
+
+<title>Getting started with cxr</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#header {
+text-align: center;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Getting started with cxr</h1>
+<h4 class="author">David Garcia-Callejas and cxr team</h4>
+
+
+
+<p><strong>Introduction</strong></p>
+<p>The <code>cxr</code> package provides a general interface to obtain estimates of species vital rates and interaction coefficients between species pairs from empirical data. These estimations are critical to parameterize population models describing the dynamics of interacting species. They also allow computing a series of metrics associated with modern coexistence theory that inform about the likelihood of species to coexist. These metrics are 1) <em>niche differences</em> that stabilize coexistence between competing species and 2) <em>average fitness differences</em> that drive competitive dominance and, in the absence of niche differences, determine the superior competitor.</p>
+<p>The package also allows exploring how environmental variation modifies both the intrinsic ability of species to produce offspring and the interaction coefficients between pairs of species (including with itself). This feature opens the possibility of exploring how stabilizing niche differences and average fitness differences vary across environmental gradients, and therefore, it allows analyzing whether the likelihood of species to coexist changes across environmental conditions.</p>
+<p>Here we demonstrate the basic functionality of the package using a published observational dataset (see Lanuza et al. (2018) and vignette 2 (Data formats) for a description of the dataset). With this example, we will specifically estimate seed production in the absence of neighbors (lambda) and the strength and sign of species interactions between species pairs (alpha matrix). These values are the basis for estimating the degree of niche overlap (i.e 1- niche differences) and average fitness differences between species pairs, which are covered in vignette 3 (Coexistence metrics).</p>
+<p>Finally, these estimations of lambda and alpha parameters are the basis for analyzing more complex dynamics such as the stability of the dynamics of multispecies communities (see Godoy et al. 2017) and multitrophic coexistence (see Godoy et al. 2018).</p>
+<p><strong>Fitting a single species</strong></p>
+<p>First, we load the package and the associated data. The included dataset contains, for each individual, its reproductive success and the number of neighbors per species in a 7.5 cm buffer (see vignette 2).</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">library</span>(cxr)</a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="kw">data</span>(<span class="st">&quot;neigh_list&quot;</span>) </a></code></pre></div>
+<p>First, we draw the values of a single focal species.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">my.sp &lt;-<span class="st"> &quot;HOMA&quot;</span> </a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="co"># get data from the list</span></a>
+<a class="sourceLine" id="cb2-3" title="3">obs_homa &lt;-<span class="st"> </span>neigh_list[[my.sp]]</a>
+<a class="sourceLine" id="cb2-4" title="4"><span class="co"># no need for ID column</span></a>
+<a class="sourceLine" id="cb2-5" title="5">obs_homa &lt;-<span class="st"> </span><span class="kw">subset</span>(obs_homa,<span class="dt">select =</span> <span class="op">-</span><span class="kw">c</span>(obs_ID))</a>
+<a class="sourceLine" id="cb2-6" title="6"><span class="co"># For each observation, we need the individual plant fitness and the number of neighbours per species (in columns).</span></a>
+<a class="sourceLine" id="cb2-7" title="7"><span class="kw">head</span>(obs_homa)</a></code></pre></div>
+<pre><code>##   fitness BEMA CETE CHFU CHMI HOMA LEMA MEEL MESU PAIN PLCO POMA POMO PUPA
+## 1      12    2    0    0    0   35    0    0    0    0    0    0    0    0
+## 2      12    0    0    0    0   34    2    0    0    0    0    0    0    0
+## 3      12    0    0    0    0   42    1    0    0    0    0    0    0    0
+## 4      12    0    0    0    0   42    2    0    0    0    0    0    0    0
+## 5      12    1    0    0    0   38    0    0    0    0    0    0    0    0
+## 6      12    1    0    0    0   52    1    0    0    0    0    0    0    0
+##   SASO SCLA SOAS SPRU
+## 1    0    0    0    0
+## 2    0    0    0    0
+## 3    0    0    0    0
+## 4    0    0    0    0
+## 5    0    0    0    0
+## 6    0    0    0    0</code></pre>
+<p>Next, we estimate both the reproduction success in the absence of neighbors (lambda) and the competition matrix (alpha). This is done by fitting a model that mathematically relates the reproductive success to the number of neighbors observed. In this first example, we fit the selected species with a Ricker model (‘RK’ model family, see vignette 4) and fairly standard initial values. The default optimization method (<code>Nelder-Mead</code>) does not allow for lower or upper bounds in model parameters, so these arguments are commented out. In ecological terms, this optimization process allow for estimating the strength of both competitive and facilitative interactions, yet bounded optimization algorithms can be used to restrict the analysis to either competition or facilitation (i.e. positive or negative alpha values). We can also specify whether we want to compute standard errors numerically, by setting the argument <code>bootstrap_samples</code> to the number of bootstrap replications for the calculation.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1"><span class="co">#?cxr_pm_fit #check the help file for a description of the arguments</span></a>
+<a class="sourceLine" id="cb4-2" title="2">fit_homa &lt;-<span class="st"> </span><span class="kw">cxr_pm_fit</span>(<span class="dt">data =</span> obs_homa,</a>
+<a class="sourceLine" id="cb4-3" title="3">                       <span class="dt">focal_column =</span> my.sp,</a>
+<a class="sourceLine" id="cb4-4" title="4">                       <span class="dt">model_family =</span> <span class="st">&quot;RK&quot;</span>,</a>
+<a class="sourceLine" id="cb4-5" title="5">                       <span class="dt">covariates =</span> <span class="ot">NULL</span>,</a>
+<a class="sourceLine" id="cb4-6" title="6">                       <span class="dt">optimization_method =</span> <span class="st">&quot;Nelder-Mead&quot;</span>,</a>
+<a class="sourceLine" id="cb4-7" title="7">                       <span class="dt">alpha_form =</span> <span class="st">&quot;pairwise&quot;</span>,</a>
+<a class="sourceLine" id="cb4-8" title="8">                       <span class="dt">lambda_cov_form =</span> <span class="st">&quot;none&quot;</span>,</a>
+<a class="sourceLine" id="cb4-9" title="9">                       <span class="dt">alpha_cov_form =</span> <span class="st">&quot;none&quot;</span>,</a>
+<a class="sourceLine" id="cb4-10" title="10">                       <span class="dt">initial_values =</span> <span class="kw">list</span>(<span class="dt">lambda =</span> <span class="dv">1</span>,</a>
+<a class="sourceLine" id="cb4-11" title="11">                                             <span class="dt">alpha_intra =</span> <span class="fl">.1</span>,</a>
+<a class="sourceLine" id="cb4-12" title="12">                                             <span class="dt">alpha_inter =</span> <span class="fl">.1</span>),</a>
+<a class="sourceLine" id="cb4-13" title="13">                       <span class="co">#not aplicable to this optimazation method</span></a>
+<a class="sourceLine" id="cb4-14" title="14">                       <span class="co"># lower_bounds = list(lambda = 0, </span></a>
+<a class="sourceLine" id="cb4-15" title="15">                       <span class="co">#                     alpha_intra = 0,</span></a>
+<a class="sourceLine" id="cb4-16" title="16">                       <span class="co">#                     alpha_inter = 0),</span></a>
+<a class="sourceLine" id="cb4-17" title="17">                       <span class="co"># upper_bounds = list(lambda = 10,</span></a>
+<a class="sourceLine" id="cb4-18" title="18">                       <span class="co">#                     alpha_intra = 1,</span></a>
+<a class="sourceLine" id="cb4-19" title="19">                       <span class="co">#                     alpha_inter = 1),</span></a>
+<a class="sourceLine" id="cb4-20" title="20">                       <span class="dt">fixed_terms =</span> <span class="ot">NULL</span>,</a>
+<a class="sourceLine" id="cb4-21" title="21">                       <span class="dt">bootstrap_samples =</span> <span class="dv">3</span>) <span class="co"># a low number for demonstration purposes, increase it for robust results.</span></a></code></pre></div>
+<p>For a quick summary of the fit, we can run a summary on the resulting object.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1"><span class="kw">summary</span>(fit_homa)</a></code></pre></div>
+<pre><code>## 
+## model: &#39;RK_pm_alpha_pairwise_lambdacov_none_alphacov_none&#39;
+## optimization method: &#39;Nelder-Mead&#39;
+## ----------
+## focal taxa ID: HOMA
+## observations: 288
+## neighbours: 17
+## covariates: 0
+## ----------
+## focal lambda: 1.505257
+## alpha_intra: -0.05039009
+## mean alpha_inter: -0.09807998
+## mean lambda_cov: - not fit - 
+## mean alpha_cov: - not fit - 
+## log-likelihood of the fit: 617.8487
+## ----------</code></pre>
+<p>This object is actually a list with several elements. We can thus access these elements as usual:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">names</span>(fit_homa) <span class="co">#list of all available elements.</span></a></code></pre></div>
+<pre><code>##  [1] &quot;model_name&quot;                 &quot;model&quot;                     
+##  [3] &quot;data&quot;                       &quot;focal_ID&quot;                  
+##  [5] &quot;optimization_method&quot;        &quot;initial_values&quot;            
+##  [7] &quot;fixed_terms&quot;                &quot;lambda&quot;                    
+##  [9] &quot;alpha_intra&quot;                &quot;alpha_inter&quot;               
+## [11] &quot;lambda_cov&quot;                 &quot;alpha_cov&quot;                 
+## [13] &quot;lambda_standard_error&quot;      &quot;alpha_intra_standard_error&quot;
+## [15] &quot;alpha_inter_standard_error&quot; &quot;lambda_cov_standard_error&quot; 
+## [17] &quot;alpha_cov_standard_error&quot;   &quot;log_likelihood&quot;</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1"><span class="co">#reproduction success in the absence of neighbors</span></a>
+<a class="sourceLine" id="cb9-2" title="2">fit_homa<span class="op">$</span>lambda</a></code></pre></div>
+<pre><code>##   lambda 
+## 1.505257</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1"><span class="co"># intraspecific interaction</span></a>
+<a class="sourceLine" id="cb11-2" title="2">fit_homa<span class="op">$</span>alpha_intra</a></code></pre></div>
+<pre><code>##        HOMA 
+## -0.05039009</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1"><span class="co"># interspecific interactions</span></a>
+<a class="sourceLine" id="cb13-2" title="2">fit_homa<span class="op">$</span>alpha_inter</a></code></pre></div>
+<pre><code>##        BEMA        CETE        CHFU        CHMI        LEMA        MEEL 
+##  0.08059152 -0.01342326 -0.09087920 -2.83352637 -0.25508483  0.49627610 
+##        MESU        PAIN        PLCO        POMA        POMO        PUPA 
+## -0.03525207  0.15782286  0.24147831 -0.21629888 -0.11890464  0.48834929 
+##        SASO        SCLA        SOAS        SPRU 
+##  0.32577742  0.07225904  0.44095580 -0.30942085</code></pre>
+<p><strong>Fitting several species at once</strong></p>
+<p>Most likely users will want to fit model parameters to data from two or more focal species. In order to do that with a single call, we provide the function <code>cxr_pm_multifit</code>, which has a very similar interface to <code>cxr_pm_fit</code>. Here we show how multiple species can be fit using this function. For this multispecies case, rows correspond to species i and columns to species j for each <span class="math inline">\(\alpha_{ij}\)</span> coefficient. The diagonal correspond to the intraspecific cases. In order to showcase other capabilities of the package, we include in this example the effect of a covariate over the fitted lambda and alpha parameters. This covariate, soil salinity, is also included as a dataset in the package (see vignette 2). We consider that the covariate has a linear effect in both the modification of lambda and alpha parameters.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1">my.sp &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;BEMA&quot;</span>,<span class="st">&quot;CETE&quot;</span>,<span class="st">&quot;LEMA&quot;</span>)</a>
+<a class="sourceLine" id="cb15-2" title="2">obs_3sp &lt;-<span class="st"> </span>neigh_list[my.sp]</a>
+<a class="sourceLine" id="cb15-3" title="3"><span class="co"># discard ID column</span></a>
+<a class="sourceLine" id="cb15-4" title="4"><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(obs_3sp)){</a>
+<a class="sourceLine" id="cb15-5" title="5">  obs_3sp[[i]] &lt;-<span class="st"> </span>obs_3sp[[i]][,<span class="dv">2</span><span class="op">:</span><span class="kw">length</span>(obs_3sp[[i]])]</a>
+<a class="sourceLine" id="cb15-6" title="6">}</a>
+<a class="sourceLine" id="cb15-7" title="7"><span class="co"># load covariates: salinity</span></a>
+<a class="sourceLine" id="cb15-8" title="8"><span class="kw">data</span>(<span class="st">&quot;salinity_list&quot;</span>)</a>
+<a class="sourceLine" id="cb15-9" title="9">salinity &lt;-<span class="st"> </span>salinity_list[my.sp]</a>
+<a class="sourceLine" id="cb15-10" title="10"><span class="co"># keep only salinity column</span></a>
+<a class="sourceLine" id="cb15-11" title="11"><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(salinity)){</a>
+<a class="sourceLine" id="cb15-12" title="12">  salinity[[i]] &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(salinity[[i]][,<span class="dv">2</span><span class="op">:</span><span class="kw">length</span>(salinity[[i]])])</a>
+<a class="sourceLine" id="cb15-13" title="13">  <span class="kw">colnames</span>(salinity[[i]]) &lt;-<span class="st"> &quot;salinity&quot;</span></a>
+<a class="sourceLine" id="cb15-14" title="14">}</a></code></pre></div>
+<p>Note how the data is passed in a list with as many elements as focal species. Each element is a dataframe with observations of the corresponding focal species. Same for the covariate, it must be a list with as many elements as focal species. Each element is a dataframe (or a matrix) with a single column and the same number of observations as its associated species data.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1"><span class="kw">names</span>(obs_3sp)</a></code></pre></div>
+<pre><code>## [1] &quot;BEMA&quot; &quot;CETE&quot; &quot;LEMA&quot;</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1"><span class="kw">head</span>(obs_3sp[[<span class="dv">1</span>]])</a></code></pre></div>
+<pre><code>## # A tibble: 6 x 18
+##   fitness  BEMA  CETE  CHFU  CHMI  HOMA  LEMA  MEEL  MESU  PAIN  PLCO  POMA
+##     &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1     116     1     0     0     0     0     0     0     0     0     0    34
+## 2      68     0     0     0     0     0     1     0     0     0     0    47
+## 3      36     0     0     0     0     0     0     0     0     0     0    38
+## 4      64     0     0     0     0     0     5     0     0     0     0    21
+## 5     144     2     0     0     0     0     0     0     0     0     0    55
+## 6      56     1     0     0     0     0     4     0     0     0     0    17
+## # … with 6 more variables: POMO &lt;dbl&gt;, PUPA &lt;dbl&gt;, SASO &lt;dbl&gt;, SCLA &lt;dbl&gt;,
+## #   SOAS &lt;dbl&gt;, SPRU &lt;dbl&gt;</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1"><span class="kw">nrow</span>(obs_3sp[[<span class="dv">1</span>]])</a></code></pre></div>
+<pre><code>## [1] 287</code></pre>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1"><span class="kw">head</span>(salinity[[<span class="dv">1</span>]])</a></code></pre></div>
+<pre><code>##      salinity
+## [1,]   0.9860
+## [2,]   1.0280
+## [3,]   1.0000
+## [4,]   0.8830
+## [5,]   0.8420
+## [6,]   0.9121</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" title="1"><span class="kw">nrow</span>(salinity[[<span class="dv">1</span>]])</a></code></pre></div>
+<pre><code>## [1] 287</code></pre>
+<p>And we fit the model as above, but using the <code>cxr_pm_multifit</code> function.</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1">fit_3sp &lt;-<span class="st"> </span><span class="kw">cxr_pm_multifit</span>(<span class="dt">data =</span> obs_3sp,</a>
+<a class="sourceLine" id="cb26-2" title="2">                           <span class="dt">focal_column =</span> my.sp,</a>
+<a class="sourceLine" id="cb26-3" title="3">                           <span class="dt">model_family =</span> <span class="st">&quot;RK&quot;</span>,</a>
+<a class="sourceLine" id="cb26-4" title="4">                           <span class="co"># here we use a bounded method for demonstration purposes</span></a>
+<a class="sourceLine" id="cb26-5" title="5">                           <span class="dt">optimization_method =</span> <span class="st">&quot;L-BFGS-B&quot;</span>, </a>
+<a class="sourceLine" id="cb26-6" title="6">                           <span class="dt">covariates =</span> salinity,</a>
+<a class="sourceLine" id="cb26-7" title="7">                           <span class="dt">alpha_form =</span> <span class="st">&quot;pairwise&quot;</span>,</a>
+<a class="sourceLine" id="cb26-8" title="8">                           <span class="dt">lambda_cov_form =</span> <span class="st">&quot;global&quot;</span>, <span class="co"># effect of covariates over lambda</span></a>
+<a class="sourceLine" id="cb26-9" title="9">                           <span class="dt">alpha_cov_form =</span> <span class="st">&quot;pairwise&quot;</span>, <span class="co"># effect of covariates over alpha</span></a>
+<a class="sourceLine" id="cb26-10" title="10">                           <span class="dt">initial_values =</span> <span class="kw">list</span>(<span class="dt">lambda =</span> <span class="dv">1</span>,</a>
+<a class="sourceLine" id="cb26-11" title="11">                                                 <span class="dt">alpha_intra =</span> <span class="fl">0.1</span>,</a>
+<a class="sourceLine" id="cb26-12" title="12">                                                 <span class="dt">alpha_inter =</span> <span class="fl">0.1</span>,</a>
+<a class="sourceLine" id="cb26-13" title="13">                                                 <span class="dt">lambda_cov =</span> <span class="fl">0.1</span>,</a>
+<a class="sourceLine" id="cb26-14" title="14">                                                 <span class="dt">alpha_cov =</span> <span class="fl">0.1</span>),</a>
+<a class="sourceLine" id="cb26-15" title="15">                           <span class="dt">lower_bounds =</span> <span class="kw">list</span>(<span class="dt">lambda =</span> <span class="dv">0</span>,</a>
+<a class="sourceLine" id="cb26-16" title="16">                                               <span class="dt">alpha_intra =</span> <span class="dv">0</span>,</a>
+<a class="sourceLine" id="cb26-17" title="17">                                               <span class="dt">alpha_inter =</span> <span class="dv">-1</span>,</a>
+<a class="sourceLine" id="cb26-18" title="18">                                               <span class="dt">lambda_cov =</span> <span class="dv">0</span>,</a>
+<a class="sourceLine" id="cb26-19" title="19">                                               <span class="dt">alpha_cov =</span> <span class="dv">0</span>),</a>
+<a class="sourceLine" id="cb26-20" title="20">                           <span class="dt">upper_bounds =</span> <span class="kw">list</span>(<span class="dt">lambda =</span> <span class="dv">100</span>,</a>
+<a class="sourceLine" id="cb26-21" title="21">                                               <span class="dt">alpha_intra =</span> <span class="dv">1</span>,</a>
+<a class="sourceLine" id="cb26-22" title="22">                                               <span class="dt">alpha_inter =</span> <span class="dv">1</span>,</a>
+<a class="sourceLine" id="cb26-23" title="23">                                               <span class="dt">lambda_cov =</span> <span class="dv">1</span>,</a>
+<a class="sourceLine" id="cb26-24" title="24">                                               <span class="dt">alpha_cov =</span> <span class="dv">1</span>),</a>
+<a class="sourceLine" id="cb26-25" title="25">                           <span class="dt">bootstrap_samples =</span> <span class="dv">3</span>)</a></code></pre></div>
+<p>We can also have a glimpse of this multispecies fit with the summary function:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" title="1"><span class="kw">summary</span>(fit_3sp)</a></code></pre></div>
+<pre><code>## model: &#39;RK_pm_alpha_pairwise_lambdacov_global_alphacov_pairwise&#39;
+## optimization method: &#39;L-BFGS-B&#39;
+## ----------
+##     sp observations neighbours covariates    lambda lambda_cov_salinity
+## 1 BEMA          287         17          1  5.938297                   1
+## 2 CETE           10         17          1 22.232582                   1
+## 3 LEMA          273         17          1  6.203908                   1
+##   mean_alpha_cov_salinity
+## 1              0.05426530
+## 2              0.07713286
+## 3              0.07197335
+## 
+## ----------
+## alpha matrix:
+##            BEMA      CETE CHFU CHMI        HOMA       LEMA       MEEL
+## BEMA  0.0000000 0.1000000  0.1  0.1 -0.04919999 -0.5630872 -0.7799557
+## CETE -1.0000000 0.0878238  0.1  0.1 -0.08190622 -1.0000000  0.1000000
+## LEMA -0.7572122 0.1000000  0.1  0.1 -0.06780444  0.0000000 -0.4657970
+##            MESU        PAIN       PLCO        POMA        POMO       PUPA
+## BEMA -0.6693814 -0.27761118 -0.1206173 -0.06763640 -0.38040817 -0.0852736
+## CETE  0.1000000 -0.03345913 -0.0237964  0.10000000  0.10000000  0.1000000
+## LEMA -0.5569384 -0.27568957 -0.2876628 -0.04151183 -0.05013592  0.1000000
+##            SASO       SCLA       SOAS       SPRU
+## BEMA -0.3726049 -0.6477603 -0.7809465 -0.9995979
+## CETE -0.5170779 -1.0000000  0.1000000 -1.0000000
+## LEMA -0.4923118 -0.9967733 -0.5109932 -0.5894917</code></pre>
+<p>The numerical estimation of parameters depends on the model with which to estimate fitness values, the optimization method, and the underlying data. In our example dataset, some species are better represented than others, and the function will raise warnings if the estimation can be improved or, for example, if any fitted parameter is equal to the lower or upper bounds provided. The <code>cxr_pm_multifit</code> function will behave conservatively and return <code>NULL</code> if parameter fitting fails for <em>any</em> of the focal species passed as arguments, printing an informative message about which species failed to fit.</p>
+<p>Importantly, bounded methods can be very sensitive to the initial values and bounds, so, as in any numerical optimization problem, you should double-check the values obtained, at least by computing standard errors on your parameters with an adequate number of boostrap samples, and preferably by performing sensitivity analyses on the different parameters (in this and other vignettes, we have not included any of these checks, as our examples are merely for demonstration purposes). Aside from these recommendations, in the <code>cxr</code> objects returned from our functions, the log-likelihood of the fit is also included, which may be useful in helping users choose a certain optimization algorithm for a particular dataset. In general, it is recommended to test different optimization algorithms, as they may produce fairly different results (Mullen 2014). In this example, the method used (“L-BFGS-B”, a well-established bounded optimization algorithm) returns the following log-likelihood values:</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1">fit_3sp<span class="op">$</span>log_likelihood</a></code></pre></div>
+<pre><code>##      BEMA      CETE      LEMA 
+## 428.38689  19.95048 410.45358</code></pre>
+<p><strong>Including environmental variability</strong></p>
+<p>In the above example for fitting multiple species at once, we have already offered a glimpse on how to include the effect of environmental covariates over lambda and alpha values. The relevant arguments in <code>cxr_pm_fit</code> and <code>cxr_pm_multifit</code> are ‘lambda_cov_form’ and ‘alpha_cov_form’. If these are set to ‘none’, no effect of covariates is considered. Otherwise, there are a couple options to model this effect (all the options consider linear effects, for now). First, the effect of covariates over lambda can be ‘global’, meaning that each covariate has a global parameter affecting lambda. This is formulated as</p>
+<p><span class="math inline">\(\lambda (1 + \sum_{k=1}^{s} \theta_k c_k)\)</span></p>
+<p>where <span class="math inline">\(s\)</span> is the number of environmental covariates, <span class="math inline">\(c_k\)</span> is the observed value of the i-th covariate and <span class="math inline">\(\theta_k\)</span> is the ‘lambda_cov’ parameter of the <code>cxr</code> functions.</p>
+<p>The effect over alpha values can likewise be ‘global’, so that, for focal species <span class="math inline">\(i\)</span>, each covariate affects the alpha values <span class="math inline">\(\alpha_{ij}\)</span> equally through a global parameter:</p>
+<p><span class="math inline">\(\alpha_* + \sum_{k=1}^{s} \psi_k c_k\)</span></p>
+<p>where <span class="math inline">\(*\)</span> represents the set of all pairwise interaction for a given focal species, and <span class="math inline">\(\psi_k\)</span> is the global parameter relating covariate <span class="math inline">\(k\)</span> to the alpha values. The last possibility included in <code>cxr</code> is for the effect of covariates over alpha values to be interaction-specific, which is coded by specifying ‘alpha_cov_form’ as ‘pairwise’:</p>
+<p><span class="math inline">\(\alpha_{ij} + \sum_{k=1}^{s} \psi_{ij} c_k\)</span></p>
+<p>In this case, each covariate <span class="math inline">\(c_k\)</span> will have a specific parameter <span class="math inline">\(\psi_{ij}\)</span> for its effect over each interaction <span class="math inline">\(\alpha_{ij}\)</span>.</p>
+<p>We can retrieve the fitted values for ‘lambda_cov’ (<span class="math inline">\(\theta\)</span>) and ‘alpha_cov’ (<span class="math inline">\(\psi\)</span>) simply from the output of the function:</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" title="1">fit_3sp<span class="op">$</span>lambda_cov</a></code></pre></div>
+<pre><code>##      salinity
+## BEMA        1
+## CETE        1
+## LEMA        1</code></pre>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb33-1" title="1">fit_3sp<span class="op">$</span>alpha_cov</a></code></pre></div>
+<pre><code>## $salinity
+##           BEMA       CETE CHFU CHMI       HOMA      LEMA MEEL       MESU
+## BEMA 0.0000000 0.10000000  0.1  0.1 0.01180572 0.3404945  0.0 0.12500657
+## CETE 0.0000000 0.03427738  0.1  0.1 0.00000000 0.0000000  0.1 0.10000000
+## LEMA 0.1594998 0.10000000  0.1  0.1 0.02546524 0.0000000  0.0 0.05975332
+##            PAIN        PLCO        POMA POMO PUPA       SASO        SCLA
+## BEMA 0.00000000 0.002846496 0.033100152  0.0  0.0 0.09474366 0.002484093
+## CETE 0.04126779 0.034277380 0.100000000  0.1  0.1 0.35292266 0.048513362
+## LEMA 0.00000000 0.000783356 0.006194745  0.0  0.1 0.56762144 0.004229123
+##      SOAS       SPRU
+## BEMA  0.0 0.01202883
+## CETE  0.1 0.00000000
+## LEMA  0.0 0.00000000</code></pre>
+<p><strong>References</strong></p>
+<p>Godoy, O., Stouffer, D. B., Kraft, N. J., &amp; Levine, J. M. (2017). Intransitivity is infrequent and fails to promote annual plant coexistence without pairwise niche differences. Ecology, 98(5), 1193-1200.</p>
+<p>Lanuza, J. B., Bartomeus, I., &amp; Godoy, O. (2018). Opposing effects of floral visitors and soil conditions on the determinants of competitive outcomes maintain species diversity in heterogeneous landscapes. Ecology letters, 21(6), 865-874.</p>
+<p>Godoy, O., Bartomeus, I., Rohr, R. P., &amp; Saavedra, S. (2018). Towards the integration of niche and network theories. Trends in ecology &amp; evolution, 33(4), 287-300.</p>
+<p>Mullen, K. M. (2014). Continuous global optimization in R. Journal of Statistical Software, 60(6), 1-45.</p>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

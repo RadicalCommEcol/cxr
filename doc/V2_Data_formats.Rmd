@@ -1,0 +1,74 @@
+---
+title: "Data formats"
+output: rmarkdown::html_vignette
+author: David Garcia-Callejas and cxr team
+vignette: >
+  %\VignetteIndexEntry{Data and model formats}
+  \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup,echo=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+**Introduction**
+
+The `cxr` package provides diverse functions to handle empirical datasets, and these need to be in a common format for their processing. Here we review the structure of the dataset included in the package, which conforms to the formats accepted by the different functions of `cxr`. 
+
+**The Caracoles dataset**
+
+We include a dataset of an annual plant system subjected to spatial variability in a Mediterranean-type ecosystem of Southern Europe. Details of the ecosystem and sampling design can be consulted in Lanuza et al. (2018). The main data file contains, for each focal individual sampled, its reproductive success and the number of neighbors per plant species in a 7.5 cm buffer. Note that this format of data is not limited to plant species. In fact, the package is not taxonomically biased, meaning that observational data passed to `cxr` can contain any information of individual performance as a function of the interacting species' relative frequency and density. 
+
+```{r}
+library(cxr)
+data("neigh_list", package = "cxr")
+```
+
+You can check the structure of the data in the help file
+
+```{r}
+?neigh_list
+names(neigh_list)
+head(neigh_list[[1]])
+```
+
+This structure is the one accepted by different `cxr` functions, save for the 'obs_ID' column. In particular, `cxr` accepts a dataframe with a first numeric column named 'fitness' (constrained to positive values), and a variable number of numeric columns with the densities of neighbour taxa. Each row is taken to be an observation of a focal individual.
+
+Additionally to individual fitness and neighbours, we also recorded the species abundance:
+
+```{r}
+data("abundance", package = "cxr")
+head(abundance)
+```
+
+Abundances are stored per plot and subplot, in our spatially explicit design (see Lanuza et al. 2018 for details). In the `neigh_list` dataset, the `obs_ID` column relates each observation to the spatial coordinates of the system. The `spatial_sampling` dataset is a species list, in which each element contains the `obs_ID` of each observation and its spatial arrangement, i.e. the plot and subplot where it was taken.
+
+```{r}
+data("spatial_sampling")
+names(spatial_sampling)
+head(spatial_sampling[["BEMA"]])
+```
+
+We also provide seed soil survival and germination rates for each species. These species vital rates have been obtained independently, and are critical to parameterize a model describing the population dynamics of interacting annual plant species. For more information of how to estimate seed soil survival and germination rates see Godoy and Levine (2014). This file also includes the complete scientific name and abbreviation of each species. Such abbreviations are used as species identifier in all analyses and vignettes.
+
+```{r}
+data("species_rates", package = "cxr")
+species_rates 
+```
+
+The environmental covariate provided for this analysis is soil salinity, measured with a portable Time Domain Reflectometer (TDR). This technology measures the amount of salt dissolved in the soil water that is accessible to plant species. This environmental covariate has been estimated for each sub-plot. There are 36 subplots for each plot, and there are 9 plots in total structured along a micro-topographic gradient: 
+
+```{r}
+data("salinity_list", package = "cxr")
+names(salinity_list)
+head(salinity_list[[1]])
+```
+
+**References**
+
+Godoy, O., & Levine, J. M. (2014). Phenology effects on invasion success: insights from coupling field experiments to coexistence theory. Ecology, 95(3), 726-736.
+
+Lanuza, J. B., Bartomeus, I., & Godoy, O. (2018). Opposing effects of floral visitors and soil conditions on the determinants of competitive outcomes maintain species diversity in heterogeneous landscapes. Ecology letters, 21(6), 865-874.

@@ -2,7 +2,7 @@ Package: cxr
 Type: Package
 Title: A Toolbox for Modelling Species Coexistence in R
 Version: 0.1
-Date: 2019-10-28
+URL: https://github.com/ibartomeus/cxr
 Authors@R: c(person("David", "Garcia-Callejas", role = c("aut", "cre"), 
     email = "david.garcia.callejas@gmail.com", 
     comment = c(ORCID = "0000-0001-6982-476X")),
@@ -23,13 +23,13 @@ Description: Recent developments in modern coexistence theory has advanced
     The functions are flexible and can include covariates 
     and different fitting algorithms can be used. 
 License: MIT + file LICENCE
+BugReports: https://github.com/ibartomeus/cxr/issues
 Encoding: latin1
 Depends:
   R (>= 3.5)
 Imports:
     optimx,
     stats,
-    nlme,
     mvtnorm
 RoxygenNote: 6.1.1
 Suggests: 

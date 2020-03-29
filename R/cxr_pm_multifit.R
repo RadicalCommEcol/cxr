@@ -4,7 +4,7 @@
 #' focal species, instead of making separate calls to \code{cxr_pm_fit}.
 #'
 #' @param data named list in which each component is 
-#' a dataframe with a fitness column and a number of columns representing neigbhours
+#' a dataframe with a fitness column and a number of columns representing neighbours
 #' @param focal_column character vector with the same length as data,
 #' giving the names of the columns representing
 #' intraspecific observations for each species, 

@@ -1,0 +1,482 @@
+---
+title: "Using your own models"
+output: rmarkdown::html_vignette
+author: David Garcia-Callejas and cxr team
+vignette: >
+  %\VignetteIndexEntry{User-defined Models}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, echo=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+One of the design principles of `cxr` is to allow users to estimate parameters from their own models. `cxr` already includes four families of well-known population dynamic models: Beverton-Holt (BH), Lotka-Volterra (LV), Ricker (RK), and Law-Watkinson (LW), all in their discrete time formulation (see the accompanying publication of `cxr` for formulation of these general families). Users can choose between these default families by setting the `model_family` argument to the acronym of the chosen model. In this vignette we show, step by step, how other user-defined models can be integrated in the package.
+
+First of all, a common feature of the families included is that they rely on a common set of parameters, namely `lambda`,`alpha` (separated in `alpha_intra` and `alpha_inter`), `lambda_cov`, and `alpha_cov`. For now, user-defined models within `cxr` must be restricted to these parameters. A detailed description of these parameters can be found in previous vignettes. This does not preclude users to hard-code other model parameters inside the model functions, and future releases will aim to relax this assumption.
+
+At the end of this vignette we include the full R code of a model template that can be used directly into `cxr`. This template is also included as a stand-alone R file in the source files of the package (`cxr_model_template.R`), and here we first explain each section of it.
+
+First, model functions should be defined with the common set of arguments recognized by `cxr`. 
+
+```{r eval=FALSE}
+pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
+                                                              fitness,
+                                                              neigh_intra_matrix = NULL,
+                                                              neigh_inter_matrix,
+                                                              covariates,
+                                                              fixed_parameters)
+```
+
+Assuming data for $n$ observations of a focal species and $s$ neighbour species (including itself), the function arguments are: 
+
+* *par*: one-dimensional numeric vector including all parameters to fit.
+* *fitness*: one-dimensional vector of length $n$ with fitness observations in log scale.
+* *neigh_intra_matrix*: matrix of $n$ rows and 1 column, with observations of intraspecific neighbours.
+* *neigh_inter_matrix*: matrix of $n$ rows and $s-1$ columns, with observations of interspecific neighbours.
+* *covariates*: dataframe with $n$ rows and as many columns as covariates.
+* *fixed_parameters*: list with values of parameters that are not to be fitted.
+
+the name of the function should be adapted to the parameters you want to fit: 
+
+* *'family'* is the two-letter acronym of your model family.
+* *'alpha_form'* is one of 'alpha_none','alpha_global', or 'alpha_pairwise', depending on whether no alphas, a single alpha, or pairwise alphas are included in your model.
+* *'lambda_cov_form'* is one of 'lambda_cov_none' or 'lambda_cov_global', depending on whether you include the effect of covariates over lambda.
+* *'alpha_cov_form'* is one of 'alpha_cov_none', 'alpha_cov_global', or 'alpha_cov_pairwise', depending on whether and how to include the effect of covariates over alpha values: no inclusion, a global parameter for each covariate on the alpha values, or interaction-specific parameters for each covariate.
+
+Thus, if you code a model from your User Model (UM) family that includes pairwise alphas, but no effects of covariates over lambda or alpha, your function must be named as:
+
+```{r eval=FALSE}
+pm_UM_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
+                                                              fitness,
+                                                              neigh_intra_matrix = NULL,
+                                                              neigh_inter_matrix,
+                                                              covariates,
+                                                              fixed_parameters)
+```
+
+The first step inside the function is to retrieve the different parameters from the one-dimensional `par` vector. You should not have to change this section except for commenting or commenting out the section where parameters are retrieved. For example, if your model does not include `lambda_cov` or `alpha_cov`, you should comment their sections. Note that it includes a final parameter, sigma, that should always be there, as it keeps track of the error associated to the fit.
+
+This is how this part in your 'pm_UM_alpha_pairwise_lambdacov_none_alphacov_none' model would look like:
+
+```{r eval=FALSE}
+
+# retrieve parameters -----------------------------------------------------
+# parameters to fit are all in the "par" vector,
+# so we need to retrieve them one by one
+# order is {lambda,lambda_cov,alpha,alpha_cov,sigma}
+
+# comment or uncomment sections for the different parameters
+# depending on whether your model includes them
+# note that the section on alpha_inter includes two
+# possibilities, depending on whether a single alpha is 
+# fitted for all interactions (global) or each pairwise alpha is 
+# different (pairwise)
+# both are commented, you need to uncomment the appropriate one
+
+# likewise for the section on alpha_cov
+
+# --------------------------------------------------------------------------
+
+pos <- 1
+
+# if a parameter is passed within the "par" vector,
+# it should be NULL in the "fixed_parameters" list
+
+# lambda
+if(is.null(fixed_parameters$lambda)){
+  lambda <- par[pos]
+  pos <- pos + 1
+}else{
+  lambda <- fixed_parameters[["lambda"]]
+}
+
+# lambda_cov
+# if(is.null(fixed_parameters$lambda_cov)){
+#   lambda_cov <- par[pos:(pos+ncol(covariates)-1)]
+#   pos <- pos + ncol(covariates)
+# }else{
+#   lambda_cov <- fixed_parameters[["lambda_cov"]]
+# }
+
+# alpha_intra
+if(!is.null(neigh_intra_matrix)){
+  # intra
+  if(is.null(fixed_parameters[["alpha_intra"]])){
+    alpha_intra <- par[pos]
+    pos <- pos + 1
+  }else{
+    alpha_intra <- fixed_parameters[["alpha_intra"]]
+  }
+}else{
+  alpha_intra <- NULL
+}
+
+# alpha_inter
+if(is.null(fixed_parameters[["alpha_inter"]])){
+  # uncomment for alpha_global
+  # alpha_inter <- par[pos]
+  # pos <- pos + 1
+  
+  # uncomment for alpha_pairwise
+  alpha_inter <- par[pos:(pos+ncol(neigh_inter_matrix)-1)]
+  pos <- pos + ncol(neigh_inter_matrix)
+}else{
+  alpha_inter <- fixed_parameters[["alpha_inter"]]
+}
+
+# alpha_cov
+# if(is.null(fixed_parameters$alpha_cov)){
+#   # uncomment for alpha_cov_global
+#   # alpha_cov <- par[pos:(pos+ncol(covariates)-1)]
+#   # pos <- pos + ncol(covariates)
+#   
+#   # uncomment for alpha_cov_pairwise
+#   # alpha_cov <- par[pos:(pos+(ncol(covariates)*
+#   # (ncol(neigh_inter_matrix)+ncol(neigh_intra_matrix)))-1)]
+#   # pos <- pos + (ncol(covariates)*(ncol(neigh_inter_matrix)+ncol(neigh_intra_matrix)))
+# }else{
+#   alpha_cov <- fixed_parameters[["alpha_cov"]]
+# }
+
+# sigma - this is always necessary
+sigma <- par[length(par)]
+```
+
+At this point, you can code your model. This is how the equivalent Beverton-Holt model looks like, for reference:
+
+``` {r eval=FALSE}
+
+# MODEL CODE HERE ---------------------------------------------------------
+
+# the model should return a "pred" value
+# a function of lambda, alpha_intra, alpha_inter, lambda_cov, alpha_cov 
+# and neigh_intra_matrix, neigh_inter_matrix, and covariates
+
+# we do not differentiate alpha_intra from alpha_inter in this model
+# so, put together alpha_intra and alpha_inter, and the observations
+# with intraspecific ones at the beginning
+if(!is.null(alpha_intra)){
+  alpha <- c(alpha_intra,alpha_inter)
+  all_neigh_matrix <- cbind(neigh_intra_matrix,neigh_inter_matrix)
+}else{
+  alpha <- alpha_inter
+  all_neigh_matrix <- neigh_inter_matrix
+}
+
+term = 1 #create the denominator term for the model
+for(z in 1:ncol(all_neigh_matrix)){
+  term <- term + alpha[z]*all_neigh_matrix[,z] 
+}
+pred <- lambda/ term
+
+# MODEL CODE ENDS HERE ----------------------------------------------------
+```
+
+Note how there are no hard-coded checks for ensuring that alpha values and neigh_matrix values are appropriately sorted. This is performed in the `cxr_pm_fit` function that internally sorts data and call this model for optimization.
+
+The last part of the model function is returning the negative log-likelihood value for that particular parameter combination. This is the value that the numerical optimization algorithms aim to minimize. You should not change this code.
+
+```{r eval=FALSE}
+# the routine returns the sum of negative log-likelihoods of the data and model:
+# DO NOT CHANGE THIS
+llik <- dnorm(fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
+return(sum(-1*llik))
+```
+
+When you have a functioning model, you should be able to use it within `cxr` as soon as you load your model into the global environment, which can be done simply by 'sourcing' your R file named with the name of your model, i.e. 'pm_UM_alpha_pairwise_lambdacov_none_alphacov_none.R' in our example.
+
+Thus, for fitting a certain dataset with your custom model, you would call the `cxr_pm_fit` function with the appropriate parameters:
+
+```{r eval=FALSE}
+# load your model into the global environment
+source("./pm_UM_alpha_pairwise_lambdacov_none_alphacov_none.R")
+# fit your data
+custom_fit <- cxr_pm_fit(data = custom_data, # assuming custom_data is already set...
+                         focal_column = my_focal, # assuming my_focal is already set...
+                         model_family = "UM",
+                         covariates = NULL, # as we have no covariate effects
+                         alpha_form = "pairwise",
+                         lambda_cov_form = "none",
+                         alpha_cov_form = "none")
+```
+
+If the function cannot find a model matching the provided 'model_family','alpha_form','lambda_cov_form', and 'alpha_cov_form', it will output a message and return NULL. On a final note, if you think your bright new model can be useful for fellow scientists, we encourage you to make a pull request for integrating it in the set of default model families included in `cxr`. An interesting update to the package would be, in addition to include other model families, to implement non-linear models of covariate effects over lambda and alpha values.
+
+There are several issues that you should have in mind when developing custom models. First, recall that numerical optimization methods may be bounded or unbounded. If your model does not return meaningful values for part of the parameter space defined by the hypervolume of parameter boundaries, bounded optimization methods (such as 'L-BFGS-B' or 'bobyqa') will fail. This is well exemplified by the discrete Lotka-Volterra model: 
+
+$\lambda_i - \alpha_{ii}N_i - \alpha_{ij}Nj$
+
+which can easily produce negative values and thus undefined log-likelihoods. The second point to note is that user-defined population dynamics models are sufficient to obtain tailored lambda and alpha values, but importantly, several MCT metrics are also model-specific.
+
+**Model-specific coexistence metrics**
+
+Among the coexistence metrics that can be calculated with `cxr`, five of them are model-specific, i.e. have different formulations depending on the underlying population dynamics model from which lambda and alpha values are obtained. These are:
+
+* demographic ratio (and therefore, average fitness differences in the MCT formulation)
+* competitive ability
+* competitive effects and responses
+* species fitness in the absence of niche differences
+
+All these have different formulations for different model families. Therefore, if you want to estimate coexistence metrics based on custom models, you should provide a full set of formulations for these metrics. Here we show their formulation for Beverton-Holt models, for reference. The supplementary material of Godoy and Levine (2014) and that of Hart et al. (2018) are good places to explore the mathematical underpinnings of these particularities.
+
+* demographic ratio:
+
+```{r eval=FALSE}
+BH_demographic_ratio <- function(pair_lambdas){
+  (pair_lambdas[1]-1)/(pair_lambdas[2]-1)
+}
+```
+
+* competitive ability:
+
+```{r eval=FALSE}
+BH_competitive_ability <- function(lambda, pair_matrix){
+  if(all(pair_matrix >= 0)){
+    (lambda - 1)/sqrt(pair_matrix[1,1] * pair_matrix[1,2])
+  }else{
+    NA_real_
+  }
+}
+```
+
+* competitive effects and responses: these are obtained with an optimization function `cxr_er_fit`, which is similar to `cxr_pm_fit` (see vignette 1). We include at the end of this vignette the complete model template for a custom effect and response model. The formulation of the Beverton-Holt effect and response model is simply
+
+```{r eval=FALSE}
+pred <- lambda.part/ (1+ e.part*r.part )
+```
+
+where each part potentially depends on neighbour densities and covariates.
+
+* species fitness in the absence of niche differences:
+
+```{r eval=FALSE}
+BH_species_fitness <- function(lambda, competitive_response){
+  (lambda-1)/competitive_response
+}
+```
+
+Therefore, in order to compute coexistence metrics based on your custom population dynamics model, you should code your own versions of these metrics, save them with appropriate names (i.e. changing the model family acronym at the beginning of the functions), and source them in the global environment, in order for the `cxr` interface to be able to find and use them.
+
+**Template for population dynamics models**
+
+```{r eval=FALSE}
+pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
+                                                              fitness,
+                                                              neigh_intra_matrix = NULL,
+                                                              neigh_inter_matrix,
+                                                              covariates,
+                                                              fixed_parameters){
+  
+  
+  # retrieve parameters -----------------------------------------------------
+  # parameters to fit are all in the "par" vector,
+  # so we need to retrieve them one by one
+  # order is {lambda,lambda_cov,alpha_intra,alpha_inter,alpha_cov,sigma}
+  
+  # comment or uncomment sections for the different parameters
+  # depending on whether your model includes them
+  # note that the section on alpha_inter includes two
+  # possibilities, depending on whether a single alpha is 
+  # fitted for all interactions (global) or each pairwise alpha is 
+  # different (pairwise)
+  # both are commented, you need to uncomment the appropriate one
+  
+  # likewise for the section on alpha_cov
+  
+  # --------------------------------------------------------------------------
+  
+  pos <- 1
+  
+  # if a parameter is passed within the "par" vector,
+  # it should be NULL in the "fixed_parameters" list
+  
+  # lambda
+  if(is.null(fixed_parameters$lambda)){
+    lambda <- par[pos]
+    pos <- pos + 1
+  }else{
+    lambda <- fixed_parameters[["lambda"]]
+  }
+  
+  # lambda_cov
+  if(is.null(fixed_parameters$lambda_cov)){
+    lambda_cov <- par[pos:(pos+ncol(covariates)-1)]
+    pos <- pos + ncol(covariates)
+  }else{
+    lambda_cov <- fixed_parameters[["lambda_cov"]]
+  }
+  
+  # alpha_intra
+  if(!is.null(neigh_intra_matrix)){
+    # intra
+    if(is.null(fixed_parameters[["alpha_intra"]])){
+      alpha_intra <- par[pos]
+      pos <- pos + 1
+    }else{
+      alpha_intra <- fixed_parameters[["alpha_intra"]]
+    }
+  }else{
+    alpha_intra <- NULL
+  }
+  
+  # alpha_inter
+  if(is.null(fixed_parameters[["alpha_inter"]])){
+    # uncomment for alpha_global
+    # alpha_inter <- par[pos]
+    # pos <- pos + 1
+    
+    # uncomment for alpha_pairwise
+    # alpha_inter <- par[pos:(pos+ncol(neigh_inter_matrix)-1)]
+    # pos <- pos + ncol(neigh_inter_matrix)
+  }else{
+    alpha_inter <- fixed_parameters[["alpha_inter"]]
+  }
+  
+  # alpha_cov
+  if(is.null(fixed_parameters$alpha_cov)){
+    # uncomment for alpha_cov_global
+    # alpha_cov <- par[pos:(pos+ncol(covariates)-1)]
+    # pos <- pos + ncol(covariates)
+    
+    # uncomment for alpha_cov_pairwise
+    # alpha_cov <- par[pos:(pos+(ncol(covariates)*
+    # (ncol(neigh_inter_matrix)+ncol(neigh_intra_matrix)))-1)]
+    # pos <- pos + (ncol(covariates)*(ncol(neigh_inter_matrix)+ncol(neigh_intra_matrix)))
+  }else{
+    alpha_cov <- fixed_parameters[["alpha_cov"]]
+  }
+  
+  # sigma - this is always necessary
+  sigma <- par[length(par)]
+  
+  # now, parameters have appropriate values (or NULL)
+  # next section is where your model is coded
+  
+  # MODEL CODE HERE ---------------------------------------------------------
+  
+  # the model should return a "pred" value
+  # a function of lambda, alpha_intra, alpha_inter, lambda_cov, alpha_cov 
+  # and neigh_intra_matrix, neigh_inter_matrix, and covariates
+  pred <- 0
+  
+  # MODEL CODE ENDS HERE ----------------------------------------------------
+  
+  # the routine returns the sum of log-likelihoods of the data and model:
+  # DO NOT CHANGE THIS
+  llik <- dnorm(fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
+  return(sum(-1*llik))
+}
+```
+
+**Template for effect and response models**
+
+```{r eval=FALSE}
+er_family_lambdacov_form_effectcov_form_responsecov_form <- function(par,
+                                                                     fitness,
+                                                                     target,
+                                                                     density,
+                                                                     covariates,
+                                                                     fixed_parameters){
+  
+  num.sp <- nrow(target)
+  
+  # parameters to fit are all in the "par" vector,
+  # so we need to retrieve them one by one
+  # order is {lambda,lambda_cov,effect,effect_cov,response,response_cov,sigma}
+  
+  # comment or uncomment sections for the different parameters
+  # depending on whether your model includes them
+  # note that effect and response models must always include
+  # lambda, effect, and response, at least.
+  
+  pos <- 1
+  
+  # if a parameter is passed within the "par" vector,
+  # it should be NULL in the "fixed_parameters" list
+  
+  # lambda
+  if(is.null(fixed_parameters[["lambda"]])){
+    lambda <- par[pos:(pos + num.sp - 1)]
+    pos <- pos + num.sp
+  }else{
+    lambda <- fixed_parameters[["lambda"]]
+  }
+  
+  # lambda_cov
+  if(is.null(fixed_parameters$lambda_cov)){
+    # the covariate effects are more efficient in a matrix form
+    # with species in rows (hence byrow = T, because by default
+    # the vector is sorted first by covariates)
+    lambda_cov <- matrix(par[pos:(pos+(ncol(covariates)*num.sp)-1)],
+                         nrow = num.sp,
+                         byrow = TRUE)
+    pos <- pos + ncol(covariates)*num.sp
+  }else{
+    lambda_cov <- fixed_parameters[["lambda_cov"]]
+  }
+  
+  # effect
+  if(is.null(fixed_parameters[["effect"]])){
+    effect <- par[pos:(pos + num.sp - 1)]
+    pos <- pos + num.sp
+  }else{
+    effect <- fixed_parameters[["effect"]]
+  }
+  
+  # effect_cov
+  if(is.null(fixed_parameters$effect_cov)){
+    effect_cov <- matrix(par[pos:(pos+(ncol(covariates)*num.sp)-1)],
+                         nrow = num.sp,
+                         byrow = TRUE)
+    pos <- pos + ncol(covariates)*num.sp
+  }else{
+    effect_cov <- fixed_parameters[["effect_cov"]]
+  }
+  
+  # response
+  if(is.null(fixed_parameters[["response"]])){
+    response <- par[pos:(pos + num.sp - 1)]
+    pos <- pos + num.sp
+  }else{
+    response <- fixed_parameters[["response"]]
+  }
+  
+  # response_cov
+  if(is.null(fixed_parameters[["response_cov"]])){
+    response_cov <- matrix(par[pos:(pos+(ncol(covariates)*num.sp)-1)],
+                           nrow = num.sp,
+                           byrow = TRUE)
+    pos <- pos + ncol(covariates)*num.sp
+  }else{
+    response_cov <- fixed_parameters[["response_cov"]]
+  }
+  
+  sigma <- par[length(par)]
+  
+  # now, parameters have appropriate values (or NULL)
+  # next section is where your model is coded
+  
+  # MODEL CODE HERE ---------------------------------------------------------
+  
+  # the model should return a "pred" value
+  # a function of lambda, effect, response, lambda_cov, effect_cov, response_cov
+  pred <- 0
+  
+  # MODEL CODE ENDS HERE ----------------------------------------------------
+  
+  # the routine returns the sum of log-likelihoods of the data and model:
+  # DO NOT CHANGE THIS
+  llik <- dnorm(fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
+  return(sum(-1*llik))
+  
+}
+```
+
+**References**
+
+Godoy, O., & Levine, J. M. (2014). Phenology effects on invasion success: insights from coupling field experiments to coexistence theory. Ecology, 95(3), 726-736.
+
+Hart, S. P., Freckleton, R. P., & Levine, J. M. (2018). How to quantify competitive ability. Journal of Ecology, 106(5), 1902-1909.
