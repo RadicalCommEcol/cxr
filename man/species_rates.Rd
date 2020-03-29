@@ -4,7 +4,9 @@
 \name{species_rates}
 \alias{species_rates}
 \title{Species germination and survival rates}
-\format{A data frame with 17 rows and 4 variables}
+\format{
+A data frame with 17 rows and 4 variables
+}
 \usage{
 data(species_rates)
 }

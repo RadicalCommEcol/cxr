@@ -3,7 +3,6 @@
 \docType{package}
 \name{cxr}
 \alias{cxr}
-\alias{cxr-package}
 \title{cxr}
 \description{
 Tools and functions for evaluating multi-species coexistence.

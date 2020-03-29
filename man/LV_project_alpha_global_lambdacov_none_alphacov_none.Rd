@@ -6,8 +6,15 @@
 \title{Lotka-Volterra model for projecting abundances,
 with a global alpha and no covariate effects}
 \usage{
-LV_project_alpha_global_lambdacov_none_alphacov_none(lambda, alpha_intra,
-  alpha_inter, lambda_cov, alpha_cov, abundance, covariates)
+LV_project_alpha_global_lambdacov_none_alphacov_none(
+  lambda,
+  alpha_intra,
+  alpha_inter,
+  lambda_cov,
+  alpha_cov,
+  abundance,
+  covariates
+)
 }
 \arguments{
 \item{lambda}{numeric lambda value.}

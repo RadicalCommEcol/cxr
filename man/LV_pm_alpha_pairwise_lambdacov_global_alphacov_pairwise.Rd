@@ -6,9 +6,14 @@
 \title{Lotka-Volterra model with pairwise alphas, covariate effects on lambda, 
 and pairwise covariate effects on alpha}
 \usage{
-LV_pm_alpha_pairwise_lambdacov_global_alphacov_pairwise(par, fitness,
-  neigh_intra_matrix = NULL, neigh_inter_matrix, covariates,
-  fixed_parameters)
+LV_pm_alpha_pairwise_lambdacov_global_alphacov_pairwise(
+  par,
+  fitness,
+  neigh_intra_matrix = NULL,
+  neigh_inter_matrix,
+  covariates,
+  fixed_parameters
+)
 }
 \arguments{
 \item{par}{1d vector of initial parameters: lambda, lambda_cov, alpha, alpha_cov, and sigma}

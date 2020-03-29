@@ -59,11 +59,11 @@ And a set of internal functions, data and models. The functions with prefix `cxr
 Once the package is installed, vignettes can be accessed in the standard way:
 
 ```R
-vignette("V1_Getting_Started",package = "cxr")
+vignette("V1_Getting_started",package = "cxr")
 vignette("V2_Data_formats",package = "cxr")
 vignette("V3_Coexistence_metrics",package = "cxr")
 vignette("V4_Models",package = "cxr")
-vignette("V5_abundance_projections",package = "cxr")
+vignette("V5_Abundance_projections",package = "cxr")
 ```
 
 ### Citation information

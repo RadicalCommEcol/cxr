@@ -5,11 +5,20 @@
 \title{Title
 Project abundances from population dynamics models}
 \usage{
-abundance_projection(cxr_fit = NULL, model_family = NULL,
-  alpha_form = NULL, lambda_cov_form = NULL, alpha_cov_form = NULL,
-  lambda = NULL, alpha_matrix = NULL, lambda_cov = NULL,
-  alpha_cov = NULL, covariates = NULL, timesteps = 0,
-  initial_abundances = 0)
+abundance_projection(
+  cxr_fit = NULL,
+  model_family = NULL,
+  alpha_form = NULL,
+  lambda_cov_form = NULL,
+  alpha_cov_form = NULL,
+  lambda = NULL,
+  alpha_matrix = NULL,
+  lambda_cov = NULL,
+  alpha_cov = NULL,
+  covariates = NULL,
+  timesteps = 0,
+  initial_abundances = 0
+)
 }
 \arguments{
 \item{cxr_fit}{object of type `cxr_pm_multifit`. If this is not specified,

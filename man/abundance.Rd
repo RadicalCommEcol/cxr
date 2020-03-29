@@ -4,7 +4,9 @@
 \name{abundance}
 \alias{abundance}
 \title{Abundance measurements}
-\format{A data frame with 5184 rows and 4 variables}
+\format{
+A data frame with 5184 rows and 4 variables
+}
 \usage{
 data(abundance)
 }

@@ -4,9 +4,17 @@
 \alias{cxr_er_bootstrap}
 \title{standard error estimates for effect and response parameters}
 \usage{
-cxr_er_bootstrap(fitness_model, optimization_method, data, covariates,
-  init_par, lower_bounds, upper_bounds, fixed_parameters,
-  bootstrap_samples)
+cxr_er_bootstrap(
+  fitness_model,
+  optimization_method,
+  data,
+  covariates,
+  init_par,
+  lower_bounds,
+  upper_bounds,
+  fixed_parameters,
+  bootstrap_samples
+)
 }
 \arguments{
 \item{fitness_model}{effect/response function, see \code{cxr_er_fit}}

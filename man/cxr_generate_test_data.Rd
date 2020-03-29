@@ -4,14 +4,29 @@
 \alias{cxr_generate_test_data}
 \title{Generate simulated interaction data}
 \usage{
-cxr_generate_test_data(focal_sp = 1, neigh_sp = 1, covariates = 0,
-  observations = 10, alpha_form = c("pairwise", "none", "global"),
-  lambda_cov_form = c("none", "global"), alpha_cov_form = c("none",
-  "global", "pairwise"), focal_lambda = NULL, min_lambda = 0,
-  max_lambda = 10, alpha = NULL, min_alpha = 0, max_alpha = 1,
-  alpha_cov = NULL, min_alpha_cov = -1, max_alpha_cov = 1,
-  lambda_cov = NULL, min_lambda_cov = -1, max_lambda_cov = 1,
-  min_cov = 0, max_cov = 1)
+cxr_generate_test_data(
+  focal_sp = 1,
+  neigh_sp = 1,
+  covariates = 0,
+  observations = 10,
+  alpha_form = c("pairwise", "none", "global"),
+  lambda_cov_form = c("none", "global"),
+  alpha_cov_form = c("none", "global", "pairwise"),
+  focal_lambda = NULL,
+  min_lambda = 0,
+  max_lambda = 10,
+  alpha = NULL,
+  min_alpha = 0,
+  max_alpha = 1,
+  alpha_cov = NULL,
+  min_alpha_cov = -1,
+  max_alpha_cov = 1,
+  lambda_cov = NULL,
+  min_lambda_cov = -1,
+  max_lambda_cov = 1,
+  min_cov = 0,
+  max_cov = 1
+)
 }
 \arguments{
 \item{focal_sp}{number of focal species, defaults to 1.}

@@ -5,9 +5,14 @@
 \alias{LW_pm_alpha_global_lambdacov_none_alphacov_none}
 \title{Law-Watkinson model with a global alpha and no covariate effects}
 \usage{
-LW_pm_alpha_global_lambdacov_none_alphacov_none(par, fitness,
-  neigh_intra_matrix = NULL, neigh_inter_matrix, covariates,
-  fixed_parameters)
+LW_pm_alpha_global_lambdacov_none_alphacov_none(
+  par,
+  fitness,
+  neigh_intra_matrix = NULL,
+  neigh_inter_matrix,
+  covariates,
+  fixed_parameters
+)
 }
 \arguments{
 \item{par}{1d vector of initial parameters: lambda, alpha, and sigma.}

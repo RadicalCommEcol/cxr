@@ -4,8 +4,12 @@
 \alias{niche_overlap}
 \title{Niche overlap between two species}
 \usage{
-niche_overlap(cxr_multifit = NULL, cxr_sp1 = NULL, cxr_sp2 = NULL,
-  pair_matrix = NULL)
+niche_overlap(
+  cxr_multifit = NULL,
+  cxr_sp1 = NULL,
+  cxr_sp2 = NULL,
+  pair_matrix = NULL
+)
 }
 \arguments{
 \item{cxr_multifit}{cxr_pm_multifit object, with parameters for a series of species.}

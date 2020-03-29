@@ -5,8 +5,14 @@
 \alias{LV_er_lambdacov_none_effectcov_none_responsecov_none}
 \title{Effect response Lotka-Volterra model without covariate effects}
 \usage{
-LV_er_lambdacov_none_effectcov_none_responsecov_none(par, fitness, target,
-  density, covariates, fixed_parameters)
+LV_er_lambdacov_none_effectcov_none_responsecov_none(
+  par,
+  fitness,
+  target,
+  density,
+  covariates,
+  fixed_parameters
+)
 }
 \arguments{
 \item{par}{1d vector with initial parameters in the order: 

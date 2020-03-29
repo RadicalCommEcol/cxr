@@ -4,8 +4,11 @@
 \alias{fitness_ratio}
 \title{Fitness ratio among two or more species}
 \usage{
-fitness_ratio(effect_response_fit = NULL, fitness_sp1 = NULL,
-  fitness_sp2 = NULL)
+fitness_ratio(
+  effect_response_fit = NULL,
+  fitness_sp1 = NULL,
+  fitness_sp2 = NULL
+)
 }
 \arguments{
 \item{effect_response_fit}{cxr_er_fit object}

@@ -4,8 +4,12 @@
 \alias{species_fitness}
 \title{Fitness of a species}
 \usage{
-species_fitness(effect_response_fit = NULL, lambda = NULL,
-  competitive_response = NULL, model_family = NULL)
+species_fitness(
+  effect_response_fit = NULL,
+  lambda = NULL,
+  competitive_response = NULL,
+  model_family = NULL
+)
 }
 \arguments{
 \item{effect_response_fit}{cxr_er_fit object with valid lambda and response terms.}

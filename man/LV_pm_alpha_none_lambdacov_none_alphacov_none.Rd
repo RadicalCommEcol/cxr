@@ -4,9 +4,14 @@
 \alias{LV_pm_alpha_none_lambdacov_none_alphacov_none}
 \title{Lotka-Volterra model with no alphas and no covariate effects}
 \usage{
-LV_pm_alpha_none_lambdacov_none_alphacov_none(par, fitness,
-  neigh_intra_matrix = NULL, neigh_inter_matrix, covariates,
-  fixed_parameters)
+LV_pm_alpha_none_lambdacov_none_alphacov_none(
+  par,
+  fitness,
+  neigh_intra_matrix = NULL,
+  neigh_inter_matrix,
+  covariates,
+  fixed_parameters
+)
 }
 \arguments{
 \item{par}{1d vector of initial parameters: lambda and sigma}

@@ -4,8 +4,10 @@
 \name{neigh_list}
 \alias{neigh_list}
 \title{neighbours and fitness observations}
-\format{A list with 17 elements, each of which a dataframe
-of variable number of rows and 18 columns}
+\format{
+A list with 17 elements, each of which a dataframe
+of variable number of rows and 18 columns
+}
 \usage{
 data(neigh_list)
 }

@@ -4,8 +4,14 @@
 \alias{avg_fitness_diff}
 \title{Average fitness differences}
 \usage{
-avg_fitness_diff(cxr_multifit = NULL, cxr_sp1 = NULL, cxr_sp2 = NULL,
-  pair_lambdas = NULL, pair_matrix = NULL, model_family = NULL)
+avg_fitness_diff(
+  cxr_multifit = NULL,
+  cxr_sp1 = NULL,
+  cxr_sp2 = NULL,
+  pair_lambdas = NULL,
+  pair_matrix = NULL,
+  model_family = NULL
+)
 }
 \arguments{
 \item{cxr_multifit}{cxr_pm_multifit object, with parameters for a series of species.}

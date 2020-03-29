@@ -6,8 +6,15 @@
 \title{Law-Watkinson model for projecting abundances,
 with specific alpha values and no covariate effects}
 \usage{
-LW_project_alpha_pairwise_lambdacov_none_alphacov_none(lambda, alpha_intra,
-  alpha_inter, lambda_cov, alpha_cov, abundance, covariates)
+LW_project_alpha_pairwise_lambdacov_none_alphacov_none(
+  lambda,
+  alpha_intra,
+  alpha_inter,
+  lambda_cov,
+  alpha_cov,
+  abundance,
+  covariates
+)
 }
 \arguments{
 \item{lambda}{numeric lambda value.}

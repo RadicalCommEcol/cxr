@@ -4,9 +4,18 @@
 \alias{cxr_pm_bootstrap}
 \title{Standard error estimates for model parameters}
 \usage{
-cxr_pm_bootstrap(fitness_model, optimization_method, data, focal_column,
-  covariates, init_par, lower_bounds, upper_bounds, fixed_parameters,
-  bootstrap_samples)
+cxr_pm_bootstrap(
+  fitness_model,
+  optimization_method,
+  data,
+  focal_column,
+  covariates,
+  init_par,
+  lower_bounds,
+  upper_bounds,
+  fixed_parameters,
+  bootstrap_samples
+)
 }
 \arguments{
 \item{fitness_model}{function returning a single value to minimize, given a set of parameters and a fitness metric}

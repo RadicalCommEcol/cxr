@@ -4,8 +4,10 @@
 \name{spatial_sampling}
 \alias{spatial_sampling}
 \title{spatial arrangement of the observations}
-\format{A list with 16 elements, each of which a dataframe
-of variable number of rows and 18 columns}
+\format{
+A list with 16 elements, each of which a dataframe
+of variable number of rows and 18 columns
+}
 \usage{
 data(spatial_sampling)
 }

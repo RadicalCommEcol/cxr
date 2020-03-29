@@ -4,19 +4,27 @@
 \alias{cxr_pm_multifit}
 \title{Multi-species parameter optimization}
 \usage{
-cxr_pm_multifit(data, model_family = c("BH"), focal_column = NULL,
-  covariates = NULL, optimization_method = c("BFGS", "CG",
-  "Nelder-Mead", "ucminf", "L-BFGS-B", "nlm", "nlminb", "Rcgmin", "Rvmmin",
-  "spg", "bobyqa", "nmkb", "hjkb", "nloptr_CRS2_LM", "nloptr_ISRES",
-  "nloptr_DIRECT_L_RAND", "DEoptimR", "hydroPSO", "GenSA"),
+cxr_pm_multifit(
+  data,
+  model_family = c("BH"),
+  focal_column = NULL,
+  covariates = NULL,
+  optimization_method = c("BFGS", "CG", "Nelder-Mead", "ucminf", "L-BFGS-B", "nlm",
+    "nlminb", "Rcgmin", "Rvmmin", "spg", "bobyqa", "nmkb", "hjkb", "nloptr_CRS2_LM",
+    "nloptr_ISRES", "nloptr_DIRECT_L_RAND", "DEoptimR", "hydroPSO", "GenSA"),
   alpha_form = c("none", "global", "pairwise"),
-  lambda_cov_form = c("none", "global"), alpha_cov_form = c("none",
-  "global", "pairwise"), initial_values = NULL, lower_bounds = NULL,
-  upper_bounds = NULL, fixed_terms = NULL, bootstrap_samples = 0)
+  lambda_cov_form = c("none", "global"),
+  alpha_cov_form = c("none", "global", "pairwise"),
+  initial_values = NULL,
+  lower_bounds = NULL,
+  upper_bounds = NULL,
+  fixed_terms = NULL,
+  bootstrap_samples = 0
+)
 }
 \arguments{
 \item{data}{named list in which each component is
-a dataframe with a fitness column and a number of columns representing neigbhours}
+a dataframe with a fitness column and a number of columns representing neighbours}
 
 \item{model_family}{family of model to use. Available families are BH (Beverton-Holt), LV (Lotka-Volterra),
 RK (Ricker), and LW (Law-Watkinson). Users may also define their own families and models (see vignette 4).}

@@ -4,9 +4,14 @@
 \alias{competitive_ability}
 \title{Competitive ability among pairs of species}
 \usage{
-competitive_ability(cxr_multifit = NULL, cxr_sp1 = NULL,
-  cxr_sp2 = NULL, lambda = NULL, pair_matrix = NULL,
-  model_family = NULL)
+competitive_ability(
+  cxr_multifit = NULL,
+  cxr_sp1 = NULL,
+  cxr_sp2 = NULL,
+  lambda = NULL,
+  pair_matrix = NULL,
+  model_family = NULL
+)
 }
 \arguments{
 \item{cxr_multifit}{cxr_pm_multifit object, with parameters for a series of species.}

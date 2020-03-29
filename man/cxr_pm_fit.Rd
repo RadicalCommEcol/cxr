@@ -4,16 +4,24 @@
 \alias{cxr_pm_fit}
 \title{General optimization for population models}
 \usage{
-cxr_pm_fit(data, focal_column = NULL, model_family, covariates = NULL,
-  optimization_method = c("Nelder-Mead", "BFGS", "CG", "ucminf",
-  "L-BFGS-B", "nlm", "nlminb", "Rcgmin", "Rvmmin", "spg", "bobyqa", "nmkb",
-  "hjkb", "nloptr_CRS2_LM", "nloptr_ISRES", "nloptr_DIRECT_L_RAND",
-  "DEoptimR", "hydroPSO", "GenSA"), alpha_form = c("none", "global",
-  "pairwise"), lambda_cov_form = c("none", "global"),
+cxr_pm_fit(
+  data,
+  focal_column = NULL,
+  model_family,
+  covariates = NULL,
+  optimization_method = c("Nelder-Mead", "BFGS", "CG", "ucminf", "L-BFGS-B", "nlm",
+    "nlminb", "Rcgmin", "Rvmmin", "spg", "bobyqa", "nmkb", "hjkb", "nloptr_CRS2_LM",
+    "nloptr_ISRES", "nloptr_DIRECT_L_RAND", "DEoptimR", "hydroPSO", "GenSA"),
+  alpha_form = c("none", "global", "pairwise"),
+  lambda_cov_form = c("none", "global"),
   alpha_cov_form = c("none", "global", "pairwise"),
-  initial_values = list(lambda = 0, alpha_intra = 0, alpha_inter = 0,
-  lambda_cov = 0, alpha_cov = 0), lower_bounds = NULL,
-  upper_bounds = NULL, fixed_terms = NULL, bootstrap_samples = 0)
+  initial_values = list(lambda = 0, alpha_intra = 0, alpha_inter = 0, lambda_cov = 0,
+    alpha_cov = 0),
+  lower_bounds = NULL,
+  upper_bounds = NULL,
+  fixed_terms = NULL,
+  bootstrap_samples = 0
+)
 }
 \arguments{
 \item{data}{dataframe with observations in rows and two sets of columns:

@@ -5,8 +5,14 @@
 \alias{LW_er_lambdacov_global_effectcov_global_responsecov_global}
 \title{Effect response Law-Watkinson model with covariate effects on lambda, effect, and response}
 \usage{
-LW_er_lambdacov_global_effectcov_global_responsecov_global(par, fitness,
-  target, density, covariates, fixed_parameters)
+LW_er_lambdacov_global_effectcov_global_responsecov_global(
+  par,
+  fitness,
+  target,
+  density,
+  covariates,
+  fixed_parameters
+)
 }
 \arguments{
 \item{par}{1d vector with initial parameters in the order: 

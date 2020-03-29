@@ -4,8 +4,10 @@
 \name{salinity_list}
 \alias{salinity_list}
 \title{Salinity measurements}
-\format{A list with 17 elements, each of which a dataframe
-of variable number of rows and 2 numeric columns}
+\format{
+A list with 17 elements, each of which a dataframe
+of variable number of rows and 2 numeric columns
+}
 \usage{
 data(salinity_list)
 }

@@ -5,9 +5,14 @@
 \alias{LV_pm_alpha_pairwise_lambdacov_none_alphacov_none}
 \title{Lotka-Volterra model with pairwise alphas and no covariate effects}
 \usage{
-LV_pm_alpha_pairwise_lambdacov_none_alphacov_none(par, fitness,
-  neigh_intra_matrix = NULL, neigh_inter_matrix, covariates,
-  fixed_parameters)
+LV_pm_alpha_pairwise_lambdacov_none_alphacov_none(
+  par,
+  fitness,
+  neigh_intra_matrix = NULL,
+  neigh_inter_matrix,
+  covariates,
+  fixed_parameters
+)
 }
 \arguments{
 \item{par}{1d vector of initial parameters: 'lambda', 'alpha_intra' (optional), 'alpha_inter', and 'sigma'}
