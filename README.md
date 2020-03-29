@@ -32,7 +32,9 @@ The best way to start is to follow our [vignettes](https://github.com/ibartomeus
 Note that for installing the vignettes alongside the package, you need to use following options at install:
 
 ```R
-devtools::install_github("ibartomeus/cxr", build_opts = c("--no-resave-data", "--no-manual"), build_vignettes = TRUE)
+devtools::install_github("ibartomeus/cxr", 
+                         build_opts = c("--no-resave-data", "--no-manual"), 
+                         build_vignettes = TRUE)
 ```
 
 ### Key features
