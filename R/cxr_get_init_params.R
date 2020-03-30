@@ -113,9 +113,9 @@ cxr_get_init_params <- function(initial_values,
                                                                 initial_values$alpha_cov,
                                                                 name.alpha.cov,"pm")
     }else{
-      init_alpha_cov <- cxr_return_init_length(alpha_cov_form,
-                                               initial_values$alpha_cov,
-                                               name.alpha.cov,"pm")
+      init_alpha_cov <- cxr_return_init_length(par_type = alpha_cov_form,
+                                               par_value = initial_values$alpha_cov,
+                                               par_names = name.alpha.cov,"pm")
     }
   }
   

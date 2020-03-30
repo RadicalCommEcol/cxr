@@ -135,7 +135,7 @@ cxr_pm_multifit <- function(data,
         return(NULL)
       }
     }
-  }
+  }# if-else
   
   # retrieve model ----------------------------------------------------------
   # character string giving the name of the model
@@ -285,7 +285,9 @@ cxr_pm_multifit <- function(data,
         for(i.cov in 1:length(cov.names)){
           # look for i.cov covariate in the vector of lambda_covs affecting i.sp
           # and place it in the matrix
-          splambda_cov[i.sp,i.cov] <- spfits[[i.sp]]$lambda_cov[which(grepl(cov.names[i.cov],names(spfits[[i.sp]]$lambda_cov)))]
+          spfitnames <- substr(names(spfits[[i.sp]]$lambda_cov),12,nchar(names(spfits[[i.sp]]$lambda_cov)))
+          splambda_cov[i.sp,i.cov] <- spfits[[i.sp]]$lambda_cov[which(spfitnames == cov.names[i.cov])]
+          # splambda_cov[i.sp,i.cov] <- spfits[[i.sp]]$lambda_cov[which(grepl(cov.names[i.cov],names(spfits[[i.sp]]$lambda_cov)))]
         }
       }
     }# for i.sp
@@ -329,7 +331,12 @@ cxr_pm_multifit <- function(data,
       
       # fill up matrix
       for(i.sp in 1:length(spnames)){
-        mycov <- spfits[[i.sp]]$alpha_cov[[cov.names[i.cov]]]
+
+        # spfitnames <- substr(names(spfits[[i.sp]]$alpha_cov),12,nchar(names(spfits[[i.sp]]$alpha_cov)))
+        # splambda_cov[i.sp,i.cov] <- spfits[[i.sp]]$lambda_cov[which(spfitnames == cov.names[i.cov])]
+
+        listpos <- which(names(spfits[[i.sp]]$alpha_cov) == cov.names[i.cov])
+        mycov <- spfits[[i.sp]]$alpha_cov[[listpos]]
 
         if(length(mycov)==1){
           # same alpha_cov for all interactions
@@ -410,6 +417,7 @@ cxr_pm_multifit <- function(data,
   
   # lambda_cov also as a matrix, with covariates in columns
   # and focal species in rows
+  
   er_splambda_cov <- NULL
   if(!is.null(covariates) & 
      !all(sapply(spfits,function(x){is.null(x$lambda_cov_standard_error)}))){
@@ -426,14 +434,18 @@ cxr_pm_multifit <- function(data,
                               dimnames = list(names(spfits),cov.names))
     for(i.sp in 1:length(spnames)){
       # lambda_cov
-      if(!is.null(spfits[[i.sp]]$lambda_cov)){
+      if(!is.null(spfits[[i.sp]]$lambda_cov_standard_error)){
         for(i.cov in 1:length(cov.names)){
           # look for i.cov covariate in the vector of lambda_covs affecting i.sp
           # and place it in the matrix
-          er_splambda_cov[i.sp,i.cov] <- 
-            spfits[[i.sp]]$lambda_cov_standard_error[which(
-              grepl(cov.names[i.cov],
-                    names(spfits[[i.sp]]$lambda_cov_standard_error)))]
+          spfitnames <- substr(names(spfits[[i.sp]]$lambda_cov_standard_error),12,(nchar(names(spfits[[i.sp]]$lambda_cov_standard_error))-3))
+          er_splambda_cov[i.sp,i.cov] <- spfits[[i.sp]]$lambda_cov_standard_error[which(spfitnames == cov.names[i.cov])]
+          
+          # grepl does not return exact match
+          # er_splambda_cov[i.sp,i.cov] <- 
+          #   spfits[[i.sp]]$lambda_cov_standard_error[which(
+          #     grepl(cov.names[i.cov],
+          #           names(spfits[[i.sp]]$lambda_cov_standard_error)))]
         }
       }
     }# for i.sp
@@ -480,7 +492,11 @@ cxr_pm_multifit <- function(data,
       
       # fill up matrix
       for(i.sp in 1:length(spnames)){
-        mycov <- spfits[[i.sp]]$alpha_cov_standard_error[[cov.names[i.cov]]]
+        
+        # mycov <- spfits[[i.sp]]$alpha_cov_standard_error[[cov.names[i.cov]]]
+        
+        listpos <- which(names(spfits[[i.sp]]$alpha_cov_standard_error) == cov.names[i.cov])
+        mycov <- spfits[[i.sp]]$alpha_cov_standard_error[[listpos]]
         
         if(length(mycov)==1){
           # same alpha_cov for all interactions

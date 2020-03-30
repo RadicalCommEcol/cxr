@@ -148,6 +148,7 @@ upper_bounds = list(BH = list(lambda = 1000,
 # function ----------------------------------------------------------------
 for(i.conf in 1:length(param.conf)){
 for(i.m in 1:length(model_family)){
+  
   cxr_fit <- cxr_pm_multifit(data = data,
                              focal_column = focal_column,
                              model_family = model_family[i.m],

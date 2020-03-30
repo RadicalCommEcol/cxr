@@ -63,6 +63,7 @@ cxr_check_pm_input <- function(data,
                                  focal_column,
                                  lower_bounds,
                                  upper_bounds,
+                                 covariates,
                                  fixed_terms)
   if(!t4){
     input.message <- ("cxr_pm_fit ERROR: please check the specified initial values/bounds.
@@ -71,7 +72,9 @@ cxr_check_pm_input <- function(data,
                       2) if 'focal_column' is provided, you need to specify
                       initial values for 'alpha_intra', and viceversa.
                       3) elements must be the same in the three lists.
-                      4) if bounds are provided, you need to specify both lower and upper ones."
+                      4) if bounds are provided, you need to specify both lower and upper ones.
+                      5) initial values and boundaries for 'lambda_cov' and/or 'alpha_cov' are of length
+                      1 or equal to the number of covariates."
     )
   }
   

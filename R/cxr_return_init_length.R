@@ -23,16 +23,24 @@ cxr_return_init_length <- function(par_type,
       if(length(par_value) == 1){
         return_par <- rep(par_value,length(par_names))
       }else{
-        return_par <- par_value
+        if(length(par_value) == length(par_names)){
+          return_par <- par_value
+        }else{
+          return_par <- rep(par_value[1],length(par_names))
+        }
       }
     }
   }else{
   # global means single param
     if(par_type == "global"){
     if(length(par_value) != 1){
-      return_par <- par_value[1]
+      if(length(par_value) == length(par_names)){
+        return_par <- par_value
+      }else{
+        return_par <- rep(par_value[1],length(par_names))
+      }
     }else{
-      return_par <- par_value
+      return_par <- rep(par_value,length(par_names))
     }
       # else, pairwise means a single param for each pair
       # so extend if needed
@@ -40,7 +48,18 @@ cxr_return_init_length <- function(par_type,
     if(length(par_value) == 1){
       return_par <- rep(par_value,length(par_names))
     }else{
-      return_par <- par_value
+      if(length(par_value) == length(par_names)){
+        return_par <- par_value
+      }else{
+        num.names <- length(par_names)
+        num.values <- length(par_value)
+        if(num.names %% num.values == 0){
+          num.rep <- num.names/num.values
+          return_par <- rep(par_value,each = num.rep)
+        }else{
+          return_par <- rep(par_value[1],num.names)
+        }
+      }
     }
   }# par_type
   }

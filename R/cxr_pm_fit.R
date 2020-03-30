@@ -477,15 +477,25 @@ cxr_pm_fit <- function(data,
   if(!is.null(optim_params$lambda_cov)){
     fit$lambda_cov <- optim_params$lambda_cov
   }
+  
   if(!is.null(optim_params$alpha_cov)){
     tidy_ac <- list()
+    if(length(optim_params$alpha_cov) == ncol(covariates)){
+      anames <- substr(names(optim_params$alpha_cov),11,(nchar(names(optim_params$alpha_cov))))
+    }else{
+      anames <- substr(names(optim_params$alpha_cov),11,(nchar(names(optim_params$alpha_cov))-5))
+    }
     for(i.cov in 1:ncol(covariates)){
-      my.cov <- which(grepl(colnames(covariates)[i.cov],names(optim_params$alpha_cov)))
+      # grepl does not give exact match
+      # my.cov <- which(grepl(colnames(covariates)[i.cov],names(optim_params$alpha_cov)))
+      
+      my.cov <- which(anames == colnames(covariates)[i.cov])
       tidy_ac[[i.cov]] <- optim_params$alpha_cov[my.cov]
     }
     names(tidy_ac) <- colnames(covariates)
     fit$alpha_cov <- tidy_ac
   }
+  
   if(!is.null(error_params$lambda)){
     fit$lambda_standard_error <- error_params$lambda
   }
@@ -498,10 +508,21 @@ cxr_pm_fit <- function(data,
   if(!is.null(error_params$lambda_cov)){
     fit$lambda_cov_standard_error <- error_params$lambda_cov
   }
+  
   if(!is.null(error_params$alpha_cov)){
     tidy_acr <- list()
+    
+    if(length(error_params$alpha_cov) == ncol(covariates)){
+      ernames <- substr(names(error_params$alpha_cov),11,(nchar(names(error_params$alpha_cov))-3))
+    }else{
+      ernames <- substr(names(error_params$alpha_cov),11,(nchar(names(error_params$alpha_cov))-8))
+    }
+    
+    # ernames <- substr(names(error_params$alpha_cov),11,(nchar(names(error_params$alpha_cov))-5))
+    
     for(i.cov in 1:ncol(covariates)){
-      my.cov <- which(grepl(colnames(covariates)[i.cov],names(error_params$alpha_cov)))
+      # my.cov <- which(grepl(colnames(covariates)[i.cov],names(error_params$alpha_cov)))
+      my.cov <- which(ernames == colnames(covariates)[i.cov])
       tidy_acr[[i.cov]] <- error_params$alpha_cov[my.cov]
     }
     names(tidy_acr) <- colnames(covariates)

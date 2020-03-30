@@ -59,8 +59,22 @@ cxr_sort_params <- function(init_lambda = NULL,
   # effect of covariates on lambda
   if(!is.null(init_lambda_cov)){
     init_par <- c(init_par,init_lambda_cov)
-    lower_bounds <- c(lower_bounds,rep(lower_lambda_cov,length(init_lambda_cov)))
-    upper_bounds <- c(upper_bounds,rep(upper_lambda_cov,length(init_lambda_cov)))
+    if(length(lower_lambda_cov) == length(init_lambda_cov)){
+      lower_bounds <- c(lower_bounds,lower_lambda_cov)
+    }else{
+      if(length(lower_lambda_cov) == 1){
+        lower_bounds <- c(lower_bounds,rep(lower_lambda_cov,length(init_lambda_cov)))
+      }
+    }
+
+    if(length(upper_lambda_cov) == length(init_lambda_cov)){
+      upper_bounds <- c(upper_bounds,upper_lambda_cov)
+    }else{
+      if(length(upper_lambda_cov) == 1){
+        upper_bounds <- c(upper_bounds,rep(upper_lambda_cov,length(init_lambda_cov)))
+      }
+    }
+
   }
   
   # alpha value/matrix
@@ -77,11 +91,54 @@ cxr_sort_params <- function(init_lambda = NULL,
   }
   
   # effect of covariates on alpha
+  
   if(!is.null(init_alpha_cov)){
     init_par <- c(init_par,init_alpha_cov)
-    lower_bounds <- c(lower_bounds,rep(lower_alpha_cov,length(init_alpha_cov)))
-    upper_bounds <- c(upper_bounds,rep(upper_alpha_cov,length(init_alpha_cov)))
-  }
+    # lower bound
+    if(length(lower_alpha_cov) == length(init_alpha_cov)){
+      lower_bounds <- c(lower_bounds,lower_lambda_cov)
+    }else{
+      if(length(lower_alpha_cov) == 1){
+        lower_bounds <- c(lower_bounds,rep(lower_alpha_cov,length(init_alpha_cov)))
+      }else{
+        num.init <- length(init_alpha_cov)
+        num.bounds <- length(lower_alpha_cov)
+        if(num.init %% num.bounds == 0){
+          num.rep <- num.init/num.bounds
+          lrep <- rep(lower_alpha_cov,each = num.rep)
+          # urep <- rep(upper_alpha_cov,each = num.rep)
+        }else{
+          lrep <- rep(lower_alpha_cov[1],num.init)
+          # urep <- rep(upper_alpha_cov[1],num.init)
+        }
+        lower_bounds <- c(lower_bounds,lrep)
+        # upper_bounds <- c(upper_bounds,urep)
+      }
+    }
+    
+    # upper bound
+    if(length(upper_alpha_cov) == length(init_alpha_cov)){
+      upper_bounds <- c(upper_bounds,upper_lambda_cov)
+    }else{
+      if(length(upper_alpha_cov) == 1){
+        upper_bounds <- c(upper_bounds,rep(upper_alpha_cov,length(init_alpha_cov)))
+      }else{
+        num.init <- length(init_alpha_cov)
+        num.bounds <- length(upper_alpha_cov)
+        if(num.init %% num.bounds == 0){
+          num.rep <- num.init/num.bounds
+          # lrep <- rep(lower_alpha_cov,each = num.rep)
+          urep <- rep(upper_alpha_cov,each = num.rep)
+        }else{
+          # lrep <- rep(lower_alpha_cov[1],num.init)
+          urep <- rep(upper_alpha_cov[1],num.init)
+        }
+        # lower_bounds <- c(lower_bounds,lrep)
+        upper_bounds <- c(upper_bounds,urep)
+      }
+    }
+    
+  }# alpha cov
   
   # sigma goes at the end
   init_par <- c(init_par,init_sigma)
