@@ -220,6 +220,7 @@ for(i.sp in 1:length(obs_3sp)){
   example_cov[[i.sp]] <- matrix(c(cov1,cov2),
                                 nrow = nrow(obs_3sp[[i.sp]]),
                                 ncol = 2)
+  colnames(example_cov[[i.sp]]) <- c("cov1","cov2")
 }
 
 names(example_cov) <- names(obs_3sp)
@@ -228,7 +229,7 @@ fit_multi_cov <- cxr_pm_multifit(data = obs_3sp,
                            focal_column = my.sp,
                            model_family = "RK",
                            # here we use a bounded method for demonstration purposes
-                           optimization_method = "L-BFGS-B", 
+                           optimization_method = "bobyqa", 
                            covariates = example_cov,
                            alpha_form = "pairwise",
                            lambda_cov_form = "global", # effect of covariates over lambda
