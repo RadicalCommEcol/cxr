@@ -30,7 +30,8 @@ Depends:
 Imports:
     optimx,
     stats,
-    mvtnorm
+    mvtnorm,
+    minqa
 RoxygenNote: 7.1.0
 Suggests: 
     ggplot2,
