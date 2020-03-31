@@ -18,8 +18,8 @@ Description: Recent developments in modern coexistence theory has advanced
     mathematical framework to empirical data is still challenging, 
     precluding a larger adoption of the theoretical tools developed 
     by empiricists. This package provides a complete toolbox for modelling 
-    competitive effects between species, calculate fitness and 
-    niche differences, and calculate coexistence regions. 
+    interaction effects between species, and calculate fitness and 
+    niche differences. 
     The functions are flexible and can include covariates 
     and different fitting algorithms can be used. 
 License: MIT + file LICENCE
@@ -43,7 +43,6 @@ Suggests:
     rmarkdown,
     testthat (>= 0.8.0),
     BB,
-    minqa,
     ucminf,
     dfoptim,
     hydroPSO,
