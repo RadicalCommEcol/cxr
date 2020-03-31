@@ -141,7 +141,7 @@ fit_3sp <- cxr_pm_multifit(data = obs_3sp,
                            covariates = salinity,
                            alpha_form = "pairwise",
                            lambda_cov_form = "global", # effect of covariates over lambda
-                           alpha_cov_form = "pairwise", # effect of covariates over alpha
+                           alpha_cov_form = "global", # effect of covariates over alpha
                            initial_values = list(lambda = 1,
                                                  alpha_intra = 0.1,
                                                  alpha_inter = 0.1,
@@ -157,7 +157,8 @@ fit_3sp <- cxr_pm_multifit(data = obs_3sp,
                                                alpha_inter = 1,
                                                lambda_cov = 1,
                                                alpha_cov = 1),
-                           bootstrap_samples = 3)
+                           # no standard errors
+                           bootstrap_samples = 0)
 ```
 
 We can also have a glimpse of this multispecies fit with the summary function:
@@ -291,12 +292,15 @@ upper_bounds = list(lambda = 100,
 
 fixed_terms <- NULL
 bootstrap_samples <- 3
+```
 
-# this fit is fairly complex, it may take a while
+```{r eval=FALSE}
+# this fit is fairly complex, it may take a while, 
 # it also raises warnings, suggesting that either the data,
 # model, or initial values/boundaries can be improved.
 # This is consistent with having observational data
 # and, furthermore, random covariates
+
 fit_multi_cov <- cxr_pm_multifit(data = data,
                                  focal_column = focal_column,
                                  model_family = model_family,
@@ -310,13 +314,6 @@ fit_multi_cov <- cxr_pm_multifit(data = data,
                                  upper_bounds = upper_bounds,
                                  fixed_terms = fixed_terms,
                                  bootstrap_samples = bootstrap_samples)
-
-# general summary
-summary(fit_multi_cov)
-
-# covariate terms
-fit_multi_cov$lambda_cov
-fit_multi_cov$alpha_cov
 ```
 
 
