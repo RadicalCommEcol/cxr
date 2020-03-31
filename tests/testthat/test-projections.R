@@ -146,33 +146,38 @@ upper_bounds = list(BH = list(lambda = 1000,
                               alpha_cov = 1))
 
 # function ----------------------------------------------------------------
-for(i.conf in 1:length(param.conf)){
-for(i.m in 1:length(model_family)){
+test_that("abundances are correctly projected", {
+  # skip these tests on CRAN, 
+  # as they may take too long
+  skip_on_cran()
   
-  cxr_fit <- cxr_pm_multifit(data = data,
-                             focal_column = focal_column,
-                             model_family = model_family[i.m],
-                             covariates = salinity,
-                             optimization_method = optimization_method,
-                             alpha_form = param.conf[[i.conf]][1],
-                             lambda_cov_form = param.conf[[i.conf]][2],
-                             alpha_cov_form = param.conf[[i.conf]][3],
-                             initial_values = initial_values[[model_family[i.m]]],
-                             lower_bounds = lower_bounds[[model_family[i.m]]],
-                             upper_bounds = upper_bounds[[model_family[i.m]]],
-                             fixed_terms = fixed_terms,
-                             bootstrap_samples = bootstrap_samples)
-  
-  ab <- abundance_projection(cxr_fit = cxr_fit,
-                             covariates = covariates_proj,
-                             timesteps = timesteps,
-                             initial_abundances = initial_abundances)
-  
-  test_that("abundances are correctly projected", {
-    
-    expect_is(ab, "matrix")
-    expect_type(ab, "double")
-    
-  })
-}# for each family
-}# for each model
+  for(i.conf in 1:length(param.conf)){
+    for(i.m in 1:length(model_family)){
+      
+      cxr_fit <- cxr_pm_multifit(data = data,
+                                 focal_column = focal_column,
+                                 model_family = model_family[i.m],
+                                 covariates = salinity,
+                                 optimization_method = optimization_method,
+                                 alpha_form = param.conf[[i.conf]][1],
+                                 lambda_cov_form = param.conf[[i.conf]][2],
+                                 alpha_cov_form = param.conf[[i.conf]][3],
+                                 initial_values = initial_values[[model_family[i.m]]],
+                                 lower_bounds = lower_bounds[[model_family[i.m]]],
+                                 upper_bounds = upper_bounds[[model_family[i.m]]],
+                                 fixed_terms = fixed_terms,
+                                 bootstrap_samples = bootstrap_samples)
+      
+      ab <- abundance_projection(cxr_fit = cxr_fit,
+                                 covariates = covariates_proj,
+                                 timesteps = timesteps,
+                                 initial_abundances = initial_abundances)
+      
+      
+      
+      expect_is(ab, "matrix")
+      expect_type(ab, "double")
+    }# for each family
+  }# for each model
+})
+

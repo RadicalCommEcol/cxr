@@ -179,6 +179,11 @@ ub_LV = list(lambda = 100,
                        response = 1)
 # test --------------------------------------------------------------------
 test_that("species fitness are correctly calculated", {
+  
+  # skip this on CRAN, 
+  # as it may take long
+  skip_on_cran()
+  
   for(i.model in 1:length(model_families)){
     
     # lotka-volterra are trickier to fit,

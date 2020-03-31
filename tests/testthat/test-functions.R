@@ -347,7 +347,9 @@ fixed_terms <- NULL
 bootstrap_samples <- 3
 
 test_that("multiple species are correctly fitted", {
-  
+  # skip this on CRAN, 
+  # as it may take long
+  skip_on_cran()
   multifit <- cxr_pm_multifit(data = data,
                               focal_column = focal_column,
                               model_family = model_family,
