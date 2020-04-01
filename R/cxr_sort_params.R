@@ -59,41 +59,55 @@ cxr_sort_params <- function(init_lambda = NULL,
   # effect of covariates on lambda
   if(!is.null(init_lambda_cov)){
     init_par <- c(init_par,init_lambda_cov)
-    if(length(lower_lambda_cov) == length(init_lambda_cov)){
-      lower_bounds <- c(lower_bounds,lower_lambda_cov)
-    }else{
-      if(length(lower_lambda_cov) == 1){
-        lower_bounds <- c(lower_bounds,rep(lower_lambda_cov,length(init_lambda_cov)))
+    
+    if(!is.null(lower_lambda_cov) & !is.null(upper_lambda_cov)){
+      
+      if(length(lower_lambda_cov) == length(init_lambda_cov)){
+        lower_bounds <- c(lower_bounds,lower_lambda_cov)
+      }else{
+        if(length(lower_lambda_cov) == 1){
+          lower_bounds <- c(lower_bounds,rep(lower_lambda_cov,length(init_lambda_cov)))
+        }
       }
-    }
-
-    if(length(upper_lambda_cov) == length(init_lambda_cov)){
-      upper_bounds <- c(upper_bounds,upper_lambda_cov)
-    }else{
-      if(length(upper_lambda_cov) == 1){
-        upper_bounds <- c(upper_bounds,rep(upper_lambda_cov,length(init_lambda_cov)))
+      
+      if(length(upper_lambda_cov) == length(init_lambda_cov)){
+        upper_bounds <- c(upper_bounds,upper_lambda_cov)
+      }else{
+        if(length(upper_lambda_cov) == 1){
+          upper_bounds <- c(upper_bounds,rep(upper_lambda_cov,length(init_lambda_cov)))
+        }
       }
-    }
-
-  }
+      
+    }# if bounds
+    
+  }# if !is.null
   
   # alpha value/matrix
   if(!is.null(init_alpha_intra)){
     init_par <- c(init_par,init_alpha_intra)
+    
+    if(!is.null(lower_bounds) & !is.null(upper_bounds)){
     lower_bounds <- c(lower_bounds,rep(lower_alpha_intra,length(init_alpha_intra)))
     upper_bounds <- c(upper_bounds,rep(upper_alpha_intra,length(init_alpha_intra)))              
+    }
   }
   
   if(!is.null(init_alpha_inter)){
     init_par <- c(init_par,init_alpha_inter)
+    
+    if(!is.null(lower_bounds) & !is.null(upper_bounds)){
     lower_bounds <- c(lower_bounds,rep(lower_alpha_inter,length(init_alpha_inter)))
     upper_bounds <- c(upper_bounds,rep(upper_alpha_inter,length(init_alpha_inter)))              
+    }
   }
   
   # effect of covariates on alpha
   
   if(!is.null(init_alpha_cov)){
     init_par <- c(init_par,init_alpha_cov)
+    
+    if(!is.null(lower_bounds) & !is.null(upper_bounds)){
+    
     # lower bound
     if(length(lower_alpha_cov) == length(init_alpha_cov)){
       lower_bounds <- c(lower_bounds,lower_lambda_cov)
@@ -114,7 +128,7 @@ cxr_sort_params <- function(init_lambda = NULL,
         lower_bounds <- c(lower_bounds,lrep)
         # upper_bounds <- c(upper_bounds,urep)
       }
-    }
+    }# if-else
     
     # upper bound
     if(length(upper_alpha_cov) == length(init_alpha_cov)){
@@ -136,14 +150,19 @@ cxr_sort_params <- function(init_lambda = NULL,
         # lower_bounds <- c(lower_bounds,lrep)
         upper_bounds <- c(upper_bounds,urep)
       }
-    }
+    }# if-else
+      
+    }# if bounds
     
   }# alpha cov
   
   # sigma goes at the end
   init_par <- c(init_par,init_sigma)
+  
+  if(!is.null(lower_bounds) & !is.null(upper_bounds)){
   lower_bounds <- c(lower_bounds,lower_sigma)
   upper_bounds <- c(upper_bounds,upper_sigma)
+  }
   
   return(list(init_par = init_par, lower_bounds = lower_bounds, upper_bounds = upper_bounds))
 }

@@ -209,6 +209,7 @@ cxr_pm_fit <- function(data,
   bounds <- cxr_get_model_bounds(lower_bounds,upper_bounds,fixed_terms)
   
   # sort parameters for optim routine ---------------------------------------
+  
   vector_par <- cxr_sort_params(init_lambda = init_par$init_lambda,
                               init_sigma = init_par$init_sigma,
                               init_alpha_intra = init_par$init_alpha_intra,
