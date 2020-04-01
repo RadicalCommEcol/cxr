@@ -316,6 +316,33 @@ fit_multi_cov <- cxr_pm_multifit(data = data,
                                  bootstrap_samples = bootstrap_samples)
 ```
 
+**Keeping parameters fixed**
+
+There is the option to provide fixed values for model parameters, using the `fixed_terms` argument in the functions. As an example, if you want to keep the `lambda` parameter fixed, for a single species fit, you would modify the function arguments accordingly:
+
+```{r}
+fixed_terms <- list(lambda = 1)
+
+# now lambda does not appear in 'initial_values'
+initial_values <- list(alpha_intra = 0,
+                       alpha_inter = 0,
+                       lambda_cov = 0,
+                       alpha_cov = 0)
+# lower and upper bounds should, likewise, 
+# not contain lambda
+
+```
+
+This is extended to the `cxr_pm_multifit` function, by having `fixed_terms` be a list with as many elements as focal species. For example, having three focal species, where we want to keep `lambda` fixed:
+
+```{r}
+fixed_terms <- list(list(lambda = 1), # focal sp 1
+                    list(lambda = 1.2), # focal sp 2
+                    list(lambda = 1.3)) # focal sp 3
+```
+
+In this release of `cxr`, you must specify the same initial values for every focal species when using the `cxr_pm_multifit` option. This means, in practice, that if you want to fit species with different sets of fixed parameters, (e.g. only `lambda` for one species, but `lambda` and `alpha_intra` for another), or with different initial values, you should fit them separately, using `cxr_pm_fit`.
+
 
 **References**
 
