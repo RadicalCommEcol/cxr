@@ -19,7 +19,7 @@ summary.cxr_pm_fit <- function(object,...){
     "\nmean alpha_inter: ",ifelse(is.null(object$alpha_inter)," - not fit - ",mean(object$alpha_inter)),
     "\nmean lambda_cov: ",ifelse(is.null(object$lambda_cov),"- not fit - ",mean(object$lambda_cov)),
     "\nmean alpha_cov: ",ifelse(is.null(object$alpha_cov),"- not fit - ",mean(unlist(object$alpha_cov))),
-    "\nlog-likelihood of the fit: ",object$log_likelihood,
+    "\nnegative log-likelihood of the fit: ",object$log_likelihood,
     "\n----------",
     sep="")
 }
