@@ -56,7 +56,7 @@ for numerical optimization. Single values are allowed.}
 
 \item{upper_bounds}{optional list with single values for "lambda","alpha_intra","alpha_inter","lambda_cov", "alpha_cov".}
 
-\item{fixed_terms}{optional list specifying which model parameters are fixed, among
+\item{fixed_terms}{optional list of numeric vectors specifying the value of fixed model parameters, among
 "lambda","alpha_intra","alpha_inter","lambda_cov", and "alpha_cov".}
 
 \item{bootstrap_samples}{number of bootstrap samples for error calculation. Defaults to 0, i.e. no error is calculated.}
