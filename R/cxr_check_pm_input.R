@@ -72,8 +72,11 @@ cxr_check_pm_input <- function(data,
                       2) if 'focal_column' is provided, you need to specify
                       initial values for 'alpha_intra', and viceversa.
                       3) elements must be the same in the three lists.
-                      4) if bounds are provided, you need to specify both lower and upper ones.
-                      5) initial values and boundaries for 'lambda_cov' and/or 'alpha_cov' are of length
+                      4) if you specify fixed terms, ensure that the 'fixed_terms' argument
+                      is a list containing numeric vector(s), and any given parameter only appears
+                      in either 'initial_values' or 'fixed_terms'.
+                      5) if bounds are provided, you need to specify both lower and upper ones.
+                      6) initial values and boundaries for 'lambda_cov' and/or 'alpha_cov' are of length
                       1 or equal to the number of covariates."
     )
   }
@@ -105,7 +108,8 @@ cxr_check_pm_input <- function(data,
   w2 <- alpha_form != "pairwise" & (!is.null(focal_column))
   if(w2){
     warning.message <- "cxr_pm_fit: the specified 'alpha_form' does not support differentiating focal and non-focal observations.
-  'focal_column' will be discarded, and initial values and bounds, if used, will be taken from 'alpha_inter'."
+  'focal_column' will be discarded, and initial values and bounds, if used, will be taken from 'alpha_inter'. Please ensure 'alpha_inter'
+    is specified either in 'initial_values' or 'fixed_terms', otherwise the function will fail."
   }
   
   if(!all(c(t1,t2,t3,t4,t5))){

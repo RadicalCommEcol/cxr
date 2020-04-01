@@ -14,6 +14,8 @@
 #' a dataframe with values of each covariate for each observation. The ith component
 #' of \code{covariates} are the covariate values that correspond to 
 #' the ith component of \code{data}, so they must have the same number of observations.
+#' @param fixed_terms optional named list in which each component is 
+#' itself a list containing fixed terms for each focal species.
 #'
 #' @return an object of type 'cxr_pm_multifit' which is a list with the following components:
 #' * model_name: string with the name of the fitness model
@@ -107,15 +109,37 @@ cxr_pm_multifit <- function(data,
   
   # TODO fixed terms?
   
+  multifit_data_check <- TRUE
+  
   # check input data
   if(class(data) != "list"){
-    stop("cxr_pm_multifit ERROR: check the consistency of your input data: 
-    1) data is a named list containing dataframes with observations for each focal species;
-    2) No NAs; 
-    3) first column in 'data' is named 'fitness'; 
-    4) abundances of at least one neighbour species in 'data';
-    5) data and covariates (if present) have the same number of observations")
+    multifit_data_check <- FALSE
   }else{
+    
+    if(!is.null(covariates)){
+      if(class(covariates) != "list"){
+        multifit_data_check <- FALSE
+      }else if(length(covariates) != length(data)){
+        multifit_data_check <- FALSE
+      }
+    }
+    
+    if(!is.null(fixed_terms)){
+      if(class(fixed_terms) != "list"){
+        multifit_data_check <- FALSE
+      }else if(length(fixed_terms) != length(data)){
+        multifit_data_check <- FALSE
+      }
+    }
+    
+    if(!multifit_data_check){
+      message("cxr_pm_multifit ERROR: Check your input data
+              1) 'data' is a list;
+              2) if present, 'covariates' and/or 'fixed_terms' are also lists;
+              3) these lists have the same number of elements, one for each focal species.")
+      return(NULL)
+    }
+    
     for(i.sp in 1:length(data)){
       temp <- cxr_check_pm_input(data = data[[i.sp]],
                                  focal_column = focal_column[i.sp],
@@ -128,7 +152,7 @@ cxr_pm_multifit <- function(data,
                                  initial_values = initial_values,
                                  lower_bounds = lower_bounds,
                                  upper_bounds = upper_bounds,
-                                 fixed_terms = fixed_terms)
+                                 fixed_terms = fixed_terms[[i.sp]])
       if(temp[[1]] == "error"){
         message(paste("cxr_pm_multifit ERROR: check data format for sp ",names(data)[i.sp]," and/or input parameters.\n",sep=""))
         message(paste("more info on the error:\n",temp[[2]],sep=""))
@@ -182,7 +206,7 @@ cxr_pm_multifit <- function(data,
                                  initial_values = initial_values,
                                  lower_bounds = lower_bounds,
                                  upper_bounds = upper_bounds,
-                                 fixed_terms = fixed_terms,
+                                 fixed_terms = fixed_terms[[i.sp]],
                                  bootstrap_samples = bootstrap_samples)
   }
   

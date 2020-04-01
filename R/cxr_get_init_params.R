@@ -32,15 +32,15 @@ cxr_get_init_params <- function(initial_values,
   # initialize params with appropriate length,
   # depending or not on whether they should be fixed
   
-  if("lambda" %in% fixed_terms){
-    fixed_parameters[["lambda"]] <- initial_values$lambda
+  if("lambda" %in% names(fixed_terms)){
+    fixed_parameters[["lambda"]] <- fixed_terms[["lambda"]]
   }else{
-    init_lambda <- initial_values$lambda
+    init_lambda <- initial_values[["lambda"]]
     names(init_lambda) <- "lambda"
   }
   
   if(!is.null(initial_values$sigma)){
-    init_sigma <- initial_values$sigma
+    init_sigma <- initial_values[["sigma"]]
   }else{
     init_sigma <- 0.1
   }
@@ -51,49 +51,55 @@ cxr_get_init_params <- function(initial_values,
   # e.g. if we want to fit pairwise alphas but only provide a single initial value
   
   if(alpha_form != "none"){
-    if("alpha" %in% fixed_terms){
-      if(alpha_form == "global"){
-        fixed_parameters[["alpha_inter"]] <- initial_values$alpha_inter 
+    
+    if(alpha_form == "global"){
+      # global alpha
+      # use alpha_inter as values
+      
+      if("alpha_inter" %in% names(fixed_terms)){
+        fixed_parameters[["alpha_inter"]] <- fixed_terms[["alpha_inter"]]
       }else{
-        if(!is.null(neigh_intra)){
-          fixed_parameters[["alpha_intra"]] <- initial_values$alpha_intra
-        }
-        
-        fixed_parameters[["alpha_inter"]] <- cxr_return_init_length(alpha_form,
-                                                                    initial_values$alpha_inter,
-                                                                    neigh_inter,"pm")
+        init_alpha_inter <- initial_values[["alpha_inter"]]
+        names(init_alpha_inter) <- "alpha"
       }
       
-
     }else{
+      # pairwise alphas
       
-      if(alpha_form == "global"){
-       init_alpha_inter <- initial_values$alpha_inter 
-       names(init_alpha_inter) <- "alpha"
-       
+      # alpha_intra
+      if("alpha_intra" %in% names(fixed_terms)){
+        fixed_parameters[["alpha_intra"]] <- fixed_terms[["alpha_intra"]]
       }else{
         if(!is.null(neigh_intra)){
-          init_alpha_intra <- initial_values$alpha_intra
+          init_alpha_intra <- initial_values[["alpha_intra"]]
           names(init_alpha_intra) <- neigh_intra 
         }
-        
+      }
+      
+      # alpha_inter
+      if("alpha_inter" %in% names(fixed_terms)){
+        fixed_parameters[["alpha_inter"]] <- cxr_return_init_length(alpha_form,
+                                                                    fixed_terms[["alpha_inter"]],
+                                                                    neigh_inter,"pm")
+      }else{
         init_alpha_inter <- cxr_return_init_length(alpha_form,
-                                                   initial_values$alpha_inter,
+                                                   initial_values[["alpha_inter"]],
                                                    neigh_inter,"pm")
       }
       
-    }# if-else fixed terms
-  }
+    }# if-else alpha form
+    
+  }# if alpha_form != none
   
   
   if(lambda_cov_form != "none" & !is.null(covariates)){
-    if("lambda_cov" %in% fixed_terms){
+    if("lambda_cov" %in% names(fixed_terms)){
       fixed_parameters[["lambda_cov"]] <- cxr_return_init_length(lambda_cov_form,
-                                                                 initial_values$lambda_cov,
+                                                                 fixed_terms[["lambda_cov"]],
                                                                  colnames(covariates),"pm")
     }else{
       init_lambda_cov <- cxr_return_init_length(lambda_cov_form,
-                                                initial_values$lambda_cov,
+                                                initial_values[["lambda_cov"]],
                                                 colnames(covariates),"pm")
       names(init_lambda_cov) <- paste("lambda_cov_",colnames(covariates),sep="")
     }
@@ -108,13 +114,13 @@ cxr_get_init_params <- function(initial_values,
                                               each = length(all_neigh)),
                               rep(all_neigh,ncol(covariates)),sep="_")
     }
-    if("alpha_cov" %in% fixed_terms){
+    if("alpha_cov" %in% names(fixed_terms)){
       fixed_parameters[["alpha_cov"]] <- cxr_return_init_length(alpha_cov_form,
-                                                                initial_values$alpha_cov,
+                                                                fixed_terms[["alpha_cov"]],
                                                                 name.alpha.cov,"pm")
     }else{
       init_alpha_cov <- cxr_return_init_length(par_type = alpha_cov_form,
-                                               par_value = initial_values$alpha_cov,
+                                               par_value = initial_values[["alpha_cov"]],
                                                par_names = name.alpha.cov,"pm")
     }
   }

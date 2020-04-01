@@ -21,7 +21,7 @@
 #' for numerical optimization. Single values are allowed.
 #' @param lower_bounds optional list with single values for "lambda","alpha_intra","alpha_inter","lambda_cov", "alpha_cov".
 #' @param upper_bounds optional list with single values for "lambda","alpha_intra","alpha_inter","lambda_cov", "alpha_cov".
-#' @param fixed_terms optional list specifying which model parameters are fixed, among 
+#' @param fixed_terms optional list of numeric vectors specifying the value of fixed model parameters, among 
 #' "lambda","alpha_intra","alpha_inter","lambda_cov", and "alpha_cov".
 #' @param bootstrap_samples number of bootstrap samples for error calculation. Defaults to 0, i.e. no error is calculated.
 #' @return an object of type 'cxr_pm_fit' which is a list with the following components:

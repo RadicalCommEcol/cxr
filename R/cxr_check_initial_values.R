@@ -63,6 +63,71 @@ cxr_check_initial_values <- function(initial_values,
     }
   }
   
+  # check fixed terms is a list
+  # and if a param is here, it is not in
+  # initial values or bounds
+  if(!is.null(fixed_terms)){
+    if(!is.list(fixed_terms)){
+      iv.ok <- FALSE
+    }else{
+      if("lambda" %in% names(fixed_terms)){
+        if(!is.numeric(fixed_terms[["lambda"]])){
+          iv.ok <- FALSE
+        }
+        if("lambda" %in% c(names(initial_values), 
+                           names(lower_bounds), 
+                           names(upper_bounds))){
+          iv.ok <- FALSE
+        }
+      }
+      
+      if("alpha_intra" %in% names(fixed_terms)){
+        if(!is.numeric(fixed_terms[["alpha_intra"]])){
+          iv.ok <- FALSE
+        }
+        if("alpha_intra" %in% c(names(initial_values), 
+                           names(lower_bounds), 
+                           names(upper_bounds))){
+          iv.ok <- FALSE
+        }
+      }
+      
+      if("alpha_inter" %in% names(fixed_terms)){
+        if(!is.numeric(fixed_terms[["alpha_inter"]])){
+          iv.ok <- FALSE
+        }
+        if("alpha_inter" %in% c(names(initial_values), 
+                           names(lower_bounds), 
+                           names(upper_bounds))){
+          iv.ok <- FALSE
+        }
+      }
+      
+      if("lambda_cov" %in% names(fixed_terms)){
+        if(!is.numeric(fixed_terms[["lambda_cov"]])){
+          iv.ok <- FALSE
+        }
+        if("lambda_cov" %in% c(names(initial_values), 
+                           names(lower_bounds), 
+                           names(upper_bounds))){
+          iv.ok <- FALSE
+        }
+      }
+      
+      if("alpha_cov" %in% names(fixed_terms)){
+        if(!is.numeric(fixed_terms[["alpha_cov"]])){
+          iv.ok <- FALSE
+        }
+        if("alpha_cov" %in% c(names(initial_values), 
+                           names(lower_bounds), 
+                           names(upper_bounds))){
+          iv.ok <- FALSE
+        }
+      }
+      
+    }
+  }
+  
   # check that the number of lower/upper bounds is equal to either
   # 1, so that all parameters have same bounds
   # number of covariates, so that each covariate has different boundaries
