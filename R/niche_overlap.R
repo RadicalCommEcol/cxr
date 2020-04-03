@@ -68,10 +68,12 @@ niche_overlap <- function(cxr_multifit = NULL,cxr_sp1 = NULL, cxr_sp2 = NULL, pa
       
       for(ic in 1:nrow(res)){
         nov_matrix <- cxr_multifit$alpha_matrix[c(res$sp1[ic],res$sp2[ic]),c(res$sp1[ic],res$sp2[ic])]
-        res$niche_overlap_SA[ic] <- niche_overlap_SA(nov_matrix)
-        if(all(nov_matrix>=0)){
-          res$niche_overlap_MCT[ic] <- niche_overlap_MCT(nov_matrix)
-        }# if all >=0
+        if(!any(is.na(nov_matrix))){
+          res$niche_overlap_SA[ic] <- niche_overlap_SA(nov_matrix)
+          if(all(nov_matrix>=0)){
+            res$niche_overlap_MCT[ic] <- niche_overlap_MCT(nov_matrix)
+          }# if all >=0
+        }
       }# for each pair
     
   }# multispecies fit
@@ -116,9 +118,13 @@ niche_overlap <- function(cxr_multifit = NULL,cxr_sp1 = NULL, cxr_sp2 = NULL, pa
           return(NULL)
         }else{
           nov_matrix <- matrix(c(intra_sp1,inter_sp2_sp1,inter_sp1_sp2,intra_sp2),nrow = 2)
-          res <- c(niche_overlap_MCT = niche_overlap_MCT(nov_matrix),
+          if(!any(is.na(nov_matrix))){
+            res <- c(niche_overlap_MCT = niche_overlap_MCT(nov_matrix),
                    niche_overlap_SA = niche_overlap_SA(nov_matrix))
-          
+          }else{
+            res <- c(niche_overlap_MCT = NA_real_,
+                     niche_overlap_SA = NA_real_)
+          }# if not NA
         }# if-else null
         
       }# if-else null
@@ -132,9 +138,13 @@ niche_overlap <- function(cxr_multifit = NULL,cxr_sp1 = NULL, cxr_sp2 = NULL, pa
     
     warning("niche_overlap: calculating niche overlap for coefficients estimated from an
               unknown model family. Be aware that this may yield incorrect results.",call.=FALSE)
-    
-    res <- c(niche_overlap_MCT = niche_overlap_MCT(pair_matrix),
-             niche_overlap_SA = niche_overlap_SA(pair_matrix))
+    if(!any(is.na(pair_matrix))){
+      res <- c(niche_overlap_MCT = niche_overlap_MCT(pair_matrix),
+               niche_overlap_SA = niche_overlap_SA(pair_matrix))
+    }else{
+      res <- c(niche_overlap_MCT = NA_real_,
+               niche_overlap_SA = NA_real_)
+    }# if not NA
     
   }
   res

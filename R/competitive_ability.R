@@ -73,8 +73,11 @@ competitive_ability <- function(cxr_multifit = NULL,
     for(ic in 1:nrow(res)){
       my_matrix <- cxr_multifit$alpha_matrix[c(res$sp1[ic],res$sp2[ic]),c(res$sp1[ic],res$sp2[ic])]
       my_lambda <- cxr_multifit$lambda[res$sp1[ic]]
-      
-      res$competitive_ability_sp1[ic] <- ca_model(my_lambda,my_matrix)
+      if(!any(is.na(my_matrix)) & !is.na(my_lambda)){
+        res$competitive_ability_sp1[ic] <- ca_model(my_lambda,my_matrix)
+      }else{
+        res$competitive_ability_sp1[ic] <- NA_real_
+      }
       
       }# for each pair
     
@@ -137,8 +140,13 @@ competitive_ability <- function(cxr_multifit = NULL,
           my_matrix <- matrix(c(intra_sp1,inter_sp2_sp1,inter_sp1_sp2,intra_sp2),nrow = 2)
           res <- data.frame(sp1 = sp1, 
                             sp2 = sp2)
-          res$competitive_ability_sp1 <- ca_model(my_lambda,my_matrix)
           
+          if(!any(is.na(my_matrix)) & !is.na(my_lambda)){
+            res$competitive_ability_sp1 <- ca_model(my_lambda,my_matrix)
+          }else{
+            res$competitive_ability_sp1 <- NA_real_
+          }
+
         }# if-else null
         
       }# if-else null
@@ -168,7 +176,12 @@ competitive_ability <- function(cxr_multifit = NULL,
       res$sp1 <- rownames(pair_matrix)[1]
       res$sp2 <- rownames(pair_matrix)[2]
     }
-    res$competitive_ability_sp1 <- ca_model(lambda,pair_matrix)
+    
+    if(!any(is.na(pair_matrix)) & !is.na(lambda)){
+      res$competitive_ability_sp1 <- ca_model(lambda,pair_matrix)    
+    }else{
+      res$competitive_ability_sp1 <- NA_real_
+    }
     
   }# if-else parameters
   res

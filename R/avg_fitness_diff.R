@@ -69,13 +69,13 @@ avg_fitness_diff <- function(cxr_multifit = NULL,
     for(ic in 1:nrow(res)){
       my_matrix <- cxr_multifit$alpha_matrix[c(res$sp1[ic],res$sp2[ic]),c(res$sp1[ic],res$sp2[ic])]
       my_lambdas <- cxr_multifit$lambda[c(res$sp1[ic],res$sp2[ic])]
-      
-      res$competitive_response_ratio[ic] <- cxr_competitive_response(my_matrix)
-      res$demographic_ratio[ic] <- cxr_demographic_ratio(mf,my_lambdas)
-      res$average_fitness_ratio[ic] <- res$competitive_response_ratio[ic] * res$demographic_ratio[ic]
-      
-      res$structural_fitness_diff[ic] <- cxr_structural_fitness_diff(my_matrix,my_lambdas,mf)
-      
+      if(!any(is.na(my_matrix)) & !any(is.na(my_lambdas))){
+        res$competitive_response_ratio[ic] <- cxr_competitive_response(my_matrix)
+        res$demographic_ratio[ic] <- cxr_demographic_ratio(mf,my_lambdas)
+        res$average_fitness_ratio[ic] <- res$competitive_response_ratio[ic] * res$demographic_ratio[ic]
+        
+        res$structural_fitness_diff[ic] <- cxr_structural_fitness_diff(my_matrix,my_lambdas,mf)
+      }
       }# for each pair
     
   }# multispecies fit
@@ -126,11 +126,18 @@ avg_fitness_diff <- function(cxr_multifit = NULL,
           my_matrix <- matrix(c(intra_sp1,inter_sp2_sp1,inter_sp1_sp2,intra_sp2),nrow = 2)
           res <- data.frame(sp1 = sp1, 
                             sp2 = sp2)
-          res$demographic_ratio <- cxr_demographic_ratio(sp1_model,my_lambdas)
-          res$competitive_response_ratio <- cxr_competitive_response(my_matrix)
-          res$average_fitness_ratio <- res$demographic_ratio * res$competitive_response_ratio 
-          res$structural_fitness_diff <- cxr_structural_fitness_diff(my_matrix,my_lambdas,sp1_model)
           
+          if(!any(is.na(my_matrix)) & !any(is.na(my_lambdas))){
+            res$demographic_ratio <- cxr_demographic_ratio(sp1_model,my_lambdas)
+            res$competitive_response_ratio <- cxr_competitive_response(my_matrix)
+            res$average_fitness_ratio <- res$demographic_ratio * res$competitive_response_ratio 
+            res$structural_fitness_diff <- cxr_structural_fitness_diff(my_matrix,my_lambdas,sp1_model)
+          }else{
+            res$demographic_ratio <- NA_real_
+            res$competitive_response_ratio <- NA_real_
+            res$average_fitness_ratio <- NA_real_
+            res$structural_fitness_diff <- NA_real_
+          }
         }# if-else null
         
       }# if-else null

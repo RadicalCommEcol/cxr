@@ -45,18 +45,22 @@ cxr_check_pm_input <- function(data,
   # check covariates if alpha_cov or lambda_cov are to be fit
   t2 <- !(is.null(covariates) & (alpha_cov_form != "none" | lambda_cov_form != "none"))
   if(!t2){
-    input.message <- ("cxr_pm_fit ERROR: need to specify covariates if lambda_cov and/or alpha_cov are to be fit")
+    if(is.null(input.message)){
+      input.message <- ("cxr_pm_fit ERROR: need to specify covariates if lambda_cov and/or alpha_cov are to be fit")
+    }
   }
   
   # check that lower/upper bounds are provided if the method requires it
   t3 <- cxr_check_method_boundaries(optimization_method,lower_bounds,upper_bounds, type = "pm")
   if(!t3){
-    input.message <- ("cxr_pm_fit ERROR: check the optimization method selected and lower/upper bounds.
+    if(is.null(input.message)){
+      input.message <- ("cxr_pm_fit ERROR: check the optimization method selected and lower/upper bounds.
          The following methods require explicit lower and upper parameter boundaries to be set:
          'L-BFGS-B', 'nlm', 'nlminb', 'Rcgmin', 'Rvmmin', 'spg', 'bobyqa', 'nmkb', 'hjkb', 'nloptr_CRS2_LM',
          'nloptr_ISRES', 'nloptr_DIRECT_L_RAND', 'GenSA', 'hydroPSO', 'DEoptimR.'
          Likewise, the following methods require NULL lower and upper bounds:
          'Nelder-Mead','CG','BFGC','ucminf'.")
+    }
   }
   
   t4 <- cxr_check_initial_values(initial_values,
@@ -66,7 +70,8 @@ cxr_check_pm_input <- function(data,
                                  covariates,
                                  fixed_terms)
   if(!t4){
-    input.message <- ("cxr_pm_fit ERROR: please check the specified initial values/bounds.
+    if(is.null(input.message)){
+      input.message <- ("cxr_pm_fit ERROR: please check the specified initial values/bounds.
                       1) only valid names are allowed, among 'lambda', 'alpha_intra',
                       'alpha_inter','lambda_cov','alpha_cov'.
                       2) if 'focal_column' is provided, you need to specify
@@ -78,26 +83,35 @@ cxr_check_pm_input <- function(data,
                       5) if bounds are provided, you need to specify both lower and upper ones.
                       6) initial values and boundaries for 'lambda_cov' and/or 'alpha_cov' are of length
                       1 or equal to the number of covariates."
-    )
+      )
+    }
   }
   
   # check installed packages for optimization method
   t5 <- TRUE
   if (optimization_method %in% c("nloptr_CRS2_LM","nloptr_ISRES","nloptr_DIRECT_L_RAND") & !requireNamespace("nloptr", quietly = TRUE)) {
     t5 <- FALSE
-    input.message <- ("cxr_pm_fit ERROR: Package \"nloptr\" needed for the method selected to work.")
+    if(is.null(input.message)){
+      input.message <- ("cxr_pm_fit ERROR: Package \"nloptr\" needed for the method selected to work.")
+    }
   }
   if (optimization_method == "GenSA" & !requireNamespace("GenSA", quietly = TRUE)) {
     t5 <- FALSE
-    input.message <- ("cxr_pm_fit ERROR: Package \"GenSA\" needed for the method selected to work.")
+    if(is.null(input.message)){
+      input.message <- ("cxr_pm_fit ERROR: Package \"GenSA\" needed for the method selected to work.")
+    }
   }
   if (optimization_method == "hydroPSO" & !requireNamespace("hydroPSO", quietly = TRUE)) {
     t5 <- FALSE
-    input.message <- ("cxr_pm_fit ERROR: Package \"hydroPSO\" needed for the method selected to work.")
+    if(is.null(input.message)){
+      input.message <- ("cxr_pm_fit ERROR: Package \"hydroPSO\" needed for the method selected to work.")
+    }
   }
   if (optimization_method == "DEoptimR" & !requireNamespace("DEoptimR", quietly = TRUE)) {
     t5 <- FALSE
-    input.message <- ("cxr_pm_fit ERROR: Package \"DEoptimR\" needed for the method selected to work.")
+    if(is.null(input.message)){
+      input.message <- ("cxr_pm_fit ERROR: Package \"DEoptimR\" needed for the method selected to work.")
+    }
   }
   
   w1 <- identical(initial_values,list(lambda = 0, alpha_intra = 0, alpha_inter = 0, lambda_cov = 0, alpha_cov = 0))
@@ -114,13 +128,12 @@ cxr_check_pm_input <- function(data,
   
   if(!all(c(t1,t2,t3,t4,t5))){
     input.ok <- "error"
+  }else{
+    if(any(c(w1,w2))){
+      input.ok <- "warning"
+      input.message <- warning.message
+    }
   }
-  
-  if(any(c(w1,w2))){
-    input.ok <- "warning"
-    input.message <- warning.message
-  }
-  
   list(input.ok,input.message)
   
 }

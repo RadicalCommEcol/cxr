@@ -22,7 +22,7 @@ At the end of this vignette we include the full R code of a model template that 
 First, model functions should be defined with the common set of arguments recognized by `cxr`. 
 
 ```{r eval=FALSE}
-pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
+family_pm_alpha_form_lambdacov_form_alphacov_form <- function(par,
                                                               fitness,
                                                               neigh_intra_matrix = NULL,
                                                               neigh_inter_matrix,
@@ -49,7 +49,7 @@ the name of the function should be adapted to the parameters you want to fit:
 Thus, if you code a model from your User Model (UM) family that includes pairwise alphas, but no effects of covariates over lambda or alpha, your function must be named as:
 
 ```{r eval=FALSE}
-pm_UM_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
+UM_pm_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
                                                               fitness,
                                                               neigh_intra_matrix = NULL,
                                                               neigh_inter_matrix,
@@ -59,7 +59,7 @@ pm_UM_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
 
 The first step inside the function is to retrieve the different parameters from the one-dimensional `par` vector. You should not have to change this section except for commenting or commenting out the section where parameters are retrieved. For example, if your model does not include `lambda_cov` or `alpha_cov`, you should comment their sections. Note that it includes a final parameter, sigma, that should always be there, as it keeps track of the error associated to the fit.
 
-This is how this part in your 'pm_UM_alpha_pairwise_lambdacov_none_alphacov_none' model would look like:
+This is how this part in your 'UM_pm_alpha_pairwise_lambdacov_none_alphacov_none' model would look like:
 
 ```{r eval=FALSE}
 
@@ -186,7 +186,7 @@ llik <- dnorm(fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
 return(sum(-1*llik))
 ```
 
-When you have a functioning model, you should be able to use it within `cxr` as soon as you load your model into the global environment, which can be done simply by 'sourcing' your R file named with the name of your model, i.e. 'pm_UM_alpha_pairwise_lambdacov_none_alphacov_none.R' in our example.
+When you have a functioning model, you should be able to use it within `cxr` as soon as you load your model into the global environment, which can be done simply by 'sourcing' your R file named with the name of your model, i.e. 'UM_pm_alpha_pairwise_lambdacov_none_alphacov_none.R' in our example.
 
 Thus, for fitting a certain dataset with your custom model, you would call the `cxr_pm_fit` function with the appropriate parameters:
 
@@ -203,9 +203,9 @@ custom_fit <- cxr_pm_fit(data = custom_data, # assuming custom_data is already s
                          alpha_cov_form = "none")
 ```
 
-If the function cannot find a model matching the provided 'model_family','alpha_form','lambda_cov_form', and 'alpha_cov_form', it will output a message and return NULL. On a final note, if you think your bright new model can be useful for fellow scientists, we encourage you to make a pull request for integrating it in the set of default model families included in `cxr`. An interesting update to the package would be, in addition to include other model families, to implement non-linear models of covariate effects over lambda and alpha values.
+If the function cannot find a model matching the provided 'model_family','alpha_form','lambda_cov_form', and 'alpha_cov_form', it will output a message and return NULL. On a final note, if you think your bright new model can be useful for fellow scientists, we encourage you to make a pull request for integrating it in the set of default model families included in `cxr`. An interesting update to the package would be, in addition to include other model families, to implement non-linear relationships of covariate effects over lambda and alpha values.
 
-There are several issues that you should have in mind when developing custom models. First, recall that numerical optimization methods may be bounded or unbounded. If your model does not return meaningful values for part of the parameter space defined by the hypervolume of parameter boundaries, bounded optimization methods (such as 'L-BFGS-B' or 'bobyqa') will fail. This is well exemplified by the discrete Lotka-Volterra model: 
+There are several issues that you should have in mind when developing custom models. First, recall that numerical optimization methods may be bounded or unbounded. If your model does not return meaningful values for part of the parameter space defined by the hypervolume of parameter boundaries, bounded optimization methods (such as 'L-BFGS-B' or 'bobyqa') may fail. This is well exemplified by the discrete Lotka-Volterra model: 
 
 $\lambda_i - \alpha_{ii}N_i - \alpha_{ij}Nj$
 
@@ -263,7 +263,7 @@ Therefore, in order to compute coexistence metrics based on your custom populati
 **Template for population dynamics models**
 
 ```{r eval=FALSE}
-pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
+family_pm_alpha_form_lambdacov_form_alphacov_form <- function(par,
                                                               fitness,
                                                               neigh_intra_matrix = NULL,
                                                               neigh_inter_matrix,
@@ -374,7 +374,7 @@ pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
 **Template for effect and response models**
 
 ```{r eval=FALSE}
-er_family_lambdacov_form_effectcov_form_responsecov_form <- function(par,
+family_er_lambdacov_form_effectcov_form_responsecov_form <- function(par,
                                                                      fitness,
                                                                      target,
                                                                      density,

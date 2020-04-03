@@ -27,7 +27,7 @@ cxr_pm_fit(
 \item{data}{dataframe with observations in rows and two sets of columns:
 \itemize{
 \item fitness: fitness metric for the focal individual
-\item neighbours: columns with user-defined names, giving number of neighbours for each group
+\item neighbours: numeric columns with user-defined names, giving number of neighbours for each group
 }}
 
 \item{focal_column}{optional integer or character giving the column

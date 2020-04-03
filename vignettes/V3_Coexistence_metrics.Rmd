@@ -35,7 +35,7 @@ for(i in 1:length(data)){
 
 focal_column <- names(data)
 model_family <- "RK" 
-optimization_method <- "L-BFGS-B" # we use a bounded method
+optimization_method <- "bobyqa" # we use a bounded method
 alpha_form <- "pairwise"
 lambda_cov_form <- "none"
 alpha_cov_form <- "none"
@@ -78,6 +78,11 @@ The function `niche_overlap` computes both definitions (MCT and SA). If the inpu
 
 ```{r}
 niche_overlap_all_pairs <- niche_overlap(cxr_multifit = all.sp.fit)
+# as not all species combinations occur, 
+# several interaction coefficients are NA
+# which, in turn, return NA values for niche overlap
+# so, remove them and check the first computed values
+niche_overlap_all_pairs <- niche_overlap_all_pairs[complete.cases(niche_overlap_all_pairs),]
 head(niche_overlap_all_pairs)
 ```
 
@@ -99,6 +104,10 @@ Both components of average fitness differences can be computed with `cxr`. As it
 ```{r}
 avg_fitness_diff_all_pairs <- avg_fitness_diff(cxr_multifit = all.sp.fit)
 
+# as with niche overlap, remove NA values
+avg_fitness_diff_all_pairs <- avg_fitness_diff_all_pairs[complete.cases(
+  avg_fitness_diff_all_pairs),]
+
 # average fitness ratio of sp1 over sp2
 # if < 1, sp2 is the superior competitor, 
 # and the average fitness difference is the inverse ratio,
@@ -114,6 +123,9 @@ Competitive ability can be calculated given a set of species parameters and mode
 
 ```{r}
 competitive_ability_all_pairs <- competitive_ability(cxr_multifit = all.sp.fit)
+competitive_ability_all_pairs <- competitive_ability_all_pairs[complete.cases(
+  competitive_ability_all_pairs),]
+
 head(competitive_ability_all_pairs)
 ```
 
@@ -128,7 +140,8 @@ We first set the initial data and values
 ```{r}
 data("neigh_list")
 
-# For obtaining effect and responses, all species need to have the same number of observations. 
+# For obtaining effect and responses, all species 
+# need to have the same number of observations. 
 # We selct 3 species that have >250 observations
 names(neigh_list)
 sapply(neigh_list,nrow)

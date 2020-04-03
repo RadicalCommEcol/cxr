@@ -52,6 +52,27 @@ cxr_pm_bootstrap <- function(fitness_model,
     dropname <- "fitness"
     bneigh_matrix <- as.matrix(bdata[ , !(names(bdata) %in% dropname)])
 
+    
+    # initial check to remove any neighbour with no presences
+    # also ensure there is at least one neighbour with presences
+    if(any(colSums(bneigh_matrix) == 0)){
+      bempty_neigh <- colnames(bneigh_matrix)[which(colSums(bneigh_matrix) == 0)]
+      bpresent_neigh <- colnames(bneigh_matrix)[which(colSums(bneigh_matrix) != 0)]
+      
+      if(length(bpresent_neigh) == 0){
+        message("cxr_pm_bootstrap ERROR: No neighbours with densities > 0 in any observation.")      
+        return(NULL)
+      }else{
+        bneigh_matrix <- bneigh_matrix[,bpresent_neigh]
+      }
+      
+      # neigh_matrix <- neigh_matrix[,present_neigh]
+    }else{
+      bempty_neigh <- NULL
+      bpresent_neigh <- colnames(bneigh_matrix)
+    }# if-else any neighbour with no presences
+    
+    
     if(is.null(focal_column)){
       # no alpha_intra
       bneigh_inter_matrix <- bneigh_matrix
@@ -60,9 +81,10 @@ cxr_pm_bootstrap <- function(fitness_model,
       bneigh_inter <- colnames(bneigh_inter_matrix)
       bneigh_intra <- NULL
     }else{
+      
       # which column number
       if(class(focal_column) == "character"){
-        bfocal_column_num <- which(names(bdata) == focal_column) - 1
+        bfocal_column_num <- which(colnames(bneigh_matrix) == focal_column)
       }else{
         bfocal_column_num <- focal_column -1
       }

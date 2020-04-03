@@ -4,7 +4,7 @@
 #'
 #' @param data dataframe with observations in rows and two sets of columns:
 #' * fitness: fitness metric for the focal individual
-#' * neighbours: columns with user-defined names, giving number of neighbours for each group
+#' * neighbours: numeric columns with user-defined names, giving number of neighbours for each group
 #' @param focal_column optional integer or character giving the column
 #' with neighbours from the same species as the focal one. This field is necessary if "alpha_intra" is specified
 #' in \code{initial_values}, \code{lower_bounds}, \code{upper_bounds}, or \code{fixed_terms}.
@@ -143,14 +143,34 @@ cxr_pm_fit <- function(data,
   }
   
   # prepare data ------------------------------------------------------------
+  
   # neighbour matrix
   
   # just to avoid a note in R CMD CHECK
   dropname <- "fitness"
   neigh_matrix <- as.matrix(data[ , !(names(data) %in% dropname)])
-  # neigh_matrix <- subset(data, select = -c(fitness))
-  # neigh_matrix <- as.matrix(neigh_matrix)
+  
+  # initial check to remove any neighbour with no presences
+  # also ensure there is at least one neighbour with presences
+  if(any(colSums(neigh_matrix) == 0)){
+    empty_neigh <- colnames(neigh_matrix)[which(colSums(neigh_matrix) == 0)]
+    present_neigh <- colnames(neigh_matrix)[which(colSums(neigh_matrix) != 0)]
+    
+    if(length(present_neigh) == 0){
+      message("cxr_pm_fit ERROR: No neighbours with densities > 0 in any observation.")      
+      return(NULL)
+    }else{
+      neigh_matrix <- neigh_matrix[,present_neigh]
+    }
+    
+    # neigh_matrix <- neigh_matrix[,present_neigh]
+  }else{
+    empty_neigh <- NULL
+    present_neigh <- colnames(neigh_matrix)
+  }# if-else any neighbour with no presences
 
+  # differentiate alpha_intra/inter
+  
   # if alpha_intra is present, intraspecific neighbours
   # should be in a different 1-column matrix
   # there are other options, but this 
@@ -165,20 +185,37 @@ cxr_pm_fit <- function(data,
     neigh_inter <- colnames(neigh_inter_matrix)
     neigh_intra <- NULL
   }else{
+    
     # which column number
     if(class(focal_column) == "character"){
-      focal_column_num <- which(names(data) == focal_column) - 1
+      focal_column_num <- which(colnames(neigh_matrix) == focal_column)
     }else{
-      focal_column_num <- focal_column -1
+      focal_column_num <- focal_column -1 # because data has fitness in column 1
     }
-    # intra and inter observations in different matrices
-    neigh_inter_matrix <- neigh_matrix[,-focal_column_num]
-    neigh_intra_matrix <- as.matrix(neigh_matrix[,focal_column_num])
-    colnames(neigh_intra_matrix) <- colnames(neigh_matrix)[focal_column_num]
-    # set also names
-    neigh_inter <- colnames(neigh_inter_matrix)
-    neigh_intra <- colnames(neigh_matrix)[focal_column_num]
+    
+    if(length(focal_column_num) == 0){
+      # no alpha_intra
+      neigh_inter_matrix <- neigh_matrix
+      neigh_intra_matrix <- NULL
+      # set also names
+      neigh_inter <- colnames(neigh_inter_matrix)
+      neigh_intra <- NULL
+      
+      message("cxr_pm_fit: a focal column is provided, but it 
+            contains no densities > 0. It will be discarded.")
+    }else{
+      
+      # intra and inter observations in different matrices
+      neigh_inter_matrix <- neigh_matrix[,-focal_column_num]
+      neigh_intra_matrix <- as.matrix(neigh_matrix[,focal_column_num])
+      colnames(neigh_intra_matrix) <- colnames(neigh_matrix)[focal_column_num]
+      # set also names
+      neigh_inter <- colnames(neigh_inter_matrix)
+      neigh_intra <- colnames(neigh_matrix)[focal_column_num]
+    }
   }
+  
+
   
   # are covariates named?
   if(!is.null(covariates)){
@@ -391,7 +428,9 @@ cxr_pm_fit <- function(data,
                                         alpha_intra_length = length(init_par$init_alpha_intra),
                                         alpha_inter_length = length(init_par$init_alpha_inter),
                                         lambda_cov_length = length(init_par$init_lambda_cov),
-                                        alpha_cov_length = length(init_par$init_alpha_cov))
+                                        alpha_cov_length = length(init_par$init_alpha_cov),
+                                        empty_neigh = empty_neigh,
+                                        alpha_cov_form = alpha_cov_form)
     
   }# if not null
   
@@ -418,7 +457,9 @@ cxr_pm_fit <- function(data,
                                           alpha_intra_length = length(init_par$init_alpha_intra),
                                           alpha_inter_length = length(init_par$init_alpha_inter),
                                           lambda_cov_length = length(init_par$init_lambda_cov),
-                                          alpha_cov_length = length(init_par$init_alpha_cov))
+                                          alpha_cov_length = length(init_par$init_alpha_cov),
+                                          empty_neigh = empty_neigh,
+                                          alpha_cov_form = alpha_cov_form,error_par = TRUE)
     }else{
       error_params <- list(lambda = NULL, 
                            alpha_intra = NULL,
@@ -482,15 +523,30 @@ cxr_pm_fit <- function(data,
   if(!is.null(optim_params$alpha_cov)){
     tidy_ac <- list()
     if(length(optim_params$alpha_cov) == ncol(covariates)){
-      anames <- substr(names(optim_params$alpha_cov),11,(nchar(names(optim_params$alpha_cov))))
+      acnames <- substr(names(optim_params$alpha_cov),11,(nchar(names(optim_params$alpha_cov))))
     }else{
-      anames <- substr(names(optim_params$alpha_cov),11,(nchar(names(optim_params$alpha_cov))-5))
+      # extract covariate names from names(alpha_cov)
+      # trickier than i thought
+      # 1 - remove species names
+      neighnames <- colnames(data)[-1]
+      acnames <- names(optim_params$alpha_cov)
+      
+      # gsub is not vectorized and alternatives are difficult to understand/other packages
+      # so go the loop way
+      for(i.acn in 1:length(optim_params$alpha_cov)){
+        acnames[i.acn] <- gsub("alpha_cov_","",acnames[i.acn])
+        for(i.n in 1:length(neighnames)){
+          acnames[i.acn] <- gsub(paste("_",neighnames[i.n],sep=""),"",acnames[i.acn])
+        }
+      }
+      
+      # anames <- substr(names(optim_params$alpha_cov),11,(nchar(names(optim_params$alpha_cov))-5))
     }
     for(i.cov in 1:ncol(covariates)){
       # grepl does not give exact match
       # my.cov <- which(grepl(colnames(covariates)[i.cov],names(optim_params$alpha_cov)))
       
-      my.cov <- which(anames == colnames(covariates)[i.cov])
+      my.cov <- which(acnames == colnames(covariates)[i.cov])
       tidy_ac[[i.cov]] <- optim_params$alpha_cov[my.cov]
     }
     names(tidy_ac) <- colnames(covariates)
@@ -516,10 +572,23 @@ cxr_pm_fit <- function(data,
     if(length(error_params$alpha_cov) == ncol(covariates)){
       ernames <- substr(names(error_params$alpha_cov),11,(nchar(names(error_params$alpha_cov))-3))
     }else{
-      ernames <- substr(names(error_params$alpha_cov),11,(nchar(names(error_params$alpha_cov))-8))
+      
+      # extract covariate names from names(alpha_cov)
+      # trickier than i thought
+      # 1 - remove species names
+      neighnames <- colnames(data)[-1]
+      ernames <- names(error_params$alpha_cov)
+      
+      # gsub is not vectorized and alternatives are difficult to understand/other packages
+      # so go the loop way
+      for(i.acn in 1:length(error_params$alpha_cov)){
+        ernames[i.acn] <- gsub("alpha_cov_","",ernames[i.acn])
+        for(i.n in 1:length(neighnames)){
+          ernames[i.acn] <- gsub(paste("_",neighnames[i.n],"_se",sep=""),"",ernames[i.acn])
+        }
+      }
+      
     }
-    
-    # ernames <- substr(names(error_params$alpha_cov),11,(nchar(names(error_params$alpha_cov))-5))
     
     for(i.cov in 1:ncol(covariates)){
       # my.cov <- which(grepl(colnames(covariates)[i.cov],names(error_params$alpha_cov)))
@@ -550,21 +619,24 @@ cxr_pm_fit <- function(data,
   }
   
   if(!is.null(fit$alpha_inter) & !is.null(bounds$lower_alpha_inter) & !is.null(bounds$upper_alpha_inter)){
-    if(any(fit$alpha_inter == bounds$lower_alpha_inter) | any(fit$alpha_inter == bounds$upper_alpha_inter)){
+    if(any(fit$alpha_inter == bounds$lower_alpha_inter,na.rm = TRUE) | 
+       any(fit$alpha_inter == bounds$upper_alpha_inter,na.rm = TRUE)){
       message("cxr_pm_fit: One or more fitted interspecific alphas are equal to lower or upper bounds. 
       Consider refitting with different boundaries.")
     }
   }
   
   if(!is.null(fit$lambda_cov) & !is.null(bounds$lower_lambda_cov) & !is.null(bounds$upper_lambda_cov)){
-    if(any(fit$lambda_cov == bounds$lower_lambda_cov) | any(fit$lambda_cov == bounds$pper_lambda_cov)){
+    if(any(fit$lambda_cov == bounds$lower_lambda_cov,na.rm = TRUE) | 
+       any(fit$lambda_cov == bounds$pper_lambda_cov,na.rm = TRUE)){
       message("cxr_pm_fit: A fitted lambda_cov is equal to lower or upper bounds. 
       Consider refitting with different boundaries.")
     }
   }
   
   if(!is.null(fit$alpha_cov) & !is.null(bounds$lower_alpha_cov) & !is.null(bounds$upper_alpha_cov)){
-    if(any(unlist(fit$alpha_cov) == bounds$lower_alpha_cov) | any(unlist(fit$alpha_cov) == bounds$upper_alpha_cov)){
+    if(any(unlist(fit$alpha_cov) == bounds$lower_alpha_cov,na.rm = TRUE) | 
+       any(unlist(fit$alpha_cov) == bounds$upper_alpha_cov,na.rm = TRUE)){
       message("cxr_pm_fit: One or more fitted alpha_covs are equal to lower or upper bounds. 
       Consider refitting with different boundaries.")
     }

@@ -208,6 +208,9 @@ cxr_pm_multifit <- function(data,
                                  upper_bounds = upper_bounds,
                                  fixed_terms = fixed_terms[[i.sp]],
                                  bootstrap_samples = bootstrap_samples)
+    # summary(spfits[[i.sp]])
+    # spfits[[i.sp]]$alpha_inter
+    # spfits[[i.sp]]$alpha_cov_standard_error
   }
   
   if(length(spfits) == length(spnames)){
@@ -222,8 +225,9 @@ cxr_pm_multifit <- function(data,
       message("cxr_pm_multifit ERROR: Parameter fitting failed for all focal species.
             Please check the data, initial values, and bounds provided.")
     }else{
+      validfits <- which(!sapply(spfits,is.null))
       message(paste("cxr_pm_multifit ERROR: Parameter fitting failed for the following taxa:\n",
-                    paste(which(!sapply(spfits,is.null)),collapse = ","),
+                    paste(!which(sapply(spfits,is.null)),collapse = ","),
             "\nPlease check the data, initial values, and bounds provided.",sep=""))
     }
     return(NULL)
@@ -403,6 +407,7 @@ cxr_pm_multifit <- function(data,
   # get the names of all sp and sort them
   # these will be the columns of the alpha matrix
   er_matrix.names <- NULL
+  
   for(i.sp in 1:length(spfits)){
     if(!is.null(spfits[[i.sp]]$alpha_intra_standard_error)){
       er_matrix.names <- c(er_matrix.names,names(spfits[[i.sp]]$alpha_intra_standard_error))
