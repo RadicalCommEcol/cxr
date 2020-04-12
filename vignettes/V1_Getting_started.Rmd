@@ -94,7 +94,7 @@ fit_homa$alpha_intra
 fit_homa$alpha_inter
 ```
 
-Note that some interaction coefficients are NA because species do not cooccur but are nevertheless listed as neighbours with densities equal to zero in all focal observations.
+Note that some interaction coefficients are set to NA because species do not cooccur but are nevertheless listed as neighbours with densities equal to zero in all focal observations.
 
 **Fitting several species at once**
 
