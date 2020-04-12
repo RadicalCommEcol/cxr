@@ -6,7 +6,7 @@
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/cxr)](https://cran.r-project.org/package=cxr)
 [![DOI](https://zenodo.org/badge/115796966.svg)](https://zenodo.org/badge/latestdoi/115796966)
 
-# cxr 0.1.0
+# cxr 1.0.0
 
 CXR provides a complete toolbox for modelling interactions between species, calculate coexistence metrics (e.g. niche and fitness differences), and project species abundances. The functions are flexible and can include covariates, use different optimization algorithms, or accept user-defined mathematical population models as starting points. 
 
@@ -76,6 +76,7 @@ When citing, please refer to both the [package citation](https://github.com/ibar
 
 `cxr` is in continuous development. This is a partial list of features we aim to implement in future releases:
 
+- integrate optimizer arguments, importantly for allowing scale normalization (parscale).
 - uncertainty estimation: propagate standard error calculation to coexistence metrics and abundance projections.
 - diagnostic functions: guidance on whether model fits/coexistence metrics are meaningful for a certain data and model.
 - update the interface to allow users to pass other arguments to their models, 
