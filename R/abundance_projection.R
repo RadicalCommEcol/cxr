@@ -37,7 +37,7 @@ abundance_projection <- function(cxr_fit = NULL,
                                  lambda_cov = NULL,
                                  alpha_cov = NULL,
                                  covariates = NULL, 
-                                 timesteps = 0,
+                                 timesteps = 2,
                                  initial_abundances = 0){
   
   # 0 - data ----------------------------------------------------------------
@@ -98,7 +98,10 @@ abundance_projection <- function(cxr_fit = NULL,
       return(NULL)
     }
     
-    
+    if(timesteps < 2){
+      message("cxr abundance_projection ERROR: number of timesteps cannot be < 2.")
+      return(NULL)
+    }
     
   }else if(!all(is.null(user.par))){
     message("cxr abundance_projection ERROR: not all parameters were specified.")
