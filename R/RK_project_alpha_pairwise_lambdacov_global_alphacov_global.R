@@ -44,7 +44,7 @@ RK_project_alpha_pairwise_lambdacov_global_alphacov_global <- function(lambda,
 
   term <- 0 #create the denominator term for the model
   for(z in 1:length(abundance)){
-    term <- term - (alpha[z] + cov_term[[z]]) * abundance[z]  
+    term <- term - (alpha[z] + cov_term) * abundance[z]  
   }
   expected_abund <- (lambda * (num) * exp(term)) * abundance[names(lambda)]
   expected_abund

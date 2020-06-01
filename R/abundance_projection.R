@@ -16,7 +16,7 @@
 #' @param alpha_matrix square matrix with taxa names in rows and columns.
 #' @param lambda_cov optional named matrix with covariates in columns and taxa in rows,
 #' representing the effect of each covariate on the lambda parameter of each taxa.
-#' @param alpha_cov optional list. Each element of the named list represents the effects of
+#' @param alpha_cov REWRITE optional list. Each element of the named list represents the effects of
 #' a covariate over alpha values. Thus, each list element contains either 
 #' a single element (alpha_cov_form "global").
 #' or a square matrix of same dimensions as `alpha_matrix` (alpha_cov_form "pairwise").
