@@ -175,9 +175,9 @@ pred <- lambda/ term
 # MODEL CODE ENDS HERE ----------------------------------------------------
 ```
 
-Note how there are no hard-coded checks for ensuring that alpha values and neigh_matrix values are appropriately sorted. This is performed in the `cxr_pm_fit` function that internally sorts data and call this model for optimization.
+Note how there are no hard-coded checks for ensuring that alpha values and neigh_matrix values are appropriately sorted. These checks are performed in the `cxr_pm_fit` function that internally sorts data and call this model for optimization.
 
-The last part of the model function is returning the negative log-likelihood value for that particular parameter combination. This is the value that the numerical optimization algorithms aim to minimize. You should not change this code.
+The last part of the model function is returning the negative log-likelihood value for that particular parameter combination. This is the value that the numerical optimization algorithms aim to minimize. In general, you should not need to change this code.
 
 ```{r eval=FALSE}
 # the routine returns the sum of negative log-likelihoods of the data and model:
