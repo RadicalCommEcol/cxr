@@ -22,7 +22,7 @@ library("cxr")
 The development version can be installed via the `devtools` package:
 
 ```R
-devtools::install_github("ibartomeus/cxr")
+devtools::install_github("RadicalCommEcol/cxr")
 library("cxr")
 ```
 
@@ -32,7 +32,7 @@ The best way to start is to follow our [vignettes](https://github.com/ibartomeus
 Note that for installing the vignettes alongside the package, you need to use following options at install:
 
 ```R
-devtools::install_github("ibartomeus/cxr", 
+devtools::install_github("RadicalCommEcol/cxr", 
                          build_opts = c("--no-resave-data", "--no-manual"), 
                          build_vignettes = TRUE)
 ```
@@ -70,7 +70,7 @@ vignette("V5_Abundance_projections",package = "cxr")
 
 ### Citation information
 
-When citing, please refer to both the [package citation](https://github.com/ibartomeus/cxr/blob/master/inst/CITATION) and the release paper (in prep).  
+When citing, please refer to both the [package citation](https://github.com/ibartomeus/cxr/blob/master/inst/CITATION) and the release paper [García-Callejas, Godoy, and Bartomeus, 2020](https://besjournals.onlinelibrary.wiley.com/doi/abs/10.1111/2041-210X.13443).  
 
 ### Future developments
 
