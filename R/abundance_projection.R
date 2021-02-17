@@ -16,10 +16,11 @@
 #' @param alpha_matrix square matrix with taxa names in rows and columns.
 #' @param lambda_cov optional named matrix with covariates in columns and taxa in rows,
 #' representing the effect of each covariate on the lambda parameter of each taxa.
-#' @param alpha_cov REWRITE optional list. Each element of the named list represents the effects of
-#' a covariate over alpha values. Thus, each list element contains either 
-#' a single element (alpha_cov_form "global").
-#' or a square matrix of same dimensions as `alpha_matrix` (alpha_cov_form "pairwise").
+#' @param alpha_cov optional list. Each element of the named list represents the effects of
+#' a covariate over alpha values. Thus, each list element contains a square matrix 
+#' of the same dimensions as `alpha_matrix`, as returned from the function `cxr_pm_fit`.
+#' Note that for alpha_cov_form = "global", all columns in this matrix are the same, as there is 
+#' a single value per species.
 #' @param covariates matrix or dataframe with covariates in columns and timesteps in rows.
 #' @param timesteps number of timesteps to project.
 #' @param initial_abundances named vector of initial abundances for all taxa.
@@ -225,7 +226,7 @@ abundance_projection <- function(cxr_fit = NULL,
                                    lambda_cov = lambda_cov[spnames[i.sp],],
                                    alpha_cov = alpha_cov_sp,
                                    abundance = expected_abund[it-1,],
-                                   covariates = covariates[it]))
+                                   covariates = covariates[it,]))
         if(class(ab) != "try-error"){
           expected_abund[it,i.sp] <- ab
         }
