@@ -168,7 +168,7 @@ abundance_projection <- function(cxr_fit = NULL,
   # try to retrieve the function from its name
   # using function "get"
   projection_model <- try(get(model_name),silent = TRUE)
-  if(class(projection_model) == "try-error"){
+  if(inherits(projection_model,"try-error")){
     message(paste("abundance_projection ERROR: model '",model_name,"' could not be retrieved. 
   Make sure it is defined and available in the cxr package or in the global environment.\n"
                   ,sep=""))
@@ -206,7 +206,7 @@ abundance_projection <- function(cxr_fit = NULL,
                                    alpha_cov = NULL,
                                    abundance = expected_abund[it-1,],
                                    covariates = NULL))
-        if(class(ab) != "try-error"){
+        if(!inherits(ab,"try-error")){
           expected_abund[it,i.sp] <- ab
         }
       }else{
@@ -227,7 +227,7 @@ abundance_projection <- function(cxr_fit = NULL,
                                    alpha_cov = alpha_cov_sp,
                                    abundance = expected_abund[it-1,],
                                    covariates = covariates[it,]))
-        if(class(ab) != "try-error"){
+        if(!inherits(ab,"try-error")){
           expected_abund[it,i.sp] <- ab
         }
       }# if-else covariates

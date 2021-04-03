@@ -99,12 +99,13 @@ Estimates parameters of user-specified models of competitive effects and respons
 # fit three species at once
 data("neigh_list")
 # these species all have >250 observations
-example_sp <- c(1,4,5)
+example_sp <- c("BEMA","LEMA","HOMA")
+sp.pos <- which(names(neigh_list) \%in\% example_sp)
+data <- neigh_list[sp.pos]
 n.obs <- 250
-data <- neigh_list[example_sp]
 # keep only fitness and neighbours columns
 for(i in 1:length(data)){
-  data[[i]] <- data[[i]][1:n.obs,c(2,example_sp+2)]#2:length(data[[i]])]
+  data[[i]] <- data[[i]][1:n.obs,c(2,sp.pos+2)]#2:length(data[[i]])]
 }
 
 # covariates: salinity

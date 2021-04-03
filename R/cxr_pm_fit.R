@@ -56,6 +56,7 @@
 #'   sp_fit <- cxr_pm_fit(data = sp_data,
 #'                        focal_column = my.sp,
 #'                        optimization_method = "bobyqa",
+#'                        model_family = "BH",
 #'                        alpha_form = "pairwise",
 #'                        lambda_cov_form = "none",
 #'                        alpha_cov_form = "none",
@@ -134,7 +135,7 @@ cxr_pm_fit <- function(data,
   # try to retrieve the function from its name
   # using function "get"
   fitness_model <- try(get(model_name),silent = TRUE)
-  if(class(fitness_model) == "try-error"){
+  if(inherits(fitness_model,"try-error")){
     message(paste("cxr_pm_fit ERROR: model '",model_name,"' could not be retrieved. 
   Make sure it is defined and available 
                in the cxr package or in the global environment.\n"
@@ -187,7 +188,7 @@ cxr_pm_fit <- function(data,
   }else{
     
     # which column number
-    if(class(focal_column) == "character"){
+    if(inherits(focal_column,"character")){
       focal_column_num <- which(colnames(neigh_matrix) == focal_column)
     }else{
       focal_column_num <- focal_column -1 # because data has fitness in column 1

@@ -43,7 +43,7 @@ species_fitness <- function(effect_response_fit = NULL,
     sf_fun <- paste(sf_f,"_species_fitness",sep="")
     sf_model <- try(get(sf_fun),silent = TRUE)
     
-    if(class(sf_model) == "try-error"){
+    if(inherits(sf_model,"try-error")){
       message(paste("cxr species_fitness ERROR: function '",sf_fun,"' could not be retrieved. 
       Make sure it is defined and available in the cxr package or in the global environment.\n"
                     ,sep=""))
@@ -56,7 +56,7 @@ species_fitness <- function(effect_response_fit = NULL,
     sf_fun <- paste(model_family,"_species_fitness")
     sf_model <- try(get(sf_fun),silent = TRUE)
     
-    if(class(sf_model) == "try-error"){
+    if(inherits(sf_model,"try-error")){
       
       sf_model <- BH_species_fitness
       

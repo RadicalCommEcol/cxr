@@ -83,7 +83,7 @@ cxr_pm_bootstrap <- function(fitness_model,
     }else{
       
       # which column number
-      if(class(focal_column) == "character"){
+      if(inherits(focal_column,"character")){
         bfocal_column_num <- which(colnames(bneigh_matrix) == focal_column)
       }else{
         bfocal_column_num <- focal_column -1

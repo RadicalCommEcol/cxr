@@ -57,12 +57,13 @@
 #' # fit three species at once
 #' data("neigh_list")
 #' # these species all have >250 observations
-#' example_sp <- c(1,4,5)
+#' example_sp <- c("BEMA","LEMA","HOMA")
+#' sp.pos <- which(names(neigh_list) %in% example_sp)
+#' data <- neigh_list[sp.pos]
 #' n.obs <- 250
-#' data <- neigh_list[example_sp]
 #' # keep only fitness and neighbours columns
 #' for(i in 1:length(data)){
-#'   data[[i]] <- data[[i]][1:n.obs,c(2,example_sp+2)]#2:length(data[[i]])]
+#'   data[[i]] <- data[[i]][1:n.obs,c(2,sp.pos+2)]#2:length(data[[i]])]
 #' }
 #' 
 #' # covariates: salinity
@@ -200,7 +201,7 @@ cxr_er_fit <- function(data,
   model_name <- paste(model_family,"_er","_lambdacov_",lambda_cov_form,"_effectcov_",effect_cov_form,"_responsecov_",response_cov_form,sep="")
   
   fitness_model <- try(get(model_name),silent = TRUE)
-  if(class(fitness_model) == "try-error"){
+  if(inherits(fitness_model,"try-error")){
     stop(paste("cxr_er_fit ERROR: model '",model_name,"' could not be retrieved. 
   Make sure it is defined and available in the cxr package or in the global environment.\n",sep=""))
   }
@@ -231,7 +232,7 @@ cxr_er_fit <- function(data,
   
   # if list, create a single dataframe
   covdf <- NULL
-  if(class(data) == "list"){
+  if(inherits(data,"list")){
     spdf <- do.call(rbind,data)
     spdf$focal <- rep(names(data),each = nrow(data[[1]]))
     if(!is.null(covariates)){

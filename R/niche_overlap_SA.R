@@ -15,7 +15,7 @@ niche_overlap_SA <- function(pair_matrix){
   }
   n <- nrow(pair_matrix)
   Sigma <- try(solve(t(pair_matrix) %*% pair_matrix, tol = 1e-40),silent = TRUE)
-  if(class(Sigma) != "try-error"){
+  if(!inherits(Sigma,"try-error")){
     d <- mvtnorm::pmvnorm(lower = rep(0,n), upper = rep(Inf,n), mean = rep(0,n), sigma = Sigma)
     out <- log10(d[1]) + n * log10(2)
     return(1-10^out) 

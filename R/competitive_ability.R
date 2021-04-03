@@ -58,7 +58,7 @@ competitive_ability <- function(cxr_multifit = NULL,
     ca_fun <- paste(mf,"_competitive_ability",sep="")
     ca_model <- try(get(ca_fun),silent = TRUE)
     
-    if(class(ca_model) == "try-error"){
+    if(inherits(ca_model,"try-error")){
       warning(paste("cxr competitive ability: function '",ca_fun,"' could not be retrieved.
                     The default formulation for Lotka-Volterra models (lambda - 1 in numerator term) will be used. 
                     Be aware that this may yield incorrect results for your model family.\n"
@@ -101,7 +101,7 @@ competitive_ability <- function(cxr_multifit = NULL,
         ca_fun <- paste(sp1_model,"_competitive_ability",sep="")
         ca_model <- try(get(ca_fun),silent = TRUE)
         
-        if(class(ca_model) == "try-error"){
+        if(inherits(ca_model,"try-error")){
           warning(paste("cxr competitive ability: function '",ca_fun,"' could not be retrieved.
                     The default formulation (lambda - 1 in numerator term) will be used. 
                     Be aware that this may yield incorrect results for your model family.\n"
@@ -161,7 +161,7 @@ competitive_ability <- function(cxr_multifit = NULL,
     ca_fun <- paste(model_family,"_competitive_ability",sep="")
     ca_model <- try(get(ca_fun),silent = TRUE)
     
-    if(class(ca_model) == "try-error"){
+    if(inherits(ca_model,"try-error")){
       
       ca_model <- BH_competitive_ability
       

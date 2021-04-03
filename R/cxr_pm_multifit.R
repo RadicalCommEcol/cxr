@@ -56,20 +56,24 @@
 #' \donttest{
 #'   fit_3sp <- cxr_pm_multifit(data = data,
 #'                              optimization_method = "bobyqa",
+#'                              model_family = "BH",
 #'                              covariates = salinity,
 #'                              alpha_form = "pairwise",
 #'                              lambda_cov_form = "global",
 #'                              alpha_cov_form = "global",
 #'                              initial_values = list(lambda = 1,
-#'                                                    alpha = 0.1,
+#'                                                    alpha_intra = 0.1,
+#'                                                    alpha_inter = 0.1,
 #'                                                    lambda_cov = 0.1, 
 #'                                                    alpha_cov = 0.1),
 #'                              lower_bounds = list(lambda = 0.01,
-#'                                                  alpha = 0,
+#'                                                  alpha_intra = 0,
+#'                                                  alpha_inter = 0,
 #'                                                  lambda_cov = 0, 
 #'                                                  alpha_cov = 0),
 #'                              upper_bounds = list(lambda = 100,
-#'                                                  alpha = 1,
+#'                                                  alpha_intra = 1,
+#'                                                  alpha_inter = 1,
 #'                                                  lambda_cov = 1, 
 #'                                                  alpha_cov = 1),
 #'                              bootstrap_samples = 3)
@@ -112,12 +116,12 @@ cxr_pm_multifit <- function(data,
   multifit_data_check <- TRUE
   
   # check input data
-  if(class(data) != "list"){
+  if(!inherits(data,"list")){
     multifit_data_check <- FALSE
   }else{
     
     if(!is.null(covariates)){
-      if(class(covariates) != "list"){
+      if(!inherits(covariates,"list")){
         multifit_data_check <- FALSE
       }else if(length(covariates) != length(data)){
         multifit_data_check <- FALSE
@@ -125,7 +129,7 @@ cxr_pm_multifit <- function(data,
     }
     
     if(!is.null(fixed_terms)){
-      if(class(fixed_terms) != "list"){
+      if(!inherits(fixed_terms,"list")){
         multifit_data_check <- FALSE
       }else if(length(fixed_terms) != length(data)){
         multifit_data_check <- FALSE
@@ -171,7 +175,7 @@ cxr_pm_multifit <- function(data,
   # try to retrieve the function from its name
   # using function "get"
   fitness_model <- try(get(model_name),silent = TRUE)
-  if(class(fitness_model) == "try-error"){
+  if(inherits(fitness_model,"try-error")){
     message(paste("cxr_pm_fit ERROR: model '",model_name,"' could not be retrieved. 
     Make sure it is defined and available in the cxr package or in the global environment.\n",sep=""))
     return(NULL)

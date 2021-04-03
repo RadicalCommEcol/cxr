@@ -129,18 +129,33 @@ test_that("parameter form 1 returns valid object", {
                          upper_bounds = upper_bounds[[model_families[im]]],
                          bootstrap_samples = 0)
     
+    lambda <- sp_fit$lambda
+    alpha_intra <- sp_fit$alpha_intra
+    alpha_inter <- sp_fit$alpha_inter
+    lambda_cov <- sp_fit$lambda_cov
+    alpha_cov <- sp_fit$alpha_cov
+    
+    lambda_standard_error <- sp_fit$lambda_standard_error
+    alpha_intra_standard_error <- sp_fit$alpha_intra_standard_error
+    alpha_inter_standard_error <- sp_fit$alpha_inter_standard_error
+    lambda_cov_standard_error <- sp_fit$lambda_cov_standard_error
+    alpha_cov_standard_error <- sp_fit$alpha_cov_standard_error
+    
+    log_likelihood <- sp_fit$log_likelihood
+    
     expect_s3_class(sp_fit, "cxr_pm_fit")
-    expect_equal(class(sp_fit$lambda), "numeric")
-    expect_null(sp_fit$alpha_intra)
-    expect_null(sp_fit$alpha_inter)
-    expect_null(sp_fit$lambda_cov)
-    expect_null(sp_fit$alpha_cov)
-    expect_null(sp_fit$lambda_standard_error)
-    expect_null(sp_fit$alpha_intra_standard_error)
-    expect_null(sp_fit$alpha_inter_standard_error)
-    expect_null(sp_fit$lambda_cov_standard_error)
-    expect_null(sp_fit$alpha_cov_standard_error)
-    expect_equal(class(sp_fit$log_likelihood), "numeric")
+    expect_type(lambda, "double")
+    
+    expect_null(alpha_intra)
+    expect_null(alpha_inter)
+    expect_null(lambda_cov)
+    expect_null(alpha_cov)
+    expect_null(lambda_standard_error)
+    expect_null(alpha_intra_standard_error)
+    expect_null(alpha_inter_standard_error)
+    expect_null(lambda_cov_standard_error)
+    expect_null(alpha_cov_standard_error)
+    expect_type(log_likelihood, "double")
   }# for each model family
 })
 
@@ -159,19 +174,33 @@ test_that("parameter form 2 returns valid object", {
                          upper_bounds = upper_bounds[[model_families[im]]],
                          bootstrap_samples = 0)
   
+    lambda <- sp_fit$lambda
+    alpha_intra <- sp_fit$alpha_intra
+    alpha_inter <- sp_fit$alpha_inter
+    lambda_cov <- sp_fit$lambda_cov
+    alpha_cov <- sp_fit$alpha_cov
+    
+    lambda_standard_error <- sp_fit$lambda_standard_error
+    alpha_intra_standard_error <- sp_fit$alpha_intra_standard_error
+    alpha_inter_standard_error <- sp_fit$alpha_inter_standard_error
+    lambda_cov_standard_error <- sp_fit$lambda_cov_standard_error
+    alpha_cov_standard_error <- sp_fit$alpha_cov_standard_error
+    
+    log_likelihood <- sp_fit$log_likelihood
     
     expect_s3_class(sp_fit, "cxr_pm_fit")
-    expect_equal(class(sp_fit$lambda), "numeric")
-    expect_null(sp_fit$alpha_intra)
-    expect_equal(class(sp_fit$alpha_inter), "numeric")
-    expect_null(sp_fit$lambda_cov)
-    expect_null(sp_fit$alpha_cov)
-    expect_null(sp_fit$lambda_standard_error)
-    expect_null(sp_fit$alpha_intra_standard_error)
-    expect_null(sp_fit$alpha_inter_standard_error)
-    expect_null(sp_fit$lambda_cov_standard_error)
-    expect_null(sp_fit$alpha_cov_standard_error)
-    expect_equal(class(sp_fit$log_likelihood), "numeric")
+    expect_type(lambda, "double")
+    expect_null(alpha_intra)
+    expect_type(alpha_inter, "double")
+    
+    expect_null(lambda_cov)
+    expect_null(alpha_cov)
+    expect_null(lambda_standard_error)
+    expect_null(alpha_intra_standard_error)
+    expect_null(alpha_inter_standard_error)
+    expect_null(lambda_cov_standard_error)
+    expect_null(alpha_cov_standard_error)
+    expect_type(log_likelihood, "double")
   }
 })
 
@@ -190,19 +219,34 @@ test_that("parameter form 3 returns valid object", {
                          upper_bounds = upper_bounds[[model_families[im]]],
                          bootstrap_samples = 0)
     
+    lambda <- sp_fit$lambda
+    alpha_intra <- sp_fit$alpha_intra
+    alpha_inter <- sp_fit$alpha_inter
+    lambda_cov <- sp_fit$lambda_cov
+    alpha_cov <- sp_fit$alpha_cov
+    
+    lambda_standard_error <- sp_fit$lambda_standard_error
+    alpha_intra_standard_error <- sp_fit$alpha_intra_standard_error
+    alpha_inter_standard_error <- sp_fit$alpha_inter_standard_error
+    lambda_cov_standard_error <- sp_fit$lambda_cov_standard_error
+    alpha_cov_standard_error <- sp_fit$alpha_cov_standard_error
+    
+    log_likelihood <- sp_fit$log_likelihood
+    
     expect_s3_class(sp_fit, "cxr_pm_fit")
-    expect_equal(class(sp_fit$lambda), "numeric")
-    expect_equal(class(sp_fit$alpha_intra), "numeric")
-    expect_equal(class(sp_fit$alpha_inter), "numeric")
-    expect_length(sp_fit$alpha_inter,length(neigh.sp))
-    expect_null(sp_fit$lambda_cov)
-    expect_null(sp_fit$alpha_cov)
-    expect_null(sp_fit$lambda_standard_error)
-    expect_null(sp_fit$alpha_intra_standard_error)
-    expect_null(sp_fit$alpha_inter_standard_error)
-    expect_null(sp_fit$lambda_cov_standard_error)
-    expect_null(sp_fit$alpha_cov_standard_error)
-    expect_equal(class(sp_fit$log_likelihood), "numeric")
+    expect_type(lambda, "double")
+    expect_type(alpha_intra, "double")
+    expect_type(alpha_inter, "double")
+    expect_length(alpha_inter,length(neigh.sp))
+    
+    expect_null(lambda_cov)
+    expect_null(alpha_cov)
+    expect_null(lambda_standard_error)
+    expect_null(alpha_intra_standard_error)
+    expect_null(alpha_inter_standard_error)
+    expect_null(lambda_cov_standard_error)
+    expect_null(alpha_cov_standard_error)
+    expect_type(log_likelihood, "double")
   }
 })
 
@@ -222,22 +266,37 @@ test_that("parameter form 4 returns valid object", {
                          upper_bounds = upper_bounds[[model_families[im]]],
                          bootstrap_samples = 0)
   
+    lambda <- sp_fit$lambda
+    alpha_intra <- sp_fit$alpha_intra
+    alpha_inter <- sp_fit$alpha_inter
+    lambda_cov <- sp_fit$lambda_cov
+    alpha_cov <- sp_fit$alpha_cov
+    
+    lambda_standard_error <- sp_fit$lambda_standard_error
+    alpha_intra_standard_error <- sp_fit$alpha_intra_standard_error
+    alpha_inter_standard_error <- sp_fit$alpha_inter_standard_error
+    lambda_cov_standard_error <- sp_fit$lambda_cov_standard_error
+    alpha_cov_standard_error <- sp_fit$alpha_cov_standard_error
+    
+    log_likelihood <- sp_fit$log_likelihood
+    
     expect_s3_class(sp_fit, "cxr_pm_fit")
-    expect_equal(class(sp_fit$lambda), "numeric")
-    expect_equal(class(sp_fit$alpha_intra), "numeric")
-    expect_equal(class(sp_fit$alpha_inter), "numeric")
-    expect_length(sp_fit$alpha_inter,length(neigh.sp))
-    expect_equal(class(sp_fit$lambda_cov), "numeric")
-    expect_equal(class(sp_fit$alpha_cov), "list")
+    expect_type(lambda, "double")
+    expect_type(alpha_intra, "double")
+    expect_type(alpha_inter, "double")
+    expect_length(alpha_inter,length(neigh.sp))
+    expect_type(lambda_cov, "double")
+    expect_type(alpha_cov, "list")
     for(i.cov in 1:length(covariates)){
-      expect_equal(class(sp_fit$alpha_cov[[i.cov]]), "numeric")
+      expect_type(alpha_cov[[i.cov]], "double")
     }
-    expect_null(sp_fit$lambda_standard_error)
-    expect_null(sp_fit$alpha_intra_standard_error)
-    expect_null(sp_fit$alpha_inter_standard_error)
-    expect_null(sp_fit$lambda_cov_standard_error)
-    expect_null(sp_fit$alpha_cov_standard_error)
-    expect_equal(class(sp_fit$log_likelihood), "numeric")
+    
+    expect_null(lambda_standard_error)
+    expect_null(alpha_intra_standard_error)
+    expect_null(alpha_inter_standard_error)
+    expect_null(lambda_cov_standard_error)
+    expect_null(alpha_cov_standard_error)
+    expect_type(log_likelihood, "double")
   }
 })
 
@@ -257,23 +316,38 @@ test_that("parameter form 5 returns valid object", {
                          upper_bounds = upper_bounds[[model_families[im]]],
                          bootstrap_samples = 0)
   
+    lambda <- sp_fit$lambda
+    alpha_intra <- sp_fit$alpha_intra
+    alpha_inter <- sp_fit$alpha_inter
+    lambda_cov <- sp_fit$lambda_cov
+    alpha_cov <- sp_fit$alpha_cov
+    
+    lambda_standard_error <- sp_fit$lambda_standard_error
+    alpha_intra_standard_error <- sp_fit$alpha_intra_standard_error
+    alpha_inter_standard_error <- sp_fit$alpha_inter_standard_error
+    lambda_cov_standard_error <- sp_fit$lambda_cov_standard_error
+    alpha_cov_standard_error <- sp_fit$alpha_cov_standard_error
+    
+    log_likelihood <- sp_fit$log_likelihood
+    
     expect_s3_class(sp_fit, "cxr_pm_fit")
-    expect_equal(class(sp_fit$lambda), "numeric")
-    expect_equal(class(sp_fit$alpha_intra), "numeric")
-    expect_equal(class(sp_fit$alpha_inter), "numeric")
-    expect_length(sp_fit$alpha_inter,length(neigh.sp))
-    expect_equal(class(sp_fit$lambda_cov), "numeric")
-    expect_equal(class(sp_fit$alpha_cov), "list")
+    expect_type(lambda, "double")
+    expect_type(alpha_intra, "double")
+    expect_type(alpha_inter, "double")
+    expect_length(alpha_inter,length(neigh.sp))
+    expect_type(lambda_cov, "double")
+    expect_type(alpha_cov, "list")
     for(i.cov in 1:length(covariates)){
-      expect_equal(class(sp_fit$alpha_cov[[i.cov]]), "numeric")
-      expect_length(sp_fit$alpha_cov[[i.cov]],length(all.sp))
+      expect_type(alpha_cov[[i.cov]], "double")
+      expect_length(alpha_cov[[i.cov]],length(all.sp))
     }
-    expect_null(sp_fit$lambda_standard_error)
-    expect_null(sp_fit$alpha_intra_standard_error)
-    expect_null(sp_fit$alpha_inter_standard_error)
-    expect_null(sp_fit$lambda_cov_standard_error)
-    expect_null(sp_fit$alpha_cov_standard_error)
-    expect_equal(class(sp_fit$log_likelihood), "numeric")
+    
+    expect_null(lambda_standard_error)
+    expect_null(alpha_intra_standard_error)
+    expect_null(alpha_inter_standard_error)
+    expect_null(lambda_cov_standard_error)
+    expect_null(alpha_cov_standard_error)
+    expect_type(log_likelihood, "double")
   }
 })
 
@@ -293,28 +367,42 @@ test_that("errors are correctly calculated", {
                          upper_bounds = upper_bounds[[model_families[im]]],
                          bootstrap_samples = 3)
     
+    lambda <- sp_fit$lambda
+    alpha_intra <- sp_fit$alpha_intra
+    alpha_inter <- sp_fit$alpha_inter
+    lambda_cov <- sp_fit$lambda_cov
+    alpha_cov <- sp_fit$alpha_cov
+    
+    lambda_standard_error <- sp_fit$lambda_standard_error
+    alpha_intra_standard_error <- sp_fit$alpha_intra_standard_error
+    alpha_inter_standard_error <- sp_fit$alpha_inter_standard_error
+    lambda_cov_standard_error <- sp_fit$lambda_cov_standard_error
+    alpha_cov_standard_error <- sp_fit$alpha_cov_standard_error
+    
+    log_likelihood <- sp_fit$log_likelihood
+    
     expect_s3_class(sp_fit, "cxr_pm_fit")
-    expect_equal(class(sp_fit$lambda), "numeric")
-    expect_equal(class(sp_fit$alpha_intra), "numeric")
-    expect_equal(class(sp_fit$alpha_inter), "numeric")
-    expect_length(sp_fit$alpha_inter,length(neigh.sp))
-    expect_equal(class(sp_fit$lambda_cov), "numeric")
-    expect_equal(class(sp_fit$alpha_cov), "list")
+    expect_type(lambda, "double")
+    expect_type(alpha_intra, "double")
+    expect_type(alpha_inter, "double")
+    expect_length(alpha_inter,length(neigh.sp))
+    expect_type(lambda_cov, "double")
+    expect_type(alpha_cov, "list")
     for(i.cov in 1:length(covariates)){
-      expect_equal(class(sp_fit$alpha_cov[[i.cov]]), "numeric")
-      expect_length(sp_fit$alpha_cov[[i.cov]],length(all.sp))
+      expect_type(alpha_cov[[i.cov]], "double")
+      expect_length(alpha_cov[[i.cov]],length(all.sp))
     }
-    expect_equal(class(sp_fit$lambda_standard_error), "numeric")
-    expect_equal(class(sp_fit$alpha_intra_standard_error), "numeric")
-    expect_equal(class(sp_fit$alpha_inter_standard_error), "numeric")
-    expect_length(sp_fit$alpha_inter_standard_error,length(neigh.sp))
-    expect_equal(class(sp_fit$lambda_cov_standard_error), "numeric")
-    expect_equal(class(sp_fit$alpha_cov_standard_error), "list")
+    expect_type(lambda_standard_error, "double")
+    expect_type(alpha_intra_standard_error, "double")
+    expect_type(alpha_inter_standard_error, "double")
+    expect_length(alpha_inter_standard_error,length(neigh.sp))
+    expect_type(lambda_cov_standard_error, "double")
+    expect_type(alpha_cov_standard_error, "list")
     for(i.cov in 1:length(covariates)){
-      expect_equal(class(sp_fit$alpha_cov_standard_error[[i.cov]]), "numeric")
-      expect_length(sp_fit$alpha_cov_standard_error[[i.cov]],length(all.sp))
+      expect_type(alpha_cov_standard_error[[i.cov]], "double")
+      expect_length(alpha_cov_standard_error[[i.cov]],length(all.sp))
     }
-    expect_equal(class(sp_fit$log_likelihood), "numeric")
+    expect_type(log_likelihood, "double")
   }
 })
 
@@ -328,9 +416,11 @@ data <- neigh_list[sp.pos]
 for(i in 1:length(data)){
   data[[i]] <- data[[i]][,2:length(data[[i]])]
 }
+
 focal_column <- names(data)
 
 salinity <- salinity_list[sp.pos]
+
 # keep only salinity column
 for(i in 1:length(salinity)){
   salinity[[i]] <- as.matrix(salinity[[i]][,2:length(salinity[[i]])])
@@ -364,22 +454,32 @@ test_that("multiple species are correctly fitted", {
                               fixed_terms = fixed_terms,
                               bootstrap_samples = bootstrap_samples)
   
+  lambda <- multifit$lambda
+  alpha_matrix <- multifit$alpha_matrix
+  lc <- multifit$lambda_cov
+  ac <- multifit$alpha_cov
+  lse <- multifit$lambda_standard_error
+  ase <- multifit$alpha_matrix_standard_error
+  lcse <- multifit$lambda_cov_standard_error
+  acse <- multifit$alpha_cov_standard_error
+  llik <- multifit$log_likelihood
+  
   expect_s3_class(multifit, "cxr_pm_multifit")
-  expect_equal(class(multifit$lambda), "numeric")
-  expect_equal(class(multifit$alpha_matrix), "matrix")
-  expect_equal(class(multifit$lambda_cov), "matrix")
-  expect_equal(class(multifit$alpha_cov), "list")
+  expect_type(lambda, "double")
+  expect_type(alpha_matrix, "double")
+  expect_type(lc, "double")
+  expect_type(ac, "list")
   for(i.cov in 1:ncol(covariates[[1]])){
-    expect_equal(class(multifit$alpha_cov[[i.cov]]), "matrix")
+    expect_type(ac[[i.cov]], "double")
   }
-  expect_equal(class(multifit$lambda_standard_error), "numeric")
-  expect_equal(class(multifit$alpha_matrix_standard_error), "matrix")
-  expect_equal(class(multifit$lambda_cov_standard_error), "matrix")
-  expect_equal(class(multifit$alpha_cov_standard_error), "list")
+  expect_type(lse, "double")
+  expect_type(ase, "double")
+  expect_type(lcse, "double")
+  expect_type(acse, "list")
   for(i.cov in 1:ncol(covariates[[1]])){
-    expect_equal(class(multifit$alpha_cov_standard_error[[i.cov]]), "matrix")
+    expect_type(acse[[i.cov]], "double")
   }
-  expect_equal(class(multifit$log_likelihood), "numeric")
+  expect_type(llik, "double")
   
 })
 

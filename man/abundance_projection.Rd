@@ -16,7 +16,7 @@ abundance_projection(
   lambda_cov = NULL,
   alpha_cov = NULL,
   covariates = NULL,
-  timesteps = 0,
+  timesteps = 2,
   initial_abundances = 0
 )
 }
@@ -41,9 +41,10 @@ all parameters below are needed.}
 representing the effect of each covariate on the lambda parameter of each taxa.}
 
 \item{alpha_cov}{optional list. Each element of the named list represents the effects of
-a covariate over alpha values. Thus, each list element contains either 
-a single element (alpha_cov_form "global").
-or a square matrix of same dimensions as `alpha_matrix` (alpha_cov_form "pairwise").}
+a covariate over alpha values. Thus, each list element contains a square matrix 
+of the same dimensions as `alpha_matrix`, as returned from the function `cxr_pm_fit`.
+Note that for alpha_cov_form = "global", all columns in this matrix are the same, as there is 
+a single value per species.}
 
 \item{covariates}{matrix or dataframe with covariates in columns and timesteps in rows.}
 

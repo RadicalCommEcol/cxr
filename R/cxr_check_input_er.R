@@ -13,7 +13,7 @@
 #' @noRd
 cxr_check_input_er <- function(data,covariates = NULL){
   data.ok <- TRUE
-  if("list" %in% class(data)){
+  if(inherits(data,"list")){
     # check nrow
     nrows <- unlist(lapply(data,nrow))
     nna <- sum(unlist(lapply(data,function(x){sum(is.na(x))})))
@@ -34,7 +34,7 @@ cxr_check_input_er <- function(data,covariates = NULL){
         data.ok <- FALSE
       }else{
         if(!is.null(covariates)){
-          if(!class(covariates) == "list"){
+          if(!inherits(covariates,"list")){
             data.ok <- FALSE
           }else{
             nrcov <- unlist(lapply(covariates,nrow))
@@ -45,7 +45,7 @@ cxr_check_input_er <- function(data,covariates = NULL){
         }# covariates
       }# if-else cols ok
     }# if-else length ok
-  }else if(class(data) == "data.frame"){
+  }else if(inherits(data,"data.frame")){
     if(sum(is.na(data))>0){
       data.ok <- FALSE
     }

@@ -98,6 +98,7 @@ sp_data <- neigh_list[[my.sp]][2:ncol(neigh_list[[1]])]
   sp_fit <- cxr_pm_fit(data = sp_data,
                        focal_column = my.sp,
                        optimization_method = "bobyqa",
+                       model_family = "BH",
                        alpha_form = "pairwise",
                        lambda_cov_form = "none",
                        alpha_cov_form = "none",
