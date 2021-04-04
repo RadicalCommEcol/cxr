@@ -4,4 +4,4 @@
 /cuts
 ^doc$
 ^Meta$
-^\.travis\.yml$
+^cran-comments\.md$
