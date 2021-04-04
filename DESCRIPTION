@@ -2,7 +2,7 @@ Package: cxr
 Type: Package
 Title: A Toolbox for Modelling Species Coexistence in R
 Version: 1.0
-URL: https://github.com/ibartomeus/cxr
+URL: https://github.com/RadicalCommEcol/cxr
 Authors@R: c(person("David", "Garcia-Callejas", role = c("aut", "cre"), 
     email = "david.garcia.callejas@gmail.com", 
     comment = c(ORCID = "0000-0001-6982-476X")),
@@ -23,15 +23,14 @@ Description: Recent developments in modern coexistence theory has advanced
     The functions are flexible, may accept covariates, 
     and different fitting algorithms can be used. 
 License: MIT + file LICENCE
-BugReports: https://github.com/ibartomeus/cxr/issues
+BugReports: https://github.com/RadicalCommEcol/cxr/issues
 Encoding: UTF-8
 Depends:
   R (>= 3.5)
 Imports:
     optimx,
     stats,
-    mvtnorm,
-    minqa
+    mvtnorm
 RoxygenNote: 7.1.1
 Suggests: 
     ggplot2,
@@ -45,6 +44,7 @@ Suggests:
     BB,
     ucminf,
     dfoptim,
+    minqa,
     hydroPSO,
     GenSA,
     DEoptimR,

@@ -1,5 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.github/workflows$
 ^\.github$ 
 ^CONDUCT\.md$
 ^LICENSE\.md$
