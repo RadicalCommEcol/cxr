@@ -251,7 +251,7 @@ test_that("parameter form 3 returns valid object", {
 })
 
 test_that("parameter form 4 returns valid object", {
-  
+  skip_on_cran()
   for(im in 1:length(model_families)){
     sp_fit <- cxr_pm_fit(data = sp_data,
                          model_family = model_families[im],
@@ -302,6 +302,7 @@ test_that("parameter form 4 returns valid object", {
 
 test_that("parameter form 5 returns valid object", {
   
+  skip_on_cran()
   for(im in 1:length(model_families)){
     sp_fit <- cxr_pm_fit(data = sp_data,
                          model_family = model_families[im],
@@ -353,6 +354,7 @@ test_that("parameter form 5 returns valid object", {
 
 test_that("errors are correctly calculated", {
   
+  skip_on_cran()
   for(im in 1:length(model_families)){
     sp_fit <- cxr_pm_fit(data = sp_data,
                          model_family = model_families[im],
@@ -408,38 +410,39 @@ test_that("errors are correctly calculated", {
 
 # test multifit -----------------------------------------------------------
 
-three_sp <- c("BEMA","LEMA","HOMA")
-sp.pos <- which(names(neigh_list) %in% three_sp)
-
-data <- neigh_list[sp.pos]
-# keep only fitness and neighbours columns
-for(i in 1:length(data)){
-  data[[i]] <- data[[i]][,2:length(data[[i]])]
-}
-
-focal_column <- names(data)
-
-salinity <- salinity_list[sp.pos]
-
-# keep only salinity column
-for(i in 1:length(salinity)){
-  salinity[[i]] <- as.matrix(salinity[[i]][,2:length(salinity[[i]])])
-  colnames(salinity[[i]]) <- "salinity"
-}
-
-model_family <- "BH"
-covariates <- salinity
-optimization_method <- "bobyqa"
-alpha_form <- "pairwise"
-lambda_cov_form <- "global"
-alpha_cov_form <- "pairwise"
-fixed_terms <- NULL
-bootstrap_samples <- 3
-
 test_that("multiple species are correctly fitted", {
   # skip this on CRAN, 
   # as it may take long
   skip_on_cran()
+  
+  three_sp <- c("BEMA","LEMA","HOMA")
+  sp.pos <- which(names(neigh_list) %in% three_sp)
+  
+  data <- neigh_list[sp.pos]
+  # keep only fitness and neighbours columns
+  for(i in 1:length(data)){
+    data[[i]] <- data[[i]][,2:length(data[[i]])]
+  }
+  
+  focal_column <- names(data)
+  
+  salinity <- salinity_list[sp.pos]
+  
+  # keep only salinity column
+  for(i in 1:length(salinity)){
+    salinity[[i]] <- as.matrix(salinity[[i]][,2:length(salinity[[i]])])
+    colnames(salinity[[i]]) <- "salinity"
+  }
+  
+  model_family <- "BH"
+  covariates <- salinity
+  optimization_method <- "bobyqa"
+  alpha_form <- "pairwise"
+  lambda_cov_form <- "global"
+  alpha_cov_form <- "pairwise"
+  fixed_terms <- NULL
+  bootstrap_samples <- 3
+  
   multifit <- cxr_pm_multifit(data = data,
                               focal_column = focal_column,
                               model_family = model_family,
