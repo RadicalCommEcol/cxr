@@ -4,6 +4,7 @@
 * ubuntu 20.04 (on github actions), R-devel
 * mac OS (on github actions), R 4.0.5
 * windows (on github actions), R 4.0.5
+* win-builder (devel and release)
 
 ## R CMD check results
 There were no ERRORs or WARNINGs. 
