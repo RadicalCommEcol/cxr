@@ -20,11 +20,11 @@ Description: Recent developments in modern coexistence theory has advanced
     by empiricists. This package provides a complete toolbox for modelling 
     interaction effects between species, and calculate fitness and 
     niche differences. 
-    The functions are flexible and can include covariates 
+    The functions are flexible, may accept covariates, 
     and different fitting algorithms can be used. 
 License: MIT + file LICENCE
 BugReports: https://github.com/ibartomeus/cxr/issues
-Encoding: latin1
+Encoding: UTF-8
 Depends:
   R (>= 3.5)
 Imports:

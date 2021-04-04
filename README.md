@@ -8,31 +8,24 @@
 
 # cxr 1.0.0
 
-CXR provides a complete toolbox for modelling interactions between species, calculate coexistence metrics (e.g. niche and fitness differences), and project species abundances. The functions are flexible and can include covariates, use different optimization algorithms, or accept user-defined mathematical population models as starting points. 
+cxr provides a complete toolbox for modelling interactions between species, calculate coexistence metrics (e.g. niche and fitness differences), and project species abundances. The functions are flexible and can include covariates, use different optimization algorithms, or accept user-defined mathematical population models as starting points. 
 
 ### Installation
 
-The package can't be installed from CRAN yet, but when available will be at:
+The development version can be installed via the `remotes` package:
 
 ```R
-install.packages("cxr")
-library("cxr")
-```
-
-The development version can be installed via the `devtools` package:
-
-```R
-devtools::install_github("RadicalCommEcol/cxr")
+remotes::install_github("RadicalCommEcol/cxr")
 library("cxr")
 ```
 
 ### Setup requirements and use
 
-The best way to start is to follow our [vignettes](https://github.com/ibartomeus/cxr/tree/master/vignettes).
+The best way to start is to follow our [vignettes](https://github.com/RadicalCommEcol/cxr/tree/master/vignettes).
 Note that for installing the vignettes alongside the package, you need to use following options at install:
 
 ```R
-devtools::install_github("RadicalCommEcol/cxr", 
+remotes::install_github("RadicalCommEcol/cxr", 
                          build_opts = c("--no-resave-data", "--no-manual"), 
                          build_vignettes = TRUE)
 ```
@@ -70,7 +63,7 @@ vignette("V5_Abundance_projections",package = "cxr")
 
 ### Citation information
 
-When citing, please refer to both the [package citation](https://github.com/ibartomeus/cxr/blob/master/inst/CITATION) and the release paper [García-Callejas, Godoy, and Bartomeus, 2020](https://besjournals.onlinelibrary.wiley.com/doi/abs/10.1111/2041-210X.13443).  
+When citing, please refer to both the [package citation](https://github.com/RadicalCommEcol/cxr/blob/master/inst/CITATION) and the release paper [García-Callejas, Godoy, and Bartomeus, 2020](https://besjournals.onlinelibrary.wiley.com/doi/abs/10.1111/2041-210X.13443).  
 
 ### Future developments
 
@@ -86,10 +79,10 @@ e.g. to implement properly the annual plant model with 'g' and 's' constants.
 
 ## Bug reports and contributions.  
 
-We welcome contributions (e.g. via pull request) and [bug reports](https://github.com/ibartomeus/cxr/issues).
+We welcome contributions (e.g. via pull request) and [bug reports](https://github.com/RadicalCommEcol/cxr/issues).
 
 ## Code of Conduct  
 
-Please note that this project is released with a [Contributor Code of Conduct](https://github.com/ibartomeus/cxr/blob/master/CONDUCT.md).
+Please note that this project is released with a [Contributor Code of Conduct](https://github.com/RadicalCommEcol/cxr/blob/master/CONDUCT.md).
 By participating in this project you agree to abide by its terms.
 
