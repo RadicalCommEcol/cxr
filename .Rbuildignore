@@ -4,4 +4,9 @@
 /cuts
 ^doc$
 ^Meta$
+<<<<<<< HEAD
 ^cran-comments\.md$
+=======
+^\.travis\.yml$
+^\.github$
+>>>>>>> 1b285c8cac63014ee2b82cf6e32c0d6e20c6d182
