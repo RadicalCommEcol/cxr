@@ -4,5 +4,4 @@
 /cuts
 ^doc$
 ^Meta$
-^\.travis\.yml$
 ^\.github$
