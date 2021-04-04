@@ -22,7 +22,7 @@ Description: Recent developments in modern coexistence theory has advanced
     niche differences. 
     The functions are flexible, may accept covariates, 
     and different fitting algorithms can be used. 
-License: MIT + file LICENCE
+License: MIT + file LICENSE
 BugReports: https://github.com/RadicalCommEcol/cxr/issues
 Encoding: UTF-8
 Depends:
