@@ -9,7 +9,7 @@ All other exported functions have proper \value tags.
 * Updated documentation of several other functions, adding more detailed descriptions.
 
 ## Test environments
-* local ubuntu 20.04 install, R 4.0.4
+* local ubuntu 20.04 install, R 4.0.5
 * ubuntu 20.04 (on github actions), R 4.0.5
 * ubuntu 20.04 (on github actions), R-devel
 * mac OS (on github actions), R 4.0.5

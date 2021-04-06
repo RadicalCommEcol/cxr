@@ -12,7 +12,7 @@ Authors@R: c(person("David", "Garcia-Callejas", role = c("aut", "cre"),
     person("Oscar", "Godoy", role = c("aut"), email = "ogodoy.re@gmail.com", 
     comment = c(ORCID = "0000-0003-4988-6626")),
     person("Maxime", "Lancelot", role = c("ctb")))
-Description: Recent developments in modern coexistence theory has advanced 
+Description: Recent developments in modern coexistence theory have advanced 
     our understanding on how species are able to persist and co-occur 
     with other species at varying abundances. However, applying this 
     mathematical framework to empirical data is still challenging, 
@@ -23,7 +23,7 @@ Description: Recent developments in modern coexistence theory has advanced
     The functions are flexible, may accept covariates, 
     and different fitting algorithms can be used. 
     A full description of the underlying methods is available in 
-    García-Callejas, D., Godoy, O., and Bartomeus, I. (2020) <doi:https://doi.org/10.1111/2041-210X.13443>
+    García-Callejas, D., Godoy, O., and Bartomeus, I. (2020) <doi:10.1111/2041-210X.13443>.
 License: MIT + file LICENSE
 BugReports: https://github.com/RadicalCommEcol/cxr/issues
 Encoding: UTF-8
