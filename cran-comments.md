@@ -1,5 +1,5 @@
 ## Resubmission
-This is a resubmission. In this version I have:
+This is a resubmission of a package not currently on CRAN, in which I fix a few issues. In this version I have:
 
 * added DOI tag to the DESCRIPTION file referencing the associated paper.
 
