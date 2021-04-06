@@ -46,8 +46,10 @@ with components "lambda","alpha_intra","alpha_inter","lambda_cov", and "alpha_co
 \item{bootstrap_samples}{how many bootstrap samples to compute.}
 }
 \value{
-1d vector, the standard error of each parameter in init.par
+1d vector, the standard error of each parameter in init_par
 }
 \description{
 Computes bootstrap standard errors for a given population dynamics model.
+This function is provided for completeness, but error calculation is
+integrated in the function \code{cxr_pm_fit}.
 }

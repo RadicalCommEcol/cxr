@@ -48,6 +48,11 @@ and optionally "lambda_cov", "effect_cov", "response_cov".}
 
 \item{bootstrap_samples}{number of bootstrap samples for error calculation. Defaults to 0, i.e. no error is calculated.}
 }
+\value{
+1d vector, the standard error of each parameter in init_par
+}
 \description{
-Computes bootstrap standard errors for a given effect/response function
+Computes bootstrap standard errors for a given effect/response function.
+This function is provided for completeness, but error calculation is
+integrated in the function \code{cxr_er_fit}.
 }
