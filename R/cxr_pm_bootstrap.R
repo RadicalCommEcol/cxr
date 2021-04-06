@@ -1,6 +1,8 @@
 #' Standard error estimates for model parameters
 #' 
 #' Computes bootstrap standard errors for a given population dynamics model.
+#' This function is provided for completeness, but error calculation is
+#' integrated in the function \code{cxr_pm_fit}.
 #'
 #' @param fitness_model function returning a single value to minimize, given a set of parameters and a fitness metric
 #' @param optimization_method numerical optimization method
@@ -18,7 +20,7 @@
 #' with components "lambda","alpha_intra","alpha_inter","lambda_cov", and "alpha_cov".
 #' @param bootstrap_samples how many bootstrap samples to compute.
 #'
-#' @return 1d vector, the standard error of each parameter in init.par
+#' @return 1d vector, the standard error of each parameter in init_par
 #' @import stats 
 #' @md
 #' @export

@@ -22,6 +22,8 @@ Description: Recent developments in modern coexistence theory has advanced
     niche differences. 
     The functions are flexible, may accept covariates, 
     and different fitting algorithms can be used. 
+    A full description of the underlying methods is available in 
+    García-Callejas, D., Godoy, O., and Bartomeus, I. (2020) <doi:https://doi.org/10.1111/2041-210X.13443>
 License: MIT + file LICENSE
 BugReports: https://github.com/RadicalCommEcol/cxr/issues
 Encoding: UTF-8

@@ -1,4 +1,4 @@
-#' internal to check input consistency to cxr_pm_fit
+#' Internal, check input consistency to cxr_pm_fit
 #'
 #' this function draws on several other internal functions,
 #' performing checks on data consistency, covariates, bounds,

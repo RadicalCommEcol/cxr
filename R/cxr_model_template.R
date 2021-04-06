@@ -42,7 +42,7 @@
 # make it available in the global environment. This is as simple as sourcing the file.
 
 # 5 - adding your model to cxr
-# document your model, file a pull_request etc
+# document your model, and file a pull request to the Github repository.
 
 pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
                                                               fitness,

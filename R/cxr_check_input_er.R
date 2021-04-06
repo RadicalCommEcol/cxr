@@ -1,4 +1,4 @@
-#' Check the input data for cxr_er_fit
+#' Internal, check the input data for cxr_er_fit
 #'
 #' Several requirements:
 #' 1-equal nrows for all focal sp

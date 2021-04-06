@@ -1,4 +1,4 @@
-#' check the initial values and bounds provided to cxr_pm_fit
+#' Internal, check the initial values and bounds provided to cxr_pm_fit
 #'
 #' @inheritParams cxr_pm_fit
 #'

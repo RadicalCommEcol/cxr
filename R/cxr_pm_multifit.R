@@ -17,7 +17,7 @@
 #' @param fixed_terms optional named list in which each component is 
 #' itself a list containing fixed terms for each focal species.
 #'
-#' @return an object of type 'cxr_pm_multifit' which is a list with the following components:
+#' @return an object of class 'cxr_pm_multifit' which is a list with the following components:
 #' * model_name: string with the name of the fitness model
 #' * model: model function
 #' * data: data supplied 
