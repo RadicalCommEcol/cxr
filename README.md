@@ -12,7 +12,13 @@ cxr provides a complete toolbox for modelling interactions between species, calc
 
 ### Installation
 
-The development version can be installed via the `remotes` package:
+The package can be installed from CRAN:
+
+```R
+install.packages("cxr")
+```
+
+Furthermore, the development version can be installed via the `remotes` package:
 
 ```R
 remotes::install_github("RadicalCommEcol/cxr")
