@@ -66,7 +66,7 @@ and optionally "lambda_cov", "effect_cov", "response_cov".}
 \item{bootstrap_samples}{number of bootstrap samples for error calculation. Defaults to 0, i.e. no error is calculated.}
 }
 \value{
-an object of type 'cxr_er_fit' which is a list with the following components:
+an object of class 'cxr_er_fit' which is a list with the following components:
 \itemize{
 \item model_name: string with the name of the fitness model
 \item model: model function

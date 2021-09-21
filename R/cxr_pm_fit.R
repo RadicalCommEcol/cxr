@@ -24,7 +24,7 @@
 #' @param fixed_terms optional list of numeric vectors specifying the value of fixed model parameters, among 
 #' "lambda","alpha_intra","alpha_inter","lambda_cov", and "alpha_cov".
 #' @param bootstrap_samples number of bootstrap samples for error calculation. Defaults to 0, i.e. no error is calculated.
-#' @return an object of type 'cxr_pm_fit' which is a list with the following components:
+#' @return an object of class 'cxr_pm_fit' which is a list with the following components:
 #' * model_name: string with the name of the fitness model
 #' * model: model function
 #' * data: data supplied 

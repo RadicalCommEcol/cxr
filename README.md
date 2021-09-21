@@ -12,7 +12,13 @@ cxr provides a complete toolbox for modelling interactions between species, calc
 
 ### Installation
 
-The development version can be installed via the `remotes` package:
+The package can be installed from CRAN:
+
+```R
+install.packages("cxr")
+```
+
+Furthermore, the development version can be installed via the `remotes` package:
 
 ```R
 remotes::install_github("RadicalCommEcol/cxr")
@@ -63,7 +69,7 @@ vignette("V5_Abundance_projections",package = "cxr")
 
 ### Citation information
 
-When citing, please refer to both the [package citation](https://github.com/RadicalCommEcol/cxr/blob/master/inst/CITATION) and the release paper [García-Callejas, Godoy, and Bartomeus, 2020](https://besjournals.onlinelibrary.wiley.com/doi/abs/10.1111/2041-210X.13443).  
+When citing, please refer to both the [package citation](https://github.com/RadicalCommEcol/cxr/blob/master/inst/CITATION) and the release paper [García-Callejas, Godoy, and Bartomeus, 2020](https://doi.org/10.1111/2041-210X.13443).  
 
 ### Future developments
 

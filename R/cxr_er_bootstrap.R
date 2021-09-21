@@ -1,12 +1,16 @@
 #' standard error estimates for effect and response parameters
 #' 
-#' Computes bootstrap standard errors for a given effect/response function
+#' Computes bootstrap standard errors for a given effect/response function.
+#' This function is provided for completeness, but error calculation is
+#' integrated in the function \code{cxr_er_fit}.
 #'
 #' @param fitness_model effect/response function, see \code{cxr_er_fit}
 #' @param init_par initial values for parameters
 #' @param fixed_parameters list with values for fixed parameters, or NULL.
+#' @return 1d vector, the standard error of each parameter in init_par
 #' @inheritParams cxr_er_fit
 #' @export
+#' @md
 cxr_er_bootstrap <- function(fitness_model,
                              optimization_method,
                              data,

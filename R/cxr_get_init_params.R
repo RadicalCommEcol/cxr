@@ -1,5 +1,5 @@
 
-#' sort initial values from cxr_pm/er_fit in an appropriate way
+#' Internal, sort initial values from cxr_pm/er_fit in an appropriate way
 #'
 #' @inheritParams cxr_pm_fit
 #' @param model_type either 'pm' or 'er'

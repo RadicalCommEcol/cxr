@@ -1,5 +1,5 @@
 
-#' clean the lower/upper bounds from the input of cxr_pm_fit
+#' Internal, clean the lower/upper bounds from the input of cxr_pm_fit
 #'
 #' @param lower_bounds list with lower bounds
 #' @param upper_bounds list

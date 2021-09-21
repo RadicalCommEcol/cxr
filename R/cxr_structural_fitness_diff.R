@@ -1,7 +1,11 @@
-
-
-
-#structural fitness difference (in degree)
+#' structural fitness difference (in degree)
+#'
+#' @param alpha interaction matrix
+#' @param r 1d vector of growth rates
+#' @param mf model familiy
+#'
+#' @return numeric value, structural fitness difference between two species
+#' @noRd
 cxr_structural_fitness_diff <- function(alpha,r,mf){
   
   #vector defining the centroid of the feasibility domain

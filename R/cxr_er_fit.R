@@ -28,7 +28,7 @@
 #' @param fixed_terms optional list specifying which model parameters are fixed.
 #' @inheritParams cxr_pm_fit
 #' @md
-#' @return an object of type 'cxr_er_fit' which is a list with the following components:
+#' @return an object of class 'cxr_er_fit' which is a list with the following components:
 #' * model_name: string with the name of the fitness model
 #' * model: model function
 #' * data: data supplied

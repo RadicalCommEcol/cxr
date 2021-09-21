@@ -1,5 +1,15 @@
+## Resubmission
+This is a resubmission of a package not currently on CRAN, in which I fix a few issues. In this version I have:
+
+* added DOI tag to the DESCRIPTION file referencing the associated paper.
+
+* Updated documentation of the function cxr_er_bootstrap, adding \value to its .Rd file.
+All other exported functions have proper \value tags.
+
+* Updated documentation of several other functions, adding more detailed descriptions.
+
 ## Test environments
-* local ubuntu 20.04 install, R 4.0.4
+* local ubuntu 20.04 install, R 4.0.5
 * ubuntu 20.04 (on github actions), R 4.0.5
 * ubuntu 20.04 (on github actions), R-devel
 * mac OS (on github actions), R 4.0.5
@@ -8,8 +18,6 @@
 
 ## R CMD check results
 There were no ERRORs or WARNINGs. 
-
-This is a new submission, so there was one NOTE associated to it.
 
 ## Downstream dependencies
 

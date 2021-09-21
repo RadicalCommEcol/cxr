@@ -28,7 +28,7 @@
 # make it available in the global environment. This is as simple as sourcing the file.
 
 # 5 - adding your model to cxr
-# document your model, file a pull_request etc
+# document your model, file a pull request to the Github repository.
 
 er_BH_lambdacov_form_effectcov_form_responsecov_form <- function(par,
                                                                  fitness,
