@@ -44,6 +44,9 @@ obs_homa <- subset(obs_homa,select = -c(obs_ID))
 # For each observation, we need the individual plant fitness 
 # and the number of neighbours per species (in columns).
 head(obs_homa)
+
+#There are a couple of outliers, eliminate from analyses
+obs_homa<-subset(obs_homa, fitness<500)
 ```
 
 Next, we estimate both the reproduction success in the absence of neighbors (lambda) and the competition matrix (alpha). This is done by fitting a model that mathematically relates the reproductive success to the number of neighbors observed. In this first example, we fit the selected species with a Ricker model ('RK' model family, see vignette 4) and fairly standard initial values. The default optimization method (`Nelder-Mead`) does not allow for lower or upper bounds in model parameters, so these arguments are commented out. In ecological terms, this optimization process allows estimating the strength of both competitive and facilitative interactions, yet bounded optimization algorithms can be used to restrict the analysis to either competition or facilitation (i.e. positive or negative alpha values). We can also specify whether we want to compute standard errors numerically, by setting the argument `bootstrap_samples` to the number of bootstrap replications for the calculation.
@@ -52,13 +55,13 @@ Next, we estimate both the reproduction success in the absence of neighbors (lam
 #?cxr_pm_fit #check the help file for a description of the arguments
 fit_homa <- cxr_pm_fit(data = obs_homa,
                        focal_column = my.sp,
-                       model_family = "RK",
+                       model_family = "BH",
                        covariates = NULL,
                        optimization_method = "Nelder-Mead",
                        alpha_form = "pairwise",
                        lambda_cov_form = "none",
                        alpha_cov_form = "none",
-                       initial_values = list(lambda = 1,
+                       initial_values = list(lambda = 45,
                                              alpha_intra = .1,
                                              alpha_inter = .1),
                        #not aplicable to this optimazation method
@@ -94,7 +97,16 @@ fit_homa$alpha_intra
 fit_homa$alpha_inter
 ```
 
-Note that some interaction coefficients are set to NA because species do not cooccur but are nevertheless listed as neighbours with densities equal to zero in all focal observations.
+Note that some interaction coefficients are set to NA because species do not co-occur but are nevertheless listed as neighbours with densities equal to zero in all focal observations. To check whether model fit reproduces well observed data, represent the fit according to obtained values.
+
+```{r}
+ggplot(obs_homa, aes(HOMA , fitness)) + 
+  geom_point() +
+  stat_function(fun = function(x) fit_homa$lambda/(1+fit_homa$alpha_intra*x), lwd = 1.5, colour = "blue")
+```
+
+
+
 
 **Fitting several species at once**
 
