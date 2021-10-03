@@ -100,6 +100,7 @@ fit_homa$alpha_inter
 Note that some interaction coefficients are set to NA because species do not co-occur but are nevertheless listed as neighbours with densities equal to zero in all focal observations. To check whether model fit reproduces well observed data, represent the fit according to obtained values.
 
 ```{r}
+require(ggplot2)
 ggplot(obs_homa, aes(HOMA , fitness)) + 
   geom_point() +
   stat_function(fun = function(x) fit_homa$lambda/(1+fit_homa$alpha_intra*x), lwd = 1.5, colour = "blue")
@@ -145,41 +146,57 @@ head(salinity[[1]])
 nrow(salinity[[1]])
 ```
 
-We fit the model as above, but using the `cxr_pm_multifit` function.
+We fit the model as above, but using the `cxr_pm_multifit` function. To allow proper convergence we fit each species with different starting lambda values 
 
 ```{r}
-fit_3sp <- cxr_pm_multifit(data = obs_3sp,
+
+fit_3sp <- list()
+all_sp <- names(obs_3sp)
+
+for (i in 1:length(obs_3sp)){
+  obs <- obs_3sp[i]
+  my.sp <- all_sp[i]
+  salinity.sp <- salinity[i]
+  lambda <- mean(obs[[1]]$fitness)
+  upper_lambda <- as.numeric(max(obs[[1]]$fitness))
+
+
+fit <- cxr_pm_multifit(data = obs,
                            focal_column = my.sp,
-                           model_family = "RK",
+                           model_family = "BH",
                            # here we use a bounded method for demonstration purposes
                            optimization_method = "bobyqa", 
-                           covariates = salinity,
+                           covariates = salinity.sp,
                            alpha_form = "pairwise",
                            lambda_cov_form = "global", # effect of covariates over lambda
                            alpha_cov_form = "global", # effect of covariates over alpha
-                           initial_values = list(lambda = 1,
-                                                 alpha_intra = 0.1,
-                                                 alpha_inter = 0.1,
+                           initial_values = list(lambda = lambda,
+                                                 alpha_intra = 1,
+                                                 alpha_inter = 1,
                                                  lambda_cov = 0.1,
                                                  alpha_cov = 0.1),
                            lower_bounds = list(lambda = 0,
-                                               alpha_intra = 0,
+                                               alpha_intra = -1,
                                                alpha_inter = -1,
-                                               lambda_cov = 0,
-                                               alpha_cov = 0),
-                           upper_bounds = list(lambda = 100,
-                                               alpha_intra = 1,
-                                               alpha_inter = 1,
-                                               lambda_cov = 1,
-                                               alpha_cov = 1),
+                                               lambda_cov = -2,
+                                               alpha_cov = -2),
+                           upper_bounds = list(lambda = upper_lambda,
+                                               alpha_intra = 3,
+                                               alpha_inter = 3,
+                                               lambda_cov = 2,
+                                               alpha_cov = 2),
                            # no standard errors
                            bootstrap_samples = 0)
+
+fit_3sp[[i]] <- fit
+}
+names(fit_3sp) <- all_sp
 ```
 
-We can also have a glimpse of this multispecies fit with the summary function:
+We can also have a glimpse of this multispecies fit for each species separately. This is an example for the first species.
 
 ```{r}
-summary(fit_3sp)
+fit_3sp$BEMA
 ```
 
 The numerical estimation of parameters depends on the model with which to estimate fitness values, the optimization method, and the underlying data. In our example dataset, some species are better represented than others, and the function will raise warnings if the estimation can be improved or, for example, if any fitted parameter is equal to the lower or upper bounds provided. The `cxr_pm_multifit` function will behave conservatively and return `NULL` if parameter fitting fails for *any* of the focal species passed as arguments, printing an informative message about which species failed to fit. In such cases, users may either fit each species separately or call `cxr_pm_multifit` without the problematic species.
@@ -187,7 +204,7 @@ The numerical estimation of parameters depends on the model with which to estima
 Importantly, bounded methods can be very sensitive to the initial values and bounds, so, as in any numerical optimization problem, you should double-check the values obtained, at least by computing standard errors on your parameters with an adequate number of boostrap samples, and preferably by performing sensitivity analyses on the different parameters (in this and other vignettes, we have not included any of these checks, as our examples are merely for demonstration purposes). Aside from these recommendations, in the `cxr` objects returned from our functions, the negative log-likelihood of the fit is also included, which may be useful in helping users choose a certain optimization algorithm for a particular dataset. Remember that the convention is to present negative log-likelihood, and more negative values are better. In general, it is recommended to test different optimization algorithms, as they may produce fairly different results (Mullen 2014). In this example, the method used ("bobyqa", a well-established bounded optimization algorithm) returns the following *negative* log-likelihood values:
 
 ```{r}
-fit_3sp$log_likelihood
+fit_3sp$BEMA$log_likelihood
 ```
 
 **Including environmental variability**
@@ -211,8 +228,8 @@ In this case, each covariate $c_k$ will have a specific parameter $\psi_{ijk}$ f
 We can retrieve the fitted values for 'lambda_cov' ($\theta$) and 'alpha_cov' ($\psi$) simply from the output of the function:
 
 ```{r}
-fit_3sp$lambda_cov
-fit_3sp$alpha_cov
+fit_3sp$BEMA$lambda_cov
+fit_3sp$BEMA$alpha_cov
 ```
 
 **Parameter boundaries**
