@@ -82,6 +82,7 @@ When citing, please refer to both the [package citation](https://github.com/Radi
 e.g. to implement properly the annual plant model with 'g' and 's' constants.
 - package design and style guide: provide a complete rationale and set of recommendations to contribute new features.
 - package website with pkgdown.
+- integrate stage-specific demography, species interactions, and ecological forecasts (in collaboration with Maria Paniw).
 
 ## Bug reports and contributions.  
 
