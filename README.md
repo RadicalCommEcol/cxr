@@ -6,9 +6,9 @@
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/cxr)](https://cran.r-project.org/package=cxr)
 [![DOI](https://zenodo.org/badge/115796966.svg)](https://zenodo.org/badge/latestdoi/115796966)
 
-# cxr 1.0.0
+# cxr 1.1.0
 
-cxr provides a complete toolbox for modelling interactions between species, calculate coexistence metrics (e.g. niche and fitness differences), and project species abundances. The functions are flexible and can include covariates, use different optimization algorithms, or accept user-defined mathematical population models as starting points. 
+cxr provides a complete toolbox for modelling interactions between species, calculate coexistence metrics (e.g. niche and fitness differences), and project species abundances. The functions are flexible and can include covariates, use different optimization algorithms, or accept user-defined mathematical population models as starting points. It furthermore includes a series of functions to model metapopulation dynamics of stage-structured populations.
 
 ### Installation
 
@@ -57,6 +57,10 @@ And a set of internal functions, data and models. The functions with prefix `cxr
 - Vignette 4 "Using your own models" explains how to extend the package using user-defined population models.
 - Vignette 5 "Projecting species abundance" shows how to use model fits to project species abundances in time.
 
+The complementary functionality on metapopulation dynamics is described in another vignette:
+
+- Vignette 6 "Metapopulation projections", that showcases the functions and methodologies for modelling metapopulations of stage-structured species across a number of sites, potentially including environmental effects on their vital rates.
+
 Once the package is installed, vignettes can be accessed in the standard way:
 
 ```R
@@ -65,6 +69,7 @@ vignette("V2_Data_formats",package = "cxr")
 vignette("V3_Coexistence_metrics",package = "cxr")
 vignette("V4_Models",package = "cxr")
 vignette("V5_Abundance_projections",package = "cxr")
+vignette("V6_Metapopulation_projections",package = "cxr")
 ```
 
 ### Citation information
@@ -82,7 +87,7 @@ When citing, please refer to both the [package citation](https://github.com/Radi
 e.g. to implement properly the annual plant model with 'g' and 's' constants.
 - package design and style guide: provide a complete rationale and set of recommendations to contribute new features.
 - package website with pkgdown.
-- integrate stage-specific demography, species interactions, and ecological forecasts (in collaboration with Maria Paniw).
+- continue the integration of stage-specific demography, species interactions, and ecological forecasts (in collaboration with Maria Paniw).
 
 ## Bug reports and contributions.  
 

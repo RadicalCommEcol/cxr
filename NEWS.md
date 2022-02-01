@@ -1,5 +1,15 @@
 # NEWS
 
+### cxr 1.1.0
+
+- SUMMARY OF NEW FEATURES CHANGES
+- Added functions related to metapopulation dynamics.
+- Added a related vignette "Metapopulation projections".
+- Added automated tests for this new functionality.
+- fixed bug related to the bounds vectors.
+- fixed bug that appeared when fitting single neighbour data.
+
+
 ### cxr 1.0.0 
 
 - SUMMARY OF NEW FEATURES CHANGES 
