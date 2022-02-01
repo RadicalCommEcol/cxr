@@ -26,7 +26,7 @@ Description: Recent developments in modern coexistence theory have advanced
     A full description of the underlying methods is available in 
     García-Callejas, D., Godoy, O., and Bartomeus, I. (2020) <doi:10.1111/2041-210X.13443>.
     Furthermore, the package provides a series of functions to calculate 
-    metapopulation dynamics for stage-structured populations.
+    dynamics for stage-structured populations across sites.
 License: MIT + file LICENSE
 BugReports: https://github.com/RadicalCommEcol/cxr/issues
 Encoding: UTF-8
