@@ -27,8 +27,6 @@ The metapopulation framework implemented in these functions can model the dynami
 
 The vital rates considered in this framework include the survival probability of each life stage, the transitions between stages, reproductive outputs, and dispersal. Specifically:
 
-**COMMENT**: Rn and Rr are the probabilities of non-reproductive and reproductive adults reproducing at t+1 (that is, probability of transitioning to reproductive stage). That is reflected in the demo model, right?
-
 * Sj: Survival probability of juveniles
 * Sn: Survival probability of non-reproductive adults
 * Sr: Survival probability of reproductive adults
