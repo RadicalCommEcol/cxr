@@ -93,7 +93,7 @@ The `param` structure is a nested list, sorted by species in the first level and
 param[["s1"]][["sa"]]
 ```
 
-There are a number of ways in which these matrices can be populated. The elements, as shown by Eq. 1, are equivalent to the coefficients of a Generalized Linear Model. Therefore, if the user has a tidy table with the same number of coefficients, this table can be input to the `generate_vital_rate_coefs` function via the `glm.object` argument. Otherwise, coefficients can be entered manually, or from average and standard deviations from a normal distribution. Here we enter the coefficient for the intercept (`vr.coef = "alpha"`) of the survival of juveniles (`vital.rate = c("Sj")`), for the first species (`sp = "s1"`) and all sites (by not specifying the `sites` argument), setting the mean and sd values from which random samples will be drawn.
+There are a number of ways in which these matrices can be populated. The elements, as shown by Eq. 1, are equivalent to the coefficients (on the link scale) of a Generalized Linear Model (GLM). Therefore, if the user has a tidy table with the same number of coefficients, this table can be input to the `generate_vital_rate_coefs` function via the `glm.object` argument. Otherwise, coefficients can be entered manually, or from average and standard deviations from a normal distribution. Here we enter the coefficient for the intercept (`vr.coef = "alpha"`) of the survival of juveniles (`vital.rate = c("Sj")`), for the first species (`sp = "s1"`) and all sites (by not specifying the `sites` argument), setting the mean and sd values from which random samples will be drawn.
 
 ```{r}
 param <- generate_vital_rate_coefs(param = param,
