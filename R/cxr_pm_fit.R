@@ -207,9 +207,12 @@ cxr_pm_fit <- function(data,
     }else{
       
       # intra and inter observations in different matrices
-      neigh_inter_matrix <- neigh_matrix[,-focal_column_num]
+      neigh_inter_matrix <- as.matrix(neigh_matrix[,-focal_column_num])
       neigh_intra_matrix <- as.matrix(neigh_matrix[,focal_column_num])
       colnames(neigh_intra_matrix) <- colnames(neigh_matrix)[focal_column_num]
+      if(ncol(neigh_inter_matrix) == 1){
+        colnames(neigh_inter_matrix) <- colnames(neigh_matrix)[-focal_column_num]
+      }
       # set also names
       neigh_inter <- colnames(neigh_inter_matrix)
       neigh_intra <- colnames(neigh_matrix)[focal_column_num]

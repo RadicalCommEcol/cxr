@@ -110,7 +110,7 @@ cxr_sort_params <- function(init_lambda = NULL,
     
     # lower bound
     if(length(lower_alpha_cov) == length(init_alpha_cov)){
-      lower_bounds <- c(lower_bounds,lower_lambda_cov)
+      lower_bounds <- c(lower_bounds,lower_alpha_cov)
     }else{
       if(length(lower_alpha_cov) == 1){
         lower_bounds <- c(lower_bounds,rep(lower_alpha_cov,length(init_alpha_cov)))
@@ -132,7 +132,7 @@ cxr_sort_params <- function(init_lambda = NULL,
     
     # upper bound
     if(length(upper_alpha_cov) == length(init_alpha_cov)){
-      upper_bounds <- c(upper_bounds,upper_lambda_cov)
+      upper_bounds <- c(upper_bounds,upper_alpha_cov)
     }else{
       if(length(upper_alpha_cov) == 1){
         upper_bounds <- c(upper_bounds,rep(upper_alpha_cov,length(init_alpha_cov)))
