@@ -388,8 +388,10 @@ cxr_pm_multifit <- function(data,
   # spllik <- NULL
   for(i.sp in 1:length(spnames)){
     myllik <- spfits[[i.sp]]$log_likelihood
-    names(myllik) <- spnames[i.sp]
-    spllik <- c(spllik,myllik)
+    if(!is.null(myllik)){
+      names(myllik) <- spnames[i.sp]
+      spllik <- c(spllik,myllik)
+    }
   }
   
   # error output ------------------------------------------------------------
@@ -547,7 +549,6 @@ cxr_pm_multifit <- function(data,
   
   
   # prepare cxr_pm_multifit object ------------------------------------------
-  
   
   # return a cxr_pm_multifit object
   # which is basically the same as the base object
