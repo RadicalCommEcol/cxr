@@ -26,17 +26,25 @@ vital_rate <- function(vr,sp,site,param,env = NULL,densities){
     return(NULL)
   }
   
-  rates <- c("Sj","Sn","Sr","Rn","Rr","D","Ds","O")
-  if(is.character(vr)){
-    if(vr %in% rates){
-      vr.num <- which(rates == vr)
+  rates <- rownames(param[[1]][[1]])
+  # rates <- c("Sj","Sn","Sr","Rn","Rr","D","Ds","O")
+  # if(is.character(vr)){
+  if(vr %in% rates){
+    vr.num <- which(rates == vr)
+  }else{
+    if(vr == "Ds"){
+      # this is for a specific situation in which Ds is not included in "param",
+      # as it was the case for the first iterations of the model,
+      # but we want the model to run anyway, so assume full dispersal survival.
+      return(1)
     }else{
       message("vital_rate ERROR: please provide a valid vr param, among Sj,Sn,Sr,Rn,Rr,D,Ds,O.")
       return(NULL)
     }
-  }else if(is.numeric(vr)){
-    vr.num <- vr
   }
+  # }else if(is.numeric(vr)){
+  #   vr.num <- vr
+  # }
   
   coefs <- param[[sp]][[site]][vr.num,]
   
@@ -59,10 +67,10 @@ vital_rate <- function(vr,sp,site,param,env = NULL,densities){
   
   mean <- exp(sum(coefs*values))
   
-  if(vr!=8){
-    output=mean/(1+mean)
+  if(vr!= "O"){
+    output <- mean/(1+mean)
   }else{ # for reproductive output
-    output=mean
+    output <- mean
   }
   
   return(output)

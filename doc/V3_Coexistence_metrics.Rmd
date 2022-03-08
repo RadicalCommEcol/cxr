@@ -20,7 +20,7 @@ The `cxr` package facilitates the estimation of key metrics from modern coexiste
 
 **Stabilizing niche differences**
 
-`Cxr` allows the calculation of niche overlap ($\rho$) between pairs of species, from which niche differences can be easily obtained as $1 - \rho$. Conceptually, if species limit themselves much more than they limit their competitors niche overlap will be very low and niche differences will be close to the maximum (i.e. 1). Conversely, if species limit themselves and other species similarly niche overlap will be very high and niche differences will be close to zero. In the absence of niche differences, the species with higher fitness (next section) is defined as the superior competitor. For obtaining niche overlap, thus, we need interaction coefficients among pairs of species.
+`cxr` allows the calculation of niche overlap ($\rho$) between pairs of species, from which niche differences can be easily obtained as $1 - \rho$. Conceptually, if species limit themselves much more than they limit their competitors niche overlap will be very low and niche differences will be close to the maximum (i.e. 1). Conversely, if species limit themselves and other species similarly niche overlap will be very high and niche differences will be close to zero. In the absence of niche differences, the species with higher fitness (next section) is defined as the superior competitor. For obtaining niche overlap, thus, we need interaction coefficients among pairs of species.
 
 First, we specify the data to use and the starting parameter values and bounds.
 
@@ -35,7 +35,7 @@ for(i in 1:length(data)){
 
 focal_column <- names(data)
 model_family <- "RK" 
-optimization_method <- "L-BFGS-B" # we use a bounded method
+optimization_method <- "bobyqa" # we use a bounded method
 alpha_form <- "pairwise"
 lambda_cov_form <- "none"
 alpha_cov_form <- "none"
@@ -70,14 +70,19 @@ all.sp.fit <- cxr_pm_multifit(data = data,
 
 ```
 
-With these parameters, we can compute pairwise niche differences as 1 - niche overlap. Niche overlap following Chesson's (2013) definition can only include interaction coefficients with positive values (i.e. competition). Niche overlap can range from 0 to infinity and therefore niche differences can range from minus infinity to zero. Negative niche differences can be interpreted as a signature of priority effects. This means that the species of a pair arriving first to community is the winner. Niche differences between 0 and 1 reflect the degree to which species A and B limit each other compared to themselves. Within this range of values, species might coexist or be competitive excluded according to how stabilizing niche differences offset average fitness differences (see Adler et al. (2007) for more details).
+With these parameters, we can compute pairwise niche differences as 1 - niche overlap. Niche overlap following Chesson's (2013) definition can only include interaction coefficients with positive values (i.e. competition). Niche overlap can range from 0 to infinity, which implies that niche differences can range from minus infinity to zero. Negative niche differences can be interpreted as a signature of priority effects, meaning in a very broad sense that the first species of a pair to arrive to a community is the winner. Niche differences between 0 and 1 reflect the degree to which species A and B limit each other compared to themselves. Within this range of values, species might coexist or be competitive excluded according to how stabilizing niche differences offset average fitness differences (see Adler et al. (2007) for more details).
 
-Finally, it is worth noting that for those cases in which interaction coefficients are negative (i.e. a negative interaction coefficients in some models imply facilitative interaction between species), the `cxr` package provides another definition of niche differences, developed by Saavedra et al. (2017). This definition of niche differences uses another set of tools based on the Structural Approach (SA) to species coexistence, and while it is qualitatively coherent with the MCT framework, niche differences from both definitions do not exactly match (see Saavedra et al. (2017) for more details).
+Finally, it is worth noting that for those cases in which interaction coefficients are negative (i.e. negative interaction coefficients in Beverton-Holt or Ricker models imply facilitative interactions), the `cxr` package provides another definition of niche differences, developed by Saavedra et al. (2017). This definition of niche differences uses another set of tools based on the Structural Approach (SA) to species coexistence, and while it is qualitatively coherent with the MCT framework, niche differences from both definitions do not exactly match (see Saavedra et al. (2017) for more details).
 
-The function `niche_overlap` computes both definitions (MCT and SA). If the input is a `cxr_pm_multifit` object it will compute the niche overlap between all pairs of focal species.
+The function `niche_overlap` computes both definitions (MCT and SA). If the input is a `cxr_pm_multifit` object it will compute the niche overlap between all pairs of focal species (but it can also accept other arguments, see the help of the function for details).
 
 ```{r}
 niche_overlap_all_pairs <- niche_overlap(cxr_multifit = all.sp.fit)
+# as not all species combinations occur, 
+# several interaction coefficients are NA
+# which, in turn, return NA values for niche overlap
+# so, remove them and check the first computed values
+niche_overlap_all_pairs <- niche_overlap_all_pairs[complete.cases(niche_overlap_all_pairs),]
 head(niche_overlap_all_pairs)
 ```
 
@@ -94,10 +99,14 @@ The second type of pairwise differences relevant to species coexistence are the 
 
 Average fitness differences are defined by two components, the 'demographic ratio' and the 'competitive response ratio'. The 'demographic ratio' is a density independent term that describes the degree to which one species (species j) has higher offspring production than another species (species i). The 'competitive response ratio' is a density dependent term, which describes the degree to which species i is more sensitive to both intra and interspecific competition than species j. Because both ratios define the average fitness differences, this means that a species can be a superior competitor because it produces high number of for instance seeds/eggs or because its offspring production is little reduced in the presence of competitors. This formulation is explained in greater detail by Godoy and Levine (2014).
 
-Both components of average fitness differences can be computed with `cxr`. As it is the case with the niche overlap calculations, average fitness differences in the context of MCT are only defined for negative interactions, i.e. positive alpha values. Saavedra et al. (2017) developed a structural analog of this metric, that we also include in our package. Thus, the function `avg_fitness_diff` returns the demographic ratio, competitive response ratio, and average fitness differences for each species pair in the context of MCT, as well as the structural analog of these differences. It accepts the same arguments as the `niche_overlap` function (see help for details), and here we use the multispecies fit obtained above to calculate differences across all pairs of focal species.
+Both components of average fitness differences can be computed with `cxr`. As it is the case with the niche overlap calculations, average fitness differences in the context of MCT are only defined for negative interactions, i.e. positive alpha values. Saavedra et al. (2017) developed a structural analog of this metric, that we also include in our package. Thus, the function `avg_fitness_diff` returns the demographic ratio, competitive response ratio, and average fitness differences for each species pair in the context of MCT, as well as the structural analog of these differences. It accepts the same arguments as the `niche_overlap` function (see help for details), and here we use the multispecies fit obtained above to calculate fitness differences across all pairs of focal species.
 
 ```{r}
 avg_fitness_diff_all_pairs <- avg_fitness_diff(cxr_multifit = all.sp.fit)
+
+# as with niche overlap, remove NA values
+avg_fitness_diff_all_pairs <- avg_fitness_diff_all_pairs[complete.cases(
+  avg_fitness_diff_all_pairs),]
 
 # average fitness ratio of sp1 over sp2
 # if < 1, sp2 is the superior competitor, 
@@ -106,20 +115,23 @@ avg_fitness_diff_all_pairs <- avg_fitness_diff(cxr_multifit = all.sp.fit)
 head(avg_fitness_diff_all_pairs)
 ```
 
-**Estimation of species competitive ability**
+**Estimation of species' competitive ability**
 
-From average fitness differences, we can compute species' competitive ability. The definition of species competitive ability changes according to the population model selected to describe the dynamics of interacting species. The mathematical procedure to obtain the definition of species competitive ability was firstly described in Godoy and Levine (2014) for the annual plant model, and expanded to a wider family of models by Hart et al. (2018). 
+From average fitness differences, we can compute species' competitive ability. The formulation of species' competitive ability changes according to the population model selected to describe the dynamics of interacting species. The mathematical procedure to obtain the definition of species competitive ability was firstly described in Godoy and Levine (2014) for the annual plant model, and expanded to a wider family of models by Hart et al. (2018). 
 
 Competitive ability can be calculated given a set of species parameters and model family (e.g. as specified in `cxr` objects). Again, the set of arguments accepted by the `competitive_ability` function is the same as the arguments passed to the `niche_overlap` and `avg_fitness_diff` functions. The easiest way is to provide a `cxr_pm_multifit` object with all necessary information.
 
 ```{r}
 competitive_ability_all_pairs <- competitive_ability(cxr_multifit = all.sp.fit)
+competitive_ability_all_pairs <- competitive_ability_all_pairs[complete.cases(
+  competitive_ability_all_pairs),]
+
 head(competitive_ability_all_pairs)
 ```
 
 **Estimation of species fitness in the absence of niche differences**
 
-In the previous steps, average fitness differences and therefore species competitive ability are computed combining density independent and density dependent effects. This means that these metrics are estimated in the presence of stabilizing niche differences. However in some cases, it can be interesting for the user to estimate species fitness in the absence of niche differences. This is the case for instance if we want to list species according to a competitive hierarchy. With this procedure, we would be able to tease apart which species would be the first superior competitor if we remove niche differences, the second superior competitor, and so on, up to the weakest competitor. In order to define this species fitness against all other competitors, we need to collapse pairwise interaction coefficients into two components: how species respond to overall competition (competitive response) and how species affect other species (competitive effect). Both components are defined in Godoy et al. (2014). 
+In the previous steps, average fitness differences and therefore species competitive ability are computed combining density independent and density dependent effects. This means that these metrics are estimated in the presence of stabilizing niche differences. However in some cases, it can be interesting for the user to estimate species fitness in the absence of niche differences. This is the case for instance if we want to list species according to a competitive hierarchy. With this procedure, we would be able to tease apart which species would be the first superior competitor if we remove niche differences, which would be the second superior competitor and so on, up to the weakest competitor. In order to define this species fitness against all other competitors, we need to collapse pairwise interaction coefficients into two components: how species respond to overall competition (competitive response) and how species affect other species (competitive effect). Both components are defined in Godoy et al. (2014). 
 
 In `cxr`, we first need to obtain these components from observational data, and this calculation is done with the `cxr_er_fit` function. This function is similar to `cxr_pm_fit`, with some caveats. It accepts a list of observational dataframes, but in this case the number of observations of each focal species must match (this is in order to compute balanced parameters). Furthermore, the set of focal species needs to be the same as the set of neighbours, unlike in `cxr_pm_fit`.
 
@@ -128,7 +140,8 @@ We first set the initial data and values
 ```{r}
 data("neigh_list")
 
-# For obtaining effect and responses, all species need to have the same number of observations. 
+# For obtaining effect and responses, all species 
+# need to have the same number of observations. 
 # We selct 3 species that have >250 observations
 names(neigh_list)
 sapply(neigh_list,nrow)

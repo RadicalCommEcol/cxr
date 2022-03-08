@@ -1,23 +1,23 @@
-## ----setup, echo=FALSE---------------------------------------------------
+## ----setup, echo=FALSE--------------------------------------------------------
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 
-## ----eval=FALSE----------------------------------------------------------
-#  pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
+## ----eval=FALSE---------------------------------------------------------------
+#  family_pm_alpha_form_lambdacov_form_alphacov_form <- function(par,
 #                                                                fitness,
 #                                                                neigh_intra_matrix = NULL,
 #                                                                neigh_inter_matrix,
 #                                                                covariates,
 #                                                                fixed_parameters)
 
-## ----eval=FALSE----------------------------------------------------------
-#  pm_UM_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
+## ----eval=FALSE---------------------------------------------------------------
+#  UM_pm_alpha_pairwise_lambdacov_none_alphacov_none <- function(par,
 #                                                                fitness,
 #                                                                neigh_intra_matrix = NULL,
 #                                                                neigh_inter_matrix,
 #                                                                covariates,
 #                                                                fixed_parameters)
 
-## ----eval=FALSE----------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  
 #  # retrieve parameters -----------------------------------------------------
 #  # parameters to fit are all in the "par" vector,
@@ -100,7 +100,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 #  # sigma - this is always necessary
 #  sigma <- par[length(par)]
 
-## ----eval=FALSE----------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  
 #  # MODEL CODE HERE ---------------------------------------------------------
 #  
@@ -127,13 +127,13 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 #  
 #  # MODEL CODE ENDS HERE ----------------------------------------------------
 
-## ----eval=FALSE----------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  # the routine returns the sum of negative log-likelihoods of the data and model:
 #  # DO NOT CHANGE THIS
 #  llik <- dnorm(fitness, mean = (log(pred)), sd = (sigma), log=TRUE)
 #  return(sum(-1*llik))
 
-## ----eval=FALSE----------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  # load your model into the global environment
 #  source("./pm_UM_alpha_pairwise_lambdacov_none_alphacov_none.R")
 #  # fit your data
@@ -145,12 +145,12 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 #                           lambda_cov_form = "none",
 #                           alpha_cov_form = "none")
 
-## ----eval=FALSE----------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  BH_demographic_ratio <- function(pair_lambdas){
 #    (pair_lambdas[1]-1)/(pair_lambdas[2]-1)
 #  }
 
-## ----eval=FALSE----------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  BH_competitive_ability <- function(lambda, pair_matrix){
 #    if(all(pair_matrix >= 0)){
 #      (lambda - 1)/sqrt(pair_matrix[1,1] * pair_matrix[1,2])
@@ -159,16 +159,16 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 #    }
 #  }
 
-## ----eval=FALSE----------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  pred <- lambda.part/ (1+ e.part*r.part )
 
-## ----eval=FALSE----------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  BH_species_fitness <- function(lambda, competitive_response){
 #    (lambda-1)/competitive_response
 #  }
 
-## ----eval=FALSE----------------------------------------------------------
-#  pm_family_alpha_form_lambdacov_form_alphacov_form <- function(par,
+## ----eval=FALSE---------------------------------------------------------------
+#  family_pm_alpha_form_lambdacov_form_alphacov_form <- function(par,
 #                                                                fitness,
 #                                                                neigh_intra_matrix = NULL,
 #                                                                neigh_inter_matrix,
@@ -275,8 +275,8 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 #    return(sum(-1*llik))
 #  }
 
-## ----eval=FALSE----------------------------------------------------------
-#  er_family_lambdacov_form_effectcov_form_responsecov_form <- function(par,
+## ----eval=FALSE---------------------------------------------------------------
+#  family_er_lambdacov_form_effectcov_form_responsecov_form <- function(par,
 #                                                                       fitness,
 #                                                                       target,
 #                                                                       density,

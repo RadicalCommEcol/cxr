@@ -51,12 +51,10 @@ knitr::include_graphics("Figure1.png")
 
 The vec-permutation approach relies on a block-diagonal formulation of the demographic and dispersal processes. For each species, demographic changes are described by B, a block-diagonal matrix where the $i^{th}$ diagonal block $K_i$ is a 3x3 matrix population model at site $i$. Dispersal is described by $M$, another block-diagonal matrix where the $j^{th}$ diagonal block $L_j$ is a $i*i$ matrix of disperal probabilities for each stage $j$. In our case, non-reproductive adults disperse to become reproductive adults in a different site, and we therefore populate the corresponding off-diagonal element of $M$. Our metapopulation model assumes that local demography happens first and then individuals disperse.      
 
-To run our approach of metatpopulation dynamics of interacting pecies, we need to define a series of data structures. The first one is the nested list that holds the coefficients for obtaining vital rates for every species in every site. This `param` data structure thus holds the $\alpha$ and $\beta$ coefficients from Eq. 1. It is created with the function `build_param`, and populated with the function `generate_vital_rate_coefs`.
+To run our approach of metapopulation dynamics of interacting species, we need to first define a series of constant values and data structures. Note that we explicitly consider environmental forcing: currently, our framework accepts a single environmental factor that varies throughout the number of projected timesteps.
 
-The function `build_param` accepts the name of the species modelled, the number or name of sites, a string giving the vital rates included, and an argument `env` specifying whether environmental forcing is to be accounted for. Lastly, the coefficients from Eq. 1 may include the interaction between the density of one or more species and the environment. The user has the possibility to limit the number of env:species interactions by setting the argument `num.params`. For example, given three species and including environmental forcing, there are a minimum of 3+1+1 coefficients (the intercept, one coefficient for the effect of each species, and one coefficient for the environmental effect), and a maximum of 3+1+1+3 coefficients, by including each interaction. In this example, we include only one interaction, for a total of six coefficients. It is assumed that the interactions included follow the order in which the species are entered. In this case, the interaction included is assumed to be the one with the first species, i.e. `s1:env`.
 
 ```{r}
-
 # load the package
 library(cxr)
 
@@ -76,534 +74,22 @@ num.stages <- 3
 # vital rates to account for - these names should be fixed
 rates <- c("Sj","Sn","Sr","Rn","Rr","D","Ds","O")
 
-# environmental forcing?
-env <- TRUE
-
-# this builds the data structure - still empty
-param <- build_param(sp = sp,
-                     sites = sites,
-                     rates = rates,
-                     env = env, 
-                     num.params = 6)
-```
-
-The `param` structure is a nested list, sorted by species in the first level and site in the second level. Each element is a matrix of dimensions number of vital rates by number of coefficients.
-
-```{r}
-param[["s1"]][["sa"]]
-```
-
-There are a number of ways in which these matrices can be populated. The elements, as shown by Eq. 1, are equivalent to the coefficients (on the link scale) of a Generalized Linear Model (GLM). Therefore, if the user has a tidy table with the same number of coefficients, this table can be input to the `generate_vital_rate_coefs` function via the `glm.object` argument. Otherwise, coefficients can be entered manually, or from average and standard deviations from a normal distribution. Here we enter the coefficient for the intercept (`vr.coef = "alpha"`) of the survival of juveniles (`vital.rate = c("Sj")`), for the first species (`sp = "s1"`) and all sites (by not specifying the `sites` argument), setting the mean and sd values from which random samples will be drawn.
-
-```{r}
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   # sites = "sa",
-                                   vital.rate = c("Sj"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = .1,sd.coef = 0)
-```
-
-```{r echo=FALSE}
-
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   # sites = "sa",
-                                   vital.rate = c("Sn"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 1.8,sd.coef = 0)
-
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   # sites = "sa",
-                                   vital.rate = c("Sr"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 3,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   # sites = "sa",
-                                   vital.rate = c("Rn"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 3,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   # sites = "sa",
-                                   vital.rate = c("Rr"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 1.5,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   # sites = "sa",
-                                   vital.rate = c("D"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = -0.08,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   # sites = "sa",
-                                   vital.rate = c("Ds"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 2.1,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   # sites = "sa",
-                                   vital.rate = c("O"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 3,sd.coef = 0)
-
-# -------------------------------------------------------------------------
-# alphas for sp2
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   # sites = "sa",
-                                   vital.rate = c("Sj"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 1.5,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   # sites = "sa",
-                                   vital.rate = c("Sn"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 3.1,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   # sites = "sa",
-                                   vital.rate = c("Sr"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 3.5,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   # sites = "sa",
-                                   vital.rate = c("Rn"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 0.8,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   # sites = "sa",
-                                   vital.rate = c("Rr"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 2,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   # sites = "sa",
-                                   vital.rate = c("D"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 0.01,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   # sites = "sa",
-                                   vital.rate = c("Ds"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 3,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   # sites = "sa",
-                                   vital.rate = c("O"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 2,sd.coef = 0)
-
-# -------------------------------------------------------------------------
-# alphas for sp3
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   # sites = "sa",
-                                   vital.rate = c("Sj"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 0.01,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   # sites = "sa",
-                                   vital.rate = c("Sn"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 3,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   # sites = "sa",
-                                   vital.rate = c("Sr"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 3.8,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   # sites = "sa",
-                                   vital.rate = c("Rn"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 0.8,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   # sites = "sa",
-                                   vital.rate = c("Rr"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 1.8,sd.coef = 0)
-
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   sites = "sa",
-                                   vital.rate = c("D"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 0.05,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   sites = "sb",
-                                   vital.rate = c("D"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 0.08,sd.coef = 0)
-
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   sites = "sa",
-                                   vital.rate = c("Ds"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 2.15,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   sites = "sb",
-                                   vital.rate = c("Ds"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = 2.10,sd.coef = 0)
-
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   # sites = "sa",
-                                   vital.rate = c("O"),#,"Sn","Sr","Rn","Rr","O"),
-                                   vr.coef = "alpha",
-                                   mean.coef = .1,sd.coef = 0)
-
-
-# -------------------------------------------------------------------------
-# beta1 sp1
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   # vital.rate = c("Sj","Sn","Sr","Rn","Rr","D","O"),
-                                   vr.coef = c("beta1"),
-                                   mean.coef = 0.08,sd.coef = 0)
-# dispersal site 2
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   vital.rate = c("D"),
-                                   sites = "sb",
-                                   vr.coef = c("beta1"),
-                                   mean.coef = -0.08,sd.coef = 0)
-# beta1 dispersal surv site 2
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   vital.rate = c("Ds"),
-                                   sites = "sb",
-                                   vr.coef = c("beta1"),
-                                   mean.coef = 0.01,sd.coef = 0)
-# O site 2
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   sites = "sb",
-                                   vital.rate = c("O"),
-                                   vr.coef = c("beta1"),
-                                   mean.coef = 0.1,sd.coef = 0)
-
-# -------------------------------------------------------------------------
-# beta1 sp2
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   # vital.rate = c("Sj","Sn","Sr","Rn","Rr","D","O"),
-                                   vr.coef = c("beta1"),
-                                   mean.coef = 0.07,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   vital.rate = c("D"),
-                                   sites = "sb",
-                                   vr.coef = c("beta1"),
-                                   mean.coef = -0.07,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   vital.rate = c("Ds"),
-                                   sites = "sb",
-                                   vr.coef = c("beta1"),
-                                   mean.coef = 0.05,sd.coef = 0)
-
-# -------------------------------------------------------------------------
-# beta1 sp3
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   # vital.rate = c("Sj","Sn","Sr","Rn","Rr","D","O"),
-                                   vr.coef = c("beta1"),
-                                   mean.coef = 0.05,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   vital.rate = c("D"),
-                                   sites = "sb",
-                                   vr.coef = c("beta1"),
-                                   mean.coef = -0.05,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   vital.rate = c("Ds"),
-                                   sites = "sb",
-                                   vr.coef = c("beta1"),
-                                   mean.coef = 0.01,sd.coef = 0)
-
-# -------------------------------------------------------------------------
-# beta2 sp1
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   vital.rate = c("Sj","Sn","Sr","Rn","Rr"),
-                                   vr.coef = c("beta2"),
-                                   mean.coef = -0.07,sd.coef = 0)
-# D
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   vital.rate = c("D"),
-                                   vr.coef = c("beta2"),
-                                   mean.coef = 0.12,sd.coef = 0)
-# Ds
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   vital.rate = c("Ds"),
-                                   vr.coef = c("beta2"),
-                                   mean.coef = 0,sd.coef = 0)
-# O 
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   vital.rate = c("O"),
-                                   vr.coef = c("beta2"),
-                                   mean.coef = -0.1,sd.coef = 0)
-# -------------------------------------------------------------------------
-# beta2 sp2
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   vital.rate = c("Sj","Sn","Sr","Rn","Rr"),
-                                   vr.coef = c("beta2"),
-                                   mean.coef = -0.2,sd.coef = 0)
-# D
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   vital.rate = c("D"),
-                                   vr.coef = c("beta2"),
-                                   mean.coef = 0.1,sd.coef = 0)
-# Ds
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   vital.rate = c("Ds"),
-                                   vr.coef = c("beta2"),
-                                   mean.coef = 0,sd.coef = 0)
-# O 
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   sites = "sa",
-                                   vital.rate = c("O"),
-                                   vr.coef = c("beta2"),
-                                   mean.coef = -0.3,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   sites = "sb",
-                                   vital.rate = c("O"),
-                                   vr.coef = c("beta2"),
-                                   mean.coef = -0.2,sd.coef = 0)
-# -------------------------------------------------------------------------
-# beta2 sp3
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   vital.rate = c("Sj","Sn","Sr","Rn","Rr"),
-                                   vr.coef = c("beta2"),
-                                   mean.coef = -0.2,sd.coef = 0)
-# D
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   vital.rate = c("D"),
-                                   vr.coef = c("beta2"),
-                                   mean.coef = 0.2,sd.coef = 0)
-# Ds
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   vital.rate = c("Ds"),
-                                   vr.coef = c("beta2"),
-                                   mean.coef = 0,sd.coef = 0)
-# O 
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   vital.rate = c("O"),
-                                   vr.coef = c("beta2"),
-                                   mean.coef = -0.18,sd.coef = 0)
-# -------------------------------------------------------------------------
-# beta3 sp1
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   vital.rate = c("Sj","Sn","Sr","Rr","D","O"),
-                                   vr.coef = c("beta3"),
-                                   mean.coef = -0.1,sd.coef = 0)
-# Rn
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   sites = "sa",
-                                   vital.rate = c("Rn"),
-                                   vr.coef = c("beta3"),
-                                   mean.coef = .05,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   sites = "sb",
-                                   vital.rate = c("Rn"),
-                                   vr.coef = c("beta3"),
-                                   mean.coef = .02,sd.coef = 0)
-# Ds
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   vital.rate = c("Ds"),
-                                   vr.coef = c("beta3"),
-                                   mean.coef = 0,sd.coef = 0)
-# -------------------------------------------------------------------------
-# beta3 sp2
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   sites = "sa",
-                                   vital.rate = c("Sj","Sn","Sr","Rr","D","O"),
-                                   vr.coef = c("beta3"),
-                                   mean.coef = 0.04,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   sites = "sb",
-                                   vital.rate = c("Sj","Sn","Sr","Rr","D","O"),
-                                   vr.coef = c("beta3"),
-                                   mean.coef = 0.02,sd.coef = 0)
-# Rn
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   sites = "sa",
-                                   vital.rate = c("Rn"),
-                                   vr.coef = c("beta3"),
-                                   mean.coef = -.05,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   sites = "sb",
-                                   vital.rate = c("Rn"),
-                                   vr.coef = c("beta3"),
-                                   mean.coef = -.02,sd.coef = 0)
-# Ds
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   vital.rate = c("Ds"),
-                                   vr.coef = c("beta3"),
-                                   mean.coef = 0,sd.coef = 0)
-# -------------------------------------------------------------------------
-# beta3 sp3
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   vital.rate = c("Sj","Sn","Sr","Rr","D","O"),
-                                   vr.coef = c("beta3"),
-                                   mean.coef = 0.08,sd.coef = 0)
-# Rn
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   vital.rate = c("Rn"),
-                                   vr.coef = c("beta3"),
-                                   mean.coef = -0.11,sd.coef = 0)
-# Ds
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   vital.rate = c("Ds"),
-                                   vr.coef = c("beta3"),
-                                   mean.coef = 0,sd.coef = 0)
-# -------------------------------------------------------------------------
-# beta4 sp1
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   sites = "sa",
-                                   vital.rate = c("Sj","Sn","Sr","Rr","D","O"),
-                                   vr.coef = c("beta4"),
-                                   mean.coef = -0.02,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   sites = "sb",
-                                   vital.rate = c("Sj","Sn","Sr","Rr","D","O"),
-                                   vr.coef = c("beta4"),
-                                   mean.coef = -0.03,sd.coef = 0)
-# Rn
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   sites = "sa",
-                                   vital.rate = c("Rn"),
-                                   vr.coef = c("beta4"),
-                                   mean.coef = 0.02,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   sites = "sb",
-                                   vital.rate = c("Rn"),
-                                   vr.coef = c("beta4"),
-                                   mean.coef = .05,sd.coef = 0)
-# Ds
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s1",
-                                   vital.rate = c("Ds"),
-                                   vr.coef = c("beta4"),
-                                   mean.coef = 0,sd.coef = 0)
-# -------------------------------------------------------------------------
-# beta4 sp2
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   vital.rate = c("Sn","Sr","Rr","D","O"),
-                                   vr.coef = c("beta4"),
-                                   mean.coef = -0.01,sd.coef = 0)
-# Sj
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   vital.rate = c("Sj"),
-                                   vr.coef = c("beta4"),
-                                   mean.coef = -0.001,sd.coef = 0)
-# Rn
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   sites ="sa",
-                                   vital.rate = c("Rn"),
-                                   vr.coef = c("beta4"),
-                                   mean.coef = 0.01,sd.coef = 0)
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   sites ="sb",
-                                   vital.rate = c("Rn"),
-                                   vr.coef = c("beta4"),
-                                   mean.coef = 0.05,sd.coef = 0)
-# Ds
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s2",
-                                   vital.rate = c("Ds"),
-                                   vr.coef = c("beta4"),
-                                   mean.coef = 0,sd.coef = 0)
-# -------------------------------------------------------------------------
-# beta4 sp3
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   vital.rate = c("Sj","Sn","Sr","Rr","D","O"),
-                                   vr.coef = c("beta4"),
-                                   mean.coef = -0.01,sd.coef = 0)
-# Rn
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   vital.rate = c("Rn"),
-                                   vr.coef = c("beta4"),
-                                   mean.coef = 0.01,sd.coef = 0)
-# Ds
-param <- generate_vital_rate_coefs(param = param,
-                                   sp = "s3",
-                                   vital.rate = c("Ds"),
-                                   vr.coef = c("beta4"),
-                                   mean.coef = 0,sd.coef = 0)
-# -------------------------------------------------------------------------
-# beta5 sp1,sp2,sp3
-param <- generate_vital_rate_coefs(param = param,
-                                   # sp = "s1",
-                                   # vital.rate = c("Sj","Sn","Sr","Rr","D","O"),
-                                   vr.coef = c("beta5"),
-                                   mean.coef = 0.01,sd.coef = 0)
-```
-
-The rest of the coefficients are filled up likewise, for a final set of matrices similar to this:
-
-```{r}
-param[["s1"]][["sa"]]
-```
-
-Currently, our framework accepts a single environmental factor that varies throughout the number of projected timesteps
-
-```{r}
-years <- 100 # years (or time steps) of simulations
+# years (or time steps) of simulations
+years <- 100 
 
 # simulate environment from normal distribution
 set.seed(123)
 env <- rnorm(years, mean=0, sd=1)
+
+```
+
+At this stage, we need to generate or import the coefficients for obtaining vital rates for every species in every site. This data structure thus holds the $\alpha$ and $\beta$ coefficients from Eq. 1. In this example, we import these coefficients in an already created list named `metapopulation_example_param`. We suggest to separate in different scripts the generation of the data structure and the projection of the dynamics. Nevertheless, at the end of this vignette we explain in more detail the different options to generate or import these coefficients.
+
+```{r}
+data("metapopulation_example_param", package = "cxr")
+
+# coefficients for species "s1" in site "sa"
+metapopulation_example_param[["s1"]][["sa"]]
 ```
 
 Next, we define the structure that will hold the vec-permutation matrices, with the given number of species, sites, and stages. There are three types of matrices in the vec-permutation methodology: permutation matrices, dispersal, and demography. There is one matrix of each type for each species, and these matrices all have dimensions of number of stages multiplied by number of sites in both rows and columns.
@@ -624,12 +110,12 @@ We also need to define manually the initial abundances of each species at each s
 # this needs to be filled manually
 initial.densities <- list()
 # sp1
-initial.densities[[1]] <- matrix(c(20,20,15,20,20,13),
+initial.densities[[1]] <- matrix(c(10,10,15,10,10,13),
                                  nrow = num.sites,
                                  ncol = num.stages,
                                  byrow = TRUE)
 # sp2
-initial.densities[[2]] <- matrix(c(25,15,3,25,15,3),
+initial.densities[[2]] <- matrix(c(15,5,3,15,5,3),
                                  nrow = num.sites,
                                  ncol = num.stages,
                                  byrow = TRUE)
@@ -672,37 +158,37 @@ The densities of each species at each timestep are calculated within a loop. In 
 current.densities <- initial.densities
 
 for(i.year in 1:years){
-  
+
   # Update projected densities at this timestep
   for(i.sp in 1:num.sp){
     projected.densities[[i.sp]][[i.year]] <- current.densities[[i.sp]]
   }
-  
+
   # update transition matrices ----------------------------------------------
-  
+
   # this is a list per species and site
   transition_matrices <- list()
-  
+
   for(i.sp in 1:length(sp)){
     transition_matrices[[i.sp]] <- list()
     for(i.site in 1:length(sites)){
-      
+
       # store the transition matrix for this sp and site
       transition_matrices[[i.sp]][[i.site]] <- fill_transition_matrix(focal.sp = i.sp,
                                                                       site = i.site,
-                                                                      param = param,
+                                                                      param = metapopulation_example_param,
                                                                       env = env[i.year],
                                                                       current.densities = current.densities)
-      
+
     }# for each site
     names(transition_matrices[[i.sp]]) <- sites
   }# for each species
   names(transition_matrices) <- sp
-  
+
   # update demography and dispersal matrices --------------------------------
-  
+
   for(i.sp in 1:length(sp)){
-    
+
     # demography
     vpm[["demography"]][[i.sp]] <- fill_demography_matrix(focal.sp = i.sp,
                                                           vpm = vpm,
@@ -710,12 +196,12 @@ for(i.year in 1:years){
     # dispersal
     vpm[["dispersal"]][[i.sp]] <- fill_dispersal_matrix(focal.sp = i.sp,
                                                         num.sites = num.sites,
-                                                        param = param,
+                                                        param = metapopulation_example_param,
                                                         vpm = vpm,
                                                         env = env[i.year],
-                                                        current.densities = current.densities) 
+                                                        current.densities = current.densities)
   }# for i.sp
-  
+
   # update densities --------------------------------------------------------
   # all stages and sites for each species
   for(i.sp in 1:length(sp)){
@@ -753,7 +239,43 @@ dynamics.plot <- ggplot2::ggplot(df,ggplot2::aes(year,density,col=species))+
 dynamics.plot
 ```
 
+**Appendix: Different options for building the coefficient data structure**
+
+*NOTE: work in progress!*
+
+It is created with the function `build_param`, and populated with the function `generate_vital_rate_coefs`. 
+
+The function `build_param` accepts the name of the species modelled, the number or name of sites, a string giving the vital rates included, and an argument `env` specifying whether environmental forcing is to be accounted for. Lastly, the coefficients from Eq. 1 may include the interaction between the density of one or more species and the environment. The user has the possibility to limit the number of env:species interactions by setting the argument `num.params`. For example, given three species and including environmental forcing, there are a minimum of 1+1+3 coefficients (the intercept, one coefficient for the environmental effect, and one coefficient for the effect of each species), and a maximum of 1+1+3+3 coefficients, by including each interaction. In this example, we include all environment:density interactions, for a total of eight coefficients. It is assumed that the interactions included follow the order in which the species are entered.
+
+```{r}
+# this builds an empty data structure
+# example_param <- build_param(sp = sp,
+#                      sites = sites,
+#                      rates = rates,
+#                      env = env, 
+#                      num.params = 8)
+```
+
+The `param` structure is a nested list, sorted by species in the first level and site in the second level. Each element is a matrix of dimensions number of vital rates by number of coefficients.
+
+```{r}
+# example_param[["s1"]][["sa"]]
+```
+
+There are a number of ways in which these matrices can be populated. The elements, as shown by Eq. 1, are equivalent to the coefficients (on the link scale) of a Generalized Linear Model (GLM). Therefore, if the user has a tidy table with the same number of coefficients, this table can be input to the `generate_vital_rate_coefs` function via the `glm.object` argument. For example, 
 
 
 
 
+Otherwise, coefficients can be entered manually, or by sampling from a normal distribution with a given mean and standard deviation. Below we enter the coefficient for the intercept (`vr.coef = "alpha"`) of the survival of juveniles (`vital.rate = c("Sj")`), for the first species (`sp = "s1"`) and all sites (by not specifying the `sites` argument), setting the mean and sd values from which random samples will be drawn.
+
+```{r}
+# example_param <- generate_vital_rate_coefs(param = example_param,
+#                                    sp = "s1",
+#                                    # sites = "sa",
+#                                    vital.rate = c("Sj"),#,"Sn","Sr","Rn","Rr","D","Ds","O"),
+#                                    vr.coef = "alpha",
+#                                    mean.coef = .1,sd.coef = 0)
+```
+
+The rest of the coefficients can be filled up likewise, for a final set of matrices similar to the ones imported in the main example.
