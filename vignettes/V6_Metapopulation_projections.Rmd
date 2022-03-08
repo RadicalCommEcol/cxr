@@ -241,41 +241,74 @@ dynamics.plot
 
 **Appendix: Different options for building the coefficient data structure**
 
-*NOTE: work in progress!*
-
-It is created with the function `build_param`, and populated with the function `generate_vital_rate_coefs`. 
+Users can generate the list with parameter coefficients through a set of helper functions. The data structure is created with the function `build_param`, and populated with the function `generate_vital_rate_coefs`. 
 
 The function `build_param` accepts the name of the species modelled, the number or name of sites, a string giving the vital rates included, and an argument `env` specifying whether environmental forcing is to be accounted for. Lastly, the coefficients from Eq. 1 may include the interaction between the density of one or more species and the environment. The user has the possibility to limit the number of env:species interactions by setting the argument `num.params`. For example, given three species and including environmental forcing, there are a minimum of 1+1+3 coefficients (the intercept, one coefficient for the environmental effect, and one coefficient for the effect of each species), and a maximum of 1+1+3+3 coefficients, by including each interaction. In this example, we include all environment:density interactions, for a total of eight coefficients. It is assumed that the interactions included follow the order in which the species are entered.
 
 ```{r}
 # this builds an empty data structure
-# example_param <- build_param(sp = sp,
-#                      sites = sites,
-#                      rates = rates,
-#                      env = env, 
-#                      num.params = 8)
+example_param <- build_param(sp = sp,
+                     sites = sites,
+                     rates = rates,
+                     env = env,
+                     num.params = 8)
 ```
 
-The `param` structure is a nested list, sorted by species in the first level and site in the second level. Each element is a matrix of dimensions number of vital rates by number of coefficients.
+The `example_param` structure is a nested list, sorted by species in the first level and site in the second level. Each element is a matrix of dimensions number of vital rates by number of coefficients.
 
 ```{r}
-# example_param[["s1"]][["sa"]]
+example_param[["s1"]][["sa"]]
 ```
 
-There are a number of ways in which these matrices can be populated. The elements, as shown by Eq. 1, are equivalent to the coefficients (on the link scale) of a Generalized Linear Model (GLM). Therefore, if the user has a tidy table with the same number of coefficients, this table can be input to the `generate_vital_rate_coefs` function via the `glm.object` argument. For example, 
-
-
-
-
-Otherwise, coefficients can be entered manually, or by sampling from a normal distribution with a given mean and standard deviation. Below we enter the coefficient for the intercept (`vr.coef = "alpha"`) of the survival of juveniles (`vital.rate = c("Sj")`), for the first species (`sp = "s1"`) and all sites (by not specifying the `sites` argument), setting the mean and sd values from which random samples will be drawn.
+There are a number of ways in which these matrices can be populated. The elements, as shown by Eq. 1, are equivalent to the coefficients (on the link scale) of a Generalized Linear Model (GLM). Therefore, if the user has a tidy table with the same number of coefficients, this table can be input to the `generate_vital_rate_coefs` function via the `glm.object` argument. For example, using an example coefficient table from a GLM: 
 
 ```{r}
-# example_param <- generate_vital_rate_coefs(param = example_param,
-#                                    sp = "s1",
-#                                    # sites = "sa",
-#                                    vital.rate = c("Sj"),#,"Sn","Sr","Rn","Rr","D","Ds","O"),
-#                                    vr.coef = "alpha",
-#                                    mean.coef = .1,sd.coef = 0)
+data("glm_example_coefs",package = "cxr")
+
+glm_example_coefs
 ```
 
-The rest of the coefficients can be filled up likewise, for a final set of matrices similar to the ones imported in the main example.
+Notice that the coefficient names are different from those in the `example_param` tables. In order to import the GLM table into the structure, we also need to specify the name equivalences:
+
+```{r}
+glm.coef.equivalence <- list("alpha" = "(Intercept)",
+                             "beta1" = "env",
+                             "beta2" = "dens", 
+                             "beta3" = "densS2", 
+                             "beta4" = "densS3",
+                             "beta5" = "dens:env",
+                             "beta6" = "env:densS2",
+                             "beta7" = "env:densS3")
+```
+
+And now, we can import these values. Assuming that these coefficients refer to the survival rate of juveniles for species `s1` at site `sa`: 
+
+```{r}
+example_param <- generate_vital_rate_coefs(example_param,
+                                           sp = "s1",
+                                           sites = "sa",
+                                           vital.rate = "Sj",
+                                           glm.object = glm_example_coefs,
+                                           glm.coef.equivalence = glm.coef.equivalence)
+
+# the resulting table. Note that we only entered the coefficients for survival of juveniles (Sj)
+example_param[["s1"]][["sa"]]
+```
+
+Otherwise, coefficients can be entered manually:
+
+```{r}
+example_param$s2$sa["Sr",5] <- 0.001
+```
+
+And, finally, coefficients can also be generated by sampling from a normal distribution with a given mean and standard deviation. Below we enter the coefficient for the intercept (`vr.coef = "alpha"`) of the survival of reproductive adults (`vital.rate = c("Sr")`), for the first species (`sp = "s1"`) and all sites (by not specifying the `sites` argument), setting the mean and sd values from which random samples will be drawn.
+
+```{r}
+example_param <- generate_vital_rate_coefs(param = example_param,
+                                   sp = "s1",
+                                   # sites = "sa",
+                                   vital.rate = c("Sj"),#,"Sn","Sr","Rn","Rr","D","Ds","O"),
+                                   vr.coef = "alpha",
+                                   mean.coef = .1,sd.coef = 0)
+```
+
