@@ -30,7 +30,7 @@ fill_dispersal_matrix <- function(focal.sp,num.sites,param,vpm,env = NULL,curren
     # get a vector of densities for this site
     dens <- get_densities(focal.sp,i.site,current.densities)
     
-    diag(temp.mat)[i.site] <- 1 - vital_rate(vr = 6,
+    diag(temp.mat)[i.site] <- 1 - vital_rate(vr = "D",
                                              sp = focal.sp,
                                              site = i.site,
                                              param = param,
@@ -69,18 +69,20 @@ fill_dispersal_matrix <- function(focal.sp,num.sites,param,vpm,env = NULL,curren
         dens <- get_densities(focal.sp,i.col,current.densities)
         arriving.dens  <- get_densities(focal.sp,i.row,current.densities)
         
-        temp.mat[i.row,i.col] <- (vital_rate(vr = 6,
-                                            sp = focal.sp,
-                                            site = i.col,
-                                            param = param,
-                                            env = env,
-                                            densities = dens) *
-          vital_rate(vr = 7,
-                     sp = focal.sp,
-                     site = i.col, # TODO this or i.row? should be i.col, because it refers to the Ds of the sp at the source
-                     param = param,
-                     env = env,
-                     densities = arriving.dens)) # but the densities are those of the receiving site
+        temp.mat[i.row,i.col] <- (vital_rate(vr = "D",
+                                             sp = focal.sp,
+                                             site = i.col,
+                                             param = param,
+                                             env = env,
+                                             densities = dens) *
+                                    # 1
+                                    vital_rate(vr = "Ds",
+                                               sp = focal.sp,
+                                               site = i.col, # TODO this or i.row? should be i.col, because it refers to the Ds of the sp at the source
+                                               param = param,
+                                               env = env,
+                                               densities = arriving.dens)
+                                  ) # but the densities are those of the receiving site
         
         # TODO ask Maria about /num.sites:
         
