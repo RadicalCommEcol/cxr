@@ -33,33 +33,34 @@ cxr_check_initial_values <- function(initial_values,
   
   # identical elements in the three lists
   if(!is.null(upper_bounds) & !is.null(lower_bounds)){
-  if(!identical(names(initial_values),names(lower_bounds)) |
-     !identical(names(initial_values),names(upper_bounds)) |
-     !identical(names(upper_bounds),names(lower_bounds))){
-    iv.ok <- FALSE
-  }
+    if(!identical(names(initial_values),names(lower_bounds)) |
+       !identical(names(initial_values),names(upper_bounds)) |
+       !identical(names(upper_bounds),names(lower_bounds))){
+      iv.ok <- FALSE
+    }
   }
   
-  # check that the number of initial values is equal to either
+  # check that the number of initial values is equal to either:
   # 1, so that all parameters have same initial values
   # number of covariates, so that each covariate effect has different starting point
   if(!is.null(covariates)){
-    if("lambda_cov" %in% names(initial_values)){
-      il <- length(initial_values$lambda_cov)
-      if(!il %in% c(1,ncol(covariates))){
-        iv.ok <- FALSE
-      }
-    }else{
-      iv.ok <- FALSE
-    }
     
-    if("alpha_cov" %in% names(initial_values)){
-      ia <- length(initial_values$alpha_cov)
-      if(!ia %in% c(1,ncol(covariates))){
-        iv.ok <- FALSE
+    if("lambda_cov" %in% names(initial_values) |
+       "alpha_cov" %in% names(initial_values)){
+      
+      if("lambda_cov" %in% names(initial_values)){
+        il <- length(initial_values$lambda_cov)
+        if(!il %in% c(1,ncol(covariates))){
+          iv.ok <- FALSE
+        }
       }
-    }else{
-      iv.ok <- FALSE
+      
+      if("alpha_cov" %in% names(initial_values)){
+        ia <- length(initial_values$alpha_cov)
+        if(!ia %in% c(1,ncol(covariates))){
+          iv.ok <- FALSE
+        }
+      }
     }
   }
   
@@ -86,8 +87,8 @@ cxr_check_initial_values <- function(initial_values,
           iv.ok <- FALSE
         }
         if("alpha_intra" %in% c(names(initial_values), 
-                           names(lower_bounds), 
-                           names(upper_bounds))){
+                                names(lower_bounds), 
+                                names(upper_bounds))){
           iv.ok <- FALSE
         }
       }
@@ -97,8 +98,8 @@ cxr_check_initial_values <- function(initial_values,
           iv.ok <- FALSE
         }
         if("alpha_inter" %in% c(names(initial_values), 
-                           names(lower_bounds), 
-                           names(upper_bounds))){
+                                names(lower_bounds), 
+                                names(upper_bounds))){
           iv.ok <- FALSE
         }
       }
@@ -108,8 +109,8 @@ cxr_check_initial_values <- function(initial_values,
           iv.ok <- FALSE
         }
         if("lambda_cov" %in% c(names(initial_values), 
-                           names(lower_bounds), 
-                           names(upper_bounds))){
+                               names(lower_bounds), 
+                               names(upper_bounds))){
           iv.ok <- FALSE
         }
       }
@@ -119,8 +120,8 @@ cxr_check_initial_values <- function(initial_values,
           iv.ok <- FALSE
         }
         if("alpha_cov" %in% c(names(initial_values), 
-                           names(lower_bounds), 
-                           names(upper_bounds))){
+                              names(lower_bounds), 
+                              names(upper_bounds))){
           iv.ok <- FALSE
         }
       }
