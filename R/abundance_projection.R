@@ -1,4 +1,3 @@
-#' Title
 #' Project abundances from population dynamics models
 #' 
 #' The function projects a number of steps of a time-discrete model, 

@@ -82,7 +82,7 @@ fill_dispersal_matrix <- function(focal.sp,num.sites,param,vpm,env = NULL,curren
                                                param = param,
                                                env = env,
                                                densities = arriving.dens)
-                                  ) # but the densities are those of the receiving site
+        ) # but the densities are those of the receiving site
         
         # TODO ask Maria about /num.sites:
         

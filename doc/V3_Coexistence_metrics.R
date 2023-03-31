@@ -1,8 +1,8 @@
-## ----setup,echo=FALSE----------------------------------------------------
+## ----setup,echo=FALSE---------------------------------------------------------
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 #note - we disable warnings and other output for the vignette, otherwise the functions are quite "chatty". 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 library(cxr)
 data("neigh_list")
 data <- neigh_list
@@ -13,7 +13,7 @@ for(i in 1:length(data)){
 
 focal_column <- names(data)
 model_family <- "RK" 
-optimization_method <- "L-BFGS-B" # we use a bounded method
+optimization_method <- "bobyqa" # we use a bounded method
 alpha_form <- "pairwise"
 lambda_cov_form <- "none"
 alpha_cov_form <- "none"
@@ -29,7 +29,7 @@ upper_bounds = list(lambda = 100,
 fixed_terms <- NULL
 bootstrap_samples <- 0
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 all.sp.fit <- cxr_pm_multifit(data = data,
                               model_family = model_family,
                               focal_column = focal_column,
@@ -44,16 +44,25 @@ all.sp.fit <- cxr_pm_multifit(data = data,
                               bootstrap_samples = bootstrap_samples)
 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 niche_overlap_all_pairs <- niche_overlap(cxr_multifit = all.sp.fit)
+# as not all species combinations occur, 
+# several interaction coefficients are NA
+# which, in turn, return NA values for niche overlap
+# so, remove them and check the first computed values
+niche_overlap_all_pairs <- niche_overlap_all_pairs[complete.cases(niche_overlap_all_pairs),]
 head(niche_overlap_all_pairs)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 niche_overlap_all_pairs$MCT_niche_diff <- 1 - niche_overlap_all_pairs$niche_overlap_MCT
 niche_overlap_all_pairs$SA_niche_diff <- 1 - niche_overlap_all_pairs$niche_overlap_SA
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 avg_fitness_diff_all_pairs <- avg_fitness_diff(cxr_multifit = all.sp.fit)
+
+# as with niche overlap, remove NA values
+avg_fitness_diff_all_pairs <- avg_fitness_diff_all_pairs[complete.cases(
+  avg_fitness_diff_all_pairs),]
 
 # average fitness ratio of sp1 over sp2
 # if < 1, sp2 is the superior competitor, 
@@ -61,14 +70,18 @@ avg_fitness_diff_all_pairs <- avg_fitness_diff(cxr_multifit = all.sp.fit)
 # i.e. sp2 over sp1.
 head(avg_fitness_diff_all_pairs)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 competitive_ability_all_pairs <- competitive_ability(cxr_multifit = all.sp.fit)
+competitive_ability_all_pairs <- competitive_ability_all_pairs[complete.cases(
+  competitive_ability_all_pairs),]
+
 head(competitive_ability_all_pairs)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 data("neigh_list")
 
-# For obtaining effect and responses, all species need to have the same number of observations. 
+# For obtaining effect and responses, all species 
+# need to have the same number of observations. 
 # We selct 3 species that have >250 observations
 names(neigh_list)
 sapply(neigh_list,nrow)
@@ -106,7 +119,7 @@ upper_bounds_er = list(lambda = 100,
                        effect = 10, 
                        response = 10)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 er.fit <- cxr_er_fit(data = data,
                           model_family = model_family,
                           optimization_method = optimization_method,
@@ -116,7 +129,7 @@ er.fit <- cxr_er_fit(data = data,
                           fixed_terms = fixed_terms,
                           bootstrap_samples = bootstrap_samples)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 spfitness <- species_fitness(er.fit)
 spfitness
 

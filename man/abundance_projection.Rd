@@ -2,8 +2,7 @@
 % Please edit documentation in R/abundance_projection.R
 \name{abundance_projection}
 \alias{abundance_projection}
-\title{Title
-Project abundances from population dynamics models}
+\title{Project abundances from population dynamics models}
 \usage{
 abundance_projection(
   cxr_fit = NULL,

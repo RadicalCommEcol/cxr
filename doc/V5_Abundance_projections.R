@@ -1,11 +1,11 @@
-## ----setup,echo=FALSE----------------------------------------------------
+## ----setup,echo=FALSE---------------------------------------------------------
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 library(cxr)
 data("neigh_list")
 
-three_sp <- c("CHFU","MEEL","PUPA")
+three_sp <- c("BEMA","LEMA","SOAS")
 sp.pos <- which(names(neigh_list) %in% three_sp)
 
 data <- neigh_list[sp.pos]
@@ -36,7 +36,8 @@ bootstrap_samples <- 3
 timesteps <- 10
 
 # for demonstration purposes
-initial_abundances <- c("CHFU" = 10,"MEEL" = 10,"PUPA" = 10)
+initial_abundances <- c(10,10,10)
+names(initial_abundances) <- three_sp
 
 # standard initial values,
 # not allowing for intraspecific facilitation
@@ -57,7 +58,7 @@ upper_bounds <- list(lambda = 100,
                      # lambda_cov = 1,
                      # alpha_cov = 1)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
   cxr_fit <- cxr_pm_multifit(data = data,
                              focal_column = focal_column,
                              model_family = model_family,
@@ -72,13 +73,13 @@ upper_bounds <- list(lambda = 100,
                              fixed_terms = fixed_terms,
                              bootstrap_samples = bootstrap_samples)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
   ab <- abundance_projection(cxr_fit = cxr_fit,
                              # covariates = covariates_proj,
                              timesteps = timesteps,
                              initial_abundances = initial_abundances)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ab.df <- as.data.frame(ab)
 ab.df$timestep <- 1:nrow(ab.df)
 ab.df <- tidyr::gather(ab.df,key = "sp",value = "abund",-timestep)
@@ -90,10 +91,10 @@ abund.plot <- ggplot2::ggplot(ab.df,
   ggplot2::ggtitle("Projected abundances of three plant species")+
   NULL
 
-## ----fig.width=7.2, fig.height=7-----------------------------------------
+## ----fig.width=7.2, fig.height=7----------------------------------------------
 abund.plot
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #' Beverton-Holt model for projecting abundances,
 #' with specific alpha values and global covariate effects on alpha and lambda
 #'

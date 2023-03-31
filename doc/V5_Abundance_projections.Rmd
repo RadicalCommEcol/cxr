@@ -23,7 +23,7 @@ In this vignette, we show how to project the abundances of three species from ou
 library(cxr)
 data("neigh_list")
 
-three_sp <- c("CHFU","MEEL","PUPA")
+three_sp <- c("BEMA","LEMA","SOAS")
 sp.pos <- which(names(neigh_list) %in% three_sp)
 
 data <- neigh_list[sp.pos]
@@ -54,7 +54,8 @@ bootstrap_samples <- 3
 timesteps <- 10
 
 # for demonstration purposes
-initial_abundances <- c("CHFU" = 10,"MEEL" = 10,"PUPA" = 10)
+initial_abundances <- c(10,10,10)
+names(initial_abundances) <- three_sp
 
 # standard initial values,
 # not allowing for intraspecific facilitation
@@ -103,7 +104,7 @@ Projecting abundances from a `cxr` object is straightforward: just call the func
                              initial_abundances = initial_abundances)
 ```
 
-This function returns a simple numeric matrix with the projected abundances. Lastly, here is a basic plot showing the projection. This is a pedagogical example and does not make sense to interpret it ecologically, but it shows how the three species selected approach different equilibrium abundances in the short term.
+This function returns a simple numeric matrix with the projected abundances. Lastly, here is a basic plot showing the projection. This is a pedagogical example and it does not make sense to interpret it ecologically, but it shows how one of the three species selected tends to become more abundant in the short term.
 
 ```{r}
 ab.df <- as.data.frame(ab)
@@ -203,8 +204,3 @@ BH_project_alpha_pairwise_lambdacov_global_alphacov_pairwise <- function(lambda,
 }
 
 ```
-
-
-
-
-
