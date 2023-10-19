@@ -1,6 +1,8 @@
-# cxr 1.1.1
+### cxr 1.1.1
 
-# NEWS
+- SUMMARY OF NEW FEATURES CHANGES
+- removed hydroPSO optimizer due to the hydroPSO package being no longer in CRAN.
+- updated response-effect model to improve convergence
 
 ### cxr 1.1.0
 

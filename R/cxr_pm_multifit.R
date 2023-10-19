@@ -46,17 +46,20 @@
 #' for(i in 1:length(data)){
 #'   data[[i]] <- data[[i]][,2:length(data[[i]])]
 #' }
+#' # be explicit about the focal species
+#' focal.sp <- names(data)
 #' # covariates: salinity
 #' data("salinity_list")
 #' salinity <- salinity_list[1:3]
 #' # keep only salinity column
 #' for(i in 1:length(salinity)){
-#'   salinity[[i]] <- salinity[[i]][,2:length(salinity[[i]])]
+#'   salinity[[i]] <- data.frame(salinity = salinity[[i]][,2:length(salinity[[i]])])
 #' }
 #' \donttest{
 #'   fit_3sp <- cxr_pm_multifit(data = data,
 #'                              optimization_method = "bobyqa",
 #'                              model_family = "BH",
+#'                              focal_column = focal.sp,
 #'                              covariates = salinity,
 #'                              alpha_form = "pairwise",
 #'                              lambda_cov_form = "global",
@@ -80,7 +83,7 @@
 #'   # brief summary
 #'   summary(fit_3sp)
 #'   # interaction matrix
-#'   fit_3sp$alpha
+#'   fit_3sp$alpha_matrix
 #' }
 cxr_pm_multifit <- function(data, 
                             model_family = c("BH"),
@@ -529,18 +532,20 @@ cxr_pm_multifit <- function(data,
       for(i.sp in 1:length(spnames)){
         
         # mycov <- spfits[[i.sp]]$alpha_cov_standard_error[[cov.names[i.cov]]]
-        
-        listpos <- which(names(spfits[[i.sp]]$alpha_cov_standard_error) == cov.names[i.cov])
-        mycov <- spfits[[i.sp]]$alpha_cov_standard_error[[listpos]]
-        
-        if(length(mycov)==1){
-          # same alpha_cov for all interactions
-          er_spalpha_cov[[i.cov]][i.sp,] <- mycov
-        }else{
-          # specific alpha_cov
-          # sort sp just in case
-          sp.pos <- sapply(er_matrix.names,function(x)which(grepl(x,names(mycov))))
-          er_spalpha_cov[[i.cov]][i.sp,] <- mycov[sp.pos]
+        if(!is.null(spfits[[i.sp]]$alpha_cov_standard_error)){
+          
+          listpos <- which(names(spfits[[i.sp]]$alpha_cov_standard_error) == cov.names[i.cov])
+          mycov <- spfits[[i.sp]]$alpha_cov_standard_error[[listpos]]
+          
+          if(length(mycov)==1){
+            # same alpha_cov for all interactions
+            er_spalpha_cov[[i.cov]][i.sp,] <- mycov
+          }else{
+            # specific alpha_cov
+            # sort sp just in case
+            sp.pos <- sapply(er_matrix.names,function(x)which(grepl(x,names(mycov))))
+            er_spalpha_cov[[i.cov]][i.sp,] <- mycov[sp.pos]
+          }
         }
       }# for each focal sp
     }# for each covariate
