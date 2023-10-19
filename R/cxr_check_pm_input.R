@@ -20,7 +20,7 @@ cxr_check_pm_input <- function(data,
                                                        "bobyqa", "nmkb", "hjkb",
                                                        "nloptr_CRS2_LM","nloptr_ISRES",
                                                        "nloptr_DIRECT_L_RAND","DEoptimR",
-                                                       "hydroPSO","GenSA"), 
+                                                       "GenSA"), 
                                alpha_form = c("none","global","pairwise"), 
                                lambda_cov_form = c("none","global"),
                                alpha_cov_form = c("none","global","pairwise"),
@@ -57,7 +57,7 @@ cxr_check_pm_input <- function(data,
       input.message <- ("cxr_pm_fit ERROR: check the optimization method selected and lower/upper bounds.
          The following methods require explicit lower and upper parameter boundaries to be set:
          'L-BFGS-B', 'nlm', 'nlminb', 'Rcgmin', 'Rvmmin', 'spg', 'bobyqa', 'nmkb', 'hjkb', 'nloptr_CRS2_LM',
-         'nloptr_ISRES', 'nloptr_DIRECT_L_RAND', 'GenSA', 'hydroPSO', 'DEoptimR.'
+         'nloptr_ISRES', 'nloptr_DIRECT_L_RAND', 'GenSA', 'DEoptimR.'
          Likewise, the following methods require NULL lower and upper bounds:
          'Nelder-Mead','CG','BFGC','ucminf'.")
     }
@@ -101,12 +101,12 @@ cxr_check_pm_input <- function(data,
       input.message <- ("cxr_pm_fit ERROR: Package \"GenSA\" needed for the method selected to work.")
     }
   }
-  if (optimization_method == "hydroPSO" & !requireNamespace("hydroPSO", quietly = TRUE)) {
-    t5 <- FALSE
-    if(is.null(input.message)){
-      input.message <- ("cxr_pm_fit ERROR: Package \"hydroPSO\" needed for the method selected to work.")
-    }
-  }
+  # if (optimization_method == "hydroPSO" & !requireNamespace("hydroPSO", quietly = TRUE)) {
+  #   t5 <- FALSE
+  #   if(is.null(input.message)){
+  #     input.message <- ("cxr_pm_fit ERROR: Package \"hydroPSO\" needed for the method selected to work.")
+  #   }
+  # }
   if (optimization_method == "DEoptimR" & !requireNamespace("DEoptimR", quietly = TRUE)) {
     t5 <- FALSE
     if(is.null(input.message)){

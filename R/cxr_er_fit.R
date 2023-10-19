@@ -123,7 +123,7 @@ cxr_er_fit <- function(data,
                                                "bobyqa", "nmkb", "hjkb",
                                                "nloptr_CRS2_LM","nloptr_ISRES",
                                                "nloptr_DIRECT_L_RAND","DEoptimR",
-                                               "hydroPSO","GenSA"), 
+                                               "GenSA"), 
                        lambda_cov_form = c("none","global"),
                        effect_cov_form = c("none","global"),
                        response_cov_form = c("none","global"),
@@ -140,7 +140,13 @@ cxr_er_fit <- function(data,
                        bootstrap_samples = 0
 ){
   
-  # TODO add cxr:: to the internal functions once they are added
+  # TODO recode this function - each species needs to be fitted separately, 
+  # so this should resemble cxr_pm_multifit. This is because I need the 
+  # maximum likelihood optimization to proceed separately for each species,
+  # as that reduces degrees of freedom, therefore improving fit and precluding
+  # convergence issues. Basically, I need to estimate the matrices 
+  # beta_ij = r_i*e_j which are the equivalent of the alpha matrices in cxr_pm_fit,
+  # and this beta matrix is different for every species.
   
   # argument checks ---------------------------------------------------------
   
@@ -160,10 +166,10 @@ cxr_er_fit <- function(data,
     stop("cxr_er_fit ERROR: Package \"GenSA\" needed for the method selected to work.",
          call. = FALSE)
   }
-  if (optimization_method == "hydroPSO" & !requireNamespace("hydroPSO", quietly = TRUE)) {
-    stop("cxr_er_fit ERROR: Package \"hydroPSO\" needed for the method selected to work.",
-         call. = FALSE)
-  }
+  # if (optimization_method == "hydroPSO" & !requireNamespace("hydroPSO", quietly = TRUE)) {
+  #   stop("cxr_er_fit ERROR: Package \"hydroPSO\" needed for the method selected to work.",
+  #        call. = FALSE)
+  # }
   if (optimization_method == "DEoptimR" & !requireNamespace("DEoptimR", quietly = TRUE)) {
     stop("cxr_er_fit ERROR: Package \"DEoptimR\" needed for the method selected to work.",
          call. = FALSE)
@@ -212,7 +218,7 @@ cxr_er_fit <- function(data,
     stop("cxr_er_fit ERROR: check the optimization method selected and lower/upper bounds.
          The following methods require explicit lower and upper parameter boundaries to be set:
          L-BFGS-B, nlm, nlminb, Rcgmin, Rvmmin, spg, bobyqa, nmkb, hjkb, nloptr_CRS2_LM,
-         nloptr_ISRES, nloptr_DIRECT_L_RAND, GenSA, hydroPSO, DEoptimR.")
+         nloptr_ISRES, nloptr_DIRECT_L_RAND, GenSA, DEoptimR.")
   }
   
   # warning if initial values are default ones
@@ -325,19 +331,27 @@ cxr_er_fit <- function(data,
     names(init_effect) <- paste("effect_",sp.list,sep="")
   }
   
+  # 19-10-2023
+  # apply the solution by D. Stouffer of passing one fewer parameter
+  # to optim and convert back to a unit vector
+  
   if("response" %in% fixed_terms){
     if(length(initial_values$response) == 1){
-      fixed_parameters[["response"]] <- rep(initial_values$response,num.sp)
+      # fixed_parameters[["response"]] <- rep(initial_values$response,num.sp)
+      fixed_parameters[["response"]] <- rep(initial_values$response,num.sp-1)
     }else{
       fixed_parameters[["response"]] <- initial_values$response
     }
   }else{
     if(length(initial_values$response) == 1){
-      init_response <- rep(initial_values$response,num.sp)
+      # init_response <- rep(initial_values$response,num.sp)
+      init_response <- rep(initial_values$response,num.sp-1)
     }else{
       init_response <- initial_values$response
     }
-    names(init_response) <- paste("response_",sp.list,sep="")
+    # 19-10-2023
+    # assign all names but the one left out
+    names(init_response) <- paste("response_",sp.list[-length(sp.list)],sep="")
   }
   
   # return_init_length is an auxiliary function
@@ -571,22 +585,22 @@ cxr_er_fit <- function(data,
                                    covariates = covdf, 
                                    fixed_parameters = fixed_parameters)
     }, error=function(e){cat("cxr_er_fit optimization ERROR :",conditionMessage(e), "\n")})
-  }else if(optimization_method == "hydroPSO"){
-    tryCatch({
-      # suppress annoying output??
-      # sink("/dev/null")
-      optim_result <- hydroPSO::hydroPSO(par = init_par$init_par,
-                                         fn = fitness_model,
-                                         lower = init_par$lower_bounds,
-                                         upper = init_par$upper_bounds, 
-                                         control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
-                                         fitness = log(spdf$fitness), 
-                                         target = target_all,
-                                         density = density_all,
-                                         covariates = covdf, 
-                                         fixed_parameters = fixed_parameters)
-      
-    }, error=function(e){cat("cxr_er_fit optimization ERROR :",conditionMessage(e), "\n")})
+  # }else if(optimization_method == "hydroPSO"){
+  #   tryCatch({
+  #     # suppress annoying output??
+  #     # sink("/dev/null")
+  #     optim_result <- hydroPSO::hydroPSO(par = init_par$init_par,
+  #                                        fn = fitness_model,
+  #                                        lower = init_par$lower_bounds,
+  #                                        upper = init_par$upper_bounds, 
+  #                                        control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
+  #                                        fitness = log(spdf$fitness), 
+  #                                        target = target_all,
+  #                                        density = density_all,
+  #                                        covariates = covdf, 
+  #                                        fixed_parameters = fixed_parameters)
+  #     
+  #   }, error=function(e){cat("cxr_er_fit optimization ERROR :",conditionMessage(e), "\n")})
     
   }else if(optimization_method == "DEoptimR"){
     tryCatch({
@@ -624,7 +638,7 @@ cxr_er_fit <- function(data,
       outpar <- as.numeric(optim_result[,par.pos])
       names(outpar) <- outnames
       llik <- optim_result$value
-    }else if(optimization_method %in% c("DEoptimR","hydroPSO","GenSA")){
+    }else if(optimization_method %in% c("DEoptimR","GenSA")){
       outpar <- optim_result$par
       names(outpar) <- names(init_par$init_par)
       log.likelihood <- optim_result$value
@@ -641,13 +655,21 @@ cxr_er_fit <- function(data,
                                            lambda_cov_length = length(init_lambda_cov),
                                            effect_cov_length = length(init_effect_cov),
                                            response_cov_length = length(init_response_cov))
-    
+    # 19-10-2023 recover the response unit vector from the r-1 params
+    # this is the method suggested by D. Stouffer, following 
+    # https://pubs.acs.org/doi/pdf/10.1021/acs.jpca.5b02015
+    response_param_fitted <- matrix(optim_params$response,length(optim_params$response),1)
+    fmat <- t(response_param_fitted) %*% response_param_fitted
+    response_param_recovered <- rbind(1-fmat,2*response_param_fitted) %*% solve(1+fmat)
+    optim_params$response <- response_param_recovered[,1]
+    names(optim_params$response) <-  paste("response_",sp.list,sep="")
   }# if not null
   
   # calculate errors --------------------------------------------------------
   
   if(bootstrap_samples > 0){
     
+    # 19-10-2023 function updated
     errors <- cxr_er_bootstrap(fitness_model = fitness_model,
                                optimization_method = optimization_method,
                                data = spdf,
@@ -658,10 +680,11 @@ cxr_er_fit <- function(data,
                                fixed_parameters = fixed_parameters,
                                bootstrap_samples = bootstrap_samples)
     
+    # 19-10-2023 +1 added
     error_params <- cxr_retrieve_er_params(optim_params = errors,
                                            lambda_length = length(init_lambda),
                                            effect_length = length(init_effect),
-                                           response_length = length(init_response),
+                                           response_length = length(init_response)+1,
                                            lambda_cov_length = length(init_lambda_cov),
                                            effect_cov_length = length(init_effect_cov),
                                            response_cov_length = length(init_response_cov))

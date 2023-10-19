@@ -12,7 +12,7 @@ densities_to_df <- function(densities){
   
   num.sp <- length(densities)
   
-  if(class(densities[[1]]) == "list"){
+  if(inherits(densities[[1]],"list")){
     include.year <- TRUE
     num.stages <- ncol(densities[[1]][[1]])
     num.sites <- nrow(densities[[1]][[1]])

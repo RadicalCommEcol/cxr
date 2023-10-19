@@ -1,58 +1,57 @@
-Package: cxr
 Type: Package
+Package: cxr
 Title: A Toolbox for Modelling Species Coexistence in R
 Version: 1.1.0
-URL: https://github.com/RadicalCommEcol/cxr
-Authors@R: c(person("David", "Garcia-Callejas", role = c("aut", "cre"), 
-    email = "david.garcia.callejas@gmail.com", 
-    comment = c(ORCID = "0000-0001-6982-476X")),
-    person("Ignasi", "Bartomeus", role = c("aut"), 
-    email = "nacho.bartomeus@gmail.com", 
-    comment = c(ORCID = "0000-0001-7893-4389")),
-    person("Oscar", "Godoy", role = c("aut"), email = "ogodoy.re@gmail.com", 
-    comment = c(ORCID = "0000-0003-4988-6626")),
-    person("Maxime", "Lancelot", role = c("ctb")),
-    person("Maria","Paniw", role = c("ctb")))
-Description: Recent developments in modern coexistence theory have advanced 
-    our understanding on how species are able to persist and co-occur 
-    with other species at varying abundances. However, applying this 
-    mathematical framework to empirical data is still challenging, 
-    precluding a larger adoption of the theoretical tools developed 
-    by empiricists. This package provides a complete toolbox for modelling 
-    interaction effects between species, and calculate fitness and 
-    niche differences. 
-    The functions are flexible, may accept covariates, 
-    and different fitting algorithms can be used. 
-    A full description of the underlying methods is available in 
-    García-Callejas, D., Godoy, O., and Bartomeus, I. (2020) <doi:10.1111/2041-210X.13443>.
-    Furthermore, the package provides a series of functions to calculate 
-    dynamics for stage-structured populations across sites.
+Authors@R: c(
+    person("David", "Garcia-Callejas", , "david.garcia.callejas@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-6982-476X")),
+    person("Ignasi", "Bartomeus", , "nacho.bartomeus@gmail.com", role = "aut",
+           comment = c(ORCID = "0000-0001-7893-4389")),
+    person("Oscar", "Godoy", , "ogodoy.re@gmail.com", role = "aut",
+           comment = c(ORCID = "0000-0003-4988-6626")),
+    person("Maxime", "Lancelot", role = "ctb"),
+    person("Maria", "Paniw", role = "ctb")
+  )
+Description: Recent developments in modern coexistence theory have
+    advanced our understanding on how species are able to persist and
+    co-occur with other species at varying abundances. However, applying
+    this mathematical framework to empirical data is still challenging,
+    precluding a larger adoption of the theoretical tools developed by
+    empiricists. This package provides a complete toolbox for modelling
+    interaction effects between species, and calculate fitness and niche
+    differences.  The functions are flexible, may accept covariates, and
+    different fitting algorithms can be used.  A full description of the
+    underlying methods is available in García-Callejas, D., Godoy, O., and
+    Bartomeus, I. (2020) <doi:10.1111/2041-210X.13443>.  Furthermore, the
+    package provides a series of functions to calculate dynamics for
+    stage-structured populations across sites.
 License: MIT + file LICENSE
+URL: https://github.com/RadicalCommEcol/cxr
 BugReports: https://github.com/RadicalCommEcol/cxr/issues
-Encoding: UTF-8
 Depends:
-  R (>= 3.5)
+    R (>= 3.5)
 Imports:
-    optimx,
-    stats,
     Matrix,
-    mvtnorm
-RoxygenNote: 7.1.1
+    mvtnorm,
+    optimx,
+    stats
 Suggests: 
-    ggplot2,
-    tidyr,
-    dplyr,
-    magrittr,
-    knitr,
-    stringr,
-    rmarkdown,
-    testthat (>= 0.8.0),
     BB,
-    ucminf,
-    dfoptim,
-    minqa,
-    hydroPSO,
-    GenSA,
     DEoptimR,
-    nloptr
-VignetteBuilder: knitr
+    dfoptim,
+    dplyr,
+    GenSA,
+    ggplot2,
+    knitr,
+    magrittr,
+    minqa,
+    nloptr,
+    rmarkdown,
+    stringr,
+    testthat (>= 0.8.0),
+    tidyr,
+    ucminf
+VignetteBuilder: 
+    knitr
+Encoding: UTF-8
+RoxygenNote: 7.2.3

@@ -13,7 +13,7 @@ cxr_demographic_ratio <- function(model_family, pair_lambdas){
   
   dr_model <- try(get(dr_fun),silent = TRUE)
   
-  if(class(dr_model) == "try-error"){
+  if(inherits(dr_model,"try-error")){
     message(paste("demographic_ratio: function '",dr_fun,"' could not be retrieved, which means
     that you have not defined a specific demographic ratio formulation for your custom model family. 
     Demographic ratio will be calculated as the ratio between the lambda values provided. Be aware

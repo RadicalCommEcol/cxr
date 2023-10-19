@@ -209,22 +209,22 @@ cxr_pm_bootstrap <- function(fitness_model,
                              fixed_parameters = fixed_parameters)
         bpar <- bpar$par
       }, error=function(e){cat("cxr_pm_bootstrap ERROR :",conditionMessage(e), "\n")})
-    }else if(optimization_method == "hydroPSO"){
-      tryCatch({
-        # suppress annoying output
-        bpar <- hydroPSO::hydroPSO(par = init_par,
-                                   fn = fitness_model,
-                                   lower = lower_bounds,
-                                   upper = upper_bounds, 
-                                   control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
-                                   fitness = log(bdata$fitness), 
-                                   neigh_intra_matrix = bneigh_intra_matrix,
-                                   neigh_inter_matrix = bneigh_inter_matrix,
-                                   covariates = covariates, 
-                                   fixed_parameters = fixed_parameters)
-        
-        bpar <- bpar$par
-      }, error=function(e){cat("cxr_pm_bootstrap ERROR :",conditionMessage(e), "\n")})
+    # }else if(optimization_method == "hydroPSO"){
+    #   tryCatch({
+    #     # suppress annoying output
+    #     bpar <- hydroPSO::hydroPSO(par = init_par,
+    #                                fn = fitness_model,
+    #                                lower = lower_bounds,
+    #                                upper = upper_bounds, 
+    #                                control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
+    #                                fitness = log(bdata$fitness), 
+    #                                neigh_intra_matrix = bneigh_intra_matrix,
+    #                                neigh_inter_matrix = bneigh_inter_matrix,
+    #                                covariates = covariates, 
+    #                                fixed_parameters = fixed_parameters)
+    #     
+    #     bpar <- bpar$par
+    #   }, error=function(e){cat("cxr_pm_bootstrap ERROR :",conditionMessage(e), "\n")})
     }else if(optimization_method == "DEoptimR"){
       tryCatch({
         bpar <- DEoptimR::JDEoptim(lower = lower_bounds,

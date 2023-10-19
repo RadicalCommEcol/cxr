@@ -26,7 +26,8 @@ cxr_er_bootstrap <- function(fitness_model,
     bootstrap_samples <- 2
   }
   
-  bootres <- matrix(nrow = bootstrap_samples, ncol = length(init_par))
+  # +1 because of the additional response to be recovered
+  bootres <- matrix(nrow = bootstrap_samples, ncol = length(init_par)+1)
   sp.list <- unique(data$focal)
   
   # for sampling each focal species equally in base R,
@@ -173,22 +174,22 @@ cxr_er_bootstrap <- function(fitness_model,
                                      fixed_parameters = fixed_parameters)
         bpar <- bpar$par
       }, error=function(e){cat("cxr_er_bootstrap optimization ERROR :",conditionMessage(e), "\n")})
-    }else if(optimization_method == "hydroPSO"){
-      tryCatch({
-        # suppress annoying output??
-        # sink("/dev/null")
-        bpar <- hydroPSO::hydroPSO(par = init_par,
-                                           fn = fitness_model,
-                                           lower = lower_bounds,
-                                           upper = upper_bounds, 
-                                           control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
-                                           fitness = log(bdata$fitness), 
-                                           target = btarget_all,
-                                           density = bdensity_all,
-                                           covariates = covariates, 
-                                           fixed_parameters = fixed_parameters)
-        bpar <- bpar$par
-      }, error=function(e){cat("cxr_er_bootstrap optimization ERROR :",conditionMessage(e), "\n")})
+    # }else if(optimization_method == "hydroPSO"){
+    #   tryCatch({
+    #     # suppress annoying output??
+    #     # sink("/dev/null")
+    #     bpar <- hydroPSO::hydroPSO(par = init_par,
+    #                                        fn = fitness_model,
+    #                                        lower = lower_bounds,
+    #                                        upper = upper_bounds, 
+    #                                        control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
+    #                                        fitness = log(bdata$fitness), 
+    #                                        target = btarget_all,
+    #                                        density = bdensity_all,
+    #                                        covariates = covariates, 
+    #                                        fixed_parameters = fixed_parameters)
+    #     bpar <- bpar$par
+    #   }, error=function(e){cat("cxr_er_bootstrap optimization ERROR :",conditionMessage(e), "\n")})
       
     }else if(optimization_method == "DEoptimR"){
       tryCatch({
@@ -206,9 +207,26 @@ cxr_er_bootstrap <- function(fitness_model,
     
     if(!is.null(bpar)){
       if(sum(is.na(bpar)) == 0){
-        bootres[i.sample,] <- bpar
+        
+        # 19-10-2023
+        # add here as well the recovery of response parameters,
+        # so that standard errors are the appropriate ones
+        
+        # 1 - recover position of the response terms
+        # assuming they are always right before the last sigma term, 
+        # and there are as many as sp-1
+        response.pos <- c(length(bpar) - (length(sp.list)-1),length(bpar)-1)
+        prev.pos <- c(1:(response.pos[1]-1))
+        rp.mat <- matrix(bpar[response.pos],length(bpar[response.pos]),1)
+        fmat <- t(rp.mat) %*% rp.mat
+        rp.recovered <- rbind(1-fmat,2*rp.mat) %*% solve(1+fmat)
+        bpar_updated <- c(bpar[prev.pos],rp.recovered[,1],bpar[length(bpar)])
+        bootres[i.sample,] <- bpar_updated
       }
     }
+    
+
+    
     
   }# for i.sample  
   
@@ -220,7 +238,10 @@ cxr_er_bootstrap <- function(fitness_model,
   }
   
   if(!is.null(names(init_par))){
-    names(boot.se) <- paste(names(init_par),"_se",sep="")
+    sp.missing <- sp.list[length(sp.list)]
+    name.missing <- paste("response_",sp.missing,sep="")
+    par.names <- c(names(init_par)[1:(length(init_par)-1)],name.missing,names(init_par)[length(init_par)])
+    names(boot.se) <- paste(par.names,"_se",sep="")
   }
   boot.se
   

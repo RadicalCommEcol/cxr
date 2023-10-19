@@ -20,7 +20,7 @@ cxr_check_method_boundaries <- function(optimization_method,
                                 "Rcgmin", "Rvmmin", "spg", 
                                 "bobyqa", "nmkb", "hjkb",
                                 "nloptr_CRS2_LM","nloptr_ISRES","nloptr_DIRECT_L_RAND",
-                                "GenSA","hydroPSO","DEoptimR") & 
+                                "GenSA","DEoptimR") & 
      (is.null(lower_bounds) | is.null(upper_bounds))){
     method.ok <- FALSE
   }else if(optimization_method %in% c("BFGS", "CG", "Nelder-Mead", "ucminf") & 

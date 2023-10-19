@@ -11,7 +11,7 @@ cxr_pm_multifit(
   covariates = NULL,
   optimization_method = c("BFGS", "CG", "Nelder-Mead", "ucminf", "L-BFGS-B", "nlm",
     "nlminb", "Rcgmin", "Rvmmin", "spg", "bobyqa", "nmkb", "hjkb", "nloptr_CRS2_LM",
-    "nloptr_ISRES", "nloptr_DIRECT_L_RAND", "DEoptimR", "hydroPSO", "GenSA"),
+    "nloptr_ISRES", "nloptr_DIRECT_L_RAND", "DEoptimR", "GenSA"),
   alpha_form = c("none", "global", "pairwise"),
   lambda_cov_form = c("none", "global"),
   alpha_cov_form = c("none", "global", "pairwise"),

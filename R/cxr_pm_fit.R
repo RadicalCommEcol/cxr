@@ -77,7 +77,7 @@ cxr_pm_fit <- function(data,
                                                "bobyqa", "nmkb", "hjkb",
                                                "nloptr_CRS2_LM","nloptr_ISRES",
                                                "nloptr_DIRECT_L_RAND","DEoptimR",
-                                               "hydroPSO","GenSA"), 
+                                               "GenSA"), 
                        alpha_form = c("none","global","pairwise"), 
                        lambda_cov_form = c("none","global"),
                        alpha_cov_form = c("none","global","pairwise"),
@@ -361,22 +361,22 @@ cxr_pm_fit <- function(data,
                                    covariates = covariates, 
                                    fixed_parameters = init_par$fixed_parameters)
     }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
-  }else if(optimization_method == "hydroPSO"){
-    tryCatch({
-      # suppress annoying output??
-      # sink("/dev/null")
-      optim_result <- hydroPSO::hydroPSO(par = vector_par$init_par,
-                                         fn = fitness_model,
-                                         lower = vector_par$lower_bounds,
-                                         upper = vector_par$upper_bounds, 
-                                         control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
-                                         fitness = log(data$fitness), 
-                                         neigh_intra_matrix = neigh_intra_matrix,
-                                         neigh_inter_matrix = neigh_inter_matrix,
-                                         covariates = covariates, 
-                                         fixed_parameters = init_par$fixed_parameters)
-
-    }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
+  # }else if(optimization_method == "hydroPSO"){
+  #   tryCatch({
+  #     # suppress annoying output??
+  #     # sink("/dev/null")
+  #     optim_result <- hydroPSO::hydroPSO(par = vector_par$init_par,
+  #                                        fn = fitness_model,
+  #                                        lower = vector_par$lower_bounds,
+  #                                        upper = vector_par$upper_bounds, 
+  #                                        control=list(write2disk=FALSE, maxit = 1e3, MinMax = "min", verbose = F),
+  #                                        fitness = log(data$fitness), 
+  #                                        neigh_intra_matrix = neigh_intra_matrix,
+  #                                        neigh_inter_matrix = neigh_inter_matrix,
+  #                                        covariates = covariates, 
+  #                                        fixed_parameters = init_par$fixed_parameters)
+  # 
+  #   }, error=function(e){cat("cxr_pm_fit optimization ERROR :",conditionMessage(e), "\n")})
     
   }else if(optimization_method == "DEoptimR"){
     tryCatch({
@@ -411,7 +411,7 @@ cxr_pm_fit <- function(data,
       outpar <- as.numeric(optim_result[,par.pos])
       names(outpar) <- outnames
       llik <- optim_result$value
-    }else if(optimization_method %in% c("DEoptimR","hydroPSO","GenSA")){
+    }else if(optimization_method %in% c("DEoptimR","GenSA")){
       outpar <- optim_result$par
       names(outpar) <- names(init_par$init_par)
       llik <- optim_result$value
