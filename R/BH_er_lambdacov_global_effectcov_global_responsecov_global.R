@@ -77,8 +77,9 @@ BH_er_lambdacov_global_effectcov_global_responsecov_global <- function(par,
   
   # response
   if(is.null(fixed_parameters[["response"]])){
-    response <- par[pos:(pos + num.sp - 1)]
-    pos <- pos + num.sp
+    response <- par[pos:(pos + num.sp - 2)]
+    # response <- par[pos:(pos + num.sp - 1)]
+    pos <- pos + num.sp-1
   }else{
     response <- fixed_parameters[["response"]]
   }

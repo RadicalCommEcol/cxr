@@ -72,7 +72,8 @@ LV_er_lambdacov_none_effectcov_none_responsecov_none <- function(par,
   
   # response
   if(is.null(fixed_parameters[["response"]])){
-    response <- par[pos:(pos + num.sp - 1)]
+    response <- par[pos:(pos + num.sp - 2)]
+    # response <- par[pos:(pos + num.sp - 1)]
     pos <- pos + num.sp
   }else{
     response <- fixed_parameters[["response"]]
