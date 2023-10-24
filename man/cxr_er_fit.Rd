@@ -93,6 +93,7 @@ an object of class 'cxr_er_fit' which is a list with the following components:
 }
 \description{
 Estimates parameters of user-specified models of competitive effects and responses.
+NOTE: including covariates on competitive effects is still under development, in this version it is suggested not to use that feature.
 }
 \examples{
 \donttest{

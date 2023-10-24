@@ -2,7 +2,8 @@
 
 - SUMMARY OF NEW FEATURES CHANGES
 - removed hydroPSO optimizer due to the hydroPSO package being no longer in CRAN.
-- updated response-effect model to improve convergence
+- updated response-effect model to improve convergence.
+- fixed bug in the example of cxr_pm_multifit.
 
 ### cxr 1.1.0
 

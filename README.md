@@ -6,7 +6,7 @@
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/cxr)](https://cran.r-project.org/package=cxr)
 [![DOI](https://zenodo.org/badge/115796966.svg)](https://zenodo.org/badge/latestdoi/115796966)
 
-# cxr 1.1.0
+# cxr 1.1.1
 
 cxr provides a complete toolbox for modelling interactions between species, calculate coexistence metrics (e.g. niche and fitness differences), and project species abundances. The functions are flexible and can include covariates, use different optimization algorithms, or accept user-defined mathematical population models as starting points. It furthermore includes a series of functions to model metapopulation dynamics of stage-structured populations.
 

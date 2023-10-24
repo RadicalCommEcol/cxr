@@ -1,6 +1,7 @@
 #' General optimization for effect-response models
 #' 
-#' Estimates parameters of user-specified models of competitive effects and responses.
+#' Estimates parameters of user-specified models of competitive effects and responses. 
+#' NOTE: including covariates on competitive effects is still under development, in this version it is suggested not to use that feature. 
 #'
 #' @param data either a list of dataframes or a single dataframe. if 'data' is a list, each element is a dataframe with the following columns:
 #' * fitness: fitness metric for each observation
