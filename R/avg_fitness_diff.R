@@ -86,8 +86,8 @@ avg_fitness_diff <- function(cxr_multifit = NULL,
               Pairwise matrix will be discarded.")
     }
     
-    sp1_model <- substr(cxr_sp1$model_name,4,5)
-    sp2_model <- substr(cxr_sp2$model_name,4,5)
+    sp1_model <- substr(cxr_sp1$model_name,1,2)
+    sp2_model <- substr(cxr_sp2$model_name,1,2)
     
     if(sp1_model == sp2_model){
       
